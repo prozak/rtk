@@ -1,0 +1,18 @@
+Name:                mousekiller
+Version:             0.7
+Description:         Generates rewrite facilities for the given grammar
+License:             GPL
+License-file:        LICENSE
+Author:              Nickolay Lysenko
+Maintainer:          nickolay.lysenko@gmail.com
+Build-Type:          Simple
+Cabal-Version:       >=1.2
+
+Library
+  Exposed-Modules: Lexer Parser
+
+Executable mousekiller
+  Main-is:           main.hs
+  Build-Depends:     base >= 4.0, array, syb, template-haskell, haskell98, containers, mtl, pretty
+  Other-Modules:     Lexer Parser
+

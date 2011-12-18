@@ -1,0 +1,15 @@
+grammar "grammar";
+
+Grammar :== "grammar" str ;
+Rules :== | Rule ";" Rules ;
+Rule :== id ":=" Clauses | id ":==" Clauses ;
+Clauses :== Clause ClausesEnd ;
+
+ClausesEnd := | "|" Clause ClausesEnd;
+
+Clause := [] | ClauseItem Clause ;
+
+ClauseItem :== id | str ;
+id := [a-zA..Z][A..Za..z0..9_]* ;
+str := ["] .* ["] ;
+
