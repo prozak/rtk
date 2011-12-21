@@ -1,13 +1,16 @@
 import IO(hGetContents, bracket, openFile, IOMode(ReadMode), hClose)
 import Lexer
 import Parser
+import Grammar
+
+import Language.Haskell.TH
 
 main = bracket (openFile "grammar.pg" ReadMode) (hClose)
     (\hndl ->
        do
           content <- hGetContents hndl
-          let res = parse $ alexScanTokens content
-          print $ res)
+          res <- runQ $ generateAST $ parse $ alexScanTokens content
+          putStrLn $ res)
 
 {--run :: String -> Either String [Token]
 run content = runAlex content $ loop []

@@ -43,7 +43,7 @@ parseError :: [L.Token] -> a
 parseError rest = error $ "Parse error" ++ (show rest)
 
 data Grammar = Grammar String [Rule] deriving (Eq, Show)
-data Rule = Rule ClauseItem [[ClauseItem]] Bool deriving (Eq, Show)
-data ClauseItem = Id String | StrLit String | RegExpLit String | Star | Dot deriving (Eq, Show)
+data Rule = Rule { getRuleName :: ClauseItem, getClauses :: [[ClauseItem]], buildNode :: Bool } deriving (Eq, Show)
+data ClauseItem = Id { getIdStr :: String } | StrLit String | RegExpLit String | Star | Dot deriving (Eq, Show)
 
 }
