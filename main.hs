@@ -9,8 +9,9 @@ main = bracket (openFile "grammar.pg" ReadMode) (hClose)
     (\hndl ->
        do
           content <- hGetContents hndl
-          res <- runQ $ generateAST $ annotateGrammarWithNames $ parse $ alexScanTokens content
-          putStrLn $ res)
+          let grammar = annotateGrammarWithNames $ parse $ alexScanTokens content
+          generateASTFile "AST" grammar
+          putStrLn $ show grammar)
 
 {--run :: String -> Either String [Token]
 run content = runAlex content $ loop []

@@ -1,10 +1,11 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, ScopedTypeVariables #-}
 
 module Grammar where
 
 import Parser
 import Language.Haskell.TH
 import Data.Char
+import IO(hGetContents, bracket, openFile, IOMode(WriteMode), hClose)
 
 --generateConstructor :: [ClauseItem] -> Q Con
 --generateConstructor clauseItems = normalC (mkName "TT") []
@@ -59,3 +60,17 @@ annotateRulesWithNames rule = rule{getClauses = map (annotateClauseWithNames $ g
     
 annotateGrammarWithNames :: Grammar -> Grammar
 annotateGrammarWithNames (Grammar name rules) = Grammar name (map annotateRulesWithNames rules)
+
+writeHaskellFile fileName contents = writeFile (fileName ++ ".hs") contents
+
+genASTAdd =
+  do
+    idDef <-runQ $ dataD (cxt []) (mkName "Id") [] [normalC (mkName "Id") [strictType notStrict (conT (mkName "String"))]] []
+    return $ pprint idDef
+
+generateASTFile :: String -> Grammar -> IO()
+generateASTFile fileName grammar = 
+  do
+    astStr::String <- runQ $ generateAST grammar
+    astAddDef::String <- runQ $ genASTAdd 
+    writeHaskellFile fileName $ "module " ++ fileName ++ " where\n" ++ astStr ++ "\n" ++ astAddDef ++ "\n"
