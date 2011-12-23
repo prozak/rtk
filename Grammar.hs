@@ -10,7 +10,9 @@ import Data.Char
 --generateConstructor clauseItems = normalC (mkName "TT") []
 
 generateData :: Rule -> Q Dec
-generateData (Rule (Id left) clauses b) = dataD (cxt []) (mkName left) [] (map (\cl -> generateConstructor left cl) clauses) []
+generateData (Rule (Id left) clauses b) =
+  dataD (cxt []) (mkName left) []
+    (map (\(cl, inf) -> generateConstructor (clauseName inf) cl) clauses) []
 
 generateAST :: Grammar -> Q String
 generateAST (Grammar _ rules) = 
@@ -27,9 +29,8 @@ itemName item = case item of
                     _ -> ""
 
 generateConstructor :: String -> [ClauseItem] -> Q Con
-generateConstructor base_name items = normalC (mkName ("Node__" ++ name)) elements
-    where name = foldr (++) base_name (map itemName items)
-          elements = map (\item -> (strictType notStrict (conT (mkName (itemName item)))))
+generateConstructor cname items = normalC (mkName cname) elements
+    where elements = map (\item -> (strictType notStrict (conT (mkName (itemName item)))))
                          (filter (\item -> case item of
                                                 Id _ -> True
                                                 _    -> False)
@@ -45,5 +46,16 @@ translateStrLiteral str = foldr (++) "" (map (\chr -> case chr of
                                                 ';' -> "_semi_"
                                                 ':' -> "_colon_"
                                                 '=' -> "_eql_"
+                                                '*' -> "_star_"
+                                                '|' -> "_pipe_"
                                                 _   -> [chr])
                                              str)
+
+annotateClauseWithNames :: String -> ([ClauseItem], GInfo) -> ([ClauseItem], GInfo)
+annotateClauseWithNames base_name (items, info) = (items, info{clauseName = "Node__" ++ (foldr (++) base_name (map itemName items))})
+
+annotateRulesWithNames :: Rule -> Rule
+annotateRulesWithNames rule = rule{getClauses = map (annotateClauseWithNames $ getIdStr $ getRuleName rule) $ getClauses rule}
+    
+annotateGrammarWithNames :: Grammar -> Grammar
+annotateGrammarWithNames (Grammar name rules) = Grammar name (map annotateRulesWithNames rules)

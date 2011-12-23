@@ -34,7 +34,7 @@ Clauses : Clause ClausesEnd {$1 : $2}
 
 ClausesEnd : {[]} | '|' Clause ClausesEnd { $2 : $3 }
 
-Clause : {[]} | ClauseItem Clause {$1 : $2}
+Clause : {([], GInfo "")} | ClauseItem Clause {($1 : (fst $2), GInfo "")}
 
 ClauseItem : id { Id $1 } | str { StrLit $1 } | rexplit {RegExpLit $1} | '.' { Dot } | '*' { Star }
 {
@@ -43,7 +43,8 @@ parseError :: [L.Token] -> a
 parseError rest = error $ "Parse error" ++ (show rest)
 
 data Grammar = Grammar String [Rule] deriving (Eq, Show)
-data Rule = Rule { getRuleName :: ClauseItem, getClauses :: [[ClauseItem]], buildNode :: Bool } deriving (Eq, Show)
+data Rule = Rule { getRuleName :: ClauseItem, getClauses :: [([ClauseItem],GInfo)], buildNode :: Bool } deriving (Eq, Show)
 data ClauseItem = Id { getIdStr :: String } | StrLit String | RegExpLit String | Star | Dot deriving (Eq, Show)
+data GInfo = GInfo { clauseName :: String } deriving (Eq, Show)
 
 }

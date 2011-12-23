@@ -9,7 +9,7 @@ main = bracket (openFile "grammar.pg" ReadMode) (hClose)
     (\hndl ->
        do
           content <- hGetContents hndl
-          res <- runQ $ generateAST $ parse $ alexScanTokens content
+          res <- runQ $ generateAST $ annotateGrammarWithNames $ parse $ alexScanTokens content
           putStrLn $ res)
 
 {--run :: String -> Either String [Token]
