@@ -61,16 +61,24 @@ annotateRulesWithNames rule = rule{getClauses = map (annotateClauseWithNames $ g
 annotateGrammarWithNames :: Grammar -> Grammar
 annotateGrammarWithNames (Grammar name rules) = Grammar name (map annotateRulesWithNames rules)
 
-writeHaskellFile fileName contents = writeFile (fileName ++ ".hs") contents
+writeHaskellFile fileName contents = writeFile (fileName ++ ".hs") ((generateHaskellFileHeader fileName) ++ contents)
 
 genASTAdd =
   do
     idDef <-runQ $ dataD (cxt []) (mkName "Id") [] [normalC (mkName "Id") [strictType notStrict (conT (mkName "String"))]] []
     return $ pprint idDef
 
+generateHaskellFileHeader fileName = "module " ++ fileName ++ " where\n"
+
 generateASTFile :: String -> Grammar -> IO()
 generateASTFile fileName grammar = 
   do
     astStr::String <- runQ $ generateAST grammar
     astAddDef::String <- runQ $ genASTAdd 
-    writeHaskellFile fileName $ "module " ++ fileName ++ " where\n" ++ astStr ++ "\n" ++ astAddDef ++ "\n"
+    writeHaskellFile fileName $ astStr ++ "\n" ++ astAddDef ++ "\n"
+
+generateQQFile :: String -> Grammar -> IO()
+generateQQFile fileName grammar =
+  do
+    writeHaskellFile fileName "" 
+    return ()
