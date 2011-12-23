@@ -7,9 +7,6 @@ import Language.Haskell.TH
 import Data.Char
 import IO(hGetContents, bracket, openFile, IOMode(WriteMode), hClose)
 
---generateConstructor :: [ClauseItem] -> Q Con
---generateConstructor clauseItems = normalC (mkName "TT") []
-
 generateData :: Rule -> Q Dec
 generateData (Rule (Id left) clauses b) =
   dataD (cxt []) (mkName left) []
@@ -19,7 +16,7 @@ generateAST :: Grammar -> Q String
 generateAST (Grammar _ rules) = 
     do
         res <- mapM (runQ . generateData) (filter (isUpper . head . getIdStr . getRuleName) rules)
-        return $ foldl (\prev str -> prev ++ str ++ "\n") "" $ map pprint res
+        return $ foldl ((++) . (++ "\n")) "" $ map pprint res
 
 
 itemName item = case item of
@@ -53,7 +50,8 @@ translateStrLiteral str = foldr (++) "" (map (\chr -> case chr of
                                              str)
 
 annotateClauseWithNames :: String -> ([ClauseItem], GInfo) -> ([ClauseItem], GInfo)
-annotateClauseWithNames base_name (items, info) = (items, info{clauseName = "Node__" ++ (foldr (++) base_name (map itemName items))})
+annotateClauseWithNames base_name (items, info) =
+    (items, info{clauseName = "Node__" ++ (foldr (++) base_name (map itemName items))})
 
 annotateRulesWithNames :: Rule -> Rule
 annotateRulesWithNames rule = rule{getClauses = map (annotateClauseWithNames $ getIdStr $ getRuleName rule) $ getClauses rule}
@@ -65,20 +63,45 @@ writeHaskellFile fileName contents = writeFile (fileName ++ ".hs") ((generateHas
 
 genASTAdd =
   do
-    idDef <-runQ $ dataD (cxt []) (mkName "Id") [] [normalC (mkName "Id") [strictType notStrict (conT (mkName "String"))]] []
+    let dataName = mkName "Id"
+    idDef <-runQ $ dataD (cxt []) dataName [] [normalC dataName [strictType notStrict (conT (mkName "String"))]] []
     return $ pprint idDef
 
 generateHaskellFileHeader fileName = "module " ++ fileName ++ " where\n"
 
-generateASTFile :: String -> Grammar -> IO()
+generateHaskellFileImports :: [String] -> String
+generateHaskellFileImports moduleNames = generateHaskellFileImports' moduleNames ""
+
+generateHaskellFileImports' (moduleName : rest) result = generateHaskellFileImports' rest (result ++ "\nimport " ++ moduleName ++ "\n")
+generateHaskellFileImports' [] result = result
+
+generateASTFile :: String -> Grammar -> IO ()
 generateASTFile fileName grammar = 
   do
     astStr::String <- runQ $ generateAST grammar
     astAddDef::String <- runQ $ genASTAdd 
     writeHaskellFile fileName $ astStr ++ "\n" ++ astAddDef ++ "\n"
 
-generateQQFile :: String -> Grammar -> IO()
+generateQuotationFunctions :: Grammar -> Q String
+generateQuotationFunctions (Grammar _ rules) =
+  do
+    let genQFRule rule =
+                        let ruleNameStr = getIdStr $ getRuleName rule
+                            funNameStr = (toLower $ head ruleNameStr) : (tail ruleNameStr)
+                            funName = mkName $ funNameStr 
+                            accessorName = mkName $ "get" ++ ruleNameStr
+                            varStrLit = (litE (stringL $ "$" ++ funNameStr))
+                            quoteExpr = (appE (appE (conE (mkName "QuoteExprExp")) varStrLit) (varE accessorName))
+                            quotePat = (appE (appE (conE (mkName "QuoteExprPat")) varStrLit) (varE accessorName))
+                            funExpr = (normalB (appE (appE (conE (mkName "QuasiQuoter")) quoteExpr) quotePat))
+                          in funD funName [clause [] funExpr []]
+    res <- mapM (runQ . genQFRule) rules
+    return $ foldl ((++) . (++ "\n")) "" $ map pprint res
+
+generateQQFile :: String -> Grammar -> IO ()
 generateQQFile fileName grammar =
   do
-    writeHaskellFile fileName "" 
+    quoteFuns::String <- runQ $ generateQuotationFunctions grammar
+    let imports = generateHaskellFileImports ["Data.Generics", "Data.Data", "Language.Haskell.TH", "Language.Haskell.TH.Quote"]
+    writeHaskellFile fileName $ imports ++ quoteFuns ++ "\n"
     return ()

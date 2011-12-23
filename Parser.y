@@ -2,6 +2,8 @@
 module Parser where
 
 import qualified Lexer as L (Token(..), alexScanTokens)
+import Data.Generics
+import Data.Data
 
 }
 
@@ -42,7 +44,7 @@ ClauseItem : id { Id $1 } | str { StrLit $1 } | rexplit {RegExpLit $1} | '.' { D
 parseError :: [L.Token] -> a
 parseError rest = error $ "Parse error" ++ (show rest)
 
-data Grammar = Grammar String [Rule] deriving (Eq, Show)
+data Grammar = Grammar String [Rule] deriving (Eq, Show, Typeable)
 data Rule = Rule { getRuleName :: ClauseItem, getClauses :: [([ClauseItem],GInfo)], buildNode :: Bool } deriving (Eq, Show)
 data ClauseItem = Id { getIdStr :: String } | StrLit String | RegExpLit String | Star | Dot deriving (Eq, Show)
 data GInfo = GInfo { clauseName :: String } deriving (Eq, Show)

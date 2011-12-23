@@ -11,6 +11,7 @@ main = bracket (openFile "grammar.pg" ReadMode) (hClose)
           content <- hGetContents hndl
           let grammar = annotateGrammarWithNames $ parse $ alexScanTokens content
           generateASTFile "AST" grammar
+          generateQQFile "Quote" grammar
           putStrLn $ show grammar)
 
 {--run :: String -> Either String [Token]
