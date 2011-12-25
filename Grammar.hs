@@ -5,7 +5,17 @@ module Grammar where
 import Parser
 import Language.Haskell.TH
 import Data.Char
+import Data.Generics
+import Data.Data
 import IO(hGetContents, bracket, openFile, IOMode(WriteMode), hClose)
+
+generateConstructor :: String -> [ClauseItem] -> Q Con
+generateConstructor cname items = normalC (mkName cname) elements
+    where elements = map (\item -> (strictType notStrict (conT (mkName (itemName item)))))
+                         (filter (\item -> case item of
+                                                Id _ -> True
+                                                _    -> False)
+                                 items)
 
 generateData :: Rule -> Q Dec
 generateData (Rule (Id left) clauses b) =
@@ -26,14 +36,6 @@ itemName item = case item of
                     StrLit str -> translateStrLiteral str
                     _ -> ""
 
-generateConstructor :: String -> [ClauseItem] -> Q Con
-generateConstructor cname items = normalC (mkName cname) elements
-    where elements = map (\item -> (strictType notStrict (conT (mkName (itemName item)))))
-                         (filter (\item -> case item of
-                                                Id _ -> True
-                                                _    -> False)
-                                 items)
-
 translateStrLiteral :: String -> String
 translateStrLiteral str = foldr (++) "" (map (\chr -> case chr of
                                                 '+' -> "_plus_"
@@ -49,15 +51,30 @@ translateStrLiteral str = foldr (++) "" (map (\chr -> case chr of
                                                 _   -> [chr])
                                              str)
 
-annotateClauseWithNames :: String -> ([ClauseItem], GInfo) -> ([ClauseItem], GInfo)
-annotateClauseWithNames base_name (items, info) =
-    (items, info{clauseName = "Node__" ++ (foldr (++) base_name (map itemName items))})
-
-annotateRulesWithNames :: Rule -> Rule
-annotateRulesWithNames rule = rule{getClauses = map (annotateClauseWithNames $ getIdStr $ getRuleName rule) $ getClauses rule}
-    
 annotateGrammarWithNames :: Grammar -> Grammar
-annotateGrammarWithNames (Grammar name rules) = Grammar name (map annotateRulesWithNames rules)
+annotateGrammarWithNames grammar =
+    let clauseT (items, info) = (items, info{clauseName = "Node__" ++ (foldr (++) (ruleName info) (map itemName items))})
+      in everywhere (mkT clauseT) grammar
+
+emitLoopsInGrammar :: Grammar -> Grammar
+emitLoopsInGrammar grammar =
+    let clauseT self@(items, info) =
+                                     if (isUpper $ head $ ruleName info)
+                                       then
+                                         case items of
+                                           [ci1, op, ci2] ->
+                                                 case op of
+                                                   Plus -> ([LoopPlus ci1 $ Just ci2], info)
+                                                   Star -> ([LoopStar ci1 $ Just ci2], info)
+                                                   _ -> self
+                                           [ci1, op] ->
+                                                 case op of
+                                                   Plus -> ([LoopPlus ci1 Nothing], info)
+                                                   Star -> ([LoopStar ci1 Nothing], info)
+                                                   _ -> self
+                                           _ -> self
+                                       else self
+      in everywhere (mkT clauseT) grammar
 
 writeHaskellFile fileName contents = writeFile (fileName ++ ".hs") ((generateHaskellFileHeader fileName) ++ contents)
 

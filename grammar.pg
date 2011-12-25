@@ -3,11 +3,9 @@ grammar "grammar";
 Grammar :== "grammar" str ;
 Rules :== | Rule ";" Rules ;
 Rule :== id ":=" Clauses | id ":==" Clauses ;
-Clauses :== Clause ClausesEnd ;
+Clauses :== Clause * "|" ;
 
-ClausesEnd := | "|" Clause ClausesEnd;
-
-Clause := [] | ClauseItem Clause ;
+Clause := ClauseItem * ;
 
 ClauseItem :== id | str ;
 id := [a-zA..Z][A..Za..z0..9_]* ;

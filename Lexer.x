@@ -23,6 +23,7 @@ tokens:-
     "[" [^\]]* "]"      {\s -> RegExpLit s }
     $quote $notq* $quote    {\s -> StrLit $ reverse $ tail $ reverse $ tail s }
     "*"                 {\s -> Star }
+    "+"                 {\s -> Plus }
     $alpha $alphaDigit* {\s -> Id s}
 
 {
@@ -37,6 +38,7 @@ data Token =
     RegExpLit String |
     StrLit String |
     Id String |
-    Star deriving (Eq, Show)
+    Star | Plus
+      deriving (Eq, Show)
 
 }
