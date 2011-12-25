@@ -38,7 +38,7 @@ ClausesEnd : {[]} | '|' Clause ClausesEnd { $2 : $3 }
 
 Clause : {([], GInfo "")} | ClauseItem Clause {($1 : (fst $2), GInfo "")}
 
-ClauseItem : id { Id $1 } | str { StrLit $1 } | rexplit {RegExpLit $1} | '.' { Dot } | '*' { Star }
+ClauseItem : id { Id $1 } | str { StrLit $1 (LexerInfo "") } | rexplit {RegExpLit $1} | '.' { Dot } | '*' { Star }
 {
 
 parseError :: [L.Token] -> a
@@ -46,7 +46,8 @@ parseError rest = error $ "Parse error" ++ (show rest)
 
 data Grammar = Grammar String [Rule] deriving (Eq, Show, Typeable)
 data Rule = Rule { getRuleName :: ClauseItem, getClauses :: [([ClauseItem],GInfo)], buildNode :: Bool } deriving (Eq, Show)
-data ClauseItem = Id { getIdStr :: String } | StrLit String | RegExpLit String | Star | Dot deriving (Eq, Show)
+data ClauseItem = Id { getIdStr :: String } | StrLit String LexerInfo | RegExpLit String | Star | Dot deriving (Eq, Show)
 data GInfo = GInfo { clauseName :: String } deriving (Eq, Show)
+data LexerInfo = LexerInfo { lexName :: String } deriving (Eq, Show)
 
 }

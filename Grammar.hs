@@ -23,7 +23,7 @@ itemName item = case item of
                     Id "str" -> "String"
                     Id "id" -> "Id"
                     Id name -> name
-                    StrLit str -> translateStrLiteral str
+                    StrLit str _ -> translateStrLiteral str
                     _ -> ""
 
 generateConstructor :: String -> [ClauseItem] -> Q Con
@@ -49,9 +49,13 @@ translateStrLiteral str = foldr (++) "" (map (\chr -> case chr of
                                                 _   -> [chr])
                                              str)
 
+annotateClauseItemWithNames :: ClauseItem -> ClauseItem
+annotateClauseItemWithNames (StrLit str info) = StrLit str (LexerInfo ("'" ++ str ++ "'")) -- TODO: ' in the str
+annotateClauseItemWithNames any = any
+
 annotateClauseWithNames :: String -> ([ClauseItem], GInfo) -> ([ClauseItem], GInfo)
 annotateClauseWithNames base_name (items, info) =
-    (items, info{clauseName = "Node__" ++ (foldr (++) base_name (map itemName items))})
+    (map annotateClauseItemWithNames items, info{clauseName = "Node__" ++ (foldr (++) base_name (map itemName items))})
 
 annotateRulesWithNames :: Rule -> Rule
 annotateRulesWithNames rule = rule{getClauses = map (annotateClauseWithNames $ getIdStr $ getRuleName rule) $ getClauses rule}
@@ -105,3 +109,36 @@ generateQQFile fileName grammar =
     let imports = generateHaskellFileImports ["Data.Generics", "Data.Data", "Language.Haskell.TH", "Language.Haskell.TH.Quote"]
     writeHaskellFile fileName $ imports ++ quoteFuns ++ "\n"
     return ()
+
+--------------------- parser specification generation -----------------
+
+glue :: [String] -> String
+glue strs = foldl (++) "" strs
+
+glueD :: String -> [String] -> String
+glueD delimiter strs = foldl (\x accum -> x ++ delimiter ++ accum) "" strs
+
+glueDL :: String -> String -> [String] -> String
+glueDL delimiter last_delimiter strs = case strs of
+                                            []     -> last_delimiter
+                                            (s:[]) -> s ++ last_delimiter
+                                            (s:xs) -> s ++ delimiter ++ (glueDL delimiter last_delimiter xs)
+
+generateParserSpec (Grammar _ rules) = glue (map generateParserRule rules)
+
+generateParserRule (Rule (Id name) clauses _) = name ++ " :\n" ++ (glueDL " |\n" ";\n\n" (map generateParserRuleLine clauses))
+generateParserRuleLine (items, info) = "    " ++ (generateParserRuleAlt items) ++ " { " ++ (generateParserRuleAltConstructor items info) ++ " }"
+
+generateParserRuleAlt :: [ClauseItem] -> String
+generateParserRuleAlt items = glueD " " (map (\item -> case item of
+                                                Id name -> name
+                                                StrLit _ (LexerInfo name) -> name
+                                                _ -> "")
+                                             items)
+
+generateParserRuleAltConstructor :: [ClauseItem] -> GInfo -> String
+generateParserRuleAltConstructor items (GInfo name) = name ++ glueD " " (enumerateItems 1 items [])
+    where enumerateItems count (x:xs) accum = case x of
+                                                Id _ -> enumerateItems (count + 1) xs (("$" ++ (show count)) : accum)
+                                                _    -> enumerateItems count xs accum
+          enumerateItems _ [] accum = reverse accum
