@@ -52,24 +52,13 @@ translateStrLiteral str = foldr (++) "" (map (\chr -> case chr of
                                                 _   -> [chr])
                                              str)
 
-<<<<<<< HEAD
-=======
-annotateClauseItemWithNames :: ClauseItem -> ClauseItem
-annotateClauseItemWithNames (StrLit str info) = StrLit str (LexerInfo ("'" ++ str ++ "'")) -- TODO: ' in the str
-annotateClauseItemWithNames any = any
-
-annotateClauseWithNames :: String -> ([ClauseItem], GInfo) -> ([ClauseItem], GInfo)
-annotateClauseWithNames base_name (items, info) =
-    (map annotateClauseItemWithNames items, info{clauseName = "Node__" ++ (foldr (++) base_name (map itemName items))})
-
-annotateRulesWithNames :: Rule -> Rule
-annotateRulesWithNames rule = rule{getClauses = map (annotateClauseWithNames $ getIdStr $ getRuleName rule) $ getClauses rule}
-    
->>>>>>> 74de1e3fb8b4f7d0f861c265afd1413ce92a00b5
 annotateGrammarWithNames :: Grammar -> Grammar
 annotateGrammarWithNames grammar =
-    let clauseT (items, info) = (items, info{clauseName = "Node__" ++ (foldr (++) (ruleName info) (map itemName items))})
-      in everywhere (mkT clauseT) grammar
+    let clauseItemT clauseItem = case clauseItem of
+                                   (StrLit str info) -> StrLit str (LexerInfo ("'" ++ str ++ "'")) -- TODO: ' in the str
+                                   _ -> clauseItem
+        clauseT (items, info) = (items, info{clauseName = "Node__" ++ (foldr (++) (ruleName info) (map itemName items))})
+      in everywhere (mkT $ clauseT `extT` clauseItemT) grammar
 
 emitLoopsInGrammar :: Grammar -> Grammar
 emitLoopsInGrammar grammar =
@@ -143,7 +132,7 @@ generateQQFile fileName grammar =
 addStartRule :: Grammar -> Grammar
 addStartRule (Grammar name rules) = Grammar name ((makeStartRule rules) : rules)
     where makeStartRule rules = Rule (Id "start") (map makeRuleAlt rules) True
-          makeRuleAlt (Rule (Id name) _ _) = (([ marker, (Id name), marker ]), (GInfo ""))
+          makeRuleAlt (Rule (Id name) _ _) = (([ marker, (Id name), marker ]), (GInfo "" "start"))
                                              where marker = StrLit ("$" ++ name) (LexerInfo "")
 
 --------------------- parser specification generation -----------------
@@ -179,7 +168,7 @@ generateParserRuleAlt items = glueD " " (map (\item -> case item of
                                              items)
 
 generateParserRuleAltConstructor :: [ClauseItem] -> GInfo -> String
-generateParserRuleAltConstructor items (GInfo name) = name ++ glueD " " (enumerateItems 1 items [])
+generateParserRuleAltConstructor items (GInfo name _) = name ++ glueD " " (enumerateItems 1 items [])
     where enumerateItems count (x:xs) accum = case x of
                                                 Id _ -> enumerateItems (count + 1) xs (("$" ++ (show count)) : accum)
                                                 _    -> enumerateItems (count + 1) xs accum

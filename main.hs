@@ -12,8 +12,9 @@ main = bracket (openFile "grammar.pg" ReadMode) (hClose)
           let grammar = emitLoopsInGrammar . annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
           generateASTFile "AST" grammar
           generateQQFile "Quote" grammar
---          putStrLn $ show grammar)
-          putStrLn $ (generateParserSpec grammar))
+--          putStrLn $ show grammar
+          putStrLn $ (generateParserSpec grammar)
+    )
 
 {--run :: String -> Either String [Token]
 run content = runAlex content $ loop []

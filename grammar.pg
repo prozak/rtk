@@ -1,8 +1,11 @@
 grammar "grammar";
 
-Grammar :== "grammar" str ;
-Rules :== | Rule ";" Rules ;
+Grammar :== "grammar" str ";" Rules ;
+
+Rules :== Rule * ";" ;
+
 Rule :== id ":=" Clauses | id ":==" Clauses ;
+
 Clauses :== Clause * "|" ;
 
 Clause := ClauseItem * ;

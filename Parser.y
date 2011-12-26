@@ -65,5 +65,5 @@ data ClauseItem = Id { getIdStr :: String } | StrLit String LexerInfo | RegExpLi
 
 data GInfo = GInfo { clauseName :: String, ruleName :: String } deriving (Eq, Show, Typeable, Data)
 
-data LexerInfo = LexerInfo { lexName :: String } deriving (Eq, Show)
+data LexerInfo = LexerInfo { lexName :: String } deriving (Eq, Show, Typeable, Data)
 }
