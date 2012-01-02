@@ -4,6 +4,7 @@ module Parser where
 import qualified Lexer as L (Token(..), alexScanTokens)
 import Data.Generics
 import Data.Data
+import qualified Data.Map as Map
 
 }
 
@@ -41,7 +42,7 @@ ClausesEnd : {[]} | '|' Clause ClausesEnd { $2 : $3 }
 Clause : {([], GInfo "" "")} | ClauseItem Clause {($1 : (fst $2), GInfo "" "")}
 
 ClauseItem : id { Id $1 } | rexplit {RegExpLit $1} | '.' { Dot } 
-           | '*' { Star } | '+' { Plus } | str { StrLit $1 (LexerInfo "") } 
+           | '*' { Star } | '+' { Plus } | str { StrLit $1 } 
 {
 
 parseError :: [L.Token] -> a
@@ -56,7 +57,7 @@ data Grammar = Grammar { getGrammarName :: String, getRules :: [Rule] }
 data Rule = Rule { getRuleName :: ClauseItem, getClauses :: [([ClauseItem],GInfo)], buildNode :: Bool }
               deriving (Eq, Show, Typeable, Data)
 
-data ClauseItem = Id { getIdStr :: String } | StrLit String LexerInfo | RegExpLit String | Dot 
+data ClauseItem = Id { getIdStr :: String } | StrLit String | RegExpLit String | Dot 
                    | Star
                    | Plus
                    | LoopStar ClauseItem (Maybe ClauseItem)
@@ -64,6 +65,6 @@ data ClauseItem = Id { getIdStr :: String } | StrLit String LexerInfo | RegExpLi
                    deriving (Eq, Show, Typeable, Data)
 
 data GInfo = GInfo { clauseName :: String, ruleName :: String } deriving (Eq, Show, Typeable, Data)
+mkGInfo = GInfo "" ""
 
-data LexerInfo = LexerInfo { lexName :: String } deriving (Eq, Show)
 }
