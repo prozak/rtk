@@ -1,7 +1,9 @@
-import IO(hGetContents, bracket, openFile, IOMode(ReadMode), hClose)
+import System.IO(hGetContents, openFile, IOMode(ReadMode), hClose)
+import Control.Exception(bracket)
 import Lexer
 import Parser
 import Grammar
+import Text.Show.Pretty
 
 import Language.Haskell.TH
 
@@ -9,12 +11,13 @@ main = bracket (openFile "grammar.pg" ReadMode) (hClose)
     (\hndl ->
        do
           content <- hGetContents hndl
+          let grammar = parse . alexScanTokens $ content
 --          let grammar = emitLoopsInGrammar . annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
-          let grammar = annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
-          generateASTFile "AST" grammar
-          generateQQFile "Quote" grammar
---          putStrLn $ show grammar)
-          putStrLn $ (generateParserSpec grammar))
+--          let grammar = annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
+--          generateASTFile "AST" grammar
+--          generateQQFile "Quote" grammar
+          putStrLn $ ppShow grammar)
+--          putStrLn $ (generateParserSpec grammar))
 
 {--run :: String -> Either String [Token]
 run content = runAlex content $ loop []

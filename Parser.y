@@ -15,56 +15,86 @@ import qualified Data.Map as Map
 %token
 
 grammar { L.Grammar }
-':='    { L.Eq }
-':=='    { L.Eqn }
+'='    { L.Eq }
 '|'     { L.OrClause }
+':'     { L.Colon }
 ';'     { L.RlEnd }
 '*'     { L.Star }
 '+'     { L.Plus }
+'?'     { L.Question }
+')'     { L.RParen }
+'('     { L.LParen }
 '.'     { L.Dot }
+'!'     { L.Excl }
+'~'     { L.Tilde }
+','     { L.Comma }
 id  { L.Id $$ }
 str       { L.StrLit $$ }
 rexplit       { L.RegExpLit $$ }
 
 %%
 
-Grammar : grammar str ';' Rules { Grammar $2 $4 }
+Grammar : grammar str ';' Rules { Grammar $2 (reverse $4) }
 
-Rules : {[]} | Rule ';' Rules { $1 : $3 }
+Rules : Rule                    { [$1] } 
+      | Rules Rule              { $2 : $1 }
 
-Rule : id ':=' Clauses { Rule (Id $1) (map (addRuleName $1) $3) False }
-     | id ':==' Clauses { Rule (Id $1) (map (addRuleName $1) $3) True }
+Rule : id '=' ClauseAlt ';'         { Rule $1 Nothing $1 $3 }
+     | id ':' id '=' ClauseAlt ';'  { Rule $1 Nothing $3 $5 }
+     | id '.' id ':' id '=' ClauseAlt ';'  { Rule $1 (Just $3) $5 $7 }
+     | '.' id ':' id '=' ClauseAlt ';'  { Rule "String" (Just $2) $4 $6 }
 
-Clauses : Clause ClausesEnd {$1 : $2}
+ClauseAlt : ClauseAlt1              { Alt (reverse $1) }
 
-ClausesEnd : {[]} | '|' Clause ClausesEnd { $2 : $3 }
+ClauseAlt1 : ClauseAlt1 '|' ClauseSeq   { $3 : $1 } 
+           | ClauseSeq                  { [$1] }
 
-Clause : {([], GInfo "" "")} | ClauseItem Clause {($1 : (fst $2), GInfo "" "")}
+ClauseSeq : ClauseSeq1              { Seq (reverse $1) }
 
-ClauseItem : id { Id $1 } | rexplit {RegExpLit $1} | '.' { Dot } 
-           | '*' { Star } | '+' { Plus } | str { StrLit $1 } 
+ClauseSeq1 : ClauseSeq1 ClausePre    { $2 : $1 } 
+           | {- empty -}             { [] }
+
+ClausePre : '(' ClauseAlt ')'         { $2 }
+           | ',' ClausePost           { Lifted $2 }
+           | '!' ClausePost           { Ignore $2 }
+           | ClausePost               { $1 }
+
+ClausePost : ClauseItem '*' OptDelim  { Star $1 $3 }
+           | ClauseItem '+' OptDelim  { Plus $1 $3 }
+           | ClauseItem '?'           { Opt $1 }
+           | ClauseItem               { $1 }
+
+
+ClauseItem : id                       { Id $1 } 
+           | str                      { StrLit $1 }
+           | '.'                      { Dot }
+           | rexplit                  { RegExpLit $1 }
+
+OptDelim : {- empty -}          { Nothing }
+         | '~' ClauseItem       { Just $2 }
+
 {
 
 parseError :: [L.Token] -> a
 parseError rest = error $ "Parse error" ++ (show rest)
 
-addRuleName :: String -> ([ClauseItem], GInfo) -> ([ClauseItem], GInfo)
-addRuleName ruleName (clauses, info) = (clauses, info{ruleName = ruleName})
-
 data Grammar = Grammar { getGrammarName :: String, getRules :: [Rule] }
                  deriving (Eq, Show, Typeable, Data)
 
-data Rule = Rule { getRuleName :: ClauseItem, getClauses :: [([ClauseItem],GInfo)], buildNode :: Bool }
+data Rule = Rule { getDataTypeName :: String, getDataFunc :: Maybe String, getRuleName :: String, getClauses :: Clause }
               deriving (Eq, Show, Typeable, Data)
 
-data ClauseItem = Id { getIdStr :: String } | StrLit String | RegExpLit String | Dot 
-                   | Star
-                   | Plus
-                   | LoopStar ClauseItem (Maybe ClauseItem)
-                   | LoopPlus ClauseItem (Maybe ClauseItem)
-                   deriving (Eq, Show, Typeable, Data)
-
-data GInfo = GInfo { clauseName :: String, ruleName :: String } deriving (Eq, Show, Typeable, Data)
-mkGInfo = GInfo "" ""
+data Clause = Id { getIdStr :: String }
+            | StrLit String
+            | Dot
+            | RegExpLit String
+            | Star Clause (Maybe Clause)
+            | Plus Clause (Maybe Clause)
+            | Alt [Clause]
+            | Seq [Clause]
+            | Opt Clause
+            | Lifted Clause
+            | Ignore Clause
+              deriving (Eq, Show, Typeable, Data)
 
 }

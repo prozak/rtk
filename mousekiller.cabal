@@ -6,13 +6,15 @@ License-file:        LICENSE
 Author:              Nickolay Lysenko
 Maintainer:          nickolay.lysenko@gmail.com
 Build-Type:          Simple
-Cabal-Version:       >=1.2
+Cabal-Version:       >=1.6
 
 Library
   Exposed-Modules: Lexer Parser Grammar
+  Extensions:          DeriveDataTypeable
 
 Executable mousekiller
   Main-is:           main.hs
-  Build-Depends:     base >= 4.0, array, syb, template-haskell, haskell98, containers, mtl, pretty
+  Build-Depends:     base >= 4.0, array, syb, template-haskell, containers, mtl, pretty, pretty-show
   Other-Modules:     Lexer Parser Grammar
---  ghc-options:       -rtsopts -debug
+  Extensions:          DeriveDataTypeable
+--  ghc-options:       -XDeriveDataTypeable

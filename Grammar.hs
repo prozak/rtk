@@ -8,10 +8,11 @@ import Data.Char
 import Data.Generics
 import Data.Data
 import qualified Data.Map as Map
-import IO(hGetContents, bracket, openFile, IOMode(WriteMode), hClose)
+import System.IO(hGetContents, openFile, IOMode(WriteMode), hClose)
+import Control.Exception(bracket)
 import Debug.Trace
 import Text.Printf
-
+{-
 generateConstructor :: String -> [ClauseItem] -> Q Con
 generateConstructor cname items = normalC (mkName cname) elements
     where elements = map (\item -> (strictType notStrict (conT (mkName (itemName item)))))
@@ -62,7 +63,7 @@ annotateGrammarWithNames grammar =
 emitLoopsInGrammar :: Grammar -> Grammar
 emitLoopsInGrammar grammar =
     let clauseT self@(items, info) =
-                                     if (isUpper $ head $ ruleName info)
+                                     if (not $ null $ ruleName info) && (isUpper $ head $ ruleName info)
                                        then
                                          case items of
                                            [ci1, op, ci2] ->
@@ -185,3 +186,22 @@ generateParserSpec grammar = "%token\n" ++
                                                    Id _ -> enumerateItems (count + 1) xs (("$" ++ (show count)) : accum)
                                                    _    -> enumerateItems (count + 1) xs accum
                                enumerateItems _ [] accum = reverse accum
+-}
+{-
+type DataTypeName = String
+type ConstructorName = String
+data RuleASTNode = RuleASTNode DataTypeName [(ConstructorName, NodeType)]
+data NodeType
+
+data RuleParser = RuleParser  [ParseInfo]
+-}
+
+type DataTypeName = String
+type ConstructorName = String
+
+data ASTNode = ASTNode DataTypeName [ASTAlternative]
+data ASTAlternative = ASTAlternative ConstructorName [NodeType]
+data NodeType = NTList NodeType
+              | NTNamedType String
+
+--data RuleParser = RuleParser  [ParseInfo]

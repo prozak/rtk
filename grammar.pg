@@ -1,13 +1,16 @@
-grammar "grammar";
+grammar 'grammar';
 
-Grammar :== "grammar" str ;
-Rules :== | Rule ";" Rules ;
-Rule :== id ":=" Clauses | id ":==" Clauses ;
-Clauses :== Clause * "|" ;
+Grammar = 'grammar' str Rules;
 
-Clause := ClauseItem * ;
+Rules = Rule *;
+Rule = id '=' Clauses ';';
+Clauses = Clause *~ '|' ;
 
-ClauseItem :== id | str ;
-id := [a-zA..Z][A..Za..z0..9_]* ;
-str := ["] .* ["] ;
+Clause = ClauseItem * ;
+
+ClauseItem = id | str ;
+id = [a-zA-Z][A-Za-z0-9_]* ;
+String: str = ["] .* ["];
+Ignore: ws = [ \t\n]*;
+
 

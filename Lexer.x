@@ -7,38 +7,55 @@ module Lexer where
 $digit = 0-9
 $alpha = [a-zA-Z]
 $alphaDigit = [a-zA-Z0-9]
-$quote     = "
-$notq = [^"]
+$dquote     = "
+$squote     = '
+$notsq = [^']
+$notdq = [^"]
+$litsym = [^"]
 
 tokens:-
 
     $white+             ;
     "#".*               ;
     grammar             {\_ -> Grammar }
-    ":=="               {\_ -> Eqn }
-    ":="                {\_ -> Eq }
+    "="                {\_ -> Eq }
     ";"                 {\_ -> RlEnd }
+    ":"                 {\_ -> Colon }
     "|"                 {\_ -> OrClause }
     "."                 {\_ -> Dot }
-    "[" [^\]]* "]"      {\s -> RegExpLit s }
-    $quote $notq* $quote    {\s -> StrLit $ reverse $ tail $ reverse $ tail s }
+    "?"                 {\_ ->  Question }
+    ","                 {\_ -> Comma }
+    "!"                 {\_ ->  Excl }
+    "~"                 {\_ ->  Tilde }
+    "$"                 {\_ ->  Dollar }
+    ")"                 {\_ ->  RParen }
+    "("                 {\_ ->  LParen }
+    $squote $notsq* $squote   {\s ->  StrLit $ (reverse.tail.reverse.tail) s }
+    "[" [^\]]* "]"      {\s -> RegExpLit $ (reverse.tail.reverse.tail) s }
     "*"                 {\s -> Star }
     "+"                 {\s -> Plus }
     $alpha $alphaDigit* {\s -> Id s}
 
 {
 
-data Token = 
-    Grammar |
-    Eqn |
-    Eq |
-    RlEnd |
-    OrClause |
-    Dot |
-    RegExpLit String |
-    StrLit String |
-    Id String |
-    Star | Plus
+data Token = Grammar 
+    | Eq 
+    | RlEnd 
+    | OrClause 
+    | Dot 
+    | RegExpLit String 
+    | StrLit String 
+    | Id String 
+    | Star 
+    | Plus
+    | Excl
+    | Comma
+    | RParen
+    | LParen
+    | Dollar
+    | Question
+    | Colon
+    | Tilde
       deriving (Eq, Show)
 
 }
