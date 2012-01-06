@@ -5,6 +5,7 @@ import Parser
 import Grammar
 import Text.Show.Pretty
 import StringLiterals
+import Normalize
 
 import Language.Haskell.TH
 
@@ -17,7 +18,7 @@ main = bracket (openFile "grammar.pg" ReadMode) (hClose)
 --          let grammar = annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
 --          generateASTFile "AST" grammar
 --          generateQQFile "Quote" grammar
-          let grammar1 = normalizeStringLiterals $ addDefaults grammar
+          let grammar1 = normalizeTopLevelClauses $ normalizeStringLiterals $ addDefaults grammar
           putStrLn $ ppShow grammar1)
 --          putStrLn $ (generateParserSpec grammar))
 

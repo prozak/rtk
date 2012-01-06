@@ -17,4 +17,4 @@ Executable mousekiller
   Build-Depends:     base >= 4.0, array, syb, template-haskell, containers, mtl, pretty, pretty-show
   Other-Modules:     Lexer Parser Grammar
   Extensions:          DeriveDataTypeable
---  ghc-options:       -XDeriveDataTypeable
+  ghc-options:       -rtsopts
