@@ -4,6 +4,7 @@ module Parser where
 import qualified Lexer as L (Token(..), alexScanTokens)
 import Data.Generics
 import Data.Data
+import Data.Char
 import qualified Data.Map as Map
 
 }
@@ -39,10 +40,10 @@ Grammar : grammar str ';' Rules { Grammar $2 (reverse $4) }
 Rules : Rule                    { [$1] } 
       | Rules Rule              { $2 : $1 }
 
-Rule : id '=' ClauseAlt ';'         { Rule $1 Nothing $1 $3 }
-     | id ':' id '=' ClauseAlt ';'  { Rule $1 Nothing $3 $5 }
-     | id '.' id ':' id '=' ClauseAlt ';'  { Rule $1 (Just $3) $5 $7 }
-     | '.' id ':' id '=' ClauseAlt ';'  { Rule "String" (Just $2) $4 $6 }
+Rule : id '=' ClauseAlt ';'         { Rule Nothing Nothing $1 $3 }
+     | id ':' id '=' ClauseAlt ';'  { Rule (Just $1) Nothing $3 $5 }
+     | id '.' id ':' id '=' ClauseAlt ';'  { Rule (Just $1) (Just $3) $5 $7 }
+     | '.' id ':' id '=' ClauseAlt ';'  { Rule Nothing (Just $2) $4 $6 }
 
 ClauseAlt : ClauseAlt1              { Alt (reverse $1) }
 
@@ -78,11 +79,11 @@ OptDelim : {- empty -}          { Nothing }
 parseError :: [L.Token] -> a
 parseError rest = error $ "Parse error" ++ (show rest)
 
-data Grammar = Grammar { getGrammarName :: String, getRules :: [Rule] }
+data Grammar a = Grammar { getGrammarName :: String, getRules :: [Rule a] }
                  deriving (Eq, Show, Typeable, Data)
 
-data Rule = Rule { getDataTypeName :: String, getDataFunc :: Maybe String, getRuleName :: String, getClauses :: Clause }
-              deriving (Eq, Show, Typeable, Data)
+data Rule a = Rule { getDataTypeName :: a, getDataFunc :: a, getRuleName :: String, getClause :: Clause }
+                deriving (Eq, Show, Typeable, Data)
 
 data Clause = Id { getIdStr :: String }
             | StrLit String
@@ -96,5 +97,13 @@ data Clause = Id { getIdStr :: String }
             | Lifted Clause
             | Ignore Clause
               deriving (Eq, Show, Typeable, Data)
+
+type InitialGrammar = Grammar (Maybe String) 
+type NormalGrammar = Grammar String
+type NormalRule = Rule String
+
+isLexicalRule :: String -> Bool
+isLexicalRule [] = False
+isLexicalRule (c:_) = isLower c
 
 }

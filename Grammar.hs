@@ -3,7 +3,7 @@
 module Grammar where
 
 import Parser
-import Language.Haskell.TH
+import Language.Haskell.TH hiding (Clause)
 import Data.Char
 import Data.Generics
 import Data.Data
@@ -12,6 +12,9 @@ import System.IO(hGetContents, openFile, IOMode(WriteMode), hClose)
 import Control.Exception(bracket)
 import Debug.Trace
 import Text.Printf
+
+import Control.Monad.State.Strict hiding (lift)
+
 {-
 generateConstructor :: String -> [ClauseItem] -> Q Con
 generateConstructor cname items = normalC (mkName cname) elements
@@ -205,3 +208,25 @@ data NodeType = NTList NodeType
               | NTNamedType String
 
 --data RuleParser = RuleParser  [ParseInfo]
+
+addDefaults :: InitialGrammar -> NormalGrammar
+addDefaults (Grammar str rules) = Grammar str $ map addInRule rules
+    where addInRule (Rule Nothing    Nothing     rname clause) | isLexicalRule rname = Rule "String" "id" rname clause
+                                                               | otherwise           = Rule rname "" rname clause
+          addInRule (Rule Nothing    (Just func) rname clause) | isLexicalRule rname = Rule "String" func rname clause
+                                                               | otherwise           = error $ "Data transformation function specified for non-lexical rule " ++ rname ++ " : " ++ func
+          addInRule (Rule (Just dtn) Nothing     rname clause) | isLexicalRule rname = Rule dtn "read" rname clause
+                                                               | otherwise           = Rule dtn "" rname clause
+          addInRule (Rule (Just dtn) (Just func) rname clause) | isLexicalRule rname = Rule dtn func rname clause
+                                                               | otherwise           = error $ "Data transformation function specified for non-lexical rule " ++ rname ++ " : " ++ func
+{-
+type StringLiteralsMap = Map.Map String 
+
+makeStringLiteralsMap :: NormalGrammar -> StringLiteralsMap
+makeStringLiteralsMap g = Map.fromList (everything (++) ([] `mkQ` f) $ filter (not.isLexicalRule.getRuleName) $ getRules g)
+    where f (StrLit str) = [(str, TokenInfo parser_id ast_id)]
+            where ast_id = "Tk_" ++ translateStrLiteral str
+                  parser_id = "'" ++ str ++ "'"
+          f _ = []
+-}
+

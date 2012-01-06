@@ -1,0 +1,74 @@
+module StringLiterals (normalizeStringLiterals)
+    where
+
+import Parser
+import Data.Char
+import Data.Generics
+import Data.Data
+import qualified Data.Map as Map
+
+import Control.Monad.State.Strict hiding (lift)
+
+translateStrLiteral :: String -> String
+translateStrLiteral str = concat (map (\chr -> case chr of
+                                                 '+' -> "_plus_"
+                                                 '-' -> "_minus_"
+                                                 '.' -> "_dot_"
+                                                 '[' -> "_sq_bkt_l_"
+                                                 ']' -> "_sq_bkt_r_"
+                                                 ';' -> "_semi_"
+                                                 ':' -> "_colon_"
+                                                 '=' -> "_eql_"
+                                                 '*' -> "_star_"
+                                                 '|' -> "_pipe_"
+                                                 '$' -> "_dollar_"
+                                                 _   -> [chr])
+                                  str)
+
+type StringLiteralsMap = Map.Map String String
+
+data StringLiteralsNormalizationState = StringLiteralsNormalizationState {
+                                                                          slnMap :: StringLiteralsMap,
+                                                                          nameCounter :: Int
+                                                                         }
+type StringLiteralsNormalization a = State StringLiteralsNormalizationState a
+
+newTokName :: String -> StringLiteralsNormalization String
+newTokName str = do
+  n <- gets nameCounter
+  modify $ (\ s -> s{nameCounter = n + 1})
+  return $ "tok_" ++ (translateStrLiteral str) ++ "_" ++ (show n)
+
+addStrLit :: String -> StringLiteralsNormalization String
+addStrLit str = do
+  m <- gets slnMap
+  case Map.lookup str m of
+    Nothing -> do
+      tokName <- newTokName str
+      modify $ \s -> s{slnMap = Map.insert str tokName m}
+      return tokName
+    Just tokName -> return tokName
+
+normalizeClause :: Clause -> StringLiteralsNormalization Clause
+normalizeClause (StrLit str) = do
+  tokName <- addStrLit str
+  return $ Ignore (Id tokName)
+normalizeClause c = return c
+
+normalizeRule :: NormalRule -> StringLiteralsNormalization NormalRule
+normalizeRule r@Rule{getRuleName=rn, getClause=cl} | not (isLexicalRule rn) = do
+  newCl <- everywhereM (mkM normalizeClause) cl
+  return r{getClause = newCl}
+normalizeRule r = return r
+
+doSLNM :: NormalGrammar -> StringLiteralsNormalization NormalGrammar
+doSLNM grammar = do
+  newGr <- everywhereM (mkM normalizeRule) grammar
+  return newGr
+
+normalizeStringLiterals :: NormalGrammar -> NormalGrammar
+normalizeStringLiterals grammar = let (Grammar nm rules, StringLiteralsNormalizationState m _) = runState (doSLNM grammar) (StringLiteralsNormalizationState Map.empty 0)
+                                      slRules sm = map (\ (k, v) -> Rule "String" "id" v (StrLit k)) $ Map.toList sm
+                                  in Grammar nm (rules ++ slRules m)
+
+
