@@ -1,0 +1,13 @@
+grammar 'T1';
+ 
+A = 'a';
+B = 'a' | 'b';
+C = 'a' *;
+D = (A B) C;
+E = (A B) | C;
+F1 = A +;
+F2 = A *;
+F3 = A * ~',';
+F4 = A ?;
+F5 = A + ~',';
+G = (A (B C (D E) A));
