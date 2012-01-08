@@ -2,15 +2,13 @@ module GenY (genY)
     where
 
 import Parser
-import Text.PrettyPrint.HughesPJ
+import Text.PrettyPrint
 import qualified Data.Map as Map
-import Text.Printf
-
-rulesMap :: NormalGrammar -> Map.Map String NormalRule
-rulesMap Grammar{ getRules = rules } = Map.fromList $ map (\ r -> (getRuleName r, r)) rules
+import GenAST
+import Grammar
 
 genY :: NormalGrammar -> String
-genY (Grammar name rules) = render $ vcat [
+genY g@(Grammar name rules) = render $ vcat [
                                              text header,
                                              nl,
                                              text "%name parse" <> text name,
@@ -22,10 +20,12 @@ genY (Grammar name rules) = render $ vcat [
                                              nl,
                                              text "%%",
                                              nl,
-                                             rulesDoc
-                                          ]
-    where normal_rules = filter (not.isLexicalRule.getRuleName) rules
-          lex_rules = filter (isLexicalRule.getRuleName) rules
+                                             rulesDoc,
+                                             nl,
+                                             text footer
+                                            ]
+    where normal_rules = normalRules g
+          lex_rules = lexicalRules g
           rulesDoc = vcat (map genRule normal_rules)
           lexDoc = vcat (map genToken lex_rules)
           nl = text ""
@@ -33,6 +33,8 @@ genY (Grammar name rules) = render $ vcat [
                    \module " ++ name ++ "Parser\n\
                    \import qualified Lexer as L (Token(..), alexScanTokens)\n\
                    \}"
+          ast = genAST g
+          footer = "{\n" ++ ast ++ "\n}"
 
 genToken :: NormalRule -> Doc
 genToken Rule{ getRuleName = name } = combineAlt (text name) (text "L.Tk__" <> text name)
@@ -63,8 +65,8 @@ genClause rn (Seq constructor [(Plus cl (Just cl1))]) = joinAlts [base, step]
 
 genClause _ (Seq constructor [(Opt cl)]) = joinAlts [present, not_present]
     where present = combineAlt (genSimpleClause cl)
-                               (text "Just" <+> parens constructor_call)
-          constructor_call = hsep $ (text constructor) : enumClauses [cl]
+                               (text "Just" <+> constructor_call)
+          constructor_call = hsep $ enumClauses [cl]
           not_present = combineAlt emptyAlt (text "Nothing")
 
 genClause _ (Seq constructor clauses) = combineAlt rule production

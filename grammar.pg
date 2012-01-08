@@ -15,7 +15,7 @@ Ignore: ws = [ \t\n]*;
 
 # grammar 'T1';
 # 
-# A = 'a';
+A = 'a';
 # B = 'a' | 'b';
 # C = 'a' *;
 # D = (A B) C;
@@ -23,6 +23,6 @@ Ignore: ws = [ \t\n]*;
 # F1 = A +;
 # F2 = A *;
 # F3 = A * ~',';
-# F4 = A ?;
+F4 = A ?;
 # F5 = A + ~',';
 # G = (A (B C (D E) A));

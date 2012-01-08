@@ -129,85 +129,14 @@ generateQQFile fileName grammar =
     let imports = generateHaskellFileImports ["Data.Generics", "Data.Data", "Language.Haskell.TH", "Language.Haskell.TH.Quote"]
     writeHaskellFile fileName $ imports ++ quoteFuns ++ "\n"
     return ()
-
---------------------- start rule generation ---------------------------
-
+-}
+{-
 addStartRule :: Grammar -> Grammar
 addStartRule (Grammar name rules) = Grammar name ((makeStartRule rules) : rules)
     where makeStartRule rules = Rule (Id "start") (map makeRuleAlt rules) True
           makeRuleAlt (Rule (Id name) _ _) = (([ marker, (Id name), marker ]), mkGInfo)
                                              where marker = StrLit ("$" ++ name)
-
---------------------- parser specification generation -----------------
-
-glue :: [String] -> String
-glue strs = foldl (++) "" strs
-
-glueD :: String -> [String] -> String
-glueD delimiter strs = foldl (\x accum -> x ++ delimiter ++ accum) "" strs
-
-glueDL :: String -> String -> [String] -> String
-glueDL delimiter last_delimiter strs = case strs of
-                                            []     -> last_delimiter
-                                            (s:[]) -> s ++ last_delimiter
-                                            (s:xs) -> s ++ delimiter ++ (glueDL delimiter last_delimiter xs)
-
-
-data TokenInfo = TokenInfo ParserId LexerASTId
-type ParserId = String
-type LexerASTId = String
-
-type StringLiteralsMap = Map.Map String TokenInfo
-
-makeStringLiteralsMap :: Grammar -> StringLiteralsMap
-makeStringLiteralsMap g = Map.fromList (everything (++) ([] `mkQ` f) g)
-    where f (StrLit str) = [(str, TokenInfo parser_id ast_id)]
-            where ast_id = "Tk_" ++ translateStrLiteral str
-                  parser_id = "'" ++ str ++ "'"
-          f _ = []
-
-generateParserSpec grammar = "%token\n" ++
-                             (glueD "\n" tokens) ++
-                             "\n\n%%\n" ++
-                             (glueD "\n" rules)
-    where literals_map = makeStringLiteralsMap grammar
-          tokens = map (\(TokenInfo parser_id ast_id) -> printf "%-20s { L.%s }" parser_id ast_id)
-                       (Map.elems literals_map)
-          rules = map genRule (getRules grammar)
-          genRule (Rule (Id name) clauses _) = name ++ " :\n" ++ (glueDL " |\n" ";\n" (map genClause clauses))
-          genClause (items, info) = printf "    %-40s { %s }" (genParserAlt items) (genConstructor items info)
-          genParserAlt items = glueD " " (map (\item -> case item of
-                                                            Id name -> name
-                                                            StrLit str -> case Map.lookup str literals_map of
-                                                                            Just (TokenInfo parser_id _) -> parser_id
-                                                                            Nothing -> error "that's the shit"
-                                                            _ -> "")
-                                              items)
-          genConstructor items (GInfo name _) = name ++ glueD " " (enumerateItems 1 items [])
-                         where enumerateItems count (x:xs) accum =
-                                              case x of
-                                                   Id _ -> enumerateItems (count + 1) xs (("$" ++ (show count)) : accum)
-                                                   _    -> enumerateItems (count + 1) xs accum
-                               enumerateItems _ [] accum = reverse accum
 -}
-{-
-type DataTypeName = String
-type ConstructorName = String
-data RuleASTNode = RuleASTNode DataTypeName [(ConstructorName, NodeType)]
-data NodeType
-
-data RuleParser = RuleParser  [ParseInfo]
--}
-
---type DataTypeName = String
---type ConstructorName = String
---
---data ASTNode = ASTNode DataTypeName [ASTAlternative]
---data ASTAlternative = ASTAlternative ConstructorName [NodeType]
---data NodeType = NTList NodeType
---              | NTNamedType String
-
---data RuleParser = RuleParser  [ParseInfo]
 
 addDefaults :: InitialGrammar -> NormalGrammar
 addDefaults (Grammar str rules) = Grammar str $ map addInRule rules
@@ -219,14 +148,13 @@ addDefaults (Grammar str rules) = Grammar str $ map addInRule rules
                                                                | otherwise           = Rule dtn "" rname clause
           addInRule (Rule (Just dtn) (Just func) rname clause) | isLexicalRule rname = Rule dtn func rname clause
                                                                | otherwise           = error $ "Data transformation function specified for non-lexical rule " ++ rname ++ " : " ++ func
-{-
-type StringLiteralsMap = Map.Map String 
 
-makeStringLiteralsMap :: NormalGrammar -> StringLiteralsMap
-makeStringLiteralsMap g = Map.fromList (everything (++) ([] `mkQ` f) $ filter (not.isLexicalRule.getRuleName) $ getRules g)
-    where f (StrLit str) = [(str, TokenInfo parser_id ast_id)]
-            where ast_id = "Tk_" ++ translateStrLiteral str
-                  parser_id = "'" ++ str ++ "'"
-          f _ = []
--}
+type RulesMap = Map.Map String NormalRule
+rulesMap :: NormalGrammar -> RulesMap
+rulesMap Grammar{ getRules = rules } = Map.fromList $ map (\ r -> (getRuleName r, r)) rules
 
+lexicalRules :: NormalGrammar -> [NormalRule]
+lexicalRules Grammar{ getRules = rules } = filter (isLexicalRule.getRuleName) rules
+
+normalRules :: NormalGrammar -> [NormalRule]
+normalRules Grammar{ getRules = rules } = filter (not.isLexicalRule.getRuleName) rules
