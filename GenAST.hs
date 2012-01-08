@@ -13,9 +13,9 @@ genAST grammar = render $ vcat (map (genRule rules_map) (normalRules grammar))
 genRule :: RulesMap -> NormalRule -> Doc
 genRule rmap Rule { getDataTypeName = type_name, getClause = clause } =
     case clause of
-         (Seq _ s@[(Star _ _)]) -> genType rmap type_name s
-         (Seq _ s@[(Plus _ _)]) -> genType rmap type_name s
-         (Seq _ s@[(Opt _)])    -> genType rmap type_name s
+         s@(Star _ _) -> genType rmap type_name [s]
+         s@(Plus _ _) -> genType rmap type_name [s]
+         s@(Opt _)    -> genType rmap type_name [s]
          s@(Seq _ _)            -> genData rmap type_name [s]
          (Alt sequences)        -> genData rmap type_name sequences
 
@@ -27,6 +27,7 @@ genData rmap name sequences = text "data" <+> text name <+> text "=" <+> joinAlt
 
 genConstructor :: RulesMap -> Clause -> Doc
 genConstructor rmap (Seq constructor clauses) = text constructor <+> (hsep $ map (genItem rmap) clauses)
+genConstructor _ cl = error $ "Can't generate constructor for " ++ (show cl)
 
 genItem :: RulesMap -> Clause -> Doc
 

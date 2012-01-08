@@ -11,9 +11,9 @@ import qualified Data.Map as Map
 import Control.Monad.State.Strict hiding (lift)
 
 -- In the normal form top level clause of the non-lexical rule can be the following:
--- 1. Seq simple_clause *
--- 2. Seq simple_clause +
--- 3. Seq simple_clause ?
+-- 1. simple_clause *
+-- 2. simple_clause +
+-- 3. simple_clause ?
 -- 4. Seq [simple_clause]
 -- 5. alternative of sequences of simple_clause
 -- 
@@ -94,18 +94,20 @@ checkNormalClause (Alt cs) = do
                        Alt _ -> extractClause c
                        _ -> checkNormalClause c) cs
   return $ Alt cs1
---checkNormalClause (Seq _ [c]) = do
---  c1 <- checkNormalClause c
---  return c1
+checkNormalClause (Seq _ [c]) = do
+  c1 <- checkNormalClause c
+  return c1
 checkNormalClause (Seq n cs) = do
   cs1 <- mapM checkSimpleClause cs
   return $ Seq n cs1
 checkNormalClause (Lifted c) = do
   c1 <- checkSimpleClause c
-  return $ Lifted c1
+  return $ Seq "" $ [Lifted c1]
 checkNormalClause (Ignore c) = do
-  c1 <- checkNormalClause c
-  return $ Ignore c1
+  c1 <- checkSimpleClause c
+  return $ Seq "" $ [Ignore c1]
+checkNormalClause id@(Id _) = do
+  return $ Seq "" $ [id]
 checkNormalClause c = checkSimpleClause c
 
 normalizeRule :: NormalRule -> Normalization NormalRule

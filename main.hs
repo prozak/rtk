@@ -20,8 +20,12 @@ main = bracket (openFile "grammar.pg" ReadMode) (hClose)
 --          let grammar = annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
 --          generateASTFile "AST" grammar
 --          generateQQFile "Quote" grammar
-          let grammar1 = fillConstructorNames $ normalizeTopLevelClauses $ normalizeStringLiterals $ addDefaults grammar
---          putStrLn $ showGrammar grammar1
+          let grammar0 = normalizeStringLiterals $ addDefaults grammar
+          putStrLn "------ before noralization ------"
+          putStrLn $ showGrammar grammar0
+          let grammar1 = fillConstructorNames $ normalizeTopLevelClauses grammar0
+          putStrLn "------ after noralization ------"
+          putStrLn $ showGrammar grammar1
           putStrLn $ genY grammar1)
 --          putStrLn $ ppShow grammar1)
 --          putStrLn $ (generateParserSpec grammar))

@@ -12,10 +12,10 @@ ClauseItem = id | str ;
 id = [a-zA-Z][A-Za-z0-9_]* ;
 String: str = ["] .* ["];
 Ignore: ws = [ \t\n]*;
-
-# grammar 'T1';
 # 
-A = 'a';
+# grammar 'T1';
+#  
+# A = 'a';
 # B = 'a' | 'b';
 # C = 'a' *;
 # D = (A B) C;
@@ -23,6 +23,6 @@ A = 'a';
 # F1 = A +;
 # F2 = A *;
 # F3 = A * ~',';
-F4 = A ?;
+# F4 = A ?;
 # F5 = A + ~',';
 # G = (A (B C (D E) A));

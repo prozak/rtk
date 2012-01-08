@@ -45,25 +45,25 @@ genRule Rule{ getClause = cl, getRuleName = name } = (text name) <+> (text ":") 
 genClause :: String -> Clause -> Doc
 
 -- Ignore is not expected in the cl
-genClause rn (Seq constructor [(Star cl Nothing)]) = joinAlts [base, step]
+genClause rn (Star cl Nothing) = joinAlts [base, step]
     where base = combineAlt emptyAlt (text "[]")
           step = combineAlt ((genSimpleClause cl) <+> text rn) (text "$1 : $2")
 
-genClause rn (Seq constructor [(Star cl (Just cl1))]) = joinAlts [base, step]
+genClause rn (Star cl (Just cl1)) = joinAlts [base, step]
     where base = combineAlt emptyAlt (text "[]")
           step = combineAlt (genSimpleClause cl <+> genSimpleClause cl1 <+> text rn) (text "$1 : $3")
 
-genClause rn (Seq constructor [(Plus cl Nothing)]) = joinAlts [base, step]
+genClause rn (Plus cl Nothing) = joinAlts [base, step]
     where base = combineAlt clDoc (text "[ $1 ]")
           step = combineAlt (clDoc <+> text rn) (text "$1 : $2")
           clDoc = genSimpleClause cl
 
-genClause rn (Seq constructor [(Plus cl (Just cl1))]) = joinAlts [base, step]
+genClause rn (Plus cl (Just cl1)) = joinAlts [base, step]
     where base = combineAlt clDoc (text "[ $1 ]")
           step = combineAlt (clDoc <+> genSimpleClause cl1 <+> text rn) (text "$1 : $2")
           clDoc = genSimpleClause cl
 
-genClause _ (Seq constructor [(Opt cl)]) = joinAlts [present, not_present]
+genClause _ (Opt cl) = joinAlts [present, not_present]
     where present = combineAlt (genSimpleClause cl)
                                (text "Just" <+> constructor_call)
           constructor_call = hsep $ enumClauses [cl]
