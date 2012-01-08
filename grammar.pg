@@ -1,4 +1,4 @@
-grammar 'grammar';
+grammar 'Grammar';
 
 Grammar = 'grammar' str Rules;
 
@@ -13,7 +13,7 @@ id = [a-zA-Z][A-Za-z0-9_]* ;
 String: str = ["] .* ["];
 Ignore: ws = [ \t\n]*;
 
-# grammar 't1';
+# grammar 'T1';
 # 
 # A = 'a';
 # B = 'a' | 'b';
@@ -24,4 +24,5 @@ Ignore: ws = [ \t\n]*;
 # F2 = A *;
 # F3 = A * ~',';
 # F4 = A ?;
+# F5 = A + ~',';
 # G = (A (B C (D E) A));

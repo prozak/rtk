@@ -7,6 +7,7 @@ import Text.Show.Pretty
 import StringLiterals
 import Normalize
 import PrintGrammar
+import GenY
 
 import Language.Haskell.TH
 
@@ -20,7 +21,8 @@ main = bracket (openFile "grammar.pg" ReadMode) (hClose)
 --          generateASTFile "AST" grammar
 --          generateQQFile "Quote" grammar
           let grammar1 = fillConstructorNames $ normalizeTopLevelClauses $ normalizeStringLiterals $ addDefaults grammar
-          putStrLn $ showGrammar grammar1)
+--          putStrLn $ showGrammar grammar1
+          putStrLn $ genY grammar1)
 --          putStrLn $ ppShow grammar1)
 --          putStrLn $ (generateParserSpec grammar))
 
