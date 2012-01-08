@@ -1,4 +1,4 @@
-module Normalize(normalizeTopLevelClauses)
+module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
 import Parser
@@ -11,12 +11,16 @@ import qualified Data.Map as Map
 import Control.Monad.State.Strict hiding (lift)
 
 -- In the normal form top level clause of the non-lexical rule can be the following:
--- 1. simple_clause *
--- 2. simple_clause +
--- 3. simple_clause ?
--- 4. alternative of sequences of simple_clause
+-- 1. Seq simple_clause *
+-- 2. Seq simple_clause +
+-- 3. Seq simple_clause ?
+-- 4. Seq [simple_clause]
+-- 5. alternative of sequences of simple_clause
+-- 
 -- simple_clause is one of the following:
--- id, (Ignore simple_clause), (Lifted id)
+-- 1. id
+-- 2. Ignore simple_clause
+-- 3. Lifted id
 
 data NormalizationState = NormalizationState {
                                               newRules :: [NormalRule],
@@ -39,7 +43,9 @@ extractClause :: Clause -> Normalization Clause
 extractClause cl = do
   ruleName <- newName
   cl1 <- checkNormalClause cl
-  addRule $ Rule ruleName "" ruleName cl1
+  addRule $ case cl1 of
+                Seq _ _ -> Rule ruleName "" ruleName cl1
+                _       -> Rule ruleName "" ruleName (Seq "" [cl1])
   return (Id ruleName)
 
 isSimpleClause :: Clause -> Bool
@@ -57,7 +63,7 @@ isNormalClause (Opt c) = isSimpleClause c
 isNormalClause (Alt cs) = all (\c -> case c of 
                                        Alt _ -> False
                                        _ -> isNormalClause c) cs
-isNormalClause (Seq cs) = all isSimpleClause cs
+isNormalClause (Seq _ cs) = all isSimpleClause cs
 isNormalClause _ = False
 
 checkSimpleClause :: Clause -> Normalization Clause
@@ -88,12 +94,12 @@ checkNormalClause (Alt cs) = do
                        Alt _ -> extractClause c
                        _ -> checkNormalClause c) cs
   return $ Alt cs1
-checkNormalClause (Seq [c]) = do
-  c1 <- checkNormalClause c
-  return c1
-checkNormalClause (Seq cs) = do
+--checkNormalClause (Seq _ [c]) = do
+--  c1 <- checkNormalClause c
+--  return c1
+checkNormalClause (Seq n cs) = do
   cs1 <- mapM checkSimpleClause cs
-  return $ Seq cs1
+  return $ Seq n cs1
 checkNormalClause (Lifted c) = do
   c1 <- checkSimpleClause c
   return $ Lifted c1
@@ -117,4 +123,26 @@ normalizeTopLevelClauses :: NormalGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar = let (Grammar nm rules, NormalizationState nrs _) = runState (doNM grammar) (NormalizationState [] 0)
                                    in Grammar nm (rules ++ nrs)
 
+data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String }
+type FillName a = State FillNameState a
 
+newConstructorName :: FillName String
+newConstructorName = do
+    n <- gets nameCtr
+    b <- gets nameBase
+    modify $ (\ s -> s{nameCtr = n + 1})
+    return $ "Ctr__" ++ b ++ "__" ++  (show n)
+
+fillConstructorName :: Clause -> FillName Clause
+fillConstructorName (Seq _ l) = do
+    n <- newConstructorName
+    return $ Seq n l
+fillConstructorName cl = do
+    return cl
+
+fillConstructorNames :: NormalGrammar -> NormalGrammar
+fillConstructorNames (Grammar name rules) = Grammar name (map renameRule rules)
+    where renameRule r@Rule{ getRuleName = n, getClause = cl } | not (isLexicalRule n) = r { getClause=(doRename n cl) }
+                                                               | otherwise = r
+          doRename n cl = let (cl1, _) = runState (everywhereM (mkM fillConstructorName) cl) (FillNameState 0 n)
+                          in cl1

@@ -2,7 +2,7 @@ Name:                mousekiller
 Version:             0.10
 Description:         Generates rewrite facilities for the given grammar
 License:             GPL
-License-file:        LICENSE
+--License-file:        LICENSE
 Author:              Nickolay Lysenko
 Maintainer:          nickolay.lysenko@gmail.com
 Build-Type:          Simple

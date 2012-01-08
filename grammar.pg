@@ -13,4 +13,15 @@ id = [a-zA-Z][A-Za-z0-9_]* ;
 String: str = ["] .* ["];
 Ignore: ws = [ \t\n]*;
 
-
+# grammar 't1';
+# 
+# A = 'a';
+# B = 'a' | 'b';
+# C = 'a' *;
+# D = (A B) C;
+# E = (A B) | C;
+# F1 = A +;
+# F2 = A *;
+# F3 = A * ~',';
+# F4 = A ?;
+# G = (A (B C (D E) A));

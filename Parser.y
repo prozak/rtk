@@ -50,7 +50,7 @@ ClauseAlt : ClauseAlt1              { Alt (reverse $1) }
 ClauseAlt1 : ClauseAlt1 '|' ClauseSeq   { $3 : $1 } 
            | ClauseSeq                  { [$1] }
 
-ClauseSeq : ClauseSeq1              { Seq (reverse $1) }
+ClauseSeq : ClauseSeq1              { Seq "" (reverse $1) }
 
 ClauseSeq1 : ClauseSeq1 ClausePre    { $2 : $1 } 
            | {- empty -}             { [] }
@@ -85,6 +85,8 @@ data Grammar a = Grammar { getGrammarName :: String, getRules :: [Rule a] }
 data Rule a = Rule { getDataTypeName :: a, getDataFunc :: a, getRuleName :: String, getClause :: Clause }
                 deriving (Eq, Show, Typeable, Data)
 
+type ConstructorName = String
+
 data Clause = Id { getIdStr :: String }
             | StrLit String
             | Dot
@@ -92,7 +94,7 @@ data Clause = Id { getIdStr :: String }
             | Star Clause (Maybe Clause)
             | Plus Clause (Maybe Clause)
             | Alt [Clause]
-            | Seq [Clause]
+            | Seq ConstructorName [Clause]
             | Opt Clause
             | Lifted Clause
             | Ignore Clause

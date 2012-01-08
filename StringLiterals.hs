@@ -14,6 +14,7 @@ translateStrLiteral str = concat (map (\chr -> case chr of
                                                  '+' -> "_plus_"
                                                  '-' -> "_minus_"
                                                  '.' -> "_dot_"
+                                                 ',' -> "_coma_"
                                                  '[' -> "_sq_bkt_l_"
                                                  ']' -> "_sq_bkt_r_"
                                                  ';' -> "_semi_"

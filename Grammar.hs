@@ -199,13 +199,13 @@ data NodeType
 data RuleParser = RuleParser  [ParseInfo]
 -}
 
-type DataTypeName = String
-type ConstructorName = String
-
-data ASTNode = ASTNode DataTypeName [ASTAlternative]
-data ASTAlternative = ASTAlternative ConstructorName [NodeType]
-data NodeType = NTList NodeType
-              | NTNamedType String
+--type DataTypeName = String
+--type ConstructorName = String
+--
+--data ASTNode = ASTNode DataTypeName [ASTAlternative]
+--data ASTAlternative = ASTAlternative ConstructorName [NodeType]
+--data NodeType = NTList NodeType
+--              | NTNamedType String
 
 --data RuleParser = RuleParser  [ParseInfo]
 
