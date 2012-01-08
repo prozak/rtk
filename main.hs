@@ -1,6 +1,6 @@
-import System.IO(hGetContents, openFile, IOMode(ReadMode), hClose)
+import System.IO(readFile)
 import System.Environment(getArgs)
-import Control.Exception(bracket)
+--import Control.Exception(bracket)
 import Lexer
 import Parser
 import Grammar
@@ -18,11 +18,10 @@ getGrammarFileName = do
                 s:_ -> s
                 [] -> error $ "Usage: <file>"
 
--- TODO: failed to use bracket here, options parsing etc
+-- TODO: options parsing etc
 main = do
     file <- getGrammarFileName
-    hndl <- (openFile file ReadMode)
-    content <- hGetContents hndl
+    content <- readFile file
     let grammar = parse . alexScanTokens $ content
 --    let grammar = emitLoopsInGrammar . annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
 --    let grammar = annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
@@ -35,7 +34,6 @@ main = do
 --    putStrLn "------ after noralization ------"
 --    putStrLn $ showGrammar grammar1
     putStrLn $ genY grammar1
-    hClose hndl
 --    putStrLn $ ppShow grammar1)
 --    putStrLn $ (generateParserSpec grammar))
 
