@@ -39,9 +39,9 @@ genY g@(Grammar name rules) = render $ vcat [
 genToken :: NormalRule -> Doc
 genToken Rule{ getRuleName = name, getDataTypeName = dtn } =
     case dtn of
-        "Keyword" -> combineAlt (text name) (text "L.Tk__" <> text name)
+        "Keyword" -> combineAlt (text name) (text "L." <> text (tokenName name))
         "Ignore"  -> empty
-        _         -> combineAlt (text name) (text "L.Tk__" <> text name <+> text "$$")
+        _         -> combineAlt (text name) (text "L." <> text (tokenName name) <+> text "$$")
 
 genRule :: NormalRule -> Doc
 genRule Rule{ getClause = cl, getRuleName = name } = (text name) <+> (text ":") <+> (genClause name cl) <> text "\n"

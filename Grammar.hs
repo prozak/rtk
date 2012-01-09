@@ -158,3 +158,6 @@ lexicalRules Grammar{ getRules = rules } = filter (isLexicalRule.getRuleName) ru
 
 normalRules :: NormalGrammar -> [NormalRule]
 normalRules Grammar{ getRules = rules } = filter (not.isLexicalRule.getRuleName) rules
+
+tokenName :: String -> String
+tokenName name = "Tk__" ++ name
