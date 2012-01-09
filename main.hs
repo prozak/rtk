@@ -1,4 +1,4 @@
-import System.IO(readFile)
+import System.IO(readFile, writeFile)
 import System.Environment(getArgs)
 --import Control.Exception(bracket)
 import Lexer
@@ -16,12 +16,12 @@ import Language.Haskell.TH
 getGrammarFileName = do
     args <- getArgs
     return $ case args of
-                s:_ -> s
-                [] -> error $ "Usage: <file>"
+                file:dir:_ -> (file, dir)
+                _ -> error $ "Usage: <pg-file> <output-directory>"
 
 -- TODO: options parsing etc
 main = do
-    file <- getGrammarFileName
+    (file, dir) <- getGrammarFileName
     content <- readFile file
     let grammar = parse . alexScanTokens $ content
 --    let grammar = emitLoopsInGrammar . annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
@@ -34,8 +34,11 @@ main = do
     let grammar1 = fillConstructorNames $ normalizeTopLevelClauses grammar0
 --    putStrLn "------ after noralization ------"
 --    putStrLn $ showGrammar grammar1
-    putStrLn $ genY grammar1
-    putStrLn $ genX grammar1
+    let grammar_name = getGrammarName grammar1
+    let y_content = genY grammar1
+    let x_content = genX grammar1
+    writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
+    writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
 --    putStrLn $ ppShow grammar1)
 --    putStrLn $ (generateParserSpec grammar))
 
