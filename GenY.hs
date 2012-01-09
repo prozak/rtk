@@ -37,7 +37,11 @@ genY g@(Grammar name rules) = render $ vcat [
           footer = "{\n" ++ ast ++ "\n}"
 
 genToken :: NormalRule -> Doc
-genToken Rule{ getRuleName = name } = combineAlt (text name) (text "L.Tk__" <> text name)
+genToken Rule{ getRuleName = name, getDataTypeName = dtn } =
+    case dtn of
+        "Keyword" -> combineAlt (text name) (text "L.Tk__" <> text name)
+        "Ignore"  -> empty
+        _         -> combineAlt (text name) (text "L.Tk__" <> text name <+> text "$$")
 
 genRule :: NormalRule -> Doc
 genRule Rule{ getClause = cl, getRuleName = name } = (text name) <+> (text ":") <+> (genClause name cl) <> text "\n"

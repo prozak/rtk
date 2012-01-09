@@ -32,7 +32,7 @@ main = do
 --    putStrLn $ showGrammar grammar0
     let grammar1 = fillConstructorNames $ normalizeTopLevelClauses grammar0
 --    putStrLn "------ after noralization ------"
---    putStrLn $ showGrammar grammar1
+    putStrLn $ showGrammar grammar1
     putStrLn $ genY grammar1
 --    putStrLn $ ppShow grammar1)
 --    putStrLn $ (generateParserSpec grammar))

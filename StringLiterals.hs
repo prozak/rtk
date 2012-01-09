@@ -69,7 +69,7 @@ doSLNM grammar = do
 
 normalizeStringLiterals :: NormalGrammar -> NormalGrammar
 normalizeStringLiterals grammar = let (Grammar nm rules, StringLiteralsNormalizationState m _) = runState (doSLNM grammar) (StringLiteralsNormalizationState Map.empty 0)
-                                      slRules sm = map (\ (k, v) -> Rule "String" "id" v (StrLit k)) $ Map.toList sm
+                                      slRules sm = map (\ (k, v) -> Rule "Keyword" "id" v (StrLit k)) $ Map.toList sm
                                   in Grammar nm (rules ++ slRules m)
 
 
