@@ -31,7 +31,7 @@ genY g@(Grammar name rules) = render $ vcat [
           nl = text ""
           header = "{\n\
                    \module " ++ name ++ "Parser\n\
-                   \import qualified Lexer as L (Token(..), alexScanTokens)\n\
+                   \import qualified " ++ name ++  "Lexer as L (Token(..), alexScanTokens)\n\
                    \}"
           ast = genAST g
           footer = "{\n" ++ ast ++ "\n}"

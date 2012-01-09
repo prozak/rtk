@@ -9,6 +9,7 @@ import StringLiterals
 import Normalize
 import PrintGrammar
 import GenY
+import GenX
 
 import Language.Haskell.TH
 
@@ -32,8 +33,9 @@ main = do
 --    putStrLn $ showGrammar grammar0
     let grammar1 = fillConstructorNames $ normalizeTopLevelClauses grammar0
 --    putStrLn "------ after noralization ------"
-    putStrLn $ showGrammar grammar1
+--    putStrLn $ showGrammar grammar1
     putStrLn $ genY grammar1
+    putStrLn $ genX grammar1
 --    putStrLn $ ppShow grammar1)
 --    putStrLn $ (generateParserSpec grammar))
 
