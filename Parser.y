@@ -55,8 +55,7 @@ ClauseSeq : ClauseSeq1              { Seq "" (reverse $1) }
 ClauseSeq1 : ClauseSeq1 ClausePre    { $2 : $1 } 
            | {- empty -}             { [] }
 
-ClausePre : '(' ClauseAlt ')'         { $2 }
-           | ',' ClausePost           { Lifted $2 }
+ClausePre :  ',' ClausePost           { Lifted $2 }
            | '!' ClausePost           { Ignore $2 }
            | ClausePost               { $1 }
 
@@ -66,7 +65,8 @@ ClausePost : ClauseItem '*' OptDelim  { Star $1 $3 }
            | ClauseItem               { $1 }
 
 
-ClauseItem : id                       { Id $1 } 
+ClauseItem : '(' ClauseAlt ')'        { $2 }
+           | id                       { Id $1 } 
            | str                      { StrLit $1 }
            | '.'                      { Dot }
            | rexplit                  { RegExpLit $1 }

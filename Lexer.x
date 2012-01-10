@@ -30,8 +30,8 @@ tokens:-
     "$"                 {\_ ->  Dollar }
     ")"                 {\_ ->  RParen }
     "("                 {\_ ->  LParen }
-    $squote $notsq* $squote   {\s ->  StrLit $ (reverse.tail.reverse.tail) s }
-    "[" [^\]]* "]"      {\s -> RegExpLit $ (reverse.tail.reverse.tail) s }
+    $squote $notsq* $squote   {\s ->  StrLit $ (reverse.tail.reverse.tail) $ unBackQuote s }
+    "[" ([^\]]|"\\]")* "]"      {\s -> RegExpLit $ (reverse.tail.reverse.tail) $ unBackQuote s }
     "*"                 {\s -> Star }
     "+"                 {\s -> Plus }
     $alpha $alphaDigit* {\s -> Id s}
@@ -57,5 +57,10 @@ data Token = Grammar
     | Colon
     | Tilde
       deriving (Eq, Show)
+
+unBackQuote :: String -> String
+unBackQuote ('\\':c:xs) = c : unBackQuote xs
+unBackQuote (c:xs) = c : unBackQuote xs
+unBackQuote [] = []
 
 }

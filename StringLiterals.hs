@@ -23,7 +23,13 @@ translateStrLiteral str = concat (map (\chr -> case chr of
                                                  '*' -> "_star_"
                                                  '|' -> "_pipe_"
                                                  '$' -> "_dollar_"
-                                                 _   -> [chr])
+                                                 '!' -> "_exclamation_"
+                                                 '~' -> "_tilde_"
+                                                 '(' -> "_lparen_"
+                                                 ')' -> "_rparen_"
+                                                 c | isAlpha c -> [chr]
+                                                 c | isDigit c -> [chr]
+                                                 _ -> "_symbol_")
                                   str)
 
 type StringLiteralsMap = Map.Map String String

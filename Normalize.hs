@@ -43,9 +43,7 @@ extractClause :: Clause -> Normalization Clause
 extractClause cl = do
   ruleName <- newName
   cl1 <- checkNormalClause cl
-  addRule $ case cl1 of
-                Seq _ _ -> Rule ruleName "" ruleName cl1
-                _       -> Rule ruleName "" ruleName (Seq "" [cl1])
+  addRule $ Rule ruleName "" ruleName cl1
   return (Id ruleName)
 
 isSimpleClause :: Clause -> Bool

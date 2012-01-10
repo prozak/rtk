@@ -1,15 +1,35 @@
 grammar 'Grammar';
 
-Grammar = 'grammar' str Rules;
+Grammar = 'grammar' str Rule*;
 
-Rules = Rule *;
-Rule = id '=' Clauses ';';
-Clauses = Clause *~ '|' ;
+Rule = (id? ('.' id)? ':')? id '=' Clause';';
 
-Clause = ClauseItem * ;
+Clause = Clause1 * ~'|';
+
+Clause: Clause1 = Clause2 * ~'|';
+
+Clause: Clause2 = Clause3 *;
+
+Clause: Clause3 = '(' Clause ')'
+                | ',' Clause4 
+                | '!' Clause4
+                | Clause4;
+
+Clause: Clause4 = Clause5 '*' OptDelim
+                | Clause5 '+' OptDelim
+                | Clause5 '?'
+                | Clause5;
+
+Clause: Clause5 = id
+                | str
+                | '.'
+                | regexplit;
+
+OptDelim = ('~' Clause5)? ;
 
 ClauseItem = id | str ;
 id = [a-zA-Z][A-Za-z0-9_]* ;
 String: str = ["] .* ["];
+String: regexplit = '[' .* ']';
 Ignore: ws = [ \t\n]*;
 
