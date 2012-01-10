@@ -2,7 +2,7 @@ grammar 'T1';
  
 A = 'a';
 B = 'a' | 'b';
-C = 'a' *;
+C = A *;
 D = (A B) C;
 E = (A B) | C;
 F1 = A +;

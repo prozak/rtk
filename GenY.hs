@@ -12,7 +12,8 @@ genY g@(Grammar name rules) = render $ vcat [
                                              text header,
                                              nl,
                                              text "%name parse" <> text name,
-                                             text "%tokentype L.Token",
+                                             text "%tokentype { L.Token }",
+                                             text "%error { error \"Parse error\" }",
                                              nl,
                                              text "%token",
                                              nl,
@@ -30,7 +31,7 @@ genY g@(Grammar name rules) = render $ vcat [
           lexDoc = vcat (map genToken lex_rules)
           nl = text ""
           header = "{\n\
-                   \module " ++ name ++ "Parser\n\
+                   \module " ++ name ++ "Parser where\n\
                    \import qualified " ++ name ++  "Lexer as L (Token(..), alexScanTokens)\n\
                    \}"
           ast = genAST g
@@ -64,7 +65,7 @@ genClause rn (Plus cl Nothing) = joinAlts [base, step]
 
 genClause rn (Plus cl (Just cl1)) = joinAlts [base, step]
     where base = combineAlt clDoc (text "[ $1 ]")
-          step = combineAlt (clDoc <+> genSimpleClause cl1 <+> text rn) (text "$1 : $2")
+          step = combineAlt (clDoc <+> genSimpleClause cl1 <+> text rn) (text "$1 : $3")
           clDoc = genSimpleClause cl
 
 genClause _ (Opt cl) = joinAlts [present, not_present]

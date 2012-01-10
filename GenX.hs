@@ -16,7 +16,8 @@ genX g@(Grammar name rules) = render $ vcat [
     where lex_rules = lexicalRules g
           tokens = genTokens lex_rules
           adt = genTokenADT lex_rules
-          header = vcat [text "{", text "module" <+> text name <> text "Lexer", text "}"]
+          header = vcat [text "{", text "module" <+> text name <> text "Lexer", text "where }", 
+                         text "%wrapper \"basic\""]
           footer = vcat [text "{", adt, text "}"]
           nl = text ""
 
