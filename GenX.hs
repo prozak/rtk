@@ -41,11 +41,26 @@ genTokens lexical_rules = text "tokens" <+> text ":-" <+> vcat (map makeToken le
                    "Ignore"  -> text ";"
                    _         -> text "{ \\__s ->" <+> token_name <+> (parens $ text func <+> text "__s") <+> text "}"
 
+backquoteStr :: String -> String
+backquoteStr str = concat (map (\chr -> if (case chr of
+                                                 '+' -> True
+                                                 '*' -> True
+                                                 '"' -> True
+                                                 '[' -> True
+                                                 ']' -> True
+                                                 '(' -> True
+                                                 ')' -> True
+                                                 _   -> False)
+                                          then ['\\', chr]
+                                          else [chr] )
+                                  str)
+
 translateClause (Id _)             = text "<TODO: macro ref here>"
-translateClause (StrLit s)         = doubleQuotes $ text s
+translateClause (StrLit s)         = doubleQuotes $ text $ backquoteStr s
 translateClause (Dot)              = text "."
-translateClause (RegExpLit re)     = brackets $ text re
+translateClause (RegExpLit re)     = brackets $ text $ backquoteStr re
 translateClause (Star cl Nothing)  = translateClause cl <+> text "*"
+-- a* ~x --> (a(x a)*)?
 translateClause (Star cl (Just _)) = error $ "Star (*) clauses with delimiters are not supported in lexical rules"
 translateClause (Plus cl Nothing)  = translateClause cl <+> text "+"
 translateClause (Plus cl (Just _)) = error $ "Plus (+) clauses with delimiters are not supported in lexical rules"
