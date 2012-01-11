@@ -30,8 +30,8 @@ tokens:-
     "$"                 {\_ ->  Dollar }
     ")"                 {\_ ->  RParen }
     "("                 {\_ ->  LParen }
-    $squote $notsq* $squote   {\s ->  StrLit $ (reverse.tail.reverse.tail) $ unBackQuote s }
-    "[" ([^\]]|"\\]")* "]"      {\s -> RegExpLit $ (reverse.tail.reverse.tail) $ unBackQuote s }
+    $squote ($notsq | "\'")* $squote   {\s ->  StrLit $ (reverse.tail.reverse.tail) $ unBackQuote s }
+    "[" ([^\]]|"\]")* "]"      {\s -> RegExpLit $ (reverse.tail.reverse.tail) $ unBackQuote s }
     "*"                 {\s -> Star }
     "+"                 {\s -> Plus }
     $alpha $alphaDigit* {\s -> Id s}
@@ -59,6 +59,8 @@ data Token = Grammar
       deriving (Eq, Show)
 
 unBackQuote :: String -> String
+unBackQuote ('\\':'n':xs) = '\\':'n' : unBackQuote xs
+unBackQuote ('\\':'t':xs) = '\\':'t' : unBackQuote xs
 unBackQuote ('\\':c:xs) = c : unBackQuote xs
 unBackQuote (c:xs) = c : unBackQuote xs
 unBackQuote [] = []

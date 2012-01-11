@@ -37,7 +37,7 @@ genType :: RulesMap -> String -> [SyntaxTopClause] -> Doc
 genType rmap name clauses = text "type" <+> text name <+> text "=" <+> (hsep $ map (genItem rmap) clauses)
 
 genData :: RulesMap -> String -> [STSeq] -> Doc
-genData rmap name sequences = text "data" <+> text name <+> text "=" <+> joinAlts (map (genConstructor rmap) sequences)
+genData rmap name sequences = text "data" <+> text name <+> text "=" <+> (joinAlts (map (genConstructor rmap) sequences) $$ text "deriving (Ord, Eq, Show)")
 
 genConstructor :: RulesMap -> STSeq -> Doc
 genConstructor rmap (STSeq constructor clauses) = text constructor <+> (hsep $ map (genSimpleItem rmap) clauses)

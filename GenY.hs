@@ -14,7 +14,7 @@ genY g@(NormalGrammar name srules lex_rules) =
                    nl,
                    text "%name parse" <> text name,
                    text "%tokentype { L.Token }",
-                   text "%error { error \"Parse error\" }",
+                   text "%error { \\ rest -> error $ \"Parse error\" ++ (show rest) }",
                    nl,
                    text "%token",
                    nl,
