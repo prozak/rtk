@@ -6,33 +6,33 @@ import Text.PrettyPrint
 import Grammar
 
 genX :: NormalGrammar -> String
-genX g@(Grammar name rules) = render $ vcat [
-                                             header,
-                                             nl,
-                                             tokens,
-                                             nl,
-                                             footer
-                                            ]
-    where lex_rules = lexicalRules g
-          tokens = genTokens lex_rules
+genX g@(NormalGrammar name _ lex_rules) = 
+    render $ vcat [
+                   header,
+                   nl,
+                   tokens,
+                   nl,
+                   footer
+                  ]
+    where tokens = genTokens lex_rules
           adt = genTokenADT lex_rules
           header = vcat [text "{", text "module" <+> text name <> text "Lexer", text "where }", 
                          text "%wrapper \"basic\""]
           footer = vcat [text "{", adt, text "}"]
           nl = text ""
 
-genTokenADT :: [NormalRule] -> Doc
+genTokenADT :: [LexicalRule] -> Doc
 genTokenADT lexical_rules = text "data" <+> text "Token" <+> text "=" <+> joinAlts (map makeToken lexical_rules)
-    where makeToken Rule { getDataTypeName = data_type, getRuleName = name } =
+    where makeToken LexicalRule { getLRuleDataType = data_type, getLRuleName = name } =
             let token_name = text $ tokenName name in
               case data_type of
                    "Keyword" -> token_name
                    "Ignore"  -> empty
                    _         -> token_name <+> text data_type
 
-genTokens :: [NormalRule] -> Doc
+genTokens :: [LexicalRule] -> Doc
 genTokens lexical_rules = text "tokens" <+> text ":-" <+> vcat (map makeToken lexical_rules)
-    where makeToken Rule { getDataTypeName = data_type, getDataFunc = func, getRuleName = name, getClause = cl } =
+    where makeToken LexicalRule { getLRuleDataType = data_type, getLRuleFunc = func, getLRuleName = name, getLClause = cl } =
               translateClause cl <+> makeProduction name data_type func
           makeProduction name data_type func =
             let token_name = text $ tokenName name in
@@ -55,18 +55,18 @@ backquoteStr str = concat (map (\chr -> if (case chr of
                                           else [chr] )
                                   str)
 
-translateClause (Id _)             = text "<TODO: macro ref here>"
-translateClause (StrLit s)         = doubleQuotes $ text $ backquoteStr s
-translateClause (Dot)              = text "."
-translateClause (RegExpLit re)     = brackets $ text $ backquoteStr re
-translateClause (Star cl Nothing)  = translateClause cl <+> text "*"
+translateClause (IId _)             = text "<TODO: macro ref here>"
+translateClause (IStrLit s)         = doubleQuotes $ text $ backquoteStr s
+translateClause (IDot)              = text "."
+translateClause (IRegExpLit re)     = brackets $ text $ backquoteStr re
+translateClause (IStar cl Nothing)  = translateClause cl <+> text "*"
 -- a* ~x --> (a(x a)*)?
-translateClause (Star cl (Just _)) = error $ "Star (*) clauses with delimiters are not supported in lexical rules"
-translateClause (Plus cl Nothing)  = translateClause cl <+> text "+"
-translateClause (Plus cl (Just _)) = error $ "Plus (+) clauses with delimiters are not supported in lexical rules"
-translateClause (Alt clauses)      = hsep $ punctuate (text "|") (map translateClause clauses)
-translateClause (Seq _ clauses)    = hsep $ punctuate (text " ") (map translateClause clauses)
-translateClause (Opt clause)       = translateClause clause <+> text "?"
+translateClause (IStar cl (Just _)) = error $ "Star (*) clauses with delimiters are not supported in lexical rules"
+translateClause (IPlus cl Nothing)  = translateClause cl <+> text "+"
+translateClause (IPlus cl (Just _)) = error $ "Plus (+) clauses with delimiters are not supported in lexical rules"
+translateClause (IAlt clauses)      = hsep $ punctuate (text "|") (map translateClause clauses)
+translateClause (ISeq clauses)    = hsep $ punctuate (text " ") (map translateClause clauses)
+translateClause (IOpt clause)       = translateClause clause <+> text "?"
 translateClause cl                 = error $ "Can't translate to lexer spec: " ++ (show cl)
 
 joinAlts :: [Doc] -> Doc

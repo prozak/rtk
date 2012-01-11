@@ -28,13 +28,13 @@ main = do
 --    let grammar = annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
 --    generateASTFile "AST" grammar
 --    generateQQFile "Quote" grammar
-    let grammar0 = normalizeStringLiterals $ addDefaults grammar
+    let grammar0 = normalizeStringLiterals grammar
 --    putStrLn "------ before noralization ------"
 --    putStrLn $ showGrammar grammar0
     let grammar1 = fillConstructorNames $ normalizeTopLevelClauses grammar0
 --    putStrLn "------ after noralization ------"
 --    putStrLn $ showGrammar grammar1
-    let grammar_name = getGrammarName grammar1
+    let grammar_name = getNGrammarName grammar1
     let y_content = genY grammar1
     let x_content = genX grammar1
     writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content

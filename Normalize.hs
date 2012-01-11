@@ -6,7 +6,7 @@ import Data.Char
 import Data.Generics
 import Data.Data
 import Data.Maybe
-import qualified Data.Map as Map
+import qualified Data.Map as M
 
 import Control.Monad.State.Strict hiding (lift)
 
@@ -23,7 +23,8 @@ import Control.Monad.State.Strict hiding (lift)
 -- 3. Lifted id
 
 data NormalizationState = NormalizationState {
-                                              newRules :: [NormalRule],
+                                              normSRules :: M.Map ID [SyntaxRule],
+                                              normLRules :: [LexicalRule],
                                               nameCounter :: Int
                                              }
 type Normalization a = State NormalizationState a
@@ -34,18 +35,31 @@ newName = do
   modify $ (\ s -> s{nameCounter = n + 1})
   return $ "Rule__" ++ (show n)
 
-addRule :: NormalRule -> Normalization ()
-addRule rule = do
-  modify $ \s@NormalizationState{newRules = nr} -> s{ newRules = rule : nr}
+addRule :: ID -> ID -> SyntaxTopClause -> Normalization ()
+addRule tdName ruleName clause = do
+  let doAdd rs = Just $ (SyntaxRule ruleName clause):(maybe [] id rs)
+  modify (\ s@NormalizationState{ normSRules = nr } -> s{ normSRules = M.alter doAdd tdName nr } )
   return ()
 
-extractClause :: Clause -> Normalization Clause
+addLexicalRule :: LexicalRule -> Normalization ()
+addLexicalRule lr = do
+  modify $ \s@NormalizationState{ normLRules = nr} -> s{ normLRules = lr:nr }
+  return ()
+
+extractClause :: IClause -> Normalization ID
 extractClause cl = do
   ruleName <- newName
   cl1 <- checkNormalClause cl
-  addRule $ Rule ruleName "" ruleName cl1
-  return (Id ruleName)
+  addRule ruleName ruleName cl1
+  return $ ruleName
 
+extractSClause :: SyntaxTopClause -> Normalization ID
+extractSClause cl = do
+  ruleName <- newName
+  addRule ruleName ruleName cl
+  return $ ruleName
+
+{-
 isSimpleClause :: Clause -> Bool
 isSimpleClause (Id _) = True
 isSimpleClause (Lifted (Id _)) = True
@@ -63,65 +77,108 @@ isNormalClause (Alt cs) = all (\c -> case c of
                                        _ -> isNormalClause c) cs
 isNormalClause (Seq _ cs) = all isSimpleClause cs
 isNormalClause _ = False
+-}
 
-checkSimpleClause :: Clause -> Normalization Clause
-checkSimpleClause c@(Id _) = return c
-checkSimpleClause c@(Lifted (Id _)) = return c
-checkSimpleClause c@(Ignore c1) = do
+checkSimpleClause :: IClause -> Normalization SyntaxSimpleClause
+checkSimpleClause c@(IId id) = return $ SSId id
+checkSimpleClause c@(ILifted (IId id)) = return $ SSLifted id
+checkSimpleClause c@(IIgnore c1) = do
   newC1 <- checkSimpleClause c1
-  return $ (Ignore newC1)
-checkSimpleClause c = extractClause c
+  case newC1 of
+    SSId id -> return $ SSIgnore id
+    _ -> error $ "Ignore cannot be applied to " ++ show c1
+checkSimpleClause c = extractClause c >>= return . SSId
 
-checkNormalClause :: Clause -> Normalization Clause
-checkNormalClause (Star c mc) = do
+checkNormalClause :: IClause -> Normalization SyntaxTopClause
+checkNormalClause (IStar c mc) = do
   c1 <- checkSimpleClause c
   c2l <- mapM checkSimpleClause (maybeToList mc)
-  return $ Star c1 (listToMaybe c2l)
-checkNormalClause (Plus c mc) = do
+  return $ STMany STStar c1 (listToMaybe c2l)
+checkNormalClause (IPlus c mc) = do
   c1 <- checkSimpleClause c
   c2l <- mapM checkSimpleClause (maybeToList mc)
-  return $ Plus c1 (listToMaybe c2l)
-checkNormalClause (Opt c) = do
+  return $ STMany STPlus c1 (listToMaybe c2l)
+checkNormalClause (IOpt c) = do
   c1 <- checkSimpleClause c
-  return $ Opt c1
-checkNormalClause (Alt [c]) = do
-  c1 <- checkNormalClause c
-  return c1
-checkNormalClause (Alt cs) = do
-  cs1 <- mapM (\c -> case c of 
-                       Alt _ -> extractClause c
-                       _ -> checkNormalClause c) cs
-  return $ Alt cs1
-checkNormalClause (Seq _ [c]) = do
-  c1 <- checkNormalClause c
-  return c1
-checkNormalClause (Seq n cs) = do
+  return $ STOpt c1
+checkNormalClause (IAlt [c]) = do
+  checkNormalClause c
+checkNormalClause (IAlt cs) = do
+  cs1 <- mapM checkNormalClauseSeq cs
+  return $ STAltOfSeq cs1
+checkNormalClause (ISeq [c]) = do
+  checkNormalClause c
+checkNormalClause tc@(ISeq cs) = do
+  c1 <- checkNormalClauseSeq tc
+  return $ STAltOfSeq [c1]
+checkNormalClause (ILifted c) = do
+  c1 <- checkSimpleClause c
+  case c1 of
+    SSId id -> return $ STAltOfSeq [STSeq "" [SSLifted id]]
+    _ -> error $ "Lifted cannot be applied to " ++ show c1
+checkNormalClause (IIgnore c) = do
+  c1 <- checkSimpleClause c
+  case c1 of
+    SSId id -> return $ STAltOfSeq [STSeq "" [SSIgnore id]]
+    _ -> error $ "Ignore cannot be applied to " ++ show c1
+checkNormalClause (IId id) = do
+  return $ STAltOfSeq [STSeq "" [SSId id]]
+checkNormalClause c = error $ "Wrong clause " ++ show c
+
+checkNormalClauseSeq :: IClause -> Normalization STSeq
+checkNormalClauseSeq (ISeq cs) = do
   cs1 <- mapM checkSimpleClause cs
-  return $ Seq n cs1
-checkNormalClause (Lifted c) = do
-  c1 <- checkSimpleClause c
-  return $ Seq "" $ [Lifted c1]
-checkNormalClause (Ignore c) = do
-  c1 <- checkSimpleClause c
-  return $ Seq "" $ [Ignore c1]
-checkNormalClause id@(Id _) = do
-  return $ Seq "" $ [id]
-checkNormalClause c = checkSimpleClause c
+  return $ STSeq "" cs1
+checkNormalClauseSeq ic = do
+  c1 <- checkSimpleClause ic
+  return $ STSeq "" [c1]
 
-normalizeRule :: NormalRule -> Normalization NormalRule
-normalizeRule r@Rule{getRuleName=rn, getClause=cl} | not (isLexicalRule rn) = do
+normalizeRule :: IRule -> Normalization ()
+normalizeRule r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIClause=cl} | not (isLexicalRule rn) = do
   newCl <- checkNormalClause cl
-  return r{getClause = newCl}
-normalizeRule r = return r
+  addRule (maybe rn id dtn) rn newCl
+normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, getIClause=cl} | (isLexicalRule rn) = do
+  let (dtn1, df1) = case (dtn, df) of
+                      (Nothing, Nothing) -> ("String", "id")
+                      (Just d,  Nothing) -> (d,        "read")
+                      (Just d,   Just f) -> (d,        f)
+                      (Nothing,  Just f) -> ("String", f)
+  addLexicalRule $ LexicalRule dtn1 df1 rn cl
 
-doNM :: NormalGrammar -> Normalization NormalGrammar
+doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do
-  newGr <- everywhereM (mkM normalizeRule) grammar
-  return newGr
+  mapM_ normalizeRule $ getIRules grammar
+  postNormalizeGrammar
 
-normalizeTopLevelClauses :: NormalGrammar -> NormalGrammar
-normalizeTopLevelClauses grammar = let (Grammar nm rules, NormalizationState nrs _) = runState (doNM grammar) (NormalizationState [] 0)
-                                   in Grammar nm (rules ++ nrs)
+postNormalizeGroup :: (ID, [SyntaxRule]) -> Normalization (ID, [SyntaxRule])
+postNormalizeGroup g@(id, [r]) = return g
+postNormalizeGroup (id, rules) = do
+  newRules <- mapM normRule rules
+  return (id, newRules)
+      where
+          normRule r@(SyntaxRule _ (STAltOfSeq _)) = return r
+          normRule (SyntaxRule rn cl) = do
+                                   id <- extractSClause cl
+                                   return (SyntaxRule rn (STAltOfSeq [STSeq "" [SSId id]]))
+
+postNormalizeGrammar :: Normalization ()
+postNormalizeGrammar = do
+  rules <- gets (M.toList . normSRules)
+  newRules <- mapM postNormalizeGroup rules
+  modify (\ s@NormalizationState{ normSRules = nr } -> s{ normSRules = foldr (uncurry M.insert) nr newRules } )
+  
+
+normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
+normalizeTopLevelClauses grammar = let firstID = getIRuleName $ head $ getIRules grammar
+                                       (_, NormalizationState nrs nls _) = runState (doNM grammar)
+                                                                           (NormalizationState M.empty [] 0)
+                                       firstRuleGroupRules = fromJust $ M.lookup firstID nrs
+                                       nrs1 = M.delete firstID nrs
+                                       firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
+                                       otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
+                                   in NormalGrammar (getIGrammarName grammar)
+                                                    (firstGroup : otherGroups)
+                                                    nls
 
 data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String }
 type FillName a = State FillNameState a
@@ -133,16 +190,12 @@ newConstructorName = do
     modify $ (\ s -> s{nameCtr = n + 1})
     return $ "Ctr__" ++ b ++ "__" ++  (show n)
 
-fillConstructorName :: Clause -> FillName Clause
-fillConstructorName (Seq _ l) = do
+fillConstructorName :: STSeq -> FillName STSeq
+fillConstructorName (STSeq _ l) = do
     n <- newConstructorName
-    return $ Seq n l
-fillConstructorName cl = do
-    return cl
+    return $ STSeq n l
 
 fillConstructorNames :: NormalGrammar -> NormalGrammar
-fillConstructorNames (Grammar name rules) = Grammar name (map renameRule rules)
-    where renameRule r@Rule{ getRuleName = n, getClause = cl } | not (isLexicalRule n) = r { getClause=(doRename n cl) }
-                                                               | otherwise = r
-          doRename n cl = let (cl1, _) = runState (everywhereM (mkM fillConstructorName) cl) (FillNameState 0 n)
-                          in cl1
+fillConstructorNames (NormalGrammar name rules lrules) = NormalGrammar name (map ( \r -> doRename (getSDataTypeName r) r) rules) lrules
+    where doRename n dat = let (dat1, _) = runState (everywhereM (mkM fillConstructorName) dat) (FillNameState 0 n)
+                           in dat1

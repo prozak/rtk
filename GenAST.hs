@@ -6,44 +6,56 @@ import Text.PrettyPrint
 import Grammar
 import qualified Data.Map as Map
 
+normalRulesNamed :: [SyntaxRuleGroup] -> [(ID, SyntaxTopClause)]
+normalRulesNamed groups = map (\g -> (getSDataTypeName g, combineClauses $ map getSClause $ getSRules g))
+                          groups
+
+combineClauses :: [SyntaxTopClause] -> SyntaxTopClause
+combineClauses [a] = a
+combineClauses alts = STAltOfSeq $ concat $ map (\(STAltOfSeq seqs) -> seqs) alts
+
+type RulesMap = Map.Map ID ID
+
+rulesMap :: NormalGrammar -> RulesMap
+rulesMap NormalGrammar{ getSyntaxRuleGroups = groups, getLexicalRules = lrules } = 
+    Map.fromList $ concat 
+            (map (\ lr -> (getLRuleName lr, getLRuleDataType lr)) lrules : 
+             map (\ g -> map (\r -> (getSRuleName r, getSDataTypeName g)) $ getSRules g) groups)
+
 genAST :: NormalGrammar -> String
-genAST grammar = render $ vcat (map (genRule rules_map) (normalRules grammar))
+genAST grammar = render $ vcat (map (genRule rules_map) (normalRulesNamed $ getSyntaxRuleGroups grammar))
     where rules_map = rulesMap grammar
 
-genRule :: RulesMap -> NormalRule -> Doc
-genRule rmap Rule { getDataTypeName = type_name, getClause = clause } =
+genRule :: RulesMap -> (ID, SyntaxTopClause) -> Doc
+genRule rmap (type_name, clause) =
     case clause of
-         s@(Star _ _) -> genType rmap type_name [s]
-         s@(Plus _ _) -> genType rmap type_name [s]
-         s@(Opt _)    -> genType rmap type_name [s]
-         s@(Seq _ _)            -> genData rmap type_name [s]
-         (Alt sequences)        -> genData rmap type_name sequences
+         s@(STMany _ _ _) -> genType rmap type_name [s]
+         s@(STOpt _)      -> genType rmap type_name [s]
+         (STAltOfSeq sequences)        -> genData rmap type_name sequences
 
-genType :: RulesMap -> String -> [Clause] -> Doc
+genType :: RulesMap -> String -> [SyntaxTopClause] -> Doc
 genType rmap name clauses = text "type" <+> text name <+> text "=" <+> (hsep $ map (genItem rmap) clauses)
 
-genData :: RulesMap -> String -> [Clause] -> Doc
+genData :: RulesMap -> String -> [STSeq] -> Doc
 genData rmap name sequences = text "data" <+> text name <+> text "=" <+> joinAlts (map (genConstructor rmap) sequences)
 
-genConstructor :: RulesMap -> Clause -> Doc
-genConstructor rmap (Seq constructor clauses) = text constructor <+> (hsep $ map (genItem rmap) clauses)
-genConstructor _ cl = error $ "Can't generate constructor for " ++ (show cl)
+genConstructor :: RulesMap -> STSeq -> Doc
+genConstructor rmap (STSeq constructor clauses) = text constructor <+> (hsep $ map (genSimpleItem rmap) clauses)
 
-genItem :: RulesMap -> Clause -> Doc
+genItem :: RulesMap -> SyntaxTopClause -> Doc
 
-genItem rmap (Star cl _) = brackets $ genItem rmap cl
-genItem rmap (Plus cl _) = brackets $ genItem rmap cl
-genItem rmap (Opt cl) = parens $ text "Maybe" <+> genItem rmap cl
+genItem rmap (STMany _ cl _) = brackets $ genSimpleItem rmap cl
+genItem rmap (STOpt cl) = parens $ text "Maybe" <+> genSimpleItem rmap cl
 
-genItem rmap (Id id) = text $ getDataTypeName $ findRule rmap id
-genItem _    (Ignore cl) = empty
-genItem _    (Lifted id) = error "lifted rules are not yet implemented"
-genItem _    cl = error $ "Can't generate AST for simple clause: " ++ (show cl)
+genSimpleItem :: RulesMap -> SyntaxSimpleClause -> Doc
+genSimpleItem rmap (SSId id) = text $ findRuleDataTypeName rmap id
+genSimpleItem _    (SSIgnore id) = empty
+genSimpleItem _    (SSLifted id) = error "lifted rules are not yet implemented"
 
-findRule :: RulesMap -> String -> NormalRule
-findRule rmap id = case Map.lookup id rmap of
-                        Just r -> r
-                        _      -> error $ "Reference to unknown rule " ++ id
+findRuleDataTypeName :: RulesMap -> ID -> ID
+findRuleDataTypeName rmap id = case Map.lookup id rmap of
+                                 Just r -> r
+                                 _      -> error $ "Reference to unknown rule " ++ id
 
 joinAlts :: [Doc] -> Doc
 joinAlts alts = vcat $ punctuate (text " |") alts

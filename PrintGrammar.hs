@@ -1,9 +1,10 @@
-module PrintGrammar(showGrammar)
+module PrintGrammar
     where
 
 import Text.PrettyPrint.HughesPJ
 import Parser
 
+{-
 showGrammar = render.grammar2Doc
 
 indent :: Doc -> Doc
@@ -41,3 +42,4 @@ clause2Doc (Seq n cls)          = nameIt ((text "Seq") <+> (quotes$text n)) (map
 clause2Doc (Opt cl)             = nameSmall "?"    (clause2Doc cl)
 clause2Doc (Lifted cl)          = nameSmall "^" (clause2Doc cl)
 clause2Doc (Ignore cl)          = nameSmall "!" (clause2Doc cl)
+-}

@@ -137,7 +137,7 @@ addStartRule (Grammar name rules) = Grammar name ((makeStartRule rules) : rules)
           makeRuleAlt (Rule (Id name) _ _) = (([ marker, (Id name), marker ]), mkGInfo)
                                              where marker = StrLit ("$" ++ name)
 -}
-
+{-
 addDefaults :: InitialGrammar -> NormalGrammar
 addDefaults (Grammar str rules) = Grammar str $ map addInRule rules
     where addInRule (Rule Nothing    Nothing     rname clause) | isLexicalRule rname = Rule "String" "id" rname clause
@@ -152,12 +152,15 @@ addDefaults (Grammar str rules) = Grammar str $ map addInRule rules
 type RulesMap = Map.Map String NormalRule
 rulesMap :: NormalGrammar -> RulesMap
 rulesMap Grammar{ getRules = rules } = Map.fromList $ map (\ r -> (getRuleName r, r)) rules
-
 lexicalRules :: NormalGrammar -> [NormalRule]
 lexicalRules Grammar{ getRules = rules } = filter (isLexicalRule.getRuleName) rules
 
 normalRules :: NormalGrammar -> [NormalRule]
 normalRules Grammar{ getRules = rules } = filter (not.isLexicalRule.getRuleName) rules
+-}
+
+normalRules :: [SyntaxRuleGroup] -> [SyntaxRule]
+normalRules groups = concat $ map getSRules groups
 
 tokenName :: String -> String
 tokenName name = "Tk__" ++ name

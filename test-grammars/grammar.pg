@@ -2,11 +2,12 @@ grammar 'Grammar';
 
 Grammar = 'grammar' str Rule*;
 
-Rule = (id? ('.' id)? ':')? id '=' Clause';';
+Rule = id '=' Clause';'
+     | id ':' id '=' Clause';'
+     | id '.' id ':' id '=' Clause';'
+     | '.' id ':' id '=' Clause';';
 
-Clause = Clause1 * ~'|';
-
-Clause: Clause1 = Clause2 * ~'|';
+Clause = Clause2 * ~'|';
 
 Clause: Clause2 = Clause3 *;
 
@@ -27,7 +28,6 @@ Clause: Clause5 = id
 
 OptDelim = ('~' Clause5)? ;
 
-ClauseItem = id | str ;
 id = [a-zA-Z][A-Za-z0-9_]* ;
 String: str = ["] .* ["];
 String: regexplit = '[' .* ']';

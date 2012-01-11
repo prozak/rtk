@@ -56,26 +56,26 @@ addStrLit str = do
       return tokName
     Just tokName -> return tokName
 
-normalizeClause :: Clause -> StringLiteralsNormalization Clause
-normalizeClause (StrLit str) = do
+normalizeClause :: IClause -> StringLiteralsNormalization IClause
+normalizeClause (IStrLit str) = do
   tokName <- addStrLit str
-  return $ Ignore (Id tokName)
+  return $ IIgnore (IId tokName)
 normalizeClause c = return c
 
-normalizeRule :: NormalRule -> StringLiteralsNormalization NormalRule
-normalizeRule r@Rule{getRuleName=rn, getClause=cl} | not (isLexicalRule rn) = do
+normalizeRule :: IRule -> StringLiteralsNormalization IRule
+normalizeRule r@IRule{getIRuleName=rn, getIClause=cl} | not (isLexicalRule rn) = do
   newCl <- everywhereM (mkM normalizeClause) cl
-  return r{getClause = newCl}
+  return r{getIClause = newCl}
 normalizeRule r = return r
 
-doSLNM :: NormalGrammar -> StringLiteralsNormalization NormalGrammar
+doSLNM :: InitialGrammar -> StringLiteralsNormalization InitialGrammar
 doSLNM grammar = do
   newGr <- everywhereM (mkM normalizeRule) grammar
   return newGr
 
-normalizeStringLiterals :: NormalGrammar -> NormalGrammar
-normalizeStringLiterals grammar = let (Grammar nm rules, StringLiteralsNormalizationState m _) = runState (doSLNM grammar) (StringLiteralsNormalizationState Map.empty 0)
-                                      slRules sm = map (\ (k, v) -> Rule "Keyword" "id" v (StrLit k)) $ Map.toList sm
-                                  in Grammar nm (rules ++ slRules m)
+normalizeStringLiterals :: InitialGrammar -> InitialGrammar
+normalizeStringLiterals grammar = let (InitialGrammar nm rules, StringLiteralsNormalizationState m _) = runState (doSLNM grammar) (StringLiteralsNormalizationState Map.empty 0)
+                                      slRules sm = map (\ (k, v) -> IRule (Just "Keyword") (Just "id") v (IStrLit k)) $ Map.toList sm
+                                  in InitialGrammar nm (rules ++ slRules m)
 
 
