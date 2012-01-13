@@ -3,13 +3,19 @@
 module Grammar where
 
 import Parser
-import Language.Haskell.TH
+import Language.Haskell.TH hiding (Clause)
 import Data.Char
 import Data.Generics
 import Data.Data
 import qualified Data.Map as Map
-import IO(hGetContents, bracket, openFile, IOMode(WriteMode), hClose)
+import System.IO(hGetContents, openFile, IOMode(WriteMode), hClose)
+import Control.Exception(bracket)
+import Debug.Trace
+import Text.Printf
 
+import Control.Monad.State.Strict hiding (lift)
+
+{-
 generateConstructor :: String -> [ClauseItem] -> Q Con
 generateConstructor cname items = normalC (mkName cname) elements
     where elements = map (\item -> (strictType notStrict (conT (mkName (itemName item)))))
@@ -33,7 +39,7 @@ itemName item = case item of
                     Id "str" -> "String"
                     Id "id" -> "Id"
                     Id name -> name
-                    StrLit str _ -> translateStrLiteral str
+                    StrLit str -> translateStrLiteral str
                     _ -> ""
 
 translateStrLiteral :: String -> String
@@ -63,7 +69,7 @@ annotateGrammarWithNames grammar =
 emitLoopsInGrammar :: Grammar -> Grammar
 emitLoopsInGrammar grammar =
     let clauseT self@(items, info) =
-                                     if (isUpper $ head $ ruleName info)
+                                     if (not $ null $ ruleName info) && (isUpper $ head $ ruleName info)
                                        then
                                          case items of
                                            [ci1, op, ci2] ->
@@ -126,66 +132,38 @@ generateQQFile fileName grammar =
     let imports = generateHaskellFileImports ["Data.Generics", "Data.Data", "Language.Haskell.TH", "Language.Haskell.TH.Quote"]
     writeHaskellFile fileName $ imports ++ quoteFuns ++ "\n"
     return ()
-
---------------------- start rule generation ---------------------------
-
+-}
+{-
 addStartRule :: Grammar -> Grammar
 addStartRule (Grammar name rules) = Grammar name ((makeStartRule rules) : rules)
     where makeStartRule rules = Rule (Id "start") (map makeRuleAlt rules) True
-          makeRuleAlt (Rule (Id name) _ _) = (([ marker, (Id name), marker ]), (GInfo "" "start"))
-                                             where marker = StrLit ("$" ++ name) (LexerInfo "")
+          makeRuleAlt (Rule (Id name) _ _) = (([ marker, (Id name), marker ]), mkGInfo)
+                                             where marker = StrLit ("$" ++ name)
+-}
+{-
+addDefaults :: InitialGrammar -> NormalGrammar
+addDefaults (Grammar str rules) = Grammar str $ map addInRule rules
+    where addInRule (Rule Nothing    Nothing     rname clause) | isLexicalRule rname = Rule "String" "id" rname clause
+                                                               | otherwise           = Rule rname "" rname clause
+          addInRule (Rule Nothing    (Just func) rname clause) | isLexicalRule rname = Rule "String" func rname clause
+                                                               | otherwise           = error $ "Data transformation function specified for non-lexical rule " ++ rname ++ " : " ++ func
+          addInRule (Rule (Just dtn) Nothing     rname clause) | isLexicalRule rname = Rule dtn "read" rname clause
+                                                               | otherwise           = Rule dtn "" rname clause
+          addInRule (Rule (Just dtn) (Just func) rname clause) | isLexicalRule rname = Rule dtn func rname clause
+                                                               | otherwise           = error $ "Data transformation function specified for non-lexical rule " ++ rname ++ " : " ++ func
 
---------------------- parser specification generation -----------------
+type RulesMap = Map.Map String NormalRule
+rulesMap :: NormalGrammar -> RulesMap
+rulesMap Grammar{ getRules = rules } = Map.fromList $ map (\ r -> (getRuleName r, r)) rules
+lexicalRules :: NormalGrammar -> [NormalRule]
+lexicalRules Grammar{ getRules = rules } = filter (isLexicalRule.getRuleName) rules
 
--- TODO: remove lexer tokens duplication
+normalRules :: NormalGrammar -> [NormalRule]
+normalRules Grammar{ getRules = rules } = filter (not.isLexicalRule.getRuleName) rules
+-}
 
-glue :: [String] -> String
-glue strs = foldl (++) "" strs
+normalRules :: [SyntaxRuleGroup] -> [SyntaxRule]
+normalRules groups = concat $ map getSRules groups
 
-glueD :: String -> [String] -> String
-glueD delimiter strs = foldl (\x accum -> x ++ delimiter ++ accum) "" strs
-
-glueDL :: String -> String -> [String] -> String
-glueDL delimiter last_delimiter strs = case strs of
-                                            []     -> last_delimiter
-                                            (s:[]) -> s ++ last_delimiter
-                                            (s:xs) -> s ++ delimiter ++ (glueDL delimiter last_delimiter xs)
-
-generateParserSpec (Grammar _ rules) = "%token\n\n" ++
-                                       (glue (map generateTokensSpecRule rules)) ++ 
-                                       "\n%%\n" ++
-                                       (glueD "\n" (map generateParserRule rules))
-
-
-generateParserRule (Rule (Id name) clauses _) = name ++ " :\n" ++ (glueDL " |\n" ";\n" (map generateParserRuleLine clauses))
-generateParserRuleLine (items, info) = "    " ++ (generateParserRuleAlt items) ++ " { " ++ (generateParserRuleAltConstructor items info) ++ " }"
-
-generateParserRuleAlt :: [ClauseItem] -> String
-generateParserRuleAlt items = glueD " " (map (\item -> case item of
-                                                Id name -> name
-                                                StrLit _ (LexerInfo name) -> name
-                                                _ -> "")
-                                             items)
-
-generateParserRuleAltConstructor :: [ClauseItem] -> GInfo -> String
-generateParserRuleAltConstructor items (GInfo name _) = name ++ glueD " " (enumerateItems 1 items [])
-    where enumerateItems count (x:xs) accum = case x of
-                                                Id _ -> enumerateItems (count + 1) xs (("$" ++ (show count)) : accum)
-                                                _    -> enumerateItems (count + 1) xs accum
-          enumerateItems _ [] accum = reverse accum
-
-generateTokensSpecRule (Rule _ clauses _) = glue (map collectTokensInClause clauses)
-    where collectTokensInClause (items, _) = glue (collectTokens items [])
-          collectTokens (x:xs) accum = case x of
-                                            StrLit str (LexerInfo name) -> collectTokens xs ((name ++ "\t{ L." ++ name ++ "}" ++ "\n") : accum)
-                                            _ -> collectTokens xs accum
-          collectTokens [] accum = reverse accum
-
---makeGrammarTokensMap (Grammar name rules) = (Grammar name updated_rules, tokens_map)
---    where (updated_rules, tokens_map) = makeRulesTokensMap rules Map.empty
---
---makeRuleTokensMap (Rule name clauses build_node) tokens_map = (Rule name updated_clauses build_node, updated_tokens_map)
---    where (updated_clauses, updated_tokens_map) = makeClausesTokensMap clauses tokens_map
---
---makeClausesTokensMap (clause:tail) tokens_map = (updated_clause:updated_tail, updated_tokens_map)
---    where 
+tokenName :: String -> String
+tokenName name = "Tk__" ++ name
