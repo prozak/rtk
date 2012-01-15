@@ -13,14 +13,14 @@ Clause: Clause2 = Clause3 * ;
 
 Clause: Clause3 = ',' Clause4 
                 | '!' Clause4
-                | Clause4 ;
+                | ,Clause4 ;
 
 Clause: Clause4 = Clause5 '*' OptDelim
                 | Clause5 '+' OptDelim
                 | Clause5 '?'
-                | Clause5 ;
+                | ,Clause5 ;
 
-Clause: Clause5 = '(' Clause ')'
+Clause: Clause5 = '(' ,Clause ')'
                 | id
                 | str
                 | '.'
