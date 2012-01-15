@@ -75,23 +75,25 @@ genTopClause _ (STOpt cl) = joinAlts [present, not_present]
 genTopClause rn (STAltOfSeq clauses) = joinAlts $ map genClauseSeq clauses
 
 genClauseSeq :: STSeq -> Doc
-genClauseSeq (STSeq constructor clauses) = combineAlt rule production
+genClauseSeq (STSeq constructor clauses) | isClauseSeqLifted clauses = combineAlt rule production
+    where rule = hsep (map genSimpleClause clauses)
+          production = hsep $ (enumClauses clauses)
+genClauseSeq (STSeq constructor clauses)  = combineAlt rule production
     where rule = hsep (map genSimpleClause clauses)
           production = hsep $ (text constructor) : (enumClauses clauses)
-
 
 genSimpleClause :: SyntaxSimpleClause -> Doc
 -- TODO: check whether reverse is needed (monad again) (switch to left recursion)
 genSimpleClause (SSId id) = text id
 genSimpleClause (SSIgnore id) = text id
  -- TODO: no lifted yet, need monad with rules map here
-genSimpleClause (SSLifted id) = error "lifted rules are not yet implemented"
+genSimpleClause (SSLifted id) = text id
 
 enumClauses :: [SyntaxSimpleClause] -> [Doc]
 enumClauses cls = f cls 1 []
-    where f ((SSId _):tail) count acc = f tail (count + 1) ((text "$" <> int count) : acc)
-          f (_:       tail) count acc = f tail (count + 1) acc
-          f []              _     acc = reverse acc
+    where f (ssc:tail) count acc | isNotIgnored ssc = f tail (count + 1) ((text "$" <> int count) : acc)
+          f (_:       tail) count acc               = f tail (count + 1) acc
+          f []              _     acc               = reverse acc
 
 emptyAlt = text "{- empty -}"
 

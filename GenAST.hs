@@ -36,8 +36,13 @@ genRule rmap (type_name, clause) =
 genType :: RulesMap -> String -> [SyntaxTopClause] -> Doc
 genType rmap name clauses = text "type" <+> text name <+> text "=" <+> (hsep $ map (genItem rmap) clauses)
 
+needGenereateAlt :: STSeq -> Bool
+needGenereateAlt (STSeq _ seqs) = not $ isClauseSeqLifted seqs
+
 genData :: RulesMap -> String -> [STSeq] -> Doc
-genData rmap name sequences = text "data" <+> text name <+> text "=" <+> (joinAlts (map (genConstructor rmap) sequences) $$ text "deriving (Ord, Eq, Show)")
+genData rmap name sequences = text "data" <+> text name <+> text "=" <+> (joinAlts (map (genConstructor rmap) sequences') 
+                                                                          $$ text "deriving (Ord, Eq, Show)")
+    where sequences' = filter needGenereateAlt sequences
 
 genConstructor :: RulesMap -> STSeq -> Doc
 genConstructor rmap (STSeq constructor clauses) = text constructor <+> (hsep $ map (genSimpleItem rmap) clauses)
