@@ -20,7 +20,7 @@ test-out:
 	mkdir -p test-out
 
 test-grammar: test-out build
-	./dist/build/mousekiller/mousekiller test-grammars/grammar.pg test-out
+	./dist/build/rtk/rtk test-grammars/grammar.pg test-out
 	(cd test-out && alex GrammarLexer.x)
 	(cd test-out && happy GrammarParser.y)
 	cp test-grammars/grammar-main.hs test-out
@@ -28,4 +28,4 @@ test-grammar: test-out build
 	test-out/main test-grammars/grammar.pg
 
 test-t1: test-out build
-	./dist/build/mousekiller/mousekiller test-grammars/t1.pg test-out
+	./dist/build/rtk/rtk test-grammars/t1.pg test-out

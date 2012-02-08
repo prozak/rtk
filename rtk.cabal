@@ -1,4 +1,4 @@
-Name:                mousekiller
+Name:                rtk
 Version:             0.10
 Description:         Generates rewrite facilities for the given grammar
 License:             GPL
@@ -12,7 +12,7 @@ Library
   Exposed-Modules: Lexer Parser Grammar
   Extensions:          DeriveDataTypeable
 
-Executable mousekiller
+Executable rtk
   Main-is:           main.hs
   Build-Depends:     base >= 4.0, array, syb, template-haskell, containers, mtl, pretty, pretty-show
   Other-Modules:     Lexer Parser Grammar
