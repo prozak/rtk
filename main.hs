@@ -10,6 +10,7 @@ import Normalize
 import PrintGrammar
 import GenY
 import GenX
+import GenQ
 
 import Language.Haskell.TH
 
@@ -37,8 +38,10 @@ main = do
     let grammar_name = getNGrammarName grammar1
     let y_content = genY grammar1
     let x_content = genX grammar1
+    let q_content = genQ grammar1
     writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
     writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
+    writeFile (dir ++ "/" ++ grammar_name ++ "QQ.hs") q_content
 --    putStrLn $ ppShow grammar1)
 --    putStrLn $ (generateParserSpec grammar))
 

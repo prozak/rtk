@@ -2,6 +2,7 @@ module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
 import Parser
+import Grammar
 import Data.Char
 import Data.Generics
 import Data.Data
@@ -166,7 +167,22 @@ postNormalizeGrammar = do
   rules <- gets (M.toList . normSRules)
   newRules <- mapM postNormalizeGroup rules
   modify (\ s@NormalizationState{ normSRules = nr } -> s{ normSRules = foldr (uncurry M.insert) nr newRules } )
-  
+
+addStartGroup :: NormalGrammar -> NormalGrammar
+addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = nss, getLexicalRules = nls } =
+  let ruleToStartInfo = foldr (\el map -> M.insert (getSDataTypeName el) (getSDataTypeName el ++ "__dummy") map) (M.empty) nss
+      rulesClauses = map (\s ->
+                                  let dummy = SSIgnore (fromJust (M.lookup (getSDataTypeName s) ruleToStartInfo))
+                                  in 
+                                  STSeq "" [dummy,
+                                            SSId $ getSDataTypeName s,
+                                            dummy]) nss
+      newTokens = map (\(_, name) -> LexicalRule { getLRuleDataType = "Keyword",
+                                                   getLRuleFunc = "",
+                                                   getLRuleName = name, getLClause = (IStrLit name)}) $ M.toList ruleToStartInfo
+      startRuleGroup = SyntaxRuleGroup "Start" [SyntaxRule "Start" $ STAltOfSeq $ rulesClauses]
+    in
+      ng { getSyntaxRuleGroups = startRuleGroup : nss , getLexicalRules = newTokens ++ nls}
 
 normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar = let firstID = getIRuleName $ head $ getIRules grammar
@@ -176,9 +192,8 @@ normalizeTopLevelClauses grammar = let firstID = getIRuleName $ head $ getIRules
                                        nrs1 = M.delete firstID nrs
                                        firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
                                        otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
-                                   in NormalGrammar (getIGrammarName grammar)
-                                                    (firstGroup : otherGroups)
-                                                    nls
+				       groups = firstGroup : otherGroups
+                                   in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls
 
 data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String }
 type FillName a = State FillNameState a
