@@ -127,7 +127,7 @@ data STSeq = STSeq ConstructorName [SyntaxSimpleClause]
 
 data SyntaxTopClause = STMany STManyOp SyntaxSimpleClause (Maybe SyntaxSimpleClause)
                      | STOpt SyntaxSimpleClause
-                     | STAltOfSeq [STSeq] -- alternative of sequences
+                     | STAltOfSeq { getAltOfSeq :: [STSeq] } -- alternative of sequences
                        deriving (Eq, Show, Typeable, Data)
                                    
 data SyntaxSimpleClause = SSId ID

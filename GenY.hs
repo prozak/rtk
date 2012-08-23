@@ -31,7 +31,9 @@ genY g@(NormalGrammar name srules lex_rules) =
           lexDoc = vcat (map genToken lex_rules)
           nl = text ""
           header = "{\n\
+		   \{-# LANGUAGE DeriveDataTypeable #-}\n\
                    \module " ++ name ++ "Parser where\n\
+		   \import Data.Generics\n\
                    \import qualified " ++ name ++  "Lexer as L (Token(..), alexScanTokens)\n\
                    \}"
           ast = genAST g
