@@ -171,16 +171,17 @@ postNormalizeGrammar = do
 addStartGroup :: NormalGrammar -> NormalGrammar
 addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = nss, getLexicalRules = nls } =
   let ruleToStartInfo = foldr (\el map -> M.insert (getSDataTypeName el) (getSDataTypeName el ++ "__dummy") map) (M.empty) nss
+      mainRuleClause = STSeq "" [SSId $ getSDataTypeName $ head nss]
       rulesClauses = map (\s ->
-                                  let dummy = SSIgnore (fromJust (M.lookup (getSDataTypeName s) ruleToStartInfo))
-                                  in 
-                                  STSeq "" [dummy,
-                                            SSId $ getSDataTypeName s,
-                                            dummy]) nss
+                           let dummy = SSIgnore (fromJust (M.lookup (getSDataTypeName s) ruleToStartInfo))
+                           in 
+                           STSeq "" [dummy,
+                                     SSId $ getSDataTypeName s,
+                                     dummy]) nss
       newTokens = map (\(_, name) -> LexicalRule { getLRuleDataType = "Keyword",
                                                    getLRuleFunc = "",
                                                    getLRuleName = name, getLClause = (IStrLit name)}) $ M.toList ruleToStartInfo
-      startRuleGroup = SyntaxRuleGroup "Start" [SyntaxRule "Start" $ STAltOfSeq $ rulesClauses]
+      startRuleGroup = SyntaxRuleGroup "Start" [SyntaxRule "Start" $ STAltOfSeq $ mainRuleClause : rulesClauses]
     in
       ng { getSyntaxRuleGroups = startRuleGroup : nss , getLexicalRules = newTokens ++ nls}
 

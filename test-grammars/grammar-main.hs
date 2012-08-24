@@ -18,12 +18,12 @@ getGrammarFileName = do
 main = do
     file <- getGrammarFileName
     content <- readFile file
---    let grammar = parseGrammar . alexScanTokens $ content
+    let grm = parseGrammar . alexScanTokens $ content
     let rl = [rule| Rule = id '=' Clause ';' 
                                  | id ':' id '=' Clause ';'
                                  | id '.' id ':' id '=' Clause ';'
                                  | '.' id ':' id '=' Clause ';' ;|]
-    let grm = [grammar|
+    let grm1 = [grammar|
                             grammar 'Grammar';
 
                             Grammar = 'grammar' str ';' Rule* ;
@@ -61,4 +61,4 @@ main = do
                             Ignore: comment = '#' .* '\n' ;
     |]
     putStrLn $ show rl
---    putStrLn $ ppShow grammar
+    putStrLn $ ppShow grm
