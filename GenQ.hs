@@ -35,8 +35,16 @@ genQ g@(NormalGrammar name synRuleGs lexRules) =
           pat = "Pat"
           exp = "Exp"
           qqFunName typ = text "quote" <> text name <> text typ
-          antiTermGen typ = map (\SyntaxRuleGroup { getSDataTypeName = name} -> "anti" ++ name ++ typ) $ tail synRuleGs
-          antiExprsGen typ = foldr (\antiTerm res -> res <+> text "`extQ`" <+> text antiTerm) (text "const Nothing") [] {--$ antiTermGen typ--}
+          typeNames = map getSDataTypeName $ tail synRuleGs
+          antiNameGen typ name = "anti" ++ name ++ typ
+          antiTermGen typ = map (antiNameGen typ) typeNames
+          antiExprsGen typ = foldr (\antiTerm res -> res <+> text "`extQ`" <+> text antiTerm) (text "const Nothing") $ antiTermGen typ
+          antiFunsGen typ = map (\name -> 
+                                        let antiName = (antiNameGen typ name)
+                                        in
+                                          vcat [text antiName <+> text "::" <+> text name <+> text "-> Maybe (TH.Q TH." <> text typ <> text ")",
+                                                text (antiNameGen typ name) <+> text "_ = Nothing"])
+                                typeNames
           qqFunProtoGen typ = qqFunName typ <+> text ":: Data a => String -> ("
                                  <+> text "Start" <+> text "-> a) -> String -> TH." <> text typ <> text "Q"
           qqFunImplGen typ = vcat [qqFunName typ <+> text "dummy func s = do",
@@ -48,8 +56,8 @@ genQ g@(NormalGrammar name synRuleGs lexRules) =
                          qqFunImplGen exp,
                          qqFunProtoGen pat,
                          qqFunImplGen pat,
-                         vcat $ map (\antiTerm -> text antiTerm <+> text "_ = Nothing")$ antiTermGen exp,
-                         vcat $ map (\antiTerm -> text antiTerm <+> text "_ = Nothing")$ antiTermGen pat]
+                         vcat $ antiFunsGen exp,
+                         vcat $ antiFunsGen pat]
           typeNameToConstructor = M.fromList $ map (\(STSeq cName lst) ->
                                         case lst of
                                           [SSId typeName] -> (typeName, cName)
