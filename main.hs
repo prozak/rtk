@@ -39,10 +39,14 @@ main = do
     let y_content = genY grammar1
     let x_content = genX grammar1
     let q_content = genQ grammar1
+    let info = getGrammarInfo grammar1
+--    putStrLn $ ppShow grammar1
+--    putStrLn $ show $ getStartRuleName info
     writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
+--    putStrLn $ show $ getRuleToStartInfo info
     writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
+--    putStrLn $ show $ getRuleToAntiInfo info
     writeFile (dir ++ "/" ++ grammar_name ++ "QQ.hs") q_content
---    putStrLn $ ppShow grammar1)
 --    putStrLn $ (generateParserSpec grammar))
 
 {--run :: String -> Either String [Token]

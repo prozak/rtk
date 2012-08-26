@@ -9,7 +9,7 @@ import qualified Data.Map as M
 import Data.Maybe
 
 genQ :: NormalGrammar -> String
-genQ g@(NormalGrammar name synRuleGs lexRules) =
+genQ g@(NormalGrammar name synRuleGs _ info) =
     render $ vcat [
                    header,
                    nl,
@@ -35,18 +35,28 @@ genQ g@(NormalGrammar name synRuleGs lexRules) =
           pat = "Pat"
           exp = "Exp"
           qqFunName typ = text "quote" <> text name <> text typ
-          typeNames = map getSDataTypeName $ tail synRuleGs
+          typeNames = map getSDataTypeName $ filter (\srg -> case srg of
+                                                               SyntaxRuleGroup _ [SyntaxRule _ (STMany _ _ _)] -> False
+                                                               SyntaxRuleGroup _ [SyntaxRule _ (STOpt _ )] -> False
+                                                               _ -> True)
+                                                    $ tail synRuleGs
           antiNameGen typ name = "anti" ++ name ++ typ
           antiTermGen typ = map (antiNameGen typ) typeNames
           antiExprsGen typ = foldr (\antiTerm res -> res <+> text "`extQ`" <+> text antiTerm) (text "const Nothing") $ antiTermGen typ
           antiFunsGen typ = map (\name -> 
                                         let antiName = (antiNameGen typ name)
+                                            antiPat = "Anti" ++ name
+                                            varConstructor = case typ of
+                                                                "Pat" -> text "TH.varP"
+                                                                "Exp" -> text "TH.varE"
                                         in
                                           vcat [text antiName <+> text "::" <+> text name <+> text "-> Maybe (TH.Q TH." <> text typ <> text ")",
-                                                text (antiNameGen typ name) <+> text "_ = Nothing"])
+                                                text antiName <+> text "(" <> text (fromJust $ M.lookup name (getRuleToAntiInfo info))
+                                                              <+> text "v) = Just $" <+> varConstructor <+> text "(TH.mkName v)",
+                                                text antiName <+> text "_ = Nothing"])
                                 typeNames
           qqFunProtoGen typ = qqFunName typ <+> text ":: Data a => String -> ("
-                                 <+> text "Start" <+> text "-> a) -> String -> TH." <> text typ <> text "Q"
+                                 <+> text (fromJust $ getStartRuleName info) <+> text "-> a) -> String -> TH." <> text typ <> text "Q"
           qqFunImplGen typ = vcat [qqFunName typ <+> text "dummy func s = do",
                                    text "  let expr = func $ parse" <> text name <+> text "$ alexScanTokens (dummy ++ \" \" ++ s ++ \" \" ++ dummy)",
                                    text "  dataTo" <> text typ <> text "Q (" <> antiExprsGen typ <> text ") expr"]
@@ -60,12 +70,12 @@ genQ g@(NormalGrammar name synRuleGs lexRules) =
                          vcat $ antiFunsGen pat]
           typeNameToConstructor = M.fromList $ map (\(STSeq cName lst) ->
                                         case lst of
-                                          [SSId typeName] -> (typeName, cName)
-                                          [_, SSId typeName, _] -> (typeName, cName))
+                                          [_, SSId typeName, _] -> (typeName, cName)
+                                          _ -> ("", ""))
                                       (getAltOfSeq $ getSClause $ head $ getSRules $ head synRuleGs)
           qqParseFuns = vcat $ map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->
                                        let sortFunName = text (C.toLower s : rest)
-                                           dummy = "\"" ++ typeName ++ "__dummy\""
+                                           dummy = "\"" ++ (fromJust $ M.lookup typeName $ getRuleToStartInfo info) ++ "\""
                                            getFun = "get" ++ typeName
                                            dataConstructor = fromJust $ M.lookup typeName typeNameToConstructor
                                        in

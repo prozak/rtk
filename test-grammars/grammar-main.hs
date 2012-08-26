@@ -19,11 +19,14 @@ main = do
     file <- getGrammarFileName
     content <- readFile file
     let grm = parseGrammar . alexScanTokens $ content
-    let rl = [rule| Rule = id '=' Clause ';' 
-                                 | id ':' id '=' Clause ';'
-                                 | id '.' id ':' id '=' Clause ';'
-                                 | '.' id ':' id '=' Clause ';' ;|]
-    let grm1 = [grammar|
+    let [grammar|grammar $strLit:str ;|] = [grammar|grammar 'test' ;|]
+    let [rule|Rule = $clause:cl1 | $clause:cl2 | $clause:cl3 | $clause:cl4 ;|] = [rule| Rule = id '=' Clause ';' 
+                                                                                         | id ':' id '=' Clause ';'
+                                                                                         | id '.' id ':' id '=' Clause ';'
+                                                                                         | '.' id ':' id '=' Clause ';' ;|]
+--    putStrLn $ show cl1
+    putStrLn $ show str
+    let [grammar|$grammar:grm1|] = [grammar|
                             grammar 'Grammar';
 
                             Grammar = 'grammar' str ';' Rule* ;
@@ -60,5 +63,6 @@ main = do
                             Ignore: ws = [ \t\n]+ ;
                             Ignore: comment = '#' .* '\n' ;
     |]
-    putStrLn $ show rl
-    putStrLn $ ppShow grm
+    --putStrLn $ show rl
+    --putStrLn $ ppShow grm1
+    return 0

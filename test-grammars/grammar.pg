@@ -1,11 +1,11 @@
 grammar 'Grammar';
 
-Grammar = 'grammar' str ';' Rule* ;
+Grammar = 'grammar' StrLit ';' Rule* ;
 
-Rule = id '=' Clause ';' 
-     | id ':' id '=' Clause ';'
-     | id '.' id ':' id '=' Clause ';'
-     | '.' id ':' id '=' Clause ';' ;
+Rule = Name '=' Clause ';' 
+     | Name ':' Name '=' Clause ';'
+     | Name '.' Name ':' Name '=' Clause ';'
+     | '.' Name ':' Name '=' Clause ';' ;
 
 Clause = Clause2 + ~'|' ;
 
@@ -21,12 +21,15 @@ Clause: Clause4 = Clause5 '*' OptDelim
                 | ,Clause5 ;
 
 Clause: Clause5 = '(' ,Clause ')'
-                | id
-                | str
+                | Name
+                | StrLit
                 | '.'
                 | regexplit ;
 
 OptDelim = ('~' Clause5)? ;
+
+StrLit = str ;
+Name = id ;
 
 id = [a-zA-Z][A-Za-z0-9_]* ;
 str = '\'' ([^'] | '\\\'')* '\'' ;

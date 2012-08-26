@@ -8,7 +8,7 @@ import GenAST
 import Grammar
 
 genY :: NormalGrammar -> String
-genY g@(NormalGrammar name srules lex_rules) = 
+genY g@(NormalGrammar name srules lex_rules info) = 
     render $ vcat [
                    text header,
                    nl,

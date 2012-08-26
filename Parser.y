@@ -105,9 +105,20 @@ data IClause = IId { getIdStr :: ID }
              | IIgnore IClause
               deriving (Eq, Show, Typeable, Data)
 
+data GrammarInfo =
+  GrammarInfo
+  {
+     getStartRuleName :: Maybe String,
+     getRuleToStartInfo :: Map.Map String String,
+     getRuleToAntiInfo :: Map.Map String String,
+     getNameCounter :: Int
+  }
+  deriving (Eq, Show, Typeable, Data)
+
 data NormalGrammar = NormalGrammar { getNGrammarName :: String, 
                                      getSyntaxRuleGroups :: [SyntaxRuleGroup], 
-                                     getLexicalRules :: [LexicalRule] }
+                                     getLexicalRules :: [LexicalRule],
+				     getGrammarInfo :: GrammarInfo }
                      deriving (Eq, Show, Typeable, Data)
 
 data SyntaxRuleGroup = SyntaxRuleGroup { getSDataTypeName :: ID,

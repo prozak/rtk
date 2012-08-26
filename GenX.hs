@@ -6,7 +6,7 @@ import Text.PrettyPrint
 import Grammar
 
 genX :: NormalGrammar -> String
-genX g@(NormalGrammar name _ lex_rules) = 
+genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = lex_rules}) = 
     render $ vcat [
                    header,
                    nl,
