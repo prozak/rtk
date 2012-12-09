@@ -4,8 +4,10 @@ module GenY (genY)
 import Parser
 import Text.PrettyPrint
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 import GenAST
 import Grammar
+import Data.List
 
 genY :: NormalGrammar -> String
 genY g@(NormalGrammar name srules lex_rules info) = 
@@ -27,7 +29,8 @@ genY g@(NormalGrammar name srules lex_rules info) =
                    text footer
                   ]
     where normal_rules = normalRules srules
-          rulesDoc = vcat (map genRule normal_rules)
+          listRuleSet = makeListRuleSet normal_rules
+          rulesDoc = vcat (map (genRule listRuleSet) normal_rules)
           lexDoc = vcat (map genToken lex_rules)
           nl = text ""
           header = "{\n\
@@ -39,6 +42,13 @@ genY g@(NormalGrammar name srules lex_rules info) =
           ast = genAST g
           footer = "{\n" ++ ast ++ "\n}"
 
+type ListRuleSet = Set.Set ID
+
+makeListRuleSet :: [SyntaxRule] -> ListRuleSet
+makeListRuleSet lst = Set.fromList $ map getSRuleName $ filter isMany lst
+    where isMany (SyntaxRule { getSClause = STMany{} }) = True
+          isMany _ = False
+
 genToken :: LexicalRule -> Doc
 genToken LexicalRule{ getLRuleName = name, getLRuleDataType = dtn } =
     case dtn of
@@ -46,43 +56,44 @@ genToken LexicalRule{ getLRuleName = name, getLRuleDataType = dtn } =
         "Ignore"  -> empty
         _         -> combineAlt (text name) (text "L." <> text (tokenName name) <+> text "$$")
 
-genRule :: SyntaxRule -> Doc
-genRule SyntaxRule{ getSClause = cl, getSRuleName = name } = (text name) <+> (text ":") <+> (genTopClause name cl) <> text "\n"
+genRule :: ListRuleSet -> SyntaxRule -> Doc
+genRule listRuleSet SyntaxRule{ getSClause = cl, getSRuleName = name } = 
+    (text name) <+> (text ":") <+> (genTopClause listRuleSet name cl) <> text "\n"
 
-genTopClause :: String -> SyntaxTopClause -> Doc
+genTopClause :: ListRuleSet -> String -> SyntaxTopClause -> Doc
 
 -- Ignore is not expected in the cl
-genTopClause rn (STMany op cl Nothing) = joinAlts [base, step]
+genTopClause lrs rn (STMany op cl Nothing) = joinAlts [base, step]
     where (baseAlt,alt) = case op of
                             STStar -> ("[]", emptyAlt)
                             STPlus -> ("[$1]", clDoc)
           base = combineAlt alt (text baseAlt)
-          step = combineAlt (clDoc <+> text rn) (text "$1 : $2")
+          step = combineAlt (text rn <+> clDoc) (text "$2 : $1")
           clDoc = genSimpleClause cl
 
-genTopClause rn (STMany op cl (Just cl1)) = joinAlts [base, step]
+genTopClause lrs rn (STMany op cl (Just cl1)) = joinAlts [base, step]
     where (baseAlt,alt) = case op of
                             STStar -> ("[]", emptyAlt)
                             STPlus -> ("[$1]", clDoc)
           base = combineAlt alt (text baseAlt)
-          step = combineAlt (clDoc <+> genSimpleClause cl1 <+> text rn) (text "$1 : $3")
+          step = combineAlt (text rn <+> genSimpleClause cl1 <+> clDoc) (text "$3 : $1")
           clDoc = genSimpleClause cl
 
-genTopClause _ (STOpt cl) = joinAlts [present, not_present]
+genTopClause lrs _ (STOpt cl) = joinAlts [present, not_present]
     where present = combineAlt (genSimpleClause cl)
                                (text "Just" <+> constructor_call)
-          constructor_call = hsep $ enumClauses [cl]
+          constructor_call = hsep $ enumClauses lrs [cl]
           not_present = combineAlt emptyAlt (text "Nothing")
 
-genTopClause rn (STAltOfSeq clauses) = joinAlts $ map genClauseSeq clauses
+genTopClause lrs rn (STAltOfSeq clauses) = joinAlts $ map (genClauseSeq lrs) clauses
 
-genClauseSeq :: STSeq -> Doc
-genClauseSeq (STSeq constructor clauses) | isClauseSeqLifted clauses = combineAlt rule production
+genClauseSeq :: ListRuleSet -> STSeq -> Doc
+genClauseSeq lrs (STSeq constructor clauses) | isClauseSeqLifted clauses = combineAlt rule production
     where rule = hsep (map genSimpleClause clauses)
-          production = hsep $ (enumClauses clauses)
-genClauseSeq (STSeq constructor clauses)  = combineAlt rule production
+          production = hsep $ (enumClauses lrs clauses)
+genClauseSeq lrs (STSeq constructor clauses)  = combineAlt rule production
     where rule = hsep (map genSimpleClause clauses)
-          production = hsep $ (text constructor) : (enumClauses clauses)
+          production = hsep $ (text constructor) : (enumClauses lrs clauses)
 
 genSimpleClause :: SyntaxSimpleClause -> Doc
 -- TODO: check whether reverse is needed (monad again) (switch to left recursion)
@@ -91,11 +102,16 @@ genSimpleClause (SSIgnore id) = text id
  -- TODO: no lifted yet, need monad with rules map here
 genSimpleClause (SSLifted id) = text id
 
-enumClauses :: [SyntaxSimpleClause] -> [Doc]
-enumClauses cls = f cls 1 []
-    where f (ssc:tail) count acc | isNotIgnored ssc = f tail (count + 1) ((text "$" <> int count) : acc)
+enumClauses :: ListRuleSet -> [SyntaxSimpleClause] -> [Doc]
+enumClauses lrs cls = f cls 1 []
+    where f (ssc:tail) count acc | isNotIgnored ssc = f tail (count + 1) 
+                                                        (if Set.member (getSID ssc) lrs
+                                                            then ((text "(reverse $" <> int count <> text ")") : acc) 
+                                                            else ((text "$" <> int count) : acc))
           f (_:       tail) count acc               = f tail (count + 1) acc
           f []              _     acc               = reverse acc
+          getSID (SSId n) = n
+          getSID (SSLifted n) = n
 
 emptyAlt = text "{- empty -}"
 

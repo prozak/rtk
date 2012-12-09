@@ -244,9 +244,9 @@ addQQVarsToGrammarHelper = do
                                                in
                                                case topclause of
                                                  STAltOfSeq altseqs ->
-                                                   case L.find (\(STSeq _ ssc) -> isJust $ L.find (\sc -> case sc of
-                                                                                                    SSLifted _ -> True
-                                                                                                    _ -> False) ssc) altseqs of
+                                                   case L.find (\(STSeq _ (sc : ssc)) -> case sc of
+                                                                                            SSLifted _ -> True
+                                                                                            _ -> False) altseqs of
                                                      Just _ -> sr
                                                      Nothing -> SyntaxRule name (STAltOfSeq $ toAdd : altseqs)
                                                  {-STOpt ssc ->

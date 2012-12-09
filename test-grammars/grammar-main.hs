@@ -24,7 +24,7 @@ main = do
                                                                                          | id ':' id '=' Clause ';'
                                                                                          | id '.' id ':' id '=' Clause ';'
                                                                                          | '.' id ':' id '=' Clause ';' ;|]
---    putStrLn $ show cl1
+    putStrLn $ show cl1
     putStrLn $ show str
     let [grammar|$grammar:grm1|] = [grammar|
                             grammar 'Grammar';
@@ -64,5 +64,5 @@ main = do
                             Ignore: comment = '#' .* '\n' ;
     |]
     --putStrLn $ show rl
-    --putStrLn $ ppShow grm1
+    putStrLn $ ppShow grm
     return 0

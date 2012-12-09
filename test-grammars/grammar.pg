@@ -7,9 +7,11 @@ Rule = Name '=' Clause ';'
      | Name '.' Name ':' Name '=' Clause ';'
      | '.' Name ':' Name '=' Clause ';' ;
 
-Clause = Clause2 + ~'|' ;
+Clause = Clause '|' Clause2
+         | ,Clause2;
 
-Clause: Clause2 = Clause3 * ;
+Clause: Clause2 = Clause2 Clause3
+                  | ,Clause3 ;
 
 Clause: Clause3 = ',' Clause4 
                 | '!' Clause4
