@@ -27,15 +27,19 @@ import Control.Monad.State.Strict hiding (lift)
 data NormalizationState = NormalizationState {
                                               normSRules :: M.Map ID [SyntaxRule],
                                               normLRules :: [LexicalRule],
-                                              nameCounter :: Int
+                                              nameCounter :: Int,
+                                              normAntiRules :: [AntiRule]
                                              }
 type Normalization a = State NormalizationState a
 
-newName :: Normalization String
-newName = do
+newNamePrefixed :: String -> Normalization String
+newNamePrefixed prefix = do
   n <- gets nameCounter
   modify $ (\ s -> s{nameCounter = n + 1})
-  return $ "Rule__" ++ (show n)
+  return $ prefix ++ (show n)
+
+newName :: Normalization String
+newName = newNamePrefixed "Rule_"
 
 addRule :: ID -> ID -> SyntaxTopClause -> Normalization ()
 addRule tdName ruleName clause = do
@@ -43,10 +47,57 @@ addRule tdName ruleName clause = do
   modify (\ s@NormalizationState{ normSRules = nr } -> s{ normSRules = M.alter doAdd tdName nr } )
   return ()
 
+addAntiRule :: AntiRule -> Normalization ()
+addAntiRule rl = do
+  modify (\ s@NormalizationState{ normAntiRules = na } -> s{ normAntiRules = rl : na } )
+  return ()
+
+addQQLexRule :: ID -> Normalization ID
+addQQLexRule (s:rest) = do
+  let lowername = ((toLower s) : rest)
+  termKindName <- newNamePrefixed $ "qq_" ++ lowername
+  addLexicalRule $ LexicalRule "String" "(tail . dropWhile (/= ':'))" termKindName 
+                     (IAlt [ISeq [IStrLit "$",
+                                  IStrLit lowername,
+                                  IStrLit ":",
+                                  IRegExpLit "a-zA-Z_",
+                                  IStar (IRegExpLit "A-Za-z0-9_") Nothing]])
+  return termKindName
+
 addLexicalRule :: LexicalRule -> Normalization ()
 addLexicalRule lr = do
   modify $ \s@NormalizationState{ normLRules = nr} -> s{ normLRules = lr:nr }
   return ()
+
+addRuleWithQQ :: ID -> ID -> SyntaxTopClause -> Normalization ()
+addRuleWithQQ tdName ruleName clause = do
+  case clause of
+    STAltOfSeq altseqs ->
+        case L.find (\(STSeq _ ssc) -> case ssc of
+                                         (SSLifted _ : others) -> True
+                                         _ -> False)
+                    altseqs of
+          Just _ -> addRule tdName ruleName clause
+          Nothing -> qqAdd altseqs
+    STMany op (SSId rule) mcl -> do
+                -- TODO: td name for the rule
+                newRule <- addListProxyRule rule rule ruleName
+                addRule tdName ruleName $ STMany op (SSId newRule) mcl
+    _ -> addRule tdName ruleName clause
+  where qqAdd altseqs = do
+          qqLexRule <- addQQLexRule tdName
+          constr <- newNamePrefixed $ "Anti_" ++ tdName
+          addAntiRule $ AntiRule tdName tdName constr False
+          addRule tdName ruleName $ STAltOfSeq (STSeq constr [SSId qqLexRule] : altseqs)
+
+addListProxyRule :: ID -> ID -> ID -> Normalization ID
+addListProxyRule tdName elemRuleName listName = do
+  ruleName <- newNamePrefixed $ "ListElem_" ++ listName
+  qqLexRule <- addQQLexRule listName
+  constr <- newNamePrefixed $ "Anti_" ++ listName
+  addAntiRule $ AntiRule tdName listName constr True
+  addRule tdName ruleName $ STAltOfSeq [STSeq constr [SSId qqLexRule], STSeq "" [SSLifted elemRuleName]]
+  return ruleName
 
 extractClause :: IClause -> Normalization ID
 extractClause cl = do
@@ -138,7 +189,7 @@ checkNormalClauseSeq ic = do
 normalizeRule :: IRule -> Normalization ()
 normalizeRule r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIClause=cl} | not (isLexicalRule rn) = do
   newCl <- checkNormalClause cl
-  addRule (maybe rn id dtn) rn newCl
+  addRuleWithQQ (maybe rn id dtn) rn newCl
 normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, getIClause=cl} | (isLexicalRule rn) = do
   let (dtn1, df1) = case (dtn, df) of
                       (Nothing, Nothing) -> ("String", "id")
@@ -173,7 +224,7 @@ addStartGroup :: NormalGrammar -> NormalGrammar
 addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = tokens , getGrammarInfo = info } =
   let (ruleToStartInfo, counter) = foldr
                                      (\el (map, counter) -> 
-                                        (M.insert (getSDataTypeName el) ("tok__" ++ getSDataTypeName el ++ "__dummy__" ++ show counter) map, counter + 1))
+                                        (M.insert (getSDataTypeName el) ("tok_" ++ getSDataTypeName el ++ "_dummy_" ++ show counter) map, counter + 1))
                                      (M.empty, getNameCounter info)
                                      rules
       mainRuleClause = STSeq "" [SSId $ getSDataTypeName $ head rules]
@@ -193,84 +244,16 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
            getLexicalRules = newTokens ++ tokens,
            getGrammarInfo = info { getStartRuleName = Just startRuleName, getNameCounter = counter, getRuleToStartInfo = ruleToStartInfo }}
 
-type QQState a = State NormalGrammar a
-
-genQQName :: String -> QQState String
-genQQName str =
-  do
-    counter <- gets (getNameCounter . getGrammarInfo)
-    modify (\s@NormalGrammar{ getGrammarInfo = info } -> s { getGrammarInfo = info { getNameCounter = counter + 1 }})
-    return $ "tok__" ++ str ++ "__" ++ (show counter)
-
-addQQVarsToGrammarHelper :: QQState ()
-addQQVarsToGrammarHelper = do
-  tokens <- gets getLexicalRules
-  let colonFound = L.find (\token -> case token of
-                                       LexicalRule "Keyword" "id" _ (IStrLit ":") -> True
-                                       _ -> False)
-                     tokens
-  let idFound = L.find (\token -> case token of
-                                    LexicalRule "String" "id" _ (IAlt [ISeq [IRegExpLit "a-zA-Z",
-                                                                             IStar (IRegExpLit "A-Za-z0-9_") Nothing]]) -> True
-                                    _ -> False)
-                  tokens
-  colonName <- genQQName "colon"
-  let colon = case colonFound of
-                Just token -> token
-                Nothing -> LexicalRule "Keyword" "id" colonName (IStrLit ":")
-  idName <- genQQName "id"
-  let id = case idFound of
-             Just token -> token
-             Nothing -> LexicalRule "String" "id" idName (IAlt [ISeq [IRegExpLit "a-zA-Z",
-                                                                IStar (IRegExpLit "a-zA-Z0-9_") Nothing]])
-  case colonFound of
-    Nothing -> modify (\s@NormalGrammar{getLexicalRules = tokens} -> s{getLexicalRules = colon : tokens})
-    _ -> return ()
-  case idFound of
-    Nothing -> modify (\s@NormalGrammar{getLexicalRules = tokens} -> s{getLexicalRules = tokens ++ [id]})
-    _ -> return ()
-  ruleGs <- gets getSyntaxRuleGroups
-  newRuleGs <-
-    mapM (\(SyntaxRuleGroup name@(s : rest) rules) -> do
-             let lowername = ((toLower s) : rest)
-             termKindName <- genQQName lowername
-             let termKind = LexicalRule "Keyword" "id" termKindName (IStrLit $ "$" ++ lowername)
-             modify (\s@NormalGrammar{getLexicalRules = tokens} -> s {getLexicalRules = termKind : tokens})
-             return (SyntaxRuleGroup name
-                                     (map (\sr@(SyntaxRule name topclause) ->
-                                             let toAdd = STSeq "$anti$" [SSIgnore (getLRuleName termKind),
-                                                                         SSIgnore (getLRuleName colon),
-                                                                         SSId (getLRuleName id)]
-                                               in
-                                               case topclause of
-                                                 STAltOfSeq altseqs ->
-                                                   case L.find (\(STSeq _ (sc : ssc)) -> case sc of
-                                                                                            SSLifted _ -> True
-                                                                                            _ -> False) altseqs of
-                                                     Just _ -> sr
-                                                     Nothing -> SyntaxRule name (STAltOfSeq $ toAdd : altseqs)
-                                                 {-STOpt ssc ->
-                                                   SyntaxRule name (STAltOfSeq $ [toAdd, STSeq "" [], STSeq "" [ssc]])-}
-                                                 _ -> sr)
-                                      rules))) $ tail ruleGs
-  modify (\s@NormalGrammar{getSyntaxRuleGroups = ruleGs} -> s {getSyntaxRuleGroups = head ruleGs : newRuleGs})
-
-addQQVarsToGrammar :: NormalGrammar -> NormalGrammar
-addQQVarsToGrammar ng =
-  let (_, nng) = runState addQQVarsToGrammarHelper ng
-    in nng
-
 normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar =
   let firstID = getIRuleName $ head $ getIRules grammar
-      (_, NormalizationState nrs nls counter) = runState (doNM grammar) (NormalizationState M.empty [] 0)
+      (_, NormalizationState nrs nls counter antiRules) = runState (doNM grammar) (NormalizationState M.empty [] 0 [])
       firstRuleGroupRules = fromJust $ M.lookup firstID nrs
       nrs1 = M.delete firstID nrs
       firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
       otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
       groups = firstGroup : otherGroups
-    in addQQVarsToGrammar $ addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls (GrammarInfo Nothing M.empty M.empty counter)
-    --in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls (GrammarInfo Nothing M.empty M.empty counter)
+    in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules (GrammarInfo Nothing M.empty counter)
 
 data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String, antiVarMap :: M.Map String String }
 type FillName a = State FillNameState a
@@ -283,17 +266,14 @@ newConstructorName = do
     return $ "Ctr__" ++ b ++ "__" ++  (show n)
 
 fillConstructorName :: String -> STSeq -> FillName STSeq
-fillConstructorName dataName (STSeq "$anti$" l) = do
-    n <- newConstructorName
-    modify $ \s -> s{ antiVarMap = M.insert dataName n $ antiVarMap s}
-    return $ STSeq n l
-fillConstructorName dataName (STSeq _ l) = do
+fillConstructorName dataName (STSeq "" l) = do
     n <- newConstructorName
     return $ STSeq n l
+fillConstructorName dataName seq = return seq 
 
 fillConstructorNames :: NormalGrammar -> NormalGrammar
 fillConstructorNames ng@NormalGrammar { getSyntaxRuleGroups = rules, getGrammarInfo = info } = 
-    ng { getSyntaxRuleGroups = newrules, getGrammarInfo = info { getRuleToAntiInfo = newmap }}
+    ng { getSyntaxRuleGroups = newrules, getGrammarInfo = info }
       where (newrules, newmap) = foldr ( \r (res, oldmap) ->
                                             let (rule, newmap) = doRename (getSDataTypeName r) r in (rule:res, M.union newmap oldmap)) ([], M.empty) rules
             doRename n dat = let (dat1, (FillNameState _ _ map)) = runState (everywhereM (mkM (fillConstructorName n)) dat) (FillNameState 0 n M.empty)

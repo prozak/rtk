@@ -1,6 +1,8 @@
 grammar 'Grammar';
 
-Grammar = 'grammar' StrLit ';' Rule* ;
+Grammar = 'grammar' StrLit ';' RuleList ;
+
+RuleList = Rule *;
 
 Rule = Name '=' Clause ';' 
      | Name ':' Name '=' Clause ';'

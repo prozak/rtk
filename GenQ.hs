@@ -9,7 +9,7 @@ import qualified Data.Map as M
 import Data.Maybe
 
 genQ :: NormalGrammar -> String
-genQ g@(NormalGrammar name synRuleGs _ info) =
+genQ g@(NormalGrammar name synRuleGs _ antiRules info) =
     render $ vcat [
                    header,
                    nl,
@@ -21,7 +21,8 @@ genQ g@(NormalGrammar name synRuleGs _ info) =
                    qqParseFuns,
                    nl
                   ]
-    where header = vcat [text "module" <+> text name <> text "QQ",
+    where header = vcat [text "{-# LANGUAGE TemplateHaskell #-}",
+                         text "module" <+> text name <> text "QQ",
                          text "where ",
                          nl,
                          text "import Data.Generics",
@@ -35,31 +36,57 @@ genQ g@(NormalGrammar name synRuleGs _ info) =
           pat = "Pat"
           exp = "Exp"
           qqFunName typ = text "quote" <> text name <> text typ
-          typeNames = map getSDataTypeName $ filter (\srg -> case srg of
-                                                               SyntaxRuleGroup _ [SyntaxRule _ (STMany _ _ _)] -> False
-                                                               SyntaxRuleGroup _ [SyntaxRule _ (STOpt _ )] -> False
-                                                               _ -> True)
-                                                    $ tail synRuleGs
+          -- typeNames = map getSDataTypeName $ filter (\srg -> case srg of
+          --                                                      SyntaxRuleGroup _ [SyntaxRule _ (STMany _ _ _)] -> False
+          --                                                      SyntaxRuleGroup _ [SyntaxRule _ (STOpt _ )] -> False
+          --                                                      _ -> True)
+          --                                           $ tail synRuleGs
+          typeNames = map arQQName antiRules
           antiNameGen typ name = "anti" ++ name ++ typ
           antiTermGen typ = map (antiNameGen typ) typeNames
           antiExprsGen typ = foldr (\antiTerm res -> res <+> text "`extQ`" <+> text antiTerm) (text "const Nothing") $ antiTermGen typ
-          antiFunsGen typ = map (\name -> 
-                                        let antiName = (antiNameGen typ name)
-                                            antiPat = "Anti" ++ name
+          antiFunsGen typ = map (\(AntiRule name qqName consName isList) -> 
+                                        let antiName = (antiNameGen typ qqName)
+                                            antiElName = antiNameGen typ name
                                             varConstructor = case typ of
                                                                 "Pat" -> text "TH.varP"
                                                                 "Exp" -> text "TH.varE"
+                                            listPatGen =  vcat [text antiName <+> text ":: [" <+> text name 
+                                                                             <+> text "] -> Maybe (TH.Q TH.Pat)",
+                                                               text antiName <+> text "[" <> text consName
+                                                                             <+> text "v] = Just $" <+> varConstructor 
+                                                                             <+> text "(TH.mkName v)",
+                                                               text antiName <+> text "_ = Nothing"]
+                                            listExpGen = vcat [text antiName <+> text ":: [" <+> text name 
+                                                                             <+> text "] -> Maybe (TH.Q TH.Exp)",
+                                                               text antiName <+> text "((" <> text consName
+                                                                             <+> text "v) :rest ) =" 
+                                                                             <+> vcat [ text "let" <+> vcat [ text "restExp =" 
+                                                                                                                   <+> dataToExpCall "Exp" "rest",
+                                                                                                              text "lvar = TH.varE $ TH.mkName v"
+                                                                                                            ],
+                                                                                        text "in Just [| $lvar ++ $restExp |]" ],
+                                                               text antiName <+> text "_ = Nothing"]
+                                            nonListGen = vcat [text antiName <+> text "::" <+> text name 
+                                                                             <+> text "-> Maybe (TH.Q TH." <> text typ <> text ")",
+                                                               text antiName <+> text "(" <> text consName
+                                                                             <+> text "v) = Just $" <+> varConstructor 
+                                                                             <+> text "(TH.mkName v)",
+                                                               text antiName <+> text "_ = Nothing"]
+
                                         in
-                                          vcat [text antiName <+> text "::" <+> text name <+> text "-> Maybe (TH.Q TH." <> text typ <> text ")",
-                                                text antiName <+> text "(" <> text (fromJust $ M.lookup name (getRuleToAntiInfo info))
-                                                              <+> text "v) = Just $" <+> varConstructor <+> text "(TH.mkName v)",
-                                                text antiName <+> text "_ = Nothing"])
-                                typeNames
+                                          if isList
+                                             then if typ == "Pat"
+                                                    then listPatGen
+                                                    else listExpGen
+                                             else nonListGen )
+                                antiRules
           qqFunProtoGen typ = qqFunName typ <+> text ":: Data a => String -> ("
                                  <+> text (fromJust $ getStartRuleName info) <+> text "-> a) -> String -> TH." <> text typ <> text "Q"
+          dataToExpCall typ var = text "  dataTo" <> text typ <> text "Q (" <> antiExprsGen typ <> text ") " <> text var
           qqFunImplGen typ = vcat [qqFunName typ <+> text "dummy func s = do",
                                    text "  let expr = func $ parse" <> text name <+> text "$ alexScanTokens (dummy ++ \" \" ++ s ++ \" \" ++ dummy)",
-                                   text "  dataTo" <> text typ <> text "Q (" <> antiExprsGen typ <> text ") expr"]
+                                   dataToExpCall typ "expr"]
           qqFunType = qqFunName "Type" <+> text "s = return TH.ListT"
           qqFunDecs = qqFunName "Decs" <+> text "s = return []"
           qqFuns = vcat [qqFunProtoGen exp,

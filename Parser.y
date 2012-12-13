@@ -110,14 +110,21 @@ data GrammarInfo =
   {
      getStartRuleName :: Maybe String,
      getRuleToStartInfo :: Map.Map String String,
-     getRuleToAntiInfo :: Map.Map String String,
      getNameCounter :: Int
   }
   deriving (Eq, Show, Typeable, Data)
 
+data AntiRule = AntiRule { arTypeName :: ID,
+                           arQQName :: ID,
+                           arConstr :: ID ,
+                           arIsList :: Bool 
+                         }
+                     deriving (Eq, Show, Typeable, Data)
+
 data NormalGrammar = NormalGrammar { getNGrammarName :: String, 
                                      getSyntaxRuleGroups :: [SyntaxRuleGroup], 
                                      getLexicalRules :: [LexicalRule],
+                                     getAntiRules :: [AntiRule],
 				     getGrammarInfo :: GrammarInfo }
                      deriving (Eq, Show, Typeable, Data)
 

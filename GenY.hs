@@ -10,7 +10,7 @@ import Grammar
 import Data.List
 
 genY :: NormalGrammar -> String
-genY g@(NormalGrammar name srules lex_rules info) = 
+genY g@(NormalGrammar name srules lex_rules _ info) = 
     render $ vcat [
                    text header,
                    nl,

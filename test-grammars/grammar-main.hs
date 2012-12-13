@@ -26,7 +26,7 @@ main = do
                                                                                          | '.' id ':' id '=' Clause ';' ;|]
     putStrLn $ show cl1
     putStrLn $ show str
-    let [grammar|$grammar:grm1|] = [grammar|
+    let [grammar|grammar $strLit:nm; $rule:r1 $ruleList:rl1|] = [grammar|
                             grammar 'Grammar';
 
                             Grammar = 'grammar' str ';' Rule* ;
@@ -64,5 +64,5 @@ main = do
                             Ignore: comment = '#' .* '\n' ;
     |]
     --putStrLn $ show rl
-    putStrLn $ ppShow grm
+    putStrLn $ ppShow [ruleList| $ruleList:rl1 RuleAAA = $clause:cl1; |]
     return 0
