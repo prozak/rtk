@@ -7,6 +7,7 @@ import GrammarLexer
 import GrammarParser
 import GrammarQQ
 import Text.Show.Pretty
+import qualified Language.Haskell.TH as TH
 
 getGrammarFileName = do
     args <- getArgs
@@ -20,12 +21,18 @@ main = do
     content <- readFile file
     let grm = parseGrammar . alexScanTokens $ content
     let [grammar|grammar $strLit:str ;|] = [grammar|grammar 'test' ;|]
-    let [rule|Rule = $clause:cl1 | $clause:cl2 | $clause:cl3 | $clause:cl4 ;|] = [rule| Rule = id '=' Clause ';' 
-                                                                                         | id ':' id '=' Clause ';'
-                                                                                         | id '.' id ':' id '=' Clause ';'
-                                                                                         | '.' id ':' id '=' Clause ';' ;|]
---    putStrLn $ show cl1
-    putStrLn $ show str
+    let [rule|$name:nm = $clauseItemList:cl1 | $clauseItemList:cl2 | $clauseItemList:cl3 | $clauseItemList:cl4 ;|] = [rule| Rule = id '=' Clause ';' 
+                                                                                                                             | id ':' id '=' Clause ';'
+                                                                                                                             | id '.' id ':' id '=' Clause ';'
+                                                                                                                             | '.' id ':' id '=' Clause ';' ;|]
+    let [rule|$name:nm = $clauseList:cl ;|] = [rule| Rule = id '=' Clause ';' 
+                                                      | id ':' id '=' Clause ';'
+                                                      | id '.' id ':' id '=' Clause ';'
+                                                      | '.' id ':' id '=' Clause ';' ;|]
+    let [clause|$clause:cl1|] = [clause|'.' id ':' id '=' Clause ';'|]
+    putStrLn $ show cl
+    putStrLn $ show cl1
+    putStrLn $ show nm
     let [grammar|$grammar:grm1|] = [grammar|
                             grammar 'Grammar';
 

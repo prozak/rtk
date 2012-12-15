@@ -17,6 +17,7 @@ tokens:-
 
     $white+             ;
     "#".*               ;
+    "/*"([\n]|.|[\r])*"*/"          ;
     grammar             {\_ -> Grammar }
     "="                {\_ -> Eq }
     ";"                 {\_ -> RlEnd }

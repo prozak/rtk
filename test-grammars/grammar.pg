@@ -1,32 +1,34 @@
 grammar 'Grammar';
 
-Grammar = 'grammar' StrLit ';' Rule* ;
+Grammar = 'grammar' StrLit ';' RuleList ;
 
-Rule = Name '=' Clause ';' 
-     | Name ':' Name '=' Clause ';'
-     | Name '.' Name ':' Name '=' Clause ';'
-     | '.' Name ':' Name '=' Clause ';' ;
+RuleList = Rule* ;
 
-Clause = Clause2 + ~'|' ;
+Rule = Name '=' ClauseList ';' 
+     | Name ':' Name '=' ClauseList ';'
+     | Name '.' Name ':' Name '=' ClauseList ';'
+     | '.' Name ':' Name '=' ClauseList ';' ;
 
-Clause: Clause2 = Clause3 * ;
+ClauseList = ClauseItemList + ~'|' ;
 
-Clause: Clause3 = ',' Clause4 
-                | '!' Clause4
-                | ,Clause4 ;
+ClauseItemList = ClauseExpr * ;
 
-Clause: Clause4 = Clause5 '*' OptDelim
-                | Clause5 '+' OptDelim
-                | Clause5 '?'
-                | ,Clause5 ;
+ClauseExpr = ',' ClauseExpr1
+                | '!' ClauseExpr1
+                | ,ClauseExpr1 ;
 
-Clause: Clause5 = '(' ,Clause ')'
+ClauseExpr: ClauseExpr1 = ClauseExpr2 '*' OptDelim
+                | ClauseExpr2 '+' OptDelim
+                | ClauseExpr2 '?'
+                | ,ClauseExpr2 ;
+
+ClauseExpr: ClauseExpr2 = '(' ClauseList ')'
                 | Name
                 | StrLit
                 | '.'
                 | regexplit ;
 
-OptDelim = ('~' Clause5)? ;
+OptDelim = ('~' ClauseExpr2)? ;
 
 StrLit = str ;
 Name = id ;
@@ -36,4 +38,5 @@ str = '\'' ([^'] | '\\\'')* '\'' ;
 regexplit = '[' ([^\]] | '\\]')* ']' ;
 Ignore: ws = [ \t\n]+ ;
 Ignore: comment = '#' .* '\n' ;
+Ignore: comment1 = '/*' ([^\r]|[^\n]|.)* '*/';
 

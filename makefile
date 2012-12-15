@@ -31,5 +31,13 @@ test-grammar: build test-out
 	(cd test-out && ghc --make grammar-main.hs -o main)
 	test-out/main test-grammars/grammar.pg
 
+test-java: build test-out 
+	$(BIN_PATH) test-grammars/java.pg test-out
+	(cd test-out && alex JavaLexer.x)
+	(cd test-out && happy JavaParser.y)
+#	cp test-grammars/grammar-main.hs test-out
+#	(cd test-out && ghc --make grammar-main.hs -o main)
+#	test-out/main test-grammars/grammar.pg
+
 test-t1: test-out build
 	$(BIN_PATH) test-grammars/t1.pg test-out
