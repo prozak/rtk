@@ -75,7 +75,7 @@ doSLNM grammar = do
 
 normalizeStringLiterals :: InitialGrammar -> InitialGrammar
 normalizeStringLiterals grammar = let (InitialGrammar nm rules, StringLiteralsNormalizationState m _) = runState (doSLNM grammar) (StringLiteralsNormalizationState Map.empty 0)
-                                      slRules sm = map (\ (k, v) -> IRule (Just "Keyword") (Just "id") v (IStrLit k)) $ Map.toList sm
+                                      slRules sm = map (\ (k, v) -> IRule (Just "Keyword") (Just "id") v (IStrLit k) []) $ Map.toList sm
                                   in InitialGrammar nm (rules ++ slRules m)
 
 

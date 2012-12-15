@@ -10,7 +10,7 @@ import Grammar
 import Data.List
 
 genY :: NormalGrammar -> String
-genY g@(NormalGrammar name srules lex_rules _ info) = 
+genY g@(NormalGrammar name srules lex_rules _ _ info) = 
     render $ vcat [
                    text header,
                    nl,
@@ -57,6 +57,18 @@ genToken LexicalRule{ getLRuleName = name, getLRuleDataType = dtn } =
         _         -> combineAlt (text name) (text "L." <> text (tokenName name) <+> text "$$")
 
 genRule :: ListRuleSet -> SyntaxRule -> Doc
+-- <Rule>* with separator can only be expressed using two rules in LR grammar
+-- Will do it here 
+genRule listRuleSet SyntaxRule{ getSClause = (STMany STStar cl (Just cl1)), getSRuleName = name } = 
+    let lstName = name ++ "__plus_list_"
+    in
+      vcat [
+            (text lstName) <+> (text ":") <+> (genTopClause listRuleSet lstName 
+                                               (STMany STPlus cl (Just cl1))) <> text "\n",
+            (text name) <+> (text ":") <+> (genOptPlusClause lstName) <> text "\n"
+           ]
+          
+
 genRule listRuleSet SyntaxRule{ getSClause = cl, getSRuleName = name } = 
     (text name) <+> (text ":") <+> (genTopClause listRuleSet name cl) <> text "\n"
 
@@ -71,11 +83,8 @@ genTopClause lrs rn (STMany op cl Nothing) = joinAlts [base, step]
           step = combineAlt (text rn <+> clDoc) (text "$2 : $1")
           clDoc = genSimpleClause cl
 
-genTopClause lrs rn (STMany op cl (Just cl1)) = joinAlts [base, step]
-    where (baseAlt,alt) = case op of
-                            STStar -> ("[]", emptyAlt)
-                            STPlus -> ("[$1]", clDoc)
-          base = combineAlt alt (text baseAlt)
+genTopClause lrs rn (STMany STPlus cl (Just cl1)) = joinAlts [base, step]
+    where base = combineAlt clDoc (text "[$1]")
           step = combineAlt (text rn <+> genSimpleClause cl1 <+> clDoc) (text "$3 : $1")
           clDoc = genSimpleClause cl
 
@@ -86,6 +95,11 @@ genTopClause lrs _ (STOpt cl) = joinAlts [present, not_present]
           not_present = combineAlt emptyAlt (text "Nothing")
 
 genTopClause lrs rn (STAltOfSeq clauses) = joinAlts $ map (genClauseSeq lrs) clauses
+
+genOptPlusClause lstName = joinAlts [present, not_present]
+    where present = combineAlt (text lstName)
+                               (text "$1")
+          not_present = combineAlt emptyAlt (text "[]")
 
 genClauseSeq :: ListRuleSet -> STSeq -> Doc
 genClauseSeq lrs (STSeq constructor clauses) | isClauseSeqLifted clauses = combineAlt rule production

@@ -18,7 +18,8 @@ tokens:-
     $white+             ;
     "#".*               ;
     grammar             {\_ -> Grammar }
-    "="                {\_ -> Eq }
+    "@shortcuts"        {\_ -> Shortcuts }
+    "="                 {\_ -> Eq }
     ";"                 {\_ -> RlEnd }
     ":"                 {\_ -> Colon }
     "|"                 {\_ -> OrClause }
@@ -56,6 +57,7 @@ data Token = Grammar
     | Question
     | Colon
     | Tilde
+    | Shortcuts
       deriving (Eq, Show)
 
 unBackQuote :: String -> String

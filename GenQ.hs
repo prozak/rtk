@@ -1,3 +1,4 @@
+{-# LANGUAGE QuasiQuotes #-}
 module GenQ (genQ)
     where
 
@@ -7,11 +8,48 @@ import Grammar
 import qualified Data.Char as C
 import qualified Data.Map as M
 import Data.Maybe
+import StrQuote
+
+shortCutImports :: Doc
+shortCutImports = vcat $ map text $ lines [str|
+import Text.Regex.Posix
+import Text.Regex.Base
+import qualified Data.Map as M
+import Data.List
+import Data.Maybe
+|]
+
+shortCutDefs :: Doc
+shortCutDefs = vcat $ map text $ lines [str|
+qqPattern = "\\$[A-Za-z_][A-Za-z_0-9]*[^A-Za-z_0-9:]"
+
+qqShortcuts :: M.Map String String
+
+replaceAllPatterns1 :: String -> String
+replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, String, String)
+                          in if match == ""
+                              then pre
+                              else let varName = init $ tail match
+                                       addSym = last match
+                                       ruleVariants = catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts) $ reverse $ inits varName
+                                       rule = case ruleVariants of
+                                                [] -> error $ "Unknown shortcut for " ++ varName
+                                                (rule : _) -> rule
+                                   in pre ++ ('$' : rule ++ ":") ++ varName ++ (replaceAllPatterns1 $ addSym : post)
+
+-- Add ' ' at the end, so regex can match variable in the end of the string
+replaceAllPatterns :: String -> String
+replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
+
+|]
 
 genQ :: NormalGrammar -> String
-genQ g@(NormalGrammar name synRuleGs _ antiRules info) =
+genQ g@(NormalGrammar name synRuleGs _ antiRules shortcuts info) =
     render $ vcat [
                    header,
+                   nl,
+                   shortCutDefs,
+                   qqShortCutsMapDef,
                    nl,
                    qqFuns,
                    nl,
@@ -29,6 +67,7 @@ genQ g@(NormalGrammar name synRuleGs _ antiRules info) =
                          text "import Data.Data",
                          text "import qualified Language.Haskell.TH as TH",
                          text "import Language.Haskell.TH.Quote",
+                         shortCutImports,
                          nl,
                          text "import" <+> text name <> text "Lexer",
                          text "import" <+> text name <> text "Parser"
@@ -85,7 +124,8 @@ genQ g@(NormalGrammar name synRuleGs _ antiRules info) =
                                  <+> text (fromJust $ getStartRuleName info) <+> text "-> a) -> String -> TH." <> text typ <> text "Q"
           dataToExpCall typ var = text "  dataTo" <> text typ <> text "Q (" <> antiExprsGen typ <> text ") " <> text var
           qqFunImplGen typ = vcat [qqFunName typ <+> text "dummy func s = do",
-                                   text "  let expr = func $ parse" <> text name <+> text "$ alexScanTokens (dummy ++ \" \" ++ s ++ \" \" ++ dummy)",
+                                   text "  let s1 = replaceAllPatterns s",
+                                   text "      expr = func $ parse" <> text name <+> text "$ alexScanTokens (dummy ++ \" \" ++ s1 ++ \" \" ++ dummy)",
                                    dataToExpCall typ "expr"]
           qqFunType = qqFunName "Type" <+> text "s = return TH.ListT"
           qqFunDecs = qqFunName "Decs" <+> text "s = return []"
@@ -114,3 +154,11 @@ genQ g@(NormalGrammar name synRuleGs _ antiRules info) =
                                                 nl])
                                  $ tail synRuleGs
           nl = text ""
+          shortCutTypes = map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} -> ((C.toLower s : rest), typeName)) $ tail synRuleGs
+          qqShortCutsMapDef = text "qqShortcuts = M.fromList [ " <> vcat (punctuate (text ",") $ 
+                                                                            map (\(s, r) -> text "(\"" <> text s 
+                                                                                                       <> text "\",\"" 
+                                                                                                       <> text r 
+                                                                                                       <> text "\")") 
+                                                                                (shortCutTypes ++ shortcuts))
+                              <> text "]"

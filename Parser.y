@@ -29,6 +29,7 @@ grammar { L.Grammar }
 '!'     { L.Excl }
 '~'     { L.Tilde }
 ','     { L.Comma }
+'@shortcuts' { L.Shortcuts }
 id  { L.Id $$ }
 str       { L.StrLit $$ }
 rexplit       { L.RegExpLit $$ }
@@ -37,13 +38,27 @@ rexplit       { L.RegExpLit $$ }
 
 Grammar : grammar str ';' Rules { InitialGrammar $2 (reverse $4) }
 
-Rules : Rule                    { [$1] } 
-      | Rules Rule              { $2 : $1 }
+Rules : RuleWithOptions                    { [$1] } 
+      | Rules RuleWithOptions              { $2 : $1 }
 
-Rule : id '=' ClauseAlt ';'         { IRule Nothing Nothing $1 $3 }
-     | id ':' id '=' ClauseAlt ';'  { IRule (Just $1) Nothing $3 $5 }
-     | id '.' id ':' id '=' ClauseAlt ';'  { IRule (Just $1) (Just $3) $5 $7 }
-     | '.' id ':' id '=' ClauseAlt ';'  { IRule Nothing (Just $2) $4 $6 }
+
+RuleWithOptions : OptionsList Rule   { addRuleOptions (reverse $1) $2 }
+
+OptionsList : OptionsList Option    { $2 : $1 }
+            | {- empty -}           { [] }
+
+Option : '@shortcuts' '(' IdListOpt ')'     { OShortcuts (reverse $3)}
+
+IdListOpt : IdList                  { $1 }
+          | {- empty -}             { [] } 
+
+IdList : IdList ',' id              { $3 : $1}
+       | id                         { [$1] }
+
+Rule : id '=' ClauseAlt ';'         { IRule Nothing Nothing $1 $3 [] }
+     | id ':' id '=' ClauseAlt ';'  { IRule (Just $1) Nothing $3 $5 [] }
+     | id '.' id ':' id '=' ClauseAlt ';'  { IRule (Just $1) (Just $3) $5 $7 [] }
+     | '.' id ':' id '=' ClauseAlt ';'  { IRule Nothing (Just $2) $4 $6 [] }
 
 ClauseAlt : ClauseAlt1              { IAlt (reverse $1) }
 
@@ -85,8 +100,15 @@ data InitialGrammar = InitialGrammar { getIGrammarName :: String, getIRules :: [
 data IRule = IRule { getIDataTypeName :: (Maybe String), 
                      getIDataFunc :: (Maybe String), 
                      getIRuleName :: String, 
-                     getIClause :: IClause }
+                     getIClause :: IClause,
+                     getIRuleOptions :: [IOption]}
                   deriving (Eq, Show, Typeable, Data)
+
+data IOption = OShortcuts [ID]
+                  deriving (Eq, Show, Typeable, Data)
+
+addRuleOptions :: [IOption] -> IRule -> IRule
+addRuleOptions opts rule = rule{ getIRuleOptions = opts ++ (getIRuleOptions rule)}                        
 
 type ConstructorName = String
 
@@ -125,6 +147,7 @@ data NormalGrammar = NormalGrammar { getNGrammarName :: String,
                                      getSyntaxRuleGroups :: [SyntaxRuleGroup], 
                                      getLexicalRules :: [LexicalRule],
                                      getAntiRules :: [AntiRule],
+                                     getShortcuts :: [(String, String)],
 				     getGrammarInfo :: GrammarInfo }
                      deriving (Eq, Show, Typeable, Data)
 

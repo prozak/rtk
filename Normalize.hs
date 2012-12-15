@@ -28,7 +28,8 @@ data NormalizationState = NormalizationState {
                                               normSRules :: M.Map ID [SyntaxRule],
                                               normLRules :: [LexicalRule],
                                               nameCounter :: Int,
-                                              normAntiRules :: [AntiRule]
+                                              normAntiRules :: [AntiRule],
+                                              normShortcuts :: [(String, String)]
                                              }
 type Normalization a = State NormalizationState a
 
@@ -47,18 +48,22 @@ addRule tdName ruleName clause = do
   modify (\ s@NormalizationState{ normSRules = nr } -> s{ normSRules = M.alter doAdd tdName nr } )
   return ()
 
+addShortcut :: String -> String -> Normalization ()
+addShortcut strFrom strTo = do
+  modify (\ s@NormalizationState{ normShortcuts = ns } -> s{ normShortcuts = (strFrom, strTo):ns } )
+  return ()
+
 addAntiRule :: AntiRule -> Normalization ()
 addAntiRule rl = do
   modify (\ s@NormalizationState{ normAntiRules = na } -> s{ normAntiRules = rl : na } )
   return ()
 
 addQQLexRule :: ID -> Normalization ID
-addQQLexRule (s:rest) = do
-  let lowername = ((toLower s) : rest)
-  termKindName <- newNamePrefixed $ "qq_" ++ lowername
+addQQLexRule tdName = do
+  termKindName <- newNamePrefixed $ "qq_" ++ tdName
   addLexicalRule $ LexicalRule "String" "(tail . dropWhile (/= ':'))" termKindName 
                      (IAlt [ISeq [IStrLit "$",
-                                  IStrLit lowername,
+                                  IStrLit tdName,
                                   IStrLit ":",
                                   IRegExpLit "a-zA-Z_",
                                   IStar (IRegExpLit "A-Za-z0-9_") Nothing]])
@@ -132,6 +137,15 @@ isNormalClause (Seq _ cs) = all isSimpleClause cs
 isNormalClause _ = False
 -}
 
+processRuleOptions :: IRule -> Normalization ()
+processRuleOptions r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIRuleOptions=ropts} = do
+  let dtName = (maybe rn id dtn)
+  mapM_ (\ opt -> case opt of
+                    OShortcuts lst -> mapM_ (\ shortcut -> do
+                                               addShortcut shortcut dtName
+                                               return ()) lst
+                    ) ropts
+
 checkSimpleClause :: IClause -> Normalization SyntaxSimpleClause
 checkSimpleClause c@(IId id) = return $ SSId id
 checkSimpleClause c@(ILifted (IId id)) = return $ SSLifted id
@@ -188,6 +202,7 @@ checkNormalClauseSeq ic = do
 
 normalizeRule :: IRule -> Normalization ()
 normalizeRule r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIClause=cl} | not (isLexicalRule rn) = do
+  processRuleOptions r
   newCl <- checkNormalClause cl
   addRuleWithQQ (maybe rn id dtn) rn newCl
 normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, getIClause=cl} | (isLexicalRule rn) = do
@@ -247,13 +262,13 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
 normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar =
   let firstID = getIRuleName $ head $ getIRules grammar
-      (_, NormalizationState nrs nls counter antiRules) = runState (doNM grammar) (NormalizationState M.empty [] 0 [])
+      (_, NormalizationState nrs nls counter antiRules shortcuts) = runState (doNM grammar) (NormalizationState M.empty [] 0 [] [])
       firstRuleGroupRules = fromJust $ M.lookup firstID nrs
       nrs1 = M.delete firstID nrs
       firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
       otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
       groups = firstGroup : otherGroups
-    in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules (GrammarInfo Nothing M.empty counter)
+    in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (GrammarInfo Nothing M.empty counter)
 
 data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String, antiVarMap :: M.Map String String }
 type FillName a = State FillNameState a

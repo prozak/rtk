@@ -19,18 +19,21 @@ main = do
     file <- getGrammarFileName
     content <- readFile file
     let grm = parseGrammar . alexScanTokens $ content
-    let [grammar|grammar $strLit:str ;|] = [grammar|grammar 'test' ;|]
-    let [rule|Rule = $clause:cl1 | $clause:cl2 | $clause:cl3 | $clause:cl4 ;|] = [rule| Rule = id '=' Clause ';' 
-                                                                                         | id ':' id '=' Clause ';'
-                                                                                         | id '.' id ':' id '=' Clause ';'
-                                                                                         | '.' id ':' id '=' Clause ';' ;|]
+    let [grammar|grammar $StrLit:str ;|] = [grammar|grammar 'test' ;|]
+    let [rule|Rule = $cl1 | $clause2 | $clause3 | $clause4 ;|] = [rule| Rule = id '=' Clause ';' 
+                                                                      | id ':' id '=' Clause ';'
+                                                                      | id '.' id ':' id '=' Clause ';'
+                                                                      | '.' id ':' id '=' Clause ';' ;|]
     putStrLn $ show cl1
+    putStrLn $ show clause3
     putStrLn $ show str
-    let [grammar|grammar $strLit:nm; $rule:r1 $ruleList:rl1|] = [grammar|
+    let [grammar|grammar $StrLit:nm; @shortcuts(gr, $idList1) $r1 $ruleList_rl1|] = [grammar|
                             grammar 'Grammar';
-
+                                    
+                            @shortcuts(gr, gra, grrr)
                             Grammar = 'grammar' str ';' Rule* ;
-
+                                      
+                            @shortcuts(r, ru)
                             Rule = id '=' Clause ';' 
                                  | id ':' id '=' Clause ';'
                                  | id '.' id ':' id '=' Clause ';'
@@ -64,5 +67,5 @@ main = do
                             Ignore: comment = '#' .* '\n' ;
     |]
     --putStrLn $ show rl
-    putStrLn $ ppShow [ruleList| $ruleList:rl1 RuleAAA = $clause:cl1; |]
+    putStrLn $ ppShow [ruleList| $ruleList_rl1 RuleAAA = $Clause:cl1; |]
     return 0

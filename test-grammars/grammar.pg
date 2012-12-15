@@ -4,11 +4,22 @@ Grammar = 'grammar' StrLit ';' RuleList ;
 
 RuleList = Rule *;
 
-Rule = Name '=' Clause ';' 
-     | Name ':' Name '=' Clause ';'
-     | Name '.' Name ':' Name '=' Clause ';'
-     | '.' Name ':' Name '=' Clause ';' ;
+@shortcuts(r)
+Rule = OptionList Rule1
+     | ,Rule1 ;
 
+Rule: Rule1 = Name '=' Clause ';' 
+            | Name ':' Name '=' Clause ';'
+            | Name '.' Name ':' Name '=' Clause ';'
+            | '.' Name ':' Name '=' Clause ';' ;
+
+OptionList = Option+ ;
+
+Option = '@shortcuts' '(' IdList ')' ;
+
+IdList = Name* ~ ',' ;
+
+@shortcuts(cl)
 Clause = Clause '|' Clause2
          | ,Clause2;
 
