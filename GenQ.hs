@@ -44,7 +44,7 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
 |]
 
 genQ :: NormalGrammar -> String
-genQ g@(NormalGrammar name synRuleGs _ antiRules shortcuts info) =
+genQ g@(NormalGrammar name synRuleGs _ antiRules shortcuts _ info) =
     render $ vcat [
                    header,
                    nl,

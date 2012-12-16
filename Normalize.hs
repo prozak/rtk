@@ -268,7 +268,7 @@ normalizeTopLevelClauses grammar =
       firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
       otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
       groups = firstGroup : otherGroups
-    in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (GrammarInfo Nothing M.empty counter)
+    in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (getImports grammar) (GrammarInfo Nothing M.empty counter)
 
 data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String, antiVarMap :: M.Map String String }
 type FillName a = State FillNameState a

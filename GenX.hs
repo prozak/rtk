@@ -6,7 +6,7 @@ import Text.PrettyPrint
 import Grammar
 
 genX :: NormalGrammar -> String
-genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = lex_rules}) = 
+genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = lex_rules, getNImports = imports}) = 
     render $ vcat [
                    header,
                    nl,
@@ -16,7 +16,7 @@ genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = lex_rules}) =
                   ]
     where tokens = genTokens lex_rules
           adt = genTokenADT lex_rules
-          header = vcat [text "{", text "module" <+> text name <> text "Lexer", text "where }", 
+          header = vcat [text "{", text "module" <+> text name <> text "Lexer", text "where", text imports, text " }", 
                          text "%wrapper \"basic\""]
           footer = vcat [text "{", adt, text "}"]
           nl = text ""

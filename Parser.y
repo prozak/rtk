@@ -16,6 +16,7 @@ import qualified Data.Map as Map
 %token
 
 grammar { L.Grammar }
+imports { L.Imports }
 '='    { L.Eq }
 '|'     { L.OrClause }
 ':'     { L.Colon }
@@ -33,10 +34,14 @@ grammar { L.Grammar }
 id  { L.Id $$ }
 str       { L.StrLit $$ }
 rexplit       { L.RegExpLit $$ }
+bigstr     { L.BigStr $$ }
 
 %%
 
-Grammar : grammar str ';' Rules { InitialGrammar $2 (reverse $4) }
+Grammar : grammar str ';' ImportsOpt Rules { InitialGrammar $2 $4 (reverse $5) }
+
+ImportsOpt : imports bigstr    { $2 }
+           | {- empty -}       { "" }
 
 Rules : RuleWithOptions                    { [$1] } 
       | Rules RuleWithOptions              { $2 : $1 }
@@ -94,7 +99,7 @@ OptDelim : {- empty -}          { Nothing }
 parseError :: [L.Token] -> a
 parseError rest = error $ "Parse error" ++ (show rest)
 
-data InitialGrammar = InitialGrammar { getIGrammarName :: String, getIRules :: [IRule] }
+data InitialGrammar = InitialGrammar { getIGrammarName :: String, getImports :: String, getIRules :: [IRule] }
                  deriving (Eq, Show, Typeable, Data)
 
 data IRule = IRule { getIDataTypeName :: (Maybe String), 
@@ -148,6 +153,7 @@ data NormalGrammar = NormalGrammar { getNGrammarName :: String,
                                      getLexicalRules :: [LexicalRule],
                                      getAntiRules :: [AntiRule],
                                      getShortcuts :: [(String, String)],
+                                     getNImports :: String,
 				     getGrammarInfo :: GrammarInfo }
                      deriving (Eq, Show, Typeable, Data)
 

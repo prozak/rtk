@@ -1,5 +1,10 @@
 grammar 'Grammar';
 
+imports """
+import Data.List
+import qualified Data.Map as M
+"""
+
 Grammar = 'grammar' StrLit ';' RuleList ;
 
 RuleList = Rule *;
