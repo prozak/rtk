@@ -16,6 +16,7 @@ import qualified Data.Map as Map
 %token
 
 grammar { L.Grammar }
+imports { L.Imports }
 '='    { L.Eq }
 '|'     { L.OrClause }
 ':'     { L.Colon }
@@ -29,21 +30,40 @@ grammar { L.Grammar }
 '!'     { L.Excl }
 '~'     { L.Tilde }
 ','     { L.Comma }
+'@shortcuts' { L.Shortcuts }
 id  { L.Id $$ }
 str       { L.StrLit $$ }
 rexplit       { L.RegExpLit $$ }
+bigstr     { L.BigStr $$ }
 
 %%
 
-Grammar : grammar str ';' Rules { InitialGrammar $2 (reverse $4) }
+Grammar : grammar str ';' ImportsOpt Rules { InitialGrammar $2 $4 (reverse $5) }
 
-Rules : Rule                    { [$1] } 
-      | Rules Rule              { $2 : $1 }
+ImportsOpt : imports bigstr    { $2 }
+           | {- empty -}       { "" }
 
-Rule : id '=' ClauseAlt ';'         { IRule Nothing Nothing $1 $3 }
-     | id ':' id '=' ClauseAlt ';'  { IRule (Just $1) Nothing $3 $5 }
-     | id '.' id ':' id '=' ClauseAlt ';'  { IRule (Just $1) (Just $3) $5 $7 }
-     | '.' id ':' id '=' ClauseAlt ';'  { IRule Nothing (Just $2) $4 $6 }
+Rules : RuleWithOptions                    { [$1] } 
+      | Rules RuleWithOptions              { $2 : $1 }
+
+
+RuleWithOptions : OptionsList Rule   { addRuleOptions (reverse $1) $2 }
+
+OptionsList : OptionsList Option    { $2 : $1 }
+            | {- empty -}           { [] }
+
+Option : '@shortcuts' '(' IdListOpt ')'     { OShortcuts (reverse $3)}
+
+IdListOpt : IdList                  { $1 }
+          | {- empty -}             { [] } 
+
+IdList : IdList ',' id              { $3 : $1}
+       | id                         { [$1] }
+
+Rule : id '=' ClauseAlt ';'         { IRule Nothing Nothing $1 $3 [] }
+     | id ':' id '=' ClauseAlt ';'  { IRule (Just $1) Nothing $3 $5 [] }
+     | id '.' id ':' id '=' ClauseAlt ';'  { IRule (Just $1) (Just $3) $5 $7 [] }
+     | '.' id ':' id '=' ClauseAlt ';'  { IRule Nothing (Just $2) $4 $6 [] }
 
 ClauseAlt : ClauseAlt1              { IAlt (reverse $1) }
 
@@ -79,14 +99,21 @@ OptDelim : {- empty -}          { Nothing }
 parseError :: [L.Token] -> a
 parseError rest = error $ "Parse error" ++ (show rest)
 
-data InitialGrammar = InitialGrammar { getIGrammarName :: String, getIRules :: [IRule] }
+data InitialGrammar = InitialGrammar { getIGrammarName :: String, getImports :: String, getIRules :: [IRule] }
                  deriving (Eq, Show, Typeable, Data)
 
 data IRule = IRule { getIDataTypeName :: (Maybe String), 
                      getIDataFunc :: (Maybe String), 
                      getIRuleName :: String, 
-                     getIClause :: IClause }
+                     getIClause :: IClause,
+                     getIRuleOptions :: [IOption]}
                   deriving (Eq, Show, Typeable, Data)
+
+data IOption = OShortcuts [ID]
+                  deriving (Eq, Show, Typeable, Data)
+
+addRuleOptions :: [IOption] -> IRule -> IRule
+addRuleOptions opts rule = rule{ getIRuleOptions = opts ++ (getIRuleOptions rule)}                        
 
 type ConstructorName = String
 
@@ -110,14 +137,23 @@ data GrammarInfo =
   {
      getStartRuleName :: Maybe String,
      getRuleToStartInfo :: Map.Map String String,
-     getRuleToAntiInfo :: Map.Map String String,
      getNameCounter :: Int
   }
   deriving (Eq, Show, Typeable, Data)
 
+data AntiRule = AntiRule { arTypeName :: ID,
+                           arQQName :: ID,
+                           arConstr :: ID ,
+                           arIsList :: Bool 
+                         }
+                     deriving (Eq, Show, Typeable, Data)
+
 data NormalGrammar = NormalGrammar { getNGrammarName :: String, 
                                      getSyntaxRuleGroups :: [SyntaxRuleGroup], 
                                      getLexicalRules :: [LexicalRule],
+                                     getAntiRules :: [AntiRule],
+                                     getShortcuts :: [(String, String)],
+                                     getNImports :: String,
 				     getGrammarInfo :: GrammarInfo }
                      deriving (Eq, Show, Typeable, Data)
 

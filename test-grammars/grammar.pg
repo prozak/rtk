@@ -1,28 +1,46 @@
 grammar 'Grammar';
 
+imports """
+import Data.List
+import qualified Data.Map as M
+"""
+
 Grammar = 'grammar' StrLit ';' RuleList ;
 
-RuleList = Rule* ;
+RuleList = Rule *;
 
-Rule = Name '=' ClauseList ';' 
-     | Name ':' Name '=' ClauseList ';'
-     | Name '.' Name ':' Name '=' ClauseList ';'
-     | '.' Name ':' Name '=' ClauseList ';' ;
+@shortcuts(r)
+Rule = OptionList Rule1
+     | ,Rule1 ;
 
-ClauseList = ClauseItemList + ~'|' ;
+Rule: Rule1 = Name '=' Clause ';' 
+            | Name ':' Name '=' Clause ';'
+            | Name '.' Name ':' Name '=' Clause ';'
+            | '.' Name ':' Name '=' Clause ';' ;
 
-ClauseItemList = ClauseExpr * ;
+OptionList = Option+ ;
 
-ClauseExpr = ',' ClauseExpr1
-                | '!' ClauseExpr1
-                | ,ClauseExpr1 ;
+Option = '@shortcuts' '(' IdList ')' ;
 
-ClauseExpr: ClauseExpr1 = ClauseExpr2 '*' OptDelim
-                | ClauseExpr2 '+' OptDelim
-                | ClauseExpr2 '?'
-                | ,ClauseExpr2 ;
+IdList = Name* ~ ',' ;
 
-ClauseExpr: ClauseExpr2 = '(' ClauseList ')'
+@shortcuts(cl)
+Clause = Clause '|' Clause2
+         | ,Clause2;
+
+Clause: Clause2 = Clause2 Clause3
+                  | ,Clause3 ;
+
+Clause: Clause3 = ',' Clause4 
+                | '!' Clause4
+                | ,Clause4 ;
+
+Clause: Clause4 = Clause5 '*' OptDelim
+                | Clause5 '+' OptDelim
+                | Clause5 '?'
+                | ,Clause5 ;
+
+Clause: Clause5 = '(' ,Clause ')'
                 | Name
                 | StrLit
                 | '.'

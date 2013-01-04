@@ -20,24 +20,21 @@ main = do
     file <- getGrammarFileName
     content <- readFile file
     let grm = parseGrammar . alexScanTokens $ content
-    let [grammar|grammar $strLit:str ;|] = [grammar|grammar 'test' ;|]
-    let [rule|$name:nm = $clauseItemList:cl1 | $clauseItemList:cl2 | $clauseItemList:cl3 | $clauseItemList:cl4 ;|] = [rule| Rule = id '=' Clause ';' 
-                                                                                                                             | id ':' id '=' Clause ';'
-                                                                                                                             | id '.' id ':' id '=' Clause ';'
-                                                                                                                             | '.' id ':' id '=' Clause ';' ;|]
-    let [rule|$name:nm = $clauseList:cl ;|] = [rule| Rule = id '=' Clause ';' 
-                                                      | id ':' id '=' Clause ';'
-                                                      | id '.' id ':' id '=' Clause ';'
-                                                      | '.' id ':' id '=' Clause ';' ;|]
-    let [clause|$clause:cl1|] = [clause|'.' id ':' id '=' Clause ';'|]
-    putStrLn $ show cl
+    let [grammar|grammar $StrLit:str ;|] = [grammar|grammar 'test' ;|]
+    let [rule|Rule = $cl1 | $clause2 | $clause3 | $clause4 ;|] = [rule| Rule = id '=' Clause ';' 
+                                                                      | id ':' id '=' Clause ';'
+                                                                      | id '.' id ':' id '=' Clause ';'
+                                                                      | '.' id ':' id '=' Clause ';' ;|]
     putStrLn $ show cl1
-    putStrLn $ show nm
-    let [grammar|$grammar:grm1|] = [grammar|
+    putStrLn $ show clause3
+    putStrLn $ show str
+    let [grammar|grammar $StrLit:nm; @shortcuts(gr, $idList1) $r1 $ruleList_rl1|] = [grammar|
                             grammar 'Grammar';
-
+                                    
+                            @shortcuts(gr, gra, grrr)
                             Grammar = 'grammar' str ';' Rule* ;
-
+                                      
+                            @shortcuts(r, ru)
                             Rule = id '=' Clause ';' 
                                  | id ':' id '=' Clause ';'
                                  | id '.' id ':' id '=' Clause ';'
@@ -71,5 +68,5 @@ main = do
                             Ignore: comment = '#' .* '\n' ;
     |]
     --putStrLn $ show rl
-    --putStrLn $ ppShow grm1
+    putStrLn $ ppShow [ruleList| $ruleList_rl1 RuleAAA = $Clause:cl1; |]
     return 0
