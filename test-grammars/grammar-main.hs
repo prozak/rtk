@@ -7,7 +7,6 @@ import GrammarLexer
 import GrammarParser
 import GrammarQQ
 import Text.Show.Pretty
-import qualified Language.Haskell.TH as TH
 
 getGrammarFileName = do
     args <- getArgs

@@ -46,7 +46,7 @@ Clause: Clause5 = '(' ,Clause ')'
                 | '.'
                 | regexplit ;
 
-OptDelim = ('~' ClauseExpr2)? ;
+OptDelim = ('~' Clause5)? ;
 
 StrLit = str ;
 Name = id ;

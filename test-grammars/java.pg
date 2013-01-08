@@ -2,11 +2,15 @@ grammar 'Java';
 
 Java = CompilationUnit ;
 
+OptDocComment = (DocComment)? ; 
+
+TypeDeclaration = 
+ OptDocComment  ( ClassDeclaration | InterfaceDeclaration )  ";"  ;
 
 CompilationUnit  = 
  (Package)?
  ImportList
- < type_declaration >  . 
+ (TypeDeclaration)?  ;
 /*
 package_statement  = 
  "package" package_name  ";"  . 
@@ -14,10 +18,14 @@ package_statement  =
 import_statement  = 
  "import"  (  ( package_name  "."  "*"  ";"  ) 
  /  ( class_name  / interface_name )  )  ";"  . 
-
-type_declaration  = 
- [ doc_comment ]  ( class_declaration  / interface_declaration )  ";"  . 
-
+*/
+DocComment = ;
+ClassDeclaration = ;
+InterfaceDeclaration = ;
+ImportList = ;
+Package = ;
+TypeDeclaration = ;
+/*
 doc_comment  =  "/**"  "... text ..."  "*/"  . 
 
 class_declaration  = 
