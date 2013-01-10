@@ -78,9 +78,11 @@ splitStringByVars str =
   let result = splitStringByVarsHelper (replace "|~]" "|]" str) []
   in foldr (\str prevExpr ->
              case str of
+               "?()" -> [|$prevExpr ++ $(stringE "<empty expr>")|]
                '?' : '(' : rest ->
                       let lifted = convertToTH $ parseExp $ '(' : rest--(appE (global (mkName "liftString")) (stringE $ '(' : rest))
                         in [|$prevExpr ++ $lifted|]
+               "?" -> [|$prevExpr ++ $(stringE "<empty var name>")|]
                '?' : rest ->
                       [|$prevExpr ++ $(varE $ mkName rest)|]
                _ -> [|$prevExpr ++ $(stringE str)|])

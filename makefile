@@ -20,6 +20,9 @@ clean:
 	cabal clean
 	cabal configure
 
+test:
+	runhaskell StrQuote_Test.hs
+
 test-out:
 	mkdir -p test-out
 
