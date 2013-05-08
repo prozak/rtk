@@ -3,10 +3,17 @@
 default: help
 
 help:
+ifeq ($(OS), Windows_NT)
+	@echo Use 'build' target to launch build
+	@echo Use 'clean' target to clean binaries
+	@echo Use 'test-grammar' target to generate [xy] for test-grammars/grammar.pg
+	@echo Use 'test-t1' target to generate [xy] for test-grammars/t1.pg
+else
 	@echo "Use 'build' target to launch build"
 	@echo "Use 'clean' target to clean binaries"
 	@echo "Use 'test-grammar' target to generate [xy] for test-grammars/grammar.pg"
 	@echo "Use 'test-t1' target to generate [xy] for test-grammars/t1.pg"
+endif
 
 BIN_PATH=dist/build/rtk/rtk
 
@@ -24,13 +31,21 @@ test:
 	runhaskell StrQuote_Test.hs
 
 test-out:
+ifeq ($(OS), Windows_NT)
+	mkdir test-out
+else
 	mkdir -p test-out
+endif
 
 test-grammar: build test-out 
 	$(BIN_PATH) test-grammars/grammar.pg test-out
 	(cd test-out && alex GrammarLexer.x)
 	(cd test-out && happy GrammarParser.y)
-	cp test-grammars/grammar-main.hs test-out
+ifeq ($(OS), Windows_NT)
+	copy test-grammars\grammar-main.hs test-out
+else
+	cp test-grammars\grammar-main.hs test-out
+endif
 	(cd test-out && ghc --make grammar-main.hs -o main)
 	test-out/main test-grammars/grammar.pg
 
