@@ -16,6 +16,15 @@ else
 endif
 
 BIN_PATH=dist/build/rtk/rtk
+ifeq ($(OS), Windows_NT)
+CP=copy
+RM=rmdir
+RM_OPT=/s /q
+else
+CP=cp
+RM=rm
+RM_OPT=-rf
+endif
 
 build: $(BIN_PATH)
 
@@ -23,7 +32,7 @@ $(BIN_PATH): *.hs
 	cabal build
 
 clean:
-	rm -rf test-out
+	$(RM) $(RM_OPT) test-out
 	cabal clean
 	cabal configure
 
@@ -41,11 +50,7 @@ test-grammar: build test-out
 	$(BIN_PATH) test-grammars/grammar.pg test-out
 	(cd test-out && alex GrammarLexer.x)
 	(cd test-out && happy GrammarParser.y)
-ifeq ($(OS), Windows_NT)
-	copy test-grammars\grammar-main.hs test-out
-else
-	cp test-grammars\grammar-main.hs test-out
-endif
+	$(CP) test-grammars\grammar-main.hs test-out
 	(cd test-out && ghc --make grammar-main.hs -o main)
 	test-out/main test-grammars/grammar.pg
 
