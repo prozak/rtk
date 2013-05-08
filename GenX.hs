@@ -17,7 +17,7 @@ genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = lex_rules, get
     where tokens = genTokens lex_rules
           adt = genTokenADT lex_rules
           header = vcat [text "{", text "module" <+> text name <> text "Lexer", text "where", text imports, text " }", 
-                         text "%wrapper \"basic\""]
+                         text "%wrapper \"posn\""]
           footer = vcat [text "{", adt, text "}"]
           nl = text ""
 
@@ -37,9 +37,9 @@ genTokens lexical_rules = text "tokens" <+> text ":-" <+> vcat (map makeToken le
           makeProduction name data_type func =
             let token_name = text $ tokenName name in
               case data_type of
-                   "Keyword" -> text "{ \\_ ->" <+> token_name <+> text "}"
+                   "Keyword" -> text "{ \\_ _ ->" <+> token_name <+> text "}"
                    "Ignore"  -> text ";"
-                   _         -> text "{ \\__s ->" <+> token_name <+> (parens $ text func <+> text "__s") <+> text "}"
+                   _         -> text "{ \\_ __s ->" <+> token_name <+> (parens $ text func <+> text "__s") <+> text "}"
 
 backquoteStr :: String -> String
 backquoteStr str = concat (map (\chr -> if (case chr of

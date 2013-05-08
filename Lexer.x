@@ -43,6 +43,7 @@ tokens:-
     <bigstring> ($notdq | $dquote $notdq | $dquote $dquote $notdq) * $dquote $             { simple1 $ BigStr }
     <bigstring> ($notdq | $dquote $notdq | $dquote $dquote $notdq) * $dquote $dquote $     { simple1 $ BigStr }
     <bigstring> $dquote $dquote $dquote     { begin 0 }
+    .                                       { rtkError }
 
 {
 
@@ -99,6 +100,8 @@ catBigstrs (tok : toks) = tok : catBigstrs toks
 catBigstrs [] = []
 
 alexEOF = return EndOfFile
+
+rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at " ++ (show line) ++ " line, " ++ (show column) ++ " column" ++ ". Following chars :" ++ (take 10 str)
 
 simple1 :: (String -> Token) -> AlexInput -> Int -> Alex Token
 simple1 t (_, _, _, str) len = return $ t (take len str)
