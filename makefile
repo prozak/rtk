@@ -1,4 +1,4 @@
-.phony: clean build help test-grammar test-ts
+.PHONY: clean help test
 
 default: help
 
@@ -15,20 +15,22 @@ else
 	@echo "Use 'test-t1' target to generate [xy] for test-grammars/t1.pg"
 endif
 
-BIN_PATH=dist/build/rtk/rtk
 ifeq ($(OS), Windows_NT)
 CP=copy
 RM=rmdir
 RM_OPT=/s /q
+BIN_PATH=dist/build/rtk/rtk.exe
 else
 CP=cp
 RM=rm
 RM_OPT=-rf
+BIN_PATH=dist/build/rtk/rtk
 endif
 
+SOURCES=$(wildcard *.hs *.x *.y)
 build: $(BIN_PATH)
 
-$(BIN_PATH): *.hs
+$(BIN_PATH): $(SOURCES)
 	cabal build
 
 clean:
@@ -46,10 +48,16 @@ else
 	mkdir -p test-out
 endif
 
-test-grammar: build test-out 
+test-out/GrammarLexer.x test-out/GrammarParser.y : test-grammars/grammar.pg
 	$(BIN_PATH) test-grammars/grammar.pg test-out
+
+test-out/GrammarLexer.hs : test-out/GrammarLexer.x
 	(cd test-out && alex GrammarLexer.x)
+
+test-out/GrammarParser.hs : test-out/GrammarParser.y
 	(cd test-out && happy GrammarParser.y)
+
+test-grammar: build test-out test-out/GrammarLexer.hs test-out/GrammarParser.hs
 	$(CP) test-grammars\grammar-main.hs test-out
 	(cd test-out && ghc --make grammar-main.hs -o main)
 	test-out/main test-grammars/grammar.pg
