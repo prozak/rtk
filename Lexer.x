@@ -100,7 +100,8 @@ catBigstrs [] = []
 
 alexEOF = return EndOfFile
 
-simple1 t (_, _, str) len = return $ t (take len str)
+simple1 :: (String -> Token) -> AlexInput -> Int -> Alex Token
+simple1 t (_, _, _, str) len = return $ t (take len str)
 
 simple t input len = return t
 
