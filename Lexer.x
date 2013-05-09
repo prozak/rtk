@@ -17,7 +17,9 @@ tokens:-
 
     $white+             { skip }
     "#".*               { skip }
-    "/*"([\n]|.|[\r])*"*/" { skip }
+    <0>"/*"             { begin mlcomment }
+    <mlcomment> "*/"    { begin 0 }
+    <mlcomment>([^\*]|[\*][^\/])* { skip }
     grammar             { simple Grammar }
     imports             { simple Imports }
     "@shortcuts"        { simple Shortcuts }
