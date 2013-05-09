@@ -5,266 +5,278 @@ Java = CompilationUnit ;
 OptDocComment = (DocComment)? ; 
 
 TypeDeclaration = 
- OptDocComment  ( ClassDeclaration | InterfaceDeclaration )  ";"  ;
+ OptDocComment  ( ClassDeclaration | InterfaceDeclaration )  ';'  ;
 
+ImportList = ;
 CompilationUnit  = 
  (Package)?
  ImportList
  (TypeDeclaration)?  ;
-/*
-package_statement  = 
- "package" package_name  ";"  . 
 
-import_statement  = 
- "import"  (  ( package_name  "."  "*"  ";"  ) 
- /  ( class_name  / interface_name )  )  ";"  . 
-*/
-DocComment = ;
+Package  = 
+ 'package' PackageName  ';'  ;
+
+ImportStatement  = 
+ 'import'  (  ( PackageName  '.'  '*'  ';'  ) 
+ |  ( ClassName  | InterfaceName )  )  ';'  ; 
+
+DocComment = doccomment;
 ClassDeclaration = ;
 InterfaceDeclaration = ;
-ImportList = ;
-Package = ;
 TypeDeclaration = ;
+
+ModifierList = Modifier *;
+
+ExtendsList = 'extends' ClassName * 'extends' ;
+ImplementsList = 'implements' InterfaceName + ',';
+FieldDeclarationList = FieldDeclaration *;
+
+ClassDeclaration  = 
+ ModifierList  'class' id 
+ ExtendsList?
+ ImplementsList? 
+ '{'  FieldDeclarationList  '}'  ; 
+
+InterfaceDeclaration  = 
+ ModifierList  'interface' id 
+ ExtendsList
+ '{'  FieldDeclarationList  '}'  ; 
+
+FieldDeclaration  = 
+ (  DocComment?  ( MethodDeclaration 
+ | ConstructorDeclaration 
+ | VariableDeclaration )  ) 
+ | StaticInitializer 
+ |  ';'  ; 
+
+SquareBracketsList = ('['  ']')* ;
+
+MethodDeclaration  = 
+ ModifierList Type id 
+ '('  ParameterList  ')'  SquareBracketsList 
+ ( StatementBlock  |  ';'  )  ;
+
+ConstructorDeclaration  = 
+ ModifierList id  '('  ParameterList  ')' 
+StatementBlock  ; 
+
+StatementBlock  =  '{'  StatementList  '}'  ; 
+
+VariableDeclaratorList = VariableDeclarator + ',' ;
+
+VariableDeclaration  = 
+ ModifierList Type VariableDeclaratorList 
+   ';'  ; 
+
+OptVariableInitializer = ('=' VariableInitializer)? ;
+
+VariableDeclarator  = 
+ id  SquareBracketsList  OptVariableInitializer  ; 
+
+VariableInitializerList = VariableInitializer * ',' ( ',' )? ;
+
+VariableInitializer  = 
+Expression 
+ |  '{'  VariableInitializerList  '}'  ; 
+
+StaticInitializer  = 
+ 'static' StatementBlock  ; 
+
+ParameterList  = 
+Parameter * ','  ; 
+
+Parameter  = 
+Type id SquareBracketsList ; 
+
+StatementList = Statement *;
 /*
-doc_comment  =  "/**"  "... text ..."  "*/"  . 
-
-class_declaration  = 
- < modifier >  "class" identifier 
- [  "extends" class_name ] 
- [  "implements" interface_name  <  "," interface_name >  ] 
- "{"  < field_declaration >  "}"  . 
-
-interface_declaration  = 
- < modifier >  "interface" identifier 
- [  "extends" interface_name  <  "," interface_name >  ] 
- "{"  < field_declaration >  "}"  . 
-
-field_declaration  = 
- (  [ doc_comment ]  ( method_declaration 
- / constructor_declaration 
- / variable_declaration )  ) 
- / static_initializer 
- /  ";"  . 
-
-method_declaration  = 
- < modifier > type identifier 
- "("  [ parameter_list ]  ")"  <  "["  "]"  > 
- ( statement_block  /  ";"  )  . 
-
-constructor_declaration  = 
- < modifier > identifier  "("  [ parameter_list ]  ")" 
-statement_block  . 
-
-statement_block  =  "{"  < statement >  "}"  . 
-
-variable_declaration  = 
- < modifier > type variable_declarator 
- <  "," variable_declarator  >  ";"  . 
-
-variable_declarator  = 
- identifier  <  "["  "]"  >  [  "=" variable_initializer ]  . 
-
-variable_initializer  = 
-expression 
- /  (  "{"  [ variable_initializer 
- <  "," variable_initializer  >  [  ","  ]  ]  "}"  )  . 
-
-static_initializer  = 
- "static" statement_block  . 
-
-parameter_list  = 
-parameter  <  "," parameter >  . 
-
-parameter  = 
-type identifier  <  "["  "]"  >  . 
-
 statement  = 
 variable_declaration 
- /  ( expression  ";"  ) 
- /  ( statement_block ) 
- /  ( if_statement ) 
- /  ( do_statement ) 
- /  ( while_statement ) 
- /  ( for_statement ) 
- /  ( try_statement ) 
- /  ( switch_statement ) 
- /  (  "synchronized"  "(" expression  ")" statement  ) 
- /  (  "return"  [ expression ]  ";"  ) 
- /  (  "throw" expression ";"  ) 
- /  ( identifier  ":" statement ) 
- /  (  "break"  [ identifier ]  ";"  ) 
- /  (  "continue"  [ identifier ]  ";"  ) 
- /  (  ";"  )  . 
+ |  ( expression  ';'  ) 
+ |  ( statement_block ) 
+ |  ( if_statement ) 
+ |  ( do_statement ) 
+ |  ( while_statement ) 
+ |  ( for_statement ) 
+ |  ( try_statement ) 
+ |  ( switch_statement ) 
+ |  (  'synchronized'  '(' expression  ')' statement  ) 
+ |  (  'return'  [ expression ]  ';'  ) 
+ |  (  'throw' expression ';'  ) 
+ |  ( identifier  ':' statement ) 
+ |  (  'break'  [ identifier ]  ';'  ) 
+ |  (  'continue'  [ identifier ]  ';'  ) 
+ |  (  ';'  )  . 
 
 if_statement = 
- "if"  "(" expression  ")" statement 
- [  "else" statement ]  . 
+ 'if'  '(' expression  ')' statement 
+ [  'else' statement ]  . 
 
 do_statement = 
- "do" statement  "while"  "(" expression  ")"  ";"  . 
+ 'do' statement  'while'  '(' expression  ')'  ';'  . 
 
 while_statement = 
- "while"  "(" expression  ")" statement  . 
+ 'while'  '(' expression  ')' statement  . 
 
 for_statement = 
- "for"  "("  ( variable_declaration  /  ( expression  ";"  )  /  ";"  ) 
- [ expression ]  ";" 
- [ expression ]  ";" 
- ")" statement  . 
+ 'for'  '('  ( variable_declaration  |  ( expression  ';'  )  |  ';'  ) 
+ [ expression ]  ';' 
+ [ expression ]  ';' 
+ ')' statement  . 
 
 try_statement = 
- "try" statement 
- <  "catch"  "(" parameter  ")" statement > 
- [  "finally" statement ]  . 
+ 'try' statement 
+ <  'catch'  '(' parameter  ')' statement > 
+ [  'finally' statement ]  . 
 
 switch_statement = 
- "switch"  "(" expression  ")"  "{" 
- <  (  "case" expression  ":"  ) 
- /  (  "default"  ":"  ) 
- / statement > 
- "}"  . 
+ 'switch'  '(' expression  ')'  '{' 
+ <  (  'case' expression  ':'  ) 
+ |  (  'default'  ':'  ) 
+ | statement > 
+ '}'  . 
 
 expression  = 
 numeric_expression 
- / testing_expression 
- / logical_expression 
- / string_expression 
- / bit_expression 
- / casting_expression 
- / creating_expression 
- / literal_expression 
- /  "null" 
- /  "super" 
- /  "this" 
- / identifier 
- /  (  "(" expression  ")"  ) 
- /  ( expression 
- (  (  "("  [ arglist ]  ")"  ) 
- /  (  "[" expression  "]"  ) 
- /  (  "." expression  ) 
- /  (  "," expression  ) 
- /  (  "instanceof"  ( class_name / interface_name )  ) 
+ | testing_expression 
+ | logical_expression 
+ | string_expression 
+ | bit_expression 
+ | casting_expression 
+ | creating_expression 
+ | literal_expression 
+ |  'null' 
+ |  'super' 
+ |  'this' 
+ | identifier 
+ |  (  '(' expression  ')'  ) 
+ |  ( expression 
+ (  (  '('  [ arglist ]  ')'  ) 
+ |  (  '[' expression  ']'  ) 
+ |  (  '.' expression  ) 
+ |  (  ',' expression  ) 
+ |  (  'instanceof'  ( class_name | interface_name )  ) 
  )  )  . 
 
 numeric_expression  = 
- (  (  "-" 
- /  "++" 
- /  "--"  ) 
+ (  (  '-' 
+ |  '++' 
+ |  '--'  ) 
 expression ) 
- /  ( expression 
- (  "++" 
- /  "--"  )  ) 
- /  ( expression 
- (  "+" 
- /  "+=" 
- /  "-" 
- /  "-=" 
- /  "*" 
- /  "*=" 
- /  "/" 
- /  "/=" 
- /  "%" 
- /  "%="  ) 
+ |  ( expression 
+ (  '++' 
+ |  '--'  )  ) 
+ |  ( expression 
+ (  '+' 
+ |  '+=' 
+ |  '-' 
+ |  '-=' 
+ |  '*' 
+ |  '*=' 
+ |  '|' 
+ |  '|=' 
+ |  '%' 
+ |  '%='  ) 
 expression  )  . 
 
 testing_expression  = 
  ( expression 
- (  ">" 
- /  "<" 
- /  ">=" 
- /  "<=" 
- /  "==" 
- /  "!="  ) 
+ (  '>' 
+ |  '<' 
+ |  '>=' 
+ |  '<=' 
+ |  '==' 
+ |  '!='  ) 
 expression  )  . 
 
 logical_expression  = 
- (  "!" expression ) 
- /  ( expression 
- (  "ampersand" 
- /  "ampersand=" 
- /  "|" 
- /  "|=" 
- /  "^" 
- /  "^=" 
- /  (  "ampersand"  "ampersand"  ) 
- /  "||=" 
- /  "%" 
- /  "%="  ) 
+ (  '!' expression ) 
+ |  ( expression 
+ (  'ampersand' 
+ |  'ampersand=' 
+ |  '|' 
+ |  '|=' 
+ |  '^' 
+ |  '^=' 
+ |  (  'ampersand'  'ampersand'  ) 
+ |  '||=' 
+ |  '%' 
+ |  '%='  ) 
 expression  ) 
- /  ( expression  "?" expression  ":" expression ) 
- /  "true" 
- /  "false"  . 
+ |  ( expression  '?' expression  ':' expression ) 
+ |  'true' 
+ |  'false'  . 
 
 string_expression  =  ( expression 
- (  "+" 
- /  "+="  ) 
+ (  '+' 
+ |  '+='  ) 
 expression  )  . 
 
 bit_expression  = 
- (  "~" expression ) 
- /  ( expression 
- (  ">>=" 
- /  "<<" 
- /  ">>" 
- /  ">>>"  ) 
+ (  '~' expression ) 
+ |  ( expression 
+ (  '>>=' 
+ |  '<<' 
+ |  '>>' 
+ |  '>>>'  ) 
 expression  )  . 
 
 casting_expression  = 
- "(" type  ")" expression  . 
+ '(' type  ')' expression  . 
 
 creating_expression  = 
- "new"  (  ( classe_name  "("  [ arglist ]  ")"  ) 
- /  ( type_specifier  [  "[" expression  "]"  ]  <  "["  "]"  >  ) 
- /  (  "(" expression  ")"  )  )  . 
+ 'new'  (  ( classe_name  '('  [ arglist ]  ')'  ) 
+ |  ( type_specifier  [  '[' expression  ']'  ]  <  '['  ']'  >  ) 
+ |  (  '(' expression  ')'  )  )  . 
 
 literal_expression  = 
 integer_literal 
- / float_literal 
- / string 
- / character  . 
+ | float_literal 
+ | string 
+ | character  . 
 
 arglist  = 
-expression  <  "," expression  >  . 
+expression  <  ',' expression  >  . 
+*/
+Type  = 
+TypeSpecifier  SquareBracketsList  ;
 
-type  = 
-type_specifier  <  "["  "]"  >  . 
+TypeSpecifier = 
+ 'boolean' 
+ |  'byte' 
+ |  'char' 
+ |  'short' 
+ |  'int' 
+ |  'float' 
+ |  'long' 
+ |  'double' 
+ | ClassName 
+ | InterfaceName  ; 
 
-type_specifier = 
- "boolean" 
- /  "byte" 
- /  "char" 
- /  "short" 
- /  "int" 
- /  "float" 
- /  "long" 
- /  "double" 
- / class_name 
- / interface_name  . 
+Modifier = 
+ 'public' 
+ |  'private' 
+ |  'protected' 
+ |  'static' 
+ |  'final' 
+ |  'native' 
+ |  'synchronized' 
+ |  'abstract' 
+ |  'threadsafe' 
+ |  'transient'  ; 
+ 
+PackageName = 
+id 
+ |  ( PackageName  '.' id )  ;
 
-modifier = 
- "public" 
- /  "private" 
- /  "protected" 
- /  "static" 
- /  "final" 
- /  "native" 
- /  "synchronized" 
- /  "abstract" 
- /  "threadsafe" 
- /  "transient"  . 
+ClassName  = 
+id 
+ |  ( PackageName  '.' id )  ; 
 
-package_name = 
-identifier 
- /  ( package_name  "." identifier )  . 
-
-class_name  = 
-identifier 
- /  ( package_name  "." identifier )  . 
-
-interface_name = 
-identifier 
- /  ( package_name  "." identifier )  . 
-
+InterfaceName = 
+id 
+ |  ( PackageName  '.' id )  ; 
+/*
 integer_literal = 
  (  (  "1..9"  <  "0..9"  >  ) 
  /  <  "0..7"  > 
@@ -294,3 +306,7 @@ string  =
 identifier  =
   "a..z,$,_"  <  "a..z,$,_,0..9,unicode character over 00C0"  >  . 
 */
+
+id = [a-zA-Z][A-Za-z0-9_]* ;
+doccomment = '/**' ([^\r]|[^\n]|.)* '*/';
+
