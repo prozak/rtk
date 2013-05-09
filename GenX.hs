@@ -1,9 +1,11 @@
+{-# LANGUAGE QuasiQuotes #-}
 module GenX (genX)
     where
 
 import Parser
 import Text.PrettyPrint
 import Grammar
+import StrQuote
 
 genX :: NormalGrammar -> String
 genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = lex_rules, getNImports = imports}) = 
@@ -16,13 +18,36 @@ genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = lex_rules, get
                   ]
     where tokens = genTokens lex_rules
           adt = genTokenADT lex_rules
-          header = vcat [text "{", text "module" <+> text name <> text "Lexer", text "where", text imports, text " }", 
-                         text "%wrapper \"posn\""]
-          footer = vcat [text "{", adt, text "}"]
+          header = vcat [text "{", text "module" <+> text name <> text "Lexer(alexScanTokens, Token(..))", text "where", text imports, text " }", 
+                         text "%wrapper \"monad\""]
+          funs_text = [str|
+alexEOF = return EndOfFile
+alexScanTokens :: String -> [Token]
+alexScanTokens str = 
+               case alexScanTokens1 str of
+                  Right toks -> toks
+                  Left err -> error err
+
+alexScanTokens1 str = runAlex str $ do
+  let loop toks = do tok <- alexMonadScan
+                     case tok of
+                       EndOfFile -> return $ reverse toks
+                       _ -> let toks' = tok : toks 
+                            in toks' `seq` loop toks'
+  loop []
+simple1 :: (String -> Token) -> AlexInput -> Int -> Alex Token
+simple1 t (_, _, _, str) len = return $ t (take len str)
+
+simple t input len = return t
+
+rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at " ++ (show line) ++ " line, " ++ (show column) ++ " column" ++ ". Following chars :" ++ (take 10 str)
+|]
+          funs = text funs_text             
+          footer = vcat [text "{", adt, funs , text "}"]
           nl = text ""
 
 genTokenADT :: [LexicalRule] -> Doc
-genTokenADT lexical_rules = text "data" <+> text "Token" <+> text "=" <+> (joinAlts (map makeToken lexical_rules) $$ text "deriving (Show)")
+genTokenADT lexical_rules = text "data" <+> text "Token" <+> text "=" <+> (joinAlts (text "EndOfFile" : (map makeToken lexical_rules)) $$ text "deriving (Show)")
     where makeToken LexicalRule { getLRuleDataType = data_type, getLRuleName = name } =
             let token_name = text $ tokenName name in
               case data_type of
@@ -37,9 +62,9 @@ genTokens lexical_rules = text "tokens" <+> text ":-" <+> vcat (map makeToken le
           makeProduction name data_type func =
             let token_name = text $ tokenName name in
               case data_type of
-                   "Keyword" -> text "{ \\_ _ ->" <+> token_name <+> text "}"
+                   "Keyword" -> text "{ simple" <+> token_name <+> text "}"
                    "Ignore"  -> text ";"
-                   _         -> text "{ \\_ __s ->" <+> token_name <+> (parens $ text func <+> text "__s") <+> text "}"
+                   _         -> text "{ simple1 $ " <+> token_name <+> text "." <+> (parens $ text func) <+> text "}"
 
 backquoteStr :: String -> String
 backquoteStr str = concat (map (\chr -> if (case chr of
