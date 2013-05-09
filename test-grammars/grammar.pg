@@ -11,6 +11,8 @@ import qualified Data.Map as M
 
 /*
 Grammar rules section. These rules are started with capital letter
+
+/* test of nested comments */
 */
 
 Grammar = 'grammar' StrLit ';' ImportsOpt RuleList ;

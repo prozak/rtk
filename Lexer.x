@@ -2,7 +2,7 @@
 module Lexer where
 }
 
-%wrapper "monad"
+%wrapper "monadUserState"
 
 $digit = 0-9
 $alpha = [a-zA-Z]
@@ -17,9 +17,10 @@ tokens:-
 
     $white+             { skip }
     "#".*               { skip }
-    <0>"/*"             { begin mlcomment }
-    <mlcomment> "*/"    { begin 0 }
-    <mlcomment>([^\*]|[\*][^\/])* { skip }
+    <0>"/*"             { beginMultiLineComment }
+    <mlcomment> "/*"    { beginMultiLineComment }
+    <mlcomment> "*/"    { tryEndMultiLineComment }
+    <mlcomment>([^\*]|[\*][^\/]|[^\/]|[\/][^\*])* { skip }
     grammar             { simple Grammar }
     imports             { simple Imports }
     "@shortcuts"        { simple Shortcuts }
@@ -48,6 +49,34 @@ tokens:-
     .                                       { rtkError }
 
 {
+
+getStateCommentDepth = Alex $ \s@AlexState{alex_ust=ust} -> Right (s, getCommentDepth ust)
+setStateCommentDepth i = Alex $ \s@AlexState{alex_ust=ust} -> Right (s{alex_ust=ust{getCommentDepth = i}}, ()) 
+
+beginMultiLineComment :: AlexInput -> Int -> Alex Token
+beginMultiLineComment alexInput i =
+  do
+    commentDepth <- getStateCommentDepth
+    setStateCommentDepth $ commentDepth + 1
+    alexSetStartCode mlcomment
+    skip alexInput i
+
+tryEndMultiLineComment :: AlexInput -> Int -> Alex Token    
+tryEndMultiLineComment alexInput i =
+  do
+    commentDepth <- getStateCommentDepth
+    setStateCommentDepth $ commentDepth - 1
+    if (commentDepth - 1 == 0)
+      then
+        do
+          alexSetStartCode 0
+          skip alexInput i
+      else
+        skip alexInput i
+
+data AlexUserState = AlexUserState {getCommentDepth :: Integer}
+
+alexInitUserState = AlexUserState { getCommentDepth = 0 }
 
 data Token = Grammar 
     | Imports
