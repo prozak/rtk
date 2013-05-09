@@ -9,12 +9,19 @@ Build-Type:          Simple
 Cabal-Version:       >=1.6
 
 Library
-  Exposed-Modules: Lexer Parser Grammar
+  Exposed-Modules: 
+                   Lexer,
+                   Parser,
+                   Grammar
   Extensions:          DeriveDataTypeable
 
 Executable rtk
   Main-is:           main.hs
-  Build-Depends:     base >= 4.0, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts
-  Other-Modules:     Lexer Parser Grammar
-  Extensions:          DeriveDataTypeable
+  Build-Depends:     base >= 4.0, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta
+  Build-Tools:       happy
+  Other-Modules:     
+                     Lexer,
+                     Parser,
+                     Grammar
+  Extensions:        DeriveDataTypeable
   ghc-options:       -rtsopts
