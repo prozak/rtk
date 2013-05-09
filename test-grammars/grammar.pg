@@ -1,11 +1,22 @@
 grammar 'Grammar';
 
+/*
+Section of Haskell imports. Would go to the source code directly
+*/
+
 imports """
 import Data.List
 import qualified Data.Map as M
 """
 
-Grammar = 'grammar' StrLit ';' RuleList ;
+/*
+Grammar rules section. These rules are started with capital letter
+*/
+
+Grammar = 'grammar' StrLit ';' ImportsOpt RuleList ;
+
+ImportsOpt = (Imports)? ;
+Imports = 'imports' bigstr ;
 
 RuleList = Rule *;
 
@@ -51,10 +62,16 @@ OptDelim = ('~' Clause5)? ;
 StrLit = str ;
 Name = id ;
 
+/*
+Lexical rules section. These rules are started with regular letter
+*/
+
 id = [a-zA-Z][A-Za-z0-9_]* ;
 str = '\'' ([^'] | '\\\'')* '\'' ;
+#bigstr = '"""' ([^"]|["][^"]|["]["][^"])* '"""';
+bigstr = '"' '"' '"' (.|[\n])* '"' '"' '"';
 regexplit = '[' ([^\]] | '\\]')* ']' ;
 Ignore: ws = [ \t\n]+ ;
 Ignore: comment = '#' .* '\n' ;
-Ignore: comment1 = '/*' ([^\r]|[^\n]|.)* '*/';
+Ignore: comment1 = '/*' ([\n]|.)* '*/';
 
