@@ -7,7 +7,7 @@ OptDocComment = (DocComment)? ;
 TypeDeclaration = 
  OptDocComment  ( ClassDeclaration | InterfaceDeclaration )  ';'  ;
 
-ImportList = ;
+ImportList = (ImportStatement)*;
 CompilationUnit  = 
  (Package)?
  ImportList
@@ -89,84 +89,96 @@ Parameter  =
 Type id SquareBracketsList ; 
 
 StatementList = Statement *;
-/*
-statement  = 
-variable_declaration 
- |  ( expression  ';'  ) 
- |  ( statement_block ) 
- |  ( if_statement ) 
- |  ( do_statement ) 
- |  ( while_statement ) 
- |  ( for_statement ) 
- |  ( try_statement ) 
- |  ( switch_statement ) 
- |  (  'synchronized'  '(' expression  ')' statement  ) 
- |  (  'return'  [ expression ]  ';'  ) 
- |  (  'throw' expression ';'  ) 
- |  ( identifier  ':' statement ) 
- |  (  'break'  [ identifier ]  ';'  ) 
- |  (  'continue'  [ identifier ]  ';'  ) 
- |  (  ';'  )  . 
 
-if_statement = 
- 'if'  '(' expression  ')' statement 
- [  'else' statement ]  . 
+OptExpression = Expression? ;
 
-do_statement = 
- 'do' statement  'while'  '(' expression  ')'  ';'  . 
+OptId = id?;
 
-while_statement = 
- 'while'  '(' expression  ')' statement  . 
+Statement  = 
+VariableDeclaration 
+ |  ( Expression  ';'  ) 
+ |  ( StatementBlock ) 
+ |  ( IfStatement ) 
+ |  ( DoStatement ) 
+ |  ( WhileStatement ) 
+ |  ( ForStatement ) 
+ |  ( TryStatement ) 
+ |  ( SwitchStatement ) 
+ |  (  'synchronized'  '(' Expression  ')' Statement  ) 
+ |  (  'return'  OptExpression  ';'  ) 
+ |  (  'throw' Expression ';'  ) 
+ |  ( id  ':' Statement ) 
+ |  (  'break'  OptId  ';'  ) 
+ |  (  'continue'  OptId  ';'  ) 
+ |  (  ';'  )  ;
 
-for_statement = 
- 'for'  '('  ( variable_declaration  |  ( expression  ';'  )  |  ';'  ) 
- [ expression ]  ';' 
- [ expression ]  ';' 
- ')' statement  . 
+OptElsePart = ('else' Statement)? ;
 
-try_statement = 
- 'try' statement 
- <  'catch'  '(' parameter  ')' statement > 
- [  'finally' statement ]  . 
+IfStatement = 
+ 'if'  '(' Expression  ')' Statement 
+   OptElsePart ; 
 
-switch_statement = 
- 'switch'  '(' expression  ')'  '{' 
- <  (  'case' expression  ':'  ) 
+DoStatement = 
+ 'do' Statement  'while'  '(' Expression  ')'  ';'  ; 
+
+WhileStatement = 
+ 'while'  '(' Expression  ')' Statement  ; 
+
+ForStatement = 
+ 'for'  '('  ( VariableDeclaration  |  ( Expression  ';'  )  |  ';'  ) 
+ OptExpression  ';' 
+ OptExpression  ';' 
+ ')' Statement  ; 
+
+CatchList = (  'catch'  '(' Parameter  ')' Statement)* ;
+
+OptFinally = ('finally' Statement)?;
+
+TryStatement = 
+ 'try' Statement 
+  CatchList
+  OptFinally  ; 
+
+SwitchCaseList = ((  'case' Expression  ':'  ) 
  |  (  'default'  ':'  ) 
- | statement > 
- '}'  . 
+ | Statement )*;
 
-expression  = 
-numeric_expression 
- | testing_expression 
- | logical_expression 
- | string_expression 
- | bit_expression 
- | casting_expression 
- | creating_expression 
- | literal_expression 
+SwitchStatement = 
+ 'switch'  '(' Expression  ')'  '{' 
+ SwitchCaseList 
+ '}'  ;
+
+Expression  = 
+NumericExpression 
+ | TestingExpression 
+ | LogicalExpression 
+ | StringExpression 
+ | BitExpression 
+ | CastingExpression 
+ | CreatingExpression 
+ | LiteralExpression 
  |  'null' 
  |  'super' 
  |  'this' 
- | identifier 
- |  (  '(' expression  ')'  ) 
- |  ( expression 
- (  (  '('  [ arglist ]  ')'  ) 
- |  (  '[' expression  ']'  ) 
- |  (  '.' expression  ) 
- |  (  ',' expression  ) 
- |  (  'instanceof'  ( class_name | interface_name )  ) 
- )  )  . 
+ | id 
+ |  (  '(' Expression  ')'  ) 
+ |  ( Expression 
+ (  (  '(' Arglist ')'  ) 
+ |  (  '[' Expression  ']'  ) 
+ |  (  '.' Expression  ) 
+ |  (  ',' Expression  ) 
+ |  (  'instanceof'  ( ClassName | InterfaceName )  ) 
+ )  )  ;
 
-numeric_expression  = 
+NumericExpression  = 
  (  (  '-' 
  |  '++' 
  |  '--'  ) 
-expression ) 
- |  ( expression 
+Expression ) 
+ |  ( Expression 
  (  '++' 
  |  '--'  )  ) 
- |  ( expression 
+ |  ( Expression 
  (  '+' 
  |  '+=' 
  |  '-' 
@@ -177,21 +189,21 @@ expression )
  |  '|=' 
  |  '%' 
  |  '%='  ) 
-expression  )  . 
+Expression  )  ; 
 
-testing_expression  = 
- ( expression 
+TestingExpression  = 
+ ( Expression 
  (  '>' 
  |  '<' 
  |  '>=' 
  |  '<=' 
  |  '==' 
  |  '!='  ) 
-expression  )  . 
+Expression  )  ; 
 
-logical_expression  = 
- (  '!' expression ) 
- |  ( expression 
+LogicalExpression  = 
+ (  '!' Expression ) 
+ |  ( Expression 
  (  'ampersand' 
  |  'ampersand=' 
  |  '|' 
@@ -202,42 +214,44 @@ logical_expression  =
  |  '||=' 
  |  '%' 
  |  '%='  ) 
-expression  ) 
- |  ( expression  '?' expression  ':' expression ) 
+Expression  ) 
+ |  ( Expression  '?' Expression  ':' Expression ) 
  |  'true' 
- |  'false'  . 
+ |  'false'  ; 
 
-string_expression  =  ( expression 
+StringExpression  =  ( Expression 
  (  '+' 
  |  '+='  ) 
-expression  )  . 
+Expression  )  ;
 
-bit_expression  = 
- (  '~' expression ) 
- |  ( expression 
+BitExpression  = 
+ (  '~' Expression ) 
+ |  ( Expression 
  (  '>>=' 
  |  '<<' 
  |  '>>' 
  |  '>>>'  ) 
-expression  )  . 
+Expression  )  ; 
 
-casting_expression  = 
- '(' type  ')' expression  . 
+CastingExpression  = 
+ '(' Type  ')' Expression  ; 
 
-creating_expression  = 
- 'new'  (  ( classe_name  '('  [ arglist ]  ')'  ) 
- |  ( type_specifier  [  '[' expression  ']'  ]  <  '['  ']'  >  ) 
- |  (  '(' expression  ')'  )  )  . 
+OptBracketExpression = (  '[' Expression  ']' )? ;
 
-literal_expression  = 
-integer_literal 
- | float_literal 
+CreatingExpression  = 
+ 'new'  (  ( ClassName  '('  Arglist  ')'  ) 
+ |  ( TypeSpecifier  OptBracketExpression  SquareBracketsList  ) 
+ |  (  '(' Expression  ')'  )  )  ; 
+
+LiteralExpression  = 
+integerLiteral 
+ | floatLiteral 
  | string 
- | character  . 
+ | char  ; 
 
-arglist  = 
-expression  <  ',' expression  >  . 
-*/
+Arglist  = 
+  Expression * ','  ; 
+
 Type  = 
 TypeSpecifier  SquareBracketsList  ;
 
@@ -276,37 +290,33 @@ id
 InterfaceName = 
 id 
  |  ( PackageName  '.' id )  ; 
-/*
-integer_literal = 
- (  (  "1..9"  <  "0..9"  >  ) 
- /  <  "0..7"  > 
- /  (  "0"  "x"  "0..9a..f"  <  "0..9a..f"  >  )  ) 
- [  "l"  ]  . 
 
-float_literal  = 
- ( decimal_digits  "."  [ decimal_digits ]  [ exponent_part ]  [ float_type_suffix ]  ) 
- /  (  "." decimal_digits  [ exponent_part ]  [ float_type_suffix ]  ) 
- /  ( decimal_digits  [ exponent_part ]  [ float_type_suffix ]  )  . 
+integerLiteral = 
+ (  (  [1..9]  [0..9]*  ) 
+ |  [0..7]* 
+ |  (  '0'  'x'  [0..9a..f]  [0..9a..f]*   )  ) 
+ [l]?  ; 
 
-decimal_digits  = 
- "0..9"  <  "0..9"  >  . 
+floatLiteral  = 
+ ( decimalDigits  '.'  decimalDigits? exponentPart?  floatTypeSuffix?  ) 
+ |  (  '.' decimalDigits  exponentPart?  floatTypeSuffix?  ) 
+ |  ( decimalDigits  exponentPart?  floatTypeSuffix?  )  ; 
 
-exponent_part  = 
- "e"  [  "+"  /  "-"  ] decimal_digits  . 
+decimalDigits  = 
+ [0..9]  [0..9]  ; 
 
-float_type_suffix  = 
- "f"  /  "d"  . 
+exponentPart  = 
+ 'e'  (  '+'  |  '-'  )? decimalDigits  ; 
 
-character  =
-  "based on the unicode character set"  . 
+floatTypeSuffix  = 
+ 'f'  |  'd'  ; 
+
+char  =
+  [a-zA-Z]  ; # should be checked to support unicode characters 
 
 string  =  
- "''"  < character  >  "''"  . 
+ '"'  [a-zA-Z]*  '"'  ;
 
-identifier  =
-  "a..z,$,_"  <  "a..z,$,_,0..9,unicode character over 00C0"  >  . 
-*/
-
-id = [a-zA-Z][A-Za-z0-9_]* ;
+id = [a-zA-Z$_][A-Za-z$0-9_]* ;
 doccomment = '/**' ([^\r]|[^\n]|.)* '*/';
 
