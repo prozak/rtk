@@ -21,9 +21,6 @@ ImportStatement  =
  |  ( ClassName  | InterfaceName )  )  ';'  ; 
 
 DocComment = doccomment;
-ClassDeclaration = ;
-InterfaceDeclaration = ;
-TypeDeclaration = ;
 
 ModifierList = Modifier *;
 
@@ -43,21 +40,21 @@ InterfaceDeclaration  =
  '{'  FieldDeclarationList  '}'  ; 
 
 FieldDeclaration  = 
- (  DocComment?  ( MethodDeclaration 
+ (ModifierList ((  DocComment?  ( MethodDeclaration 
  | ConstructorDeclaration 
  | VariableDeclaration )  ) 
- | StaticInitializer 
+ | StaticInitializer)) 
  |  ';'  ; 
 
 SquareBracketsList = ('['  ']')* ;
 
 MethodDeclaration  = 
- ModifierList Type id 
+ Type id 
  '('  ParameterList  ')'  SquareBracketsList 
  ( StatementBlock  |  ';'  )  ;
 
 ConstructorDeclaration  = 
- ModifierList id  '('  ParameterList  ')' 
+ id  '('  ParameterList  ')' 
 StatementBlock  ; 
 
 StatementBlock  =  '{'  StatementList  '}'  ; 
@@ -65,7 +62,7 @@ StatementBlock  =  '{'  StatementList  '}'  ;
 VariableDeclaratorList = VariableDeclarator + ',' ;
 
 VariableDeclaration  = 
- ModifierList Type VariableDeclaratorList 
+ Type VariableDeclaratorList 
    ';'  ; 
 
 OptVariableInitializer = ('=' VariableInitializer)? ;
@@ -80,7 +77,7 @@ Expression
  |  '{'  VariableInitializerList  '}'  ; 
 
 StaticInitializer  = 
- 'static' StatementBlock  ; 
+ StatementBlock  ; 
 
 ParameterList  = 
 Parameter * ','  ; 
@@ -303,7 +300,7 @@ floatLiteral  =
  |  ( decimalDigits  exponentPart?  floatTypeSuffix?  )  ; 
 
 decimalDigits  = 
- [0..9]  [0..9]  ; 
+ [0..9]  [0..9]*  ; 
 
 exponentPart  = 
  'e'  (  '+'  |  '-'  )? decimalDigits  ; 
