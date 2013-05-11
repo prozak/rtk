@@ -16,7 +16,7 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ info) =
                    nl,
                    text "%name parse" <> text name,
                    text "%tokentype { L.Token }",
-                   text "%error { \\ rest -> error $ \"Parse error\" ++ (show rest) }",
+                   text "%error { \\ rest -> error $ \"Parse error \" ++ (show rest) }",
                    nl,
                    text "%token",
                    nl,
@@ -34,9 +34,9 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ info) =
           lexDoc = vcat (map genToken lex_rules)
           nl = text ""
           header = "{\n\
-		   \{-# LANGUAGE DeriveDataTypeable #-}\n\
+                   \{-# LANGUAGE DeriveDataTypeable #-}\n\
                    \module " ++ name ++ "Parser where\n\
-		   \import Data.Generics\n\
+                   \import Data.Generics\n\
                    \import qualified " ++ name ++  "Lexer as L (Token(..), alexScanTokens)\n\
                    \}"
           ast = genAST g
