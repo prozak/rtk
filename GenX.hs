@@ -4,20 +4,48 @@ module GenX (genX)
 
 import Parser
 import Text.PrettyPrint
+import qualified Data.Set as S
 import Grammar
 import StrQuote
 
+getMacroIdsFromClause :: S.Set String -> IClause -> S.Set String
+getMacroIdsFromClause result (IId str) = S.insert str result
+getMacroIdsFromClause result (IOpt clause) = getMacroIdsFromClause result clause
+getMacroIdsFromClause result (IPlus clause _) = getMacroIdsFromClause result clause
+getMacroIdsFromClause result (IStar clause _) = getMacroIdsFromClause result clause
+getMacroIdsFromClause result (ISeq clauses) = S.union result (S.unions $ map (getMacroIdsFromClause result) clauses)
+getMacroIdsFromClause result (IAlt clauses) = S.union result (S.unions $ map (getMacroIdsFromClause result) clauses)
+getMacroIdsFromClause result _ = result
+
+getMacroIdsHelper :: LexicalRule -> S.Set String
+getMacroIdsHelper LexicalRule{ getLClause = cl } = getMacroIdsFromClause S.empty cl
+
+getMacroIds :: [LexicalRule] -> S.Set String
+getMacroIds lexRules = foldr (\lexRule result -> S.union result $ getMacroIdsHelper lexRule) S.empty lexRules
+
+genMacroText :: S.Set String -> [LexicalRule] -> Doc
+genMacroText macroIds tokens =
+    vcat $ foldl (\result (LexicalRule {getLRuleName = name, getLClause = cl }) -> 
+                        if name `S.member` macroIds
+                          then text "@" <> text name <+> text "=" <+> translateClause cl : result
+                          else result)
+             [] tokens
+
 genX :: NormalGrammar -> String
-genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = lex_rules, getNImports = imports}) = 
+genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = tokens, getNImports = imports}) = 
     render $ vcat [
                    header,
                    nl,
-                   tokens,
+                   macroText,
+                   nl,
+                   tokensText,
                    nl,
                    footer
                   ]
-    where tokens = genTokens lex_rules
-          adt = genTokenADT lex_rules
+    where macroIds = getMacroIds tokens
+          tokensText = genTokens tokens
+          macroText = genMacroText macroIds tokens
+          adt = genTokenADT tokens
           header = vcat [text "{", text "module" <+> text name <> text "Lexer(alexScanTokens, Token(..))", text "where", text imports, text " }", 
                          text "%wrapper \"monad\""]
           funs_text = [str|
@@ -56,7 +84,7 @@ genTokenADT lexical_rules = text "data" <+> text "Token" <+> text "=" <+> (joinA
                    _         -> token_name <+> text data_type
 
 genTokens :: [LexicalRule] -> Doc
-genTokens lexical_rules = text "tokens" <+> text ":-" <+> vcat (map makeToken lexical_rules)
+genTokens lexical_rules = text "tokens" <+> text ":-" <+> vcat (map makeToken lexical_rules) <+> vcat [text ". { rtkError }"]
     where makeToken LexicalRule { getLRuleDataType = data_type, getLRuleFunc = func, getLRuleName = name, getLClause = cl } =
               translateClause cl <+> makeProduction name data_type func
           makeProduction name data_type func =
@@ -79,12 +107,17 @@ backquoteStrInBrackets str = concat (map (\chr -> if (case chr of
                                                         '[' -> True
                                                         ']' -> True
                                                         ' ' -> True
+                                                        '*' -> True
+                                                        '/' -> True
+                                                        '{' -> True
+                                                        '}' -> True
+                                                        '$' -> True
                                                         _   -> False)
                                           then ['\\', chr]
                                           else [chr] )
                                   str)
 
-translateClause (IId _)             = text "<TODO: macro ref here>"
+translateClause (IId name)          = text "@" <> text name
 translateClause (IStrLit s)         = doubleQuotes $ text $ backquoteStr s
 translateClause (IDot)              = text "."
 translateClause (IRegExpLit re)     = brackets $ text $ backquoteStrInBrackets re
