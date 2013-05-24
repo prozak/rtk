@@ -20,7 +20,7 @@ tokens:-
     <0>"/*"             { beginMultiLineComment }
     <mlcomment> "/*"    { beginMultiLineComment }
     <mlcomment> "*/"    { tryEndMultiLineComment }
-    <mlcomment>([^\*]|[\*][^\/]|[^\/]|[\/][^\*])* { skip }
+    <mlcomment>([^\*\/]|[\*][^\/]|[\/][^\*])* { skip }
     grammar             { simple Grammar }
     imports             { simple Imports }
     "@shortcuts"        { simple Shortcuts }

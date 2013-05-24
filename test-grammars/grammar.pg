@@ -13,8 +13,7 @@ import qualified Data.Map as M
 Grammar rules section. These rules are started with capital letter
 */
 
-/* a
-*/
+/* a */
 
 Grammar = 'grammar' StrLit ';' ImportsOpt RuleList ;
 
