@@ -48,24 +48,26 @@ else
 	mkdir -p test-out
 endif
 
-test-out/GrammarLexer.x test-out/GrammarParser.y : test-grammars/grammar.pg
+test-out/GrammarLexer.x test-out/GrammarParser.y : $(BIN_PATH) test-grammars/grammar.pg
 	$(BIN_PATH) test-grammars/grammar.pg test-out
 
-test-out/GrammarLexer.hs : test-out/GrammarLexer.x
-	(cd test-out && alex GrammarLexer.x)
+test-out/JavaLexer.x test-out/JavaParser.y : $(BIN_PATH) test-grammars/java.pg
+	$(BIN_PATH) test-grammars/java.pg test-out
 
-test-out/GrammarParser.hs : test-out/GrammarParser.y
-	(cd test-out && happy GrammarParser.y)
+%.hs : %.x
+	alex $< -o $@
 
-test-grammar: build test-out test-out/GrammarLexer.hs test-out/GrammarParser.hs
+%.hs : %.y
+	happy -ihappy_log.txt $< -o $@
+
+test-out/grammar-main.hs: test-grammars/grammar-main.hs
 	$(CP) test-grammars\grammar-main.hs test-out
+	
+test-grammar: build test-out test-out/grammar-main.hs test-out/GrammarLexer.hs test-out/GrammarParser.hs
 	(cd test-out && ghc --make grammar-main.hs -o main)
 	test-out/main test-grammars/grammar.pg
 
-test-java: build test-out 
-	$(BIN_PATH) test-grammars/java.pg test-out
-	(cd test-out && alex JavaLexer.x)
-	(cd test-out && happy JavaParser.y)
+test-java: build test-out test-out/JavaLexer.hs test-out/JavaParser.hs
 #	cp test-grammars/grammar-main.hs test-out
 #	(cd test-out && ghc --make grammar-main.hs -o main)
 #	test-out/main test-grammars/grammar.pg
