@@ -7,7 +7,7 @@ module Lexer where
 $digit = 0-9
 $alpha = [a-zA-Z]
 $alphaDigit = [a-zA-Z0-9]
-$dquote     = "
+$dq     = "
 $squote     = '
 $notsq = [^']
 $notdq = [^"]
@@ -24,6 +24,7 @@ tokens:-
     grammar             { simple Grammar }
     imports             { simple Imports }
     "@shortcuts"        { simple Shortcuts }
+    "@symmacro"         { simple Symmacro }
     "="                 { simple Eq }
     ";"                 { simple RlEnd }
     ":"                 { simple Colon }
@@ -41,11 +42,7 @@ tokens:-
     "*"                 { simple Star }
     "+"                 { simple Plus }
     $alpha $alphaDigit* { simple1 Id }
-    <0> $dquote $dquote $dquote             { begin bigstring } 
-    <bigstring> ($notdq | $dquote $notdq | $dquote $dquote $notdq) *                       { simple1 $ BigStr }
-    <bigstring> ($notdq | $dquote $notdq | $dquote $dquote $notdq) * $dquote $             { simple1 $ BigStr }
-    <bigstring> ($notdq | $dquote $notdq | $dquote $dquote $notdq) * $dquote $dquote $     { simple1 $ BigStr }
-    <bigstring> $dquote $dquote $dquote     { begin 0 }
+    $dq $dq $dq ($notdq|$dq $notdq | $dq $dq $notdq | [\n])* $dq $dq $dq { simple1 $ BigStr . (reverse.(drop 3).reverse.(drop 3))} 
     .                                       { rtkError }
 
 {
@@ -99,6 +96,7 @@ data Token = Grammar
     | Colon
     | Tilde
     | Shortcuts
+    | Symmacro
     | EndOfFile
       deriving (Eq, Show)
 

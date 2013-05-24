@@ -8,27 +8,41 @@ import qualified Data.Set as S
 import Grammar
 import StrQuote
 
-getMacroIdsFromClause :: S.Set String -> IClause -> S.Set String
-getMacroIdsFromClause result (IId str) = S.insert str result
-getMacroIdsFromClause result (IOpt clause) = getMacroIdsFromClause result clause
-getMacroIdsFromClause result (IPlus clause _) = getMacroIdsFromClause result clause
-getMacroIdsFromClause result (IStar clause _) = getMacroIdsFromClause result clause
-getMacroIdsFromClause result (ISeq clauses) = S.union result (S.unions $ map (getMacroIdsFromClause result) clauses)
-getMacroIdsFromClause result (IAlt clauses) = S.union result (S.unions $ map (getMacroIdsFromClause result) clauses)
-getMacroIdsFromClause result _ = result
+getMacroIdsFromClause :: IClause -> S.Set String
+getMacroIdsFromClause (IId str) = S.singleton str
+getMacroIdsFromClause (IOpt clause) = getMacroIdsFromClause clause
+getMacroIdsFromClause (IPlus clause _) = getMacroIdsFromClause clause
+getMacroIdsFromClause (IStar clause _) = getMacroIdsFromClause clause
+getMacroIdsFromClause (ISeq clauses) = S.unions $ map getMacroIdsFromClause clauses
+getMacroIdsFromClause (IAlt clauses) = S.unions $ map getMacroIdsFromClause clauses
+getMacroIdsFromClause _ = S.empty
 
 getMacroIdsHelper :: LexicalRule -> S.Set String
-getMacroIdsHelper LexicalRule{ getLClause = cl } = getMacroIdsFromClause S.empty cl
+getMacroIdsHelper LexicalRule { getLClause = cl } = getMacroIdsFromClause cl
+getMacroIdsHelper _                              = S.empty
 
 getMacroIds :: [LexicalRule] -> S.Set String
 getMacroIds lexRules = foldr (\lexRule result -> S.union result $ getMacroIdsHelper lexRule) S.empty lexRules
 
-genMacroText :: S.Set String -> [LexicalRule] -> Doc
-genMacroText macroIds tokens =
-    vcat $ foldl (\result (LexicalRule {getLRuleName = name, getLClause = cl }) -> 
+getSymMacroIds :: [LexicalRule] -> S.Set String
+getSymMacroIds lexRules = foldr (\lexRule result ->
+                                    case lexRule of
+                                      MacroRule { getLRuleName = name} ->
+                                        S.insert name result
+                                      _ -> result)
+                            S.empty
+                            lexRules
+
+genMacroText :: S.Set String -> S.Set String -> [LexicalRule] -> Doc
+genMacroText sMacroIds macroIds tokens =
+    vcat $ foldl (\result  lrule ->
+                    case lrule of
+                      (LexicalRule {getLRuleName = name, getLClause = cl }) ->
                         if name `S.member` macroIds
-                          then text "@" <> text name <+> text "=" <+> translateClause cl : result
-                          else result)
+                          then text "@" <> text name <+> text "=" <+> translateClause sMacroIds cl : result
+                          else result
+                      (MacroRule {getLRuleName = name, getLClause = cl }) ->
+                          text "$" <> text name <+> text "=" <+> translateClauseForMacro cl : result)
              [] tokens
 
 genX :: NormalGrammar -> String
@@ -43,9 +57,10 @@ genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = tokens, getNIm
                    footer
                   ]
     where macroIds = getMacroIds tokens
-          tokensText = genTokens tokens
-          macroText = genMacroText macroIds tokens
-          adt = genTokenADT tokens
+          symMacroIds = getSymMacroIds tokens
+          tokensText = genTokens symMacroIds $ removeSymmacros tokens
+          macroText = genMacroText symMacroIds macroIds tokens
+          adt = genTokenADT $ removeSymmacros tokens
           header = vcat [text "{", text "module" <+> text name <> text "Lexer(alexScanTokens, Token(..))", text "where", text imports, text " }", 
                          text "%wrapper \"monad\""]
           funs_text = [str|
@@ -83,10 +98,11 @@ genTokenADT lexical_rules = text "data" <+> text "Token" <+> text "=" <+> (joinA
                    "Ignore"  -> empty
                    _         -> token_name <+> text data_type
 
-genTokens :: [LexicalRule] -> Doc
-genTokens lexical_rules = text "tokens" <+> text ":-" <+> vcat (map makeToken lexical_rules) <+> vcat [text ". { rtkError }"]
+genTokens :: S.Set String -> [LexicalRule] -> Doc
+genTokens smacroIds lexical_rules =
+  text "tokens" <+> text ":-" <+> vcat (map makeToken lexical_rules) <+> vcat [text ". { rtkError }"]
     where makeToken LexicalRule { getLRuleDataType = data_type, getLRuleFunc = func, getLRuleName = name, getLClause = cl } =
-              translateClause cl <+> makeProduction name data_type func
+              translateClause smacroIds cl <+> makeProduction name data_type func
           makeProduction name data_type func =
             let token_name = text $ tokenName name in
               case data_type of
@@ -117,19 +133,28 @@ backquoteStrInBrackets str = concat (map (\chr -> if (case chr of
                                           else [chr] )
                                   str)
 
-translateClause (IId name)          = text "@" <> text name
-translateClause (IStrLit s)         = doubleQuotes $ text $ backquoteStr s
-translateClause (IDot)              = text "."
-translateClause (IRegExpLit re)     = brackets $ text $ backquoteStrInBrackets re
-translateClause (IStar cl Nothing)  = translateClause cl <+> text "*"
+translateClauseForMacro (IStrLit s) = text s
+translateClauseForMacro (IRegExpLit re) = brackets $ text $ backquoteStrInBrackets re
+translateClauseForMacro (ISeq cls) = hsep $ punctuate (text " ") (map translateClauseForMacro cls)
+translateClauseForMacro (IAlt clauses) = hsep $ punctuate (text "|") (map translateClauseForMacro clauses)
+translateClauseForMacro cl = text $ "Cannot translate to macro def " ++ (show cl)
+
+translateClause sMacroIds (IId name) | name `S.member` sMacroIds =
+  text "$" <> text name
+translateClause sMacroIds (IId name) =
+  text "@" <> text name
+translateClause _ (IStrLit s)         = doubleQuotes $ text $ backquoteStr s
+translateClause _ (IDot)              = text "."
+translateClause _ (IRegExpLit re)     = brackets $ text $ backquoteStrInBrackets re
+translateClause sMacroIds (IStar cl Nothing)  = translateClause sMacroIds cl <+> text "*"
 -- a* ~x --> (a(x a)*)?
-translateClause (IStar cl (Just _)) = error $ "Star (*) clauses with delimiters are not supported in lexical rules"
-translateClause (IPlus cl Nothing)  = translateClause cl <+> text "+"
-translateClause (IPlus cl (Just _)) = error $ "Plus (+) clauses with delimiters are not supported in lexical rules"
-translateClause (IAlt clauses)      = parens $ hsep $ punctuate (text "|") (map translateClause clauses)
-translateClause (ISeq clauses)    = hsep $ punctuate (text " ") (map translateClause clauses)
-translateClause (IOpt clause)       = translateClause clause <+> text "?"
-translateClause cl                 = error $ "Can't translate to lexer spec: " ++ (show cl)
+translateClause _ (IStar cl (Just _)) = error $ "Star (*) clauses with delimiters are not supported in lexical rules"
+translateClause sMacroIds (IPlus cl Nothing)  = translateClause sMacroIds cl <+> text "+"
+translateClause _ (IPlus cl (Just _)) = error $ "Plus (+) clauses with delimiters are not supported in lexical rules"
+translateClause sMacroIds (IAlt clauses)      = parens $ hsep $ punctuate (text "|") (map (translateClause sMacroIds) clauses)
+translateClause sMacroIds (ISeq clauses)    = hsep $ punctuate (text " ") (map (translateClause sMacroIds) clauses)
+translateClause sMacroIds (IOpt clause)       = translateClause sMacroIds clause <+> text "?"
+translateClause _ cl                 = error $ "Can't translate to lexer spec: " ++ (show cl)
 
 joinAlts :: [Doc] -> Doc
 joinAlts alts = vcat $ punctuate (text " |") (filter (not.isEmpty) alts)

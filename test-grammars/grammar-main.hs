@@ -66,6 +66,7 @@ main = do
                             Ignore: ws = [ \t\n]+ ;
                             Ignore: comment = '#' .* '\n' ;
     |]
-    --putStrLn $ show rl
+    putStrLn $ show r1
     putStrLn $ ppShow [ruleList| $ruleList_rl1 RuleAAA = $Clause:cl1; |]
+    putStrLn $ show grm
     return 0

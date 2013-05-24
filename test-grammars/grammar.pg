@@ -11,14 +11,14 @@ import qualified Data.Map as M
 
 /*
 Grammar rules section. These rules are started with capital letter
+*/
 
-/* test of nested comments */
+/* a
 */
 
 Grammar = 'grammar' StrLit ';' ImportsOpt RuleList ;
 
-ImportsOpt = (Imports)? ;
-Imports = 'imports' bigstr ;
+ImportsOpt = ('imports' bigstr)? ;
 
 RuleList = Rule *;
 
@@ -33,7 +33,7 @@ Rule: Rule1 = Name '=' Clause ';'
 
 OptionList = Option+ ;
 
-Option = '@shortcuts' '(' IdList ')' ;
+Option = '@shortcuts' '(' IdList ')' | '@symmacro' ;
 
 IdList = Name* ~ ',' ;
 
@@ -70,10 +70,13 @@ Lexical rules section. These rules are started with regular letter
 
 id = [a-zA-Z][A-Za-z0-9_]* ;
 str = '\'' ([^'] | '\\\'')* '\'' ;
-#bigstr = '"""' ([^"]|["][^"]|["]["][^"])* '"""';
-bigstr = '"' '"' '"' (.|[\n])* '"' '"' '"';
+@symmacro
+dq = '"' ; # production would not be generated for symmacro
+@symmacro
+ndq = [^"] ;
+bigstr = dq dq dq (ndq|dq ndq| dq dq ndq |[\n])* dq dq dq;
 regexplit = '[' ([^\]] | '\\]')* ']' ;
 Ignore: ws = [ \t\n]+ ;
-Ignore: comment = '#' .* '\n' ;
-Ignore: comment1 = '/*' ([\n]|.)* '*/';
+Ignore: comment = '#' .* [\n] ;
+Ignore: comment1 = '/*' ([^\*]|[\*][^\/]|[\n])* '*/';
 

@@ -31,7 +31,7 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ info) =
     where normal_rules = normalRules srules
           listRuleSet = makeListRuleSet normal_rules
           rulesDoc = vcat (map (genRule listRuleSet) normal_rules)
-          lexDoc = vcat (map genToken lex_rules)
+          lexDoc = vcat (map genToken $ removeSymmacros lex_rules)
           nl = text ""
           header = "{\n\
                    \{-# LANGUAGE DeriveDataTypeable #-}\n\

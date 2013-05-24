@@ -181,3 +181,8 @@ isNotIgnored SSId{} = True
 isNotIgnored SSLifted{} = True
 isNotIgnored _ = False
 
+isSymmacro (MacroRule _ _) = True
+isSymmacro _               = False
+
+removeSymmacros :: [LexicalRule] -> [LexicalRule]
+removeSymmacros lst =  filter (not . isSymmacro) lst

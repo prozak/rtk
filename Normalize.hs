@@ -211,7 +211,11 @@ normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, ge
                       (Just d,  Nothing) -> (d,        "read")
                       (Just d,   Just f) -> (d,        f)
                       (Nothing,  Just f) -> ("String", f)
-  addLexicalRule $ LexicalRule dtn1 df1 rn cl
+  if (OSymmacro `elem` (getIRuleOptions r))
+    then
+      addLexicalRule $ MacroRule rn cl
+    else
+      addLexicalRule $ LexicalRule dtn1 df1 rn cl
 
 doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do

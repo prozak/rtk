@@ -19,7 +19,7 @@ type RulesMap = Map.Map ID ID
 rulesMap :: NormalGrammar -> RulesMap
 rulesMap NormalGrammar{ getSyntaxRuleGroups = groups, getLexicalRules = lrules } = 
     Map.fromList $ concat 
-            (map (\ lr -> (getLRuleName lr, getLRuleDataType lr)) lrules : 
+            (map (\ lr -> (getLRuleName lr, getLRuleDataType lr)) (removeSymmacros lrules) : 
              map (\ g -> map (\r -> (getSRuleName r, getSDataTypeName g)) $ getSRules g) groups)
 
 genAST :: NormalGrammar -> String

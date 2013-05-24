@@ -31,6 +31,7 @@ imports { L.Imports }
 '~'     { L.Tilde }
 ','     { L.Comma }
 '@shortcuts' { L.Shortcuts }
+'@symmacro' { L.Symmacro }
 id  { L.Id $$ }
 str       { L.StrLit $$ }
 rexplit       { L.RegExpLit $$ }
@@ -53,6 +54,7 @@ OptionsList : OptionsList Option    { $2 : $1 }
             | {- empty -}           { [] }
 
 Option : '@shortcuts' '(' IdListOpt ')'     { OShortcuts (reverse $3)}
+       | '@symmacro'                        { OSymmacro }
 
 IdListOpt : IdList                  { $1 }
           | {- empty -}             { [] } 
@@ -109,7 +111,7 @@ data IRule = IRule { getIDataTypeName :: (Maybe String),
                      getIRuleOptions :: [IOption]}
                   deriving (Eq, Show, Typeable, Data)
 
-data IOption = OShortcuts [ID]
+data IOption = OShortcuts [ID] | OSymmacro
                   deriving (Eq, Show, Typeable, Data)
 
 addRuleOptions :: [IOption] -> IRule -> IRule
@@ -154,7 +156,7 @@ data NormalGrammar = NormalGrammar { getNGrammarName :: String,
                                      getAntiRules :: [AntiRule],
                                      getShortcuts :: [(String, String)],
                                      getNImports :: String,
-				     getGrammarInfo :: GrammarInfo }
+                                     getGrammarInfo :: GrammarInfo }
                      deriving (Eq, Show, Typeable, Data)
 
 data SyntaxRuleGroup = SyntaxRuleGroup { getSDataTypeName :: ID,
@@ -186,6 +188,7 @@ data LexicalRule = LexicalRule { getLRuleDataType :: String,
                                  getLRuleFunc :: String, 
                                  getLRuleName :: String, 
                                  getLClause :: LClause}
+                   | MacroRule { getLRuleName :: String, getLClause :: LClause}
                    deriving (Eq, Show, Typeable, Data)
 
 type LClause = IClause
