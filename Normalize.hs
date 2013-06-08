@@ -219,7 +219,8 @@ normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, ge
 
 doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do
-  mapM_ normalizeRule $ getIRules grammar
+  let grammar0 = everywhere (mkT removeOpts) grammar
+  mapM_ normalizeRule $ getIRules grammar0
   postNormalizeGrammar
 
 postNormalizeGroup :: (ID, [SyntaxRule]) -> Normalization (ID, [SyntaxRule])
@@ -297,3 +298,7 @@ fillConstructorNames ng@NormalGrammar { getSyntaxRuleGroups = rules, getGrammarI
                                             let (rule, newmap) = doRename (getSDataTypeName r) r in (rule:res, M.union newmap oldmap)) ([], M.empty) rules
             doRename n dat = let (dat1, (FillNameState _ _ map)) = runState (everywhereM (mkM (fillConstructorName n)) dat) (FillNameState 0 n M.empty)
                                in (dat1, map)
+
+removeOpts :: IClause -> IClause
+removeOpts (IOpt c) = IAlt [ISeq [], ISeq [c]]
+removeOpts a = a
