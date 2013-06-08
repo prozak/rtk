@@ -11,6 +11,14 @@ import Data.Maybe
 import Data.List
 import StrQuote
 
+sortNameToHaskellName :: String -> String
+sortNameToHaskellName "import" = "__import"
+sortNameToHaskellName "module" = "__module"
+sortNameToHaskellName "type" = "__type"
+sortNameToHaskellName "class" = "__class"
+sortNameToHaskellName "deriving" = "__deriving"
+sortNameToHaskellName str = str
+
 genQ :: NormalGrammar -> String
 genQ g@(NormalGrammar name synRuleGs _ antiRules shortcuts _ info) = [str|{-# LANGUAGE TemplateHaskell #-}
 module ?name~QQ
@@ -21,8 +29,8 @@ import Text.Regex.Base
 import qualified Data.Map as M
 import Data.List
 import Data.Maybe
-import Data.Generics
-import Data.Data
+import qualified Data.Generics as Generics
+import qualified Data.Data as Data
 import qualified Language.Haskell.TH as TH
 import Language.Haskell.TH.Quote
 import ?name~Lexer
@@ -73,7 +81,7 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
           typeNames = map arQQName antiRules
           antiNameGen typ name = "anti" ++ name ++ typ
           antiTermGen typ = map (antiNameGen typ) typeNames
-          antiExprsGen typ = foldr (\antiTerm res -> [str|?res `extQ` ?antiTerm|]) "const Nothing" $ antiTermGen typ
+          antiExprsGen typ = foldr (\antiTerm res -> [str|?res `Generics.extQ` ?antiTerm|]) "const Nothing" $ antiTermGen typ
           antiFunsGen typ = map (\(AntiRule name qqName consName isList) -> 
                                         let antiName = antiNameGen typ qqName
                                             antiElName = antiNameGen typ name
@@ -105,7 +113,7 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                                     else listExpGen
                                              else nonListGen )
                                 antiRules
-          qqFunProtoGen typ = [str|?(qqFunName typ) :: Data a => String -> (?(fromJust $ getStartRuleName info) -> a) -> String -> TH.?typ~Q|]
+          qqFunProtoGen typ = [str|?(qqFunName typ) :: Data.Data a => String -> (?(fromJust $ getStartRuleName info) -> a) -> String -> TH.?typ~Q|]
           dataToExpCall typ var = [str|  dataTo?typ~Q (?(antiExprsGen typ)) ?var|]
           qqFunImplGen typ = [str|?(qqFunName typ ) dummy func s = do
   let s1 = replaceAllPatterns s
@@ -122,7 +130,7 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                       (getAltOfSeq $ getSClause $ head $ getSRules $ head synRuleGs)
           qqParseFuns =  intercalate "\n" 
                             $ map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->
-                                       let sortFunName = C.toLower s : rest
+                                       let sortFunName = sortNameToHaskellName $ C.toLower s : rest
                                            dummy = "\"" ++ (fromJust $ M.lookup typeName $ getRuleToStartInfo info) ++ "\""
                                            getFun = "get" ++ typeName
                                            dataConstructor = fromJust $ M.lookup typeName typeNameToConstructor
