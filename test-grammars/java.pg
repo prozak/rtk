@@ -14,18 +14,18 @@ CompilationUnit  =
  (TypeDeclaration)?  ;
 
 Package  = 
- 'package' PackageName  ';'  ;
+ 'package' CompoundName  ';'  ;
 
 ImportStatement  = 
- 'import'  (  ( PackageName  '.'  '*'  ';'  ) 
- |  ( ClassName  | InterfaceName )  )  ';'  ; 
+ 'import'  (  ( CompoundName  '.'  '*' ) 
+ | CompoundName  )  ';'  ; 
 
 DocComment = doccomment;
 
 ModifierList = Modifier *;
 
-ExtendsList = 'extends' ClassName * 'extends' ;
-ImplementsList = 'implements' InterfaceName + ',';
+ExtendsList = 'extends' CompoundName * 'extends' ;
+ImplementsList = 'implements' CompoundName + ',';
 FieldDeclarationList = FieldDeclaration *;
 
 ClassDeclaration  = 
@@ -46,7 +46,7 @@ FieldDeclaration  =
  | StaticInitializer)) 
  |  ';'  ; 
 
-SquareBracketsList = ('['  ']')* ;
+SquareBracketsList = ('[' OptExpression ']')* ;
 
 MethodDeclaration  = 
  Type id 
@@ -91,28 +91,32 @@ OptExpression = Expression? ;
 
 OptId = id?;
 
-Statement  = 
+Statement =
+ StatementWithoutIf
+ |  IfStatement
+  ;
+
+Statement: StatementWithoutIf = 
 VariableDeclaration 
- |  ( Expression  ';'  ) 
- |  ( StatementBlock ) 
- |  ( IfStatement ) 
- |  ( DoStatement ) 
- |  ( WhileStatement ) 
- |  ( ForStatement ) 
- |  ( TryStatement ) 
- |  ( SwitchStatement ) 
- |  (  'synchronized'  '(' Expression  ')' Statement  ) 
- |  (  'return'  OptExpression  ';'  ) 
- |  (  'throw' Expression ';'  ) 
- |  ( id  ':' Statement ) 
- |  (  'break'  OptId  ';'  ) 
- |  (  'continue'  OptId  ';'  ) 
- |  (  ';'  )  ;
+ |  Expression  ';'
+ |  StatementBlock
+ |  DoStatement
+ |  WhileStatement
+ |  ForStatement
+ |  TryStatement
+ |  SwitchStatement
+ |  'synchronized'  '(' Expression  ')' Statement
+ |  'return'  OptExpression  ';'
+ |  'throw' Expression ';'
+ |  id  ':' Statement
+ |  'break'  OptId  ';'
+ |  'continue'  OptId  ';'
+ |  ';' ;
 
 OptElsePart = ('else' Statement)? ;
 
 IfStatement = 
- 'if'  '(' Expression  ')' Statement 
+ 'if'  '(' Expression  ')' StatementWithoutIf
    OptElsePart ; 
 
 DoStatement = 
@@ -145,109 +149,105 @@ SwitchStatement =
  SwitchCaseList 
  '}'  ;
 
-Expression  = 
-NumericExpression 
- | TestingExpression 
- | LogicalExpression 
- | StringExpression 
- | BitExpression 
- | CastingExpression 
- | CreatingExpression 
- | LiteralExpression 
- |  'null' 
- |  'super' 
- |  'this' 
- | id 
- |  (  '(' Expression  ')'  ) 
- |  ( Expression 
- (  (  '(' Arglist ')'  ) 
- |  (  '[' Expression  ']'  ) 
- |  (  '.' Expression  ) 
- |  (  ',' Expression  ) 
- |  (  'instanceof'  ( ClassName | InterfaceName )  ) 
- )  )  ;
+UnaryOp =
+'-' 
+ | '++' 
+ | '--'
+ | '!'
+ | '~' ;
 
-NumericExpression  = 
- (  (  '-' 
- |  '++' 
- |  '--'  ) 
-Expression ) 
- |  ( Expression 
- (  '++' 
- |  '--'  )  ) 
- |  ( Expression 
- (  '+' 
- |  '+=' 
- |  '-' 
- |  '-=' 
- |  '*' 
- |  '*=' 
- |  '|' 
- |  '|=' 
- |  '%' 
- |  '%='  ) 
-Expression  )  ; 
+Expression  =
+ Assignment |
+ ConditionalExpression;
+/*
+ UnaryOp Expression
+ | Expression (NumericExpressionEnd 
+ | TestingExpressionEnd
+ | LogicalExpressionEnd
+ | BitExpressionEnd
+ | '(' Arglist ')' 
+ | '[' Expression  ']'
+ | '.' Expression
+ | ',' Expression
+ | 'instanceof'  CompoundName )
+ | CastingExpression
+ | CreatingExpression
+ | LiteralExpression
+ | '(' Expression  ')'
+ ;*/
 
-TestingExpression  = 
- ( Expression 
- (  '>' 
- |  '<' 
- |  '>=' 
- |  '<=' 
- |  '==' 
- |  '!='  ) 
-Expression  )  ; 
+FieldAccess = Primary '.' id | 'super' '.' id ;
 
-LogicalExpression  = 
- (  '!' Expression ) 
- |  ( Expression 
- (  'ampersand' 
- |  'ampersand=' 
- |  '|' 
- |  '|=' 
- |  '^' 
- |  '^=' 
- |  (  'ampersand'  'ampersand'  ) 
- |  '||=' 
- |  '%' 
- |  '%='  ) 
-Expression  ) 
- |  ( Expression  '?' Expression  ':' Expression ) 
- |  'true' 
- |  'false'  ; 
+LeftHandSide = CompoundName
+ | FieldAccess
+ | ArrayAccess ;
 
-StringExpression  =  ( Expression 
- (  '+' 
- |  '+='  ) 
-Expression  )  ;
+AssignmentOp =
+ '+=' 
+ | '-=' 
+ | '*=' 
+ | '|='
+ | '&=' 
+ | '^=' 
+ | '%=' ;
 
-BitExpression  = 
- (  '~' Expression ) 
- |  ( Expression 
- (  '>>=' 
- |  '<<' 
- |  '>>' 
- |  '>>>'  ) 
-Expression  )  ; 
+Assignment = LeftHandSide AssignmentOp Expression;
 
-CastingExpression  = 
- '(' Type  ')' Expression  ; 
+ConditionalExpression = ConditionalOrExpression | ConditionalOrExpression '?' Expression ':' ConditionalExpression ;
 
-OptBracketExpression = (  '[' Expression  ']' )? ;
+ConditionalOrExpression = ConditionalAndExpression | ConditionalOrExpression '||' ConditionalAndExpression ;
 
-CreatingExpression  = 
- 'new'  (  ( ClassName  '('  Arglist  ')'  ) 
- |  ( TypeSpecifier  OptBracketExpression  SquareBracketsList  ) 
- |  (  '(' Expression  ')'  )  )  ; 
+ConditionalAndExpression = InclusiveOrEpression | ConditionalAndExpression '&&' InclusiveOrEpression ;
 
-LiteralExpression  = 
-integerLiteral 
- | floatLiteral 
- | string 
- | char  ; 
+InclusiveOrEpression = ExclusiveOrExpression | InclusiveOrEpression '|' ExclusiveOrExpression;
 
-Arglist  = 
-  Expression * ','  ; 
+ExclusiveOrExpression = AndExpression | ExclusiveOrExpression '^' AndExpression ;
+
+AndExpression = EqualityExpression | AndExpression '&' EqualityExpression ;
+
+EqualityOp = '==' | '!=' ;
+
+EqualityExpression = RelationalExpression | EqualityExpression EqualityOp RelationalExpression ;
+
+RelationalOp = '<' | '>' | '<=' | '>=' ;
+
+RelationalExpression = ShiftExpression | RelationalExpression RelationalOp ShiftExpression | RelationalExpression 'instanceof' Type ;
+
+ShiftOp = '>>' | '<<' | '>>>' ;
+
+ShiftExpression = AdditiveExpression | ShiftExpression ShiftOp AdditiveExpression ;
+
+AdditiveOp = '+' | '-' ;
+
+AdditiveExpression = MultiplicativeExpression | AdditiveExpression AdditiveOp MultiplicativeExpression ;
+
+MultiplicativeOp = '*' | '/' | '%' ;
+
+MultiplicativeExpression = UnaryExpression | MultiplicativeExpression MultiplicativeOp UnaryExpression ;
+
+CastExpression = '(' Type ')' UnaryExpression ;
+
+PrefixOp = '++' | '--' | '+' | '-' | '~' | '!' ;
+
+PostfixOp = '++' | '--' ;
+
+PostExpression = PostfixExpression PostfixOp ;
+
+UnaryExpression = PrefixOp UnaryExpression | CastExpression | PostfixExpression ;
+
+PostfixExpression = Primary | CompoundName | PostExpression;
+
+Primary = Literal | 'this' | '(' Expression ')' | CreationExpression | FieldAccess | MethodInvocation | ArrayAccess ;
+
+CreationExpression = 'new' Type ( '(' Arglist ')' | SquareBracketsList );
+
+ArrayAccess = CompoundName '[' Expression ']' | Primary '[' Expression ']' ;
+
+Literal = integerLiteral | floatLiteral | 'true' | 'false' | char | string | 'null' ;
+
+MethodInvocation = CompoundName '(' Arglist ')' | Primary '.' id  '(' Arglist ')' | 'super' '.' id '(' Arglist ')' ;
+
+Arglist = Expression * ',' ;
 
 Type  = 
 TypeSpecifier  SquareBracketsList  ;
@@ -261,8 +261,7 @@ TypeSpecifier =
  |  'float' 
  |  'long' 
  |  'double' 
- | ClassName 
- | InterfaceName  ; 
+ | CompoundName  ; 
 
 Modifier = 
  'public' 
@@ -276,17 +275,9 @@ Modifier =
  |  'threadsafe' 
  |  'transient'  ; 
  
-PackageName = 
+CompoundName = 
 id 
- |  ( PackageName  '.' id )  ;
-
-ClassName  = 
-id 
- |  ( PackageName  '.' id )  ; 
-
-InterfaceName = 
-id 
- |  ( PackageName  '.' id )  ; 
+ |  (CompoundName  '.' id )  ;
 
 integerLiteral = 
  (  (  [1..9]  [0..9]*  ) 
