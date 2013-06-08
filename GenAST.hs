@@ -41,7 +41,7 @@ needGenereateAlt (STSeq _ seqs) = not $ isClauseSeqLifted seqs
 
 genData :: RulesMap -> String -> [STSeq] -> Doc
 genData rmap name sequences = text "data" <+> text name <+> text "=" <+> (joinAlts (map (genConstructor rmap) sequences') 
-                                                                          $$ text "deriving (Ord, Eq, Show, Data, Typeable)")
+                                                                          $$ text "deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)")
     where sequences' = filter needGenereateAlt sequences
 
 genConstructor :: RulesMap -> STSeq -> Doc
