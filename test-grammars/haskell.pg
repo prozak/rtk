@@ -1,0 +1,104 @@
+grammar 'Haskell';
+
+Haskell = Module ;
+
+Module = 'module' modid ExportsOpt 'where' Body | Body;
+
+ExportsOpt = ( '(' ExportsList (',')?')' )?;
+
+ExportsList = Export * ',' ;
+
+Export = 'module' modid | QVar | QTyCon ( '(' '..' ')' | '(' CNameList ')')? | QTyCls ( '(' '..' ')' | '(' QVarList ')')?;
+
+Body = '{' (ImpDeclList (';' TopDecls)? | ImpDeclList) '}' ;
+
+ImpDeclList = ImpDecl + ';';
+
+ImportList = Import * ',' ;
+
+Var = varid;
+Con = conid;
+
+ModIdList = (modid '.')*;
+
+QVarId = ModIdList varid;
+QVar = QVarId;
+
+QTyCls = ModIdList tycls;
+
+QTyCon = ModIdList TyCon;
+
+CName = Var | Con ;
+
+CNameList = CName * ',' ;
+
+QVarList = QVar * ',' ;
+
+Import = Var | TyCon ( '(' '..' ')' | '(' CNameList ')' )? ;
+
+OptQualified = ('qualified')?;
+OptQualifiedAs = ('as' modid)?;
+OptImpSpec = '(' ImportList (',')? ')' ;
+
+ImpDecl = 'import' OptQualified modid OptQualifiedAs OptImpSpec? ;
+
+TopDecls = TopDecl * ';';
+
+TopDecl = 'type' SimpleType '=' Type
+    | 'data' (Context '=>')? SimpleType '=' Constrs OptDeriving ;
+
+Constrs = Constr * '|' ;
+
+Constr = Con '{' FieldDeclList '}';
+
+FieldDeclList = FieldDecl * ',' ;
+
+FieldDecl = Vars '::' (Type | '!' AType) ;
+
+Vars = Var * ',' ;
+
+OptDeriving = (Deriving)? ;
+
+Deriving = 'deriving' (DClass | '(' DClassList ')' ) ;
+
+DClassList = DClass * ',' ;
+
+DClass = QTyCls ;
+
+Context = Class | '(' ClassList ')' ;
+
+ClassList = Class * ',' ;
+
+Class = QTyCls TyVar | QTyCls '(' TyVar ATypeList ')';
+
+Type = BType ('->' Type)? ;
+
+BType = (BType)? AType ;
+
+ATypeList = AType * ;
+
+AType = TyVar 
+ | GTyCon
+ | '(' (TypeList | ',' +) ')'
+ | '[' (Type)? ']';
+
+GTyCon = QTyCon
+ | '(' '->' ')' ;
+
+TypeList = Type * ',' ;
+
+SimpleType = TyCon TyVars ;
+
+TyVars = TyVar * ; 
+
+conid = [A-Z] [a-zA-Z_0-9]* ;
+varid = [a-zA-Z_] [a-zA-Z_0-9]* ;
+TyVar = varid ;
+
+TyCon = conid ;
+modid = conid ;
+tycls = conid ;
+
+whitespace = [ \t\n] ;
+
+Ignore: comment = '--' .* [\n] ; 

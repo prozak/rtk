@@ -54,6 +54,9 @@ test-out/GrammarLexer.x test-out/GrammarParser.y : $(BIN_PATH) test-grammars/gra
 test-out/JavaLexer.x test-out/JavaParser.y : $(BIN_PATH) test-grammars/java.pg
 	$(BIN_PATH) test-grammars/java.pg test-out
 
+test-out/HaskellLexer.x test-out/HaskellParser.y : $(BIN_PATH) test-grammars/haskell.pg
+	$(BIN_PATH) test-grammars/haskell.pg test-out
+
 %.hs : %.x
 	alex $< -o $@
 
@@ -71,6 +74,11 @@ test-java: build test-out test-out/JavaLexer.hs test-out/JavaParser.hs
 #	cp test-grammars/grammar-main.hs test-out
 #	(cd test-out && ghc --make grammar-main.hs -o main)
 #	test-out/main test-grammars/grammar.pg
+
+test-haskell: build test-out test-out/HaskellLexer.hs test-out/HaskellParser.hs
+	$(CP) test-grammars\haskell-main.hs test-out
+	(cd test-out && ghc --make haskell-main.hs -o haskell-rtk)
+	test-out/haskell-rtk Normalize.hs
 
 test-t1: test-out build
 	$(BIN_PATH) test-grammars/t1.pg test-out
