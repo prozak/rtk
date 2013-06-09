@@ -9,6 +9,7 @@ import Data.Data
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.List as L
+import qualified Data.Set as S
 
 import Control.Monad.State.Strict hiding (lift)
 
@@ -29,7 +30,8 @@ data NormalizationState = NormalizationState {
                                               normLRules :: [LexicalRule],
                                               nameCounter :: Int,
                                               normAntiRules :: [AntiRule],
-                                              normShortcuts :: [(String, String)]
+                                              normShortcuts :: [(String, String)],
+                                              proxyRuleNames :: S.Set ID 
                                              }
 type Normalization a = State NormalizationState a
 
@@ -41,6 +43,11 @@ newNamePrefixed prefix = do
 
 newName :: Normalization String
 newName = newNamePrefixed "Rule_"
+
+saveProxyRuleName :: ID -> Normalization ()
+saveProxyRuleName ruleName = do
+  modify (\s@NormalizationState { proxyRuleNames = srl } -> s { proxyRuleNames = S.insert ruleName srl })
+  return ()
 
 addRule :: ID -> ID -> SyntaxTopClause -> Normalization ()
 addRule tdName ruleName clause = do
@@ -109,12 +116,14 @@ extractClause cl = do
   ruleName <- newName
   cl1 <- checkNormalClause cl
   addRule ruleName ruleName cl1
+  saveProxyRuleName ruleName
   return $ ruleName
 
 extractSClause :: SyntaxTopClause -> Normalization ID
 extractSClause cl = do
   ruleName <- newName
   addRule ruleName ruleName cl
+  saveProxyRuleName ruleName
   return $ ruleName
 
 {-
@@ -242,18 +251,28 @@ postNormalizeGrammar = do
 
 addStartGroup :: NormalGrammar -> NormalGrammar
 addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = tokens , getGrammarInfo = info } =
-  let (ruleToStartInfo, counter) = foldr
-                                     (\el (map, counter) -> 
-                                        (M.insert (getSDataTypeName el) ("tok_" ++ getSDataTypeName el ++ "_dummy_" ++ show counter) map, counter + 1))
+  let proxyRules = getProxyRules info
+      (ruleToStartInfo, counter) = foldr
+                                     (\el (map, counter) ->
+                                        let typeName = getSDataTypeName el
+                                        in
+                                          if S.member typeName proxyRules
+                                            then (map, counter)
+                                            else
+                                              (M.insert typeName 
+                                                        ("tok_" ++ typeName ++ "_dummy_" ++ show counter)
+                                                        map,
+                                                counter + 1))
                                      (M.empty, getNameCounter info)
                                      rules
       mainRuleClause = STSeq "" [SSId $ getSDataTypeName $ head rules]
       rulesClauses = map (\s ->
-                           let dummy = SSIgnore (fromJust (M.lookup (getSDataTypeName s) ruleToStartInfo))
+                           let typeName = getSDataTypeName s
+                               dummy = SSIgnore (fromJust (M.lookup typeName ruleToStartInfo))
                            in 
                            STSeq "" [dummy,
-                                     SSId $ getSDataTypeName s,
-                                     dummy]) rules
+                                     SSId typeName,
+                                     dummy]) $ filterProxyRules proxyRules rules
       newTokens = map (\(_, name) -> LexicalRule { getLRuleDataType = "Keyword",
                                                    getLRuleFunc = "",
                                                    getLRuleName = name, getLClause = (IStrLit name)}) $ M.toList ruleToStartInfo
@@ -267,13 +286,14 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
 normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar =
   let firstID = getIRuleName $ head $ getIRules grammar
-      (_, NormalizationState nrs nls counter antiRules shortcuts) = runState (doNM grammar) (NormalizationState M.empty [] 0 [] [])
+      (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules) =
+        runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty)
       firstRuleGroupRules = fromJust $ M.lookup firstID nrs
       nrs1 = M.delete firstID nrs
       firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
       otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
       groups = firstGroup : otherGroups
-    in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (getImports grammar) (GrammarInfo Nothing M.empty counter)
+    in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (getImports grammar) (GrammarInfo (Just firstID) M.empty counter proxyRules)
 
 data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String, antiVarMap :: M.Map String String }
 type FillName a = State FillNameState a

@@ -5,7 +5,8 @@ import qualified Lexer as L (Token(..), alexScanTokens)
 import Data.Generics
 import Data.Data
 import Data.Char
-import qualified Data.Map as Map
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 }
 
@@ -138,8 +139,9 @@ data GrammarInfo =
   GrammarInfo
   {
      getStartRuleName :: Maybe String,
-     getRuleToStartInfo :: Map.Map String String,
-     getNameCounter :: Int
+     getRuleToStartInfo :: M.Map String String,
+     getNameCounter :: Int,
+     getProxyRules :: S.Set String
   }
   deriving (Eq, Show, Typeable, Data)
 
@@ -197,4 +199,5 @@ isLexicalRule :: String -> Bool
 isLexicalRule [] = False
 isLexicalRule (c:_) = isLower c
 
+filterProxyRules proxyRules rules = filter (((flip S.notMember) proxyRules) . getSDataTypeName) rules
 }

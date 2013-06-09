@@ -42,6 +42,7 @@ main = do
     let info = getGrammarInfo grammar1
 --    putStrLn $ ppShow grammar1
 --    putStrLn $ show $ getStartRuleName info
+--    putStrLn $ show $ getProxyRules info
     writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
 --    putStrLn $ show $ getRuleToStartInfo info
     writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content

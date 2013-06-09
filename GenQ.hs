@@ -20,7 +20,7 @@ sortNameToHaskellName "deriving" = "__deriving"
 sortNameToHaskellName str = str
 
 genQ :: NormalGrammar -> String
-genQ g@(NormalGrammar name synRuleGs _ antiRules shortcuts _ info) = [str|{-# LANGUAGE TemplateHaskell #-}
+genQ g@(NormalGrammar name rules _ antiRules shortcuts _ info) = [str|{-# LANGUAGE TemplateHaskell #-}
 module ?name~QQ
 where
 
@@ -72,12 +72,13 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
 |]
     where pat = "Pat"
           exp = "Exp"
+          proxyRules = getProxyRules info
           qqFunName typ = [str|quote?name~?typ|]
           -- typeNames = map getSDataTypeName $ filter (\srg -> case srg of
           --                                                      SyntaxRuleGroup _ [SyntaxRule _ (STMany _ _ _)] -> False
           --                                                      SyntaxRuleGroup _ [SyntaxRule _ (STOpt _ )] -> False
           --                                                      _ -> True)
-          --                                           $ tail synRuleGs
+          --                                           $ tail rules
           typeNames = map arQQName antiRules
           antiNameGen typ name = "anti" ++ name ++ typ
           antiTermGen typ = map (antiNameGen typ) typeNames
@@ -127,7 +128,7 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                         case lst of
                                           [_, SSId typeName, _] -> (typeName, cName)
                                           _ -> ("", ""))
-                                      (getAltOfSeq $ getSClause $ head $ getSRules $ head synRuleGs)
+                                      (getAltOfSeq $ getSClause $ head $ getSRules $ head rules)
           qqParseFuns =  intercalate "\n" 
                             $ map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->
                                        let sortFunName = sortNameToHaskellName $ C.toLower s : rest
@@ -140,8 +141,10 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
 ?sortFunName :: QuasiQuoter
 ?sortFunName = QuasiQuoter (?(qqFunName exp) ?dummy ?getFun ) (?(qqFunName pat) ?dummy ?getFun ) ?(qqFunName "Type") ?(qqFunName "Decs")
 |])
-                                 $ tail synRuleGs
-          shortCutTypes = map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} -> ((C.toLower s : rest), typeName)) $ tail synRuleGs
+                                 $ filterProxyRules proxyRules $ tail rules
+          shortCutTypes = map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->
+                                ((C.toLower s : rest), typeName))
+                          $ filterProxyRules proxyRules $ tail rules
           qqShortCutsMapDef = "qqShortcuts = M.fromList [ " ++ (intercalate ","
                                                                           (map (\(s, r) -> [str|("?s~","?r~")|])
                                                                                 (shortCutTypes ++ shortcuts)))
