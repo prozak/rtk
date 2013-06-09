@@ -129,6 +129,7 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                           [_, SSId typeName, _] -> (typeName, cName)
                                           _ -> ("", ""))
                                       (getAltOfSeq $ getSClause $ head $ getSRules $ head rules)
+          rulesWithoutProxies = filterProxyRules proxyRules rules
           qqParseFuns =  intercalate "\n" 
                             $ map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->
                                        let sortFunName = sortNameToHaskellName $ C.toLower s : rest
@@ -141,10 +142,10 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
 ?sortFunName :: QuasiQuoter
 ?sortFunName = QuasiQuoter (?(qqFunName exp) ?dummy ?getFun ) (?(qqFunName pat) ?dummy ?getFun ) ?(qqFunName "Type") ?(qqFunName "Decs")
 |])
-                                 $ filterProxyRules proxyRules $ tail rules
+                                rulesWithoutProxies
           shortCutTypes = map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->
                                 ((C.toLower s : rest), typeName))
-                          $ filterProxyRules proxyRules $ tail rules
+                            rulesWithoutProxies
           qqShortCutsMapDef = "qqShortcuts = M.fromList [ " ++ (intercalate ","
                                                                           (map (\(s, r) -> [str|("?s~","?r~")|])
                                                                                 (shortCutTypes ++ shortcuts)))

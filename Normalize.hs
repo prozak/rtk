@@ -265,7 +265,6 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
                                                 counter + 1))
                                      (M.empty, getNameCounter info)
                                      rules
-      mainRuleClause = STSeq "" [SSId $ getSDataTypeName $ head rules]
       rulesClauses = map (\s ->
                            let typeName = getSDataTypeName s
                                dummy = SSIgnore (fromJust (M.lookup typeName ruleToStartInfo))
@@ -276,12 +275,13 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
       newTokens = map (\(_, name) -> LexicalRule { getLRuleDataType = "Keyword",
                                                    getLRuleFunc = "",
                                                    getLRuleName = name, getLClause = (IStrLit name)}) $ M.toList ruleToStartInfo
-      startRuleName = "Start"
-      startRuleGroup = SyntaxRuleGroup startRuleName [SyntaxRule startRuleName $ STAltOfSeq $ mainRuleClause : rulesClauses]
+      
+      qqRule = SyntaxRule (fromJust (getStartRuleName info)) $ STAltOfSeq rulesClauses
+      startRule = head rules
     in
-      ng { getSyntaxRuleGroups = startRuleGroup : rules,
+      ng { getSyntaxRuleGroups = startRule { getSRules = qqRule : getSRules startRule }: tail rules,
            getLexicalRules = newTokens ++ tokens,
-           getGrammarInfo = info { getStartRuleName = Just startRuleName, getNameCounter = counter, getRuleToStartInfo = ruleToStartInfo }}
+           getGrammarInfo = info { getNameCounter = counter, getRuleToStartInfo = ruleToStartInfo }}
 
 normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar =
