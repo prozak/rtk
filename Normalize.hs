@@ -228,7 +228,7 @@ normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, ge
 
 doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do
-  let grammar0 = everywhere (mkT removeOpts) grammar
+  let grammar0 = everywhereBut (False `mkQ` (isLexicalRule . getIRuleName)) (mkT removeOpts) grammar
   mapM_ normalizeRule $ getIRules grammar0
   postNormalizeGrammar
 
