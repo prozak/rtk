@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
@@ -10,6 +11,8 @@ import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.List as L
 import qualified Data.Set as S
+import Data.Lens.Common
+import Data.Lens.Template
 
 import Control.Monad.State.Strict hiding (lift)
 
@@ -26,19 +29,22 @@ import Control.Monad.State.Strict hiding (lift)
 -- 3. Lifted id
 
 data NormalizationState = NormalizationState {
-                                              normSRules :: M.Map ID [SyntaxRule],
-                                              normLRules :: [LexicalRule],
-                                              nameCounter :: Int,
-                                              normAntiRules :: [AntiRule],
-                                              normShortcuts :: [(String, String)],
-                                              proxyRuleNames :: S.Set ID 
+                                              _normSRules :: M.Map ID [SyntaxRule],
+                                              _normLRules :: [LexicalRule],
+                                              _nameCounter :: Int,
+                                              _normAntiRules :: [AntiRule],
+                                              _normShortcuts :: [(String, String)],
+                                              _proxyRuleNames :: S.Set ID 
                                              }
+
+$(makeLens ''NormalizationState)
+
 type Normalization a = State NormalizationState a
 
 newNamePrefixed :: String -> Normalization String
 newNamePrefixed prefix = do
-  n <- gets nameCounter
-  modify $ (\ s -> s{nameCounter = n + 1})
+  n <- gets _nameCounter
+  modify $ (\s -> nameCounter ^= n + 1 $ s)
   return $ prefix ++ (show n)
 
 newName :: Normalization String
@@ -46,23 +52,23 @@ newName = newNamePrefixed "Rule_"
 
 saveProxyRuleName :: ID -> Normalization ()
 saveProxyRuleName ruleName = do
-  modify (\s@NormalizationState { proxyRuleNames = srl } -> s { proxyRuleNames = S.insert ruleName srl })
+  modify (\s -> proxyRuleNames ^%= S.insert ruleName $ s)
   return ()
 
 addRule :: ID -> ID -> SyntaxTopClause -> Normalization ()
 addRule tdName ruleName clause = do
-  let doAdd rs = Just $ (SyntaxRule ruleName clause):(maybe [] id rs)
-  modify (\ s@NormalizationState{ normSRules = nr } -> s{ normSRules = M.alter doAdd tdName nr } )
+  let doAdd rs = Just $ (SyntaxRule ruleName clause) : (maybe [] id rs)
+  modify (\s -> normSRules ^%= M.alter doAdd tdName $ s)
   return ()
 
 addShortcut :: String -> String -> Normalization ()
 addShortcut strFrom strTo = do
-  modify (\ s@NormalizationState{ normShortcuts = ns } -> s{ normShortcuts = (strFrom, strTo):ns } )
+  modify (\s -> normShortcuts ^%= ((strFrom, strTo) :) $ s)
   return ()
 
 addAntiRule :: AntiRule -> Normalization ()
 addAntiRule rl = do
-  modify (\ s@NormalizationState{ normAntiRules = na } -> s{ normAntiRules = rl : na } )
+  modify (\ s -> normAntiRules ^%= (rl :) $ s)
   return ()
 
 addQQLexRule :: ID -> Normalization ID
@@ -78,7 +84,7 @@ addQQLexRule tdName = do
 
 addLexicalRule :: LexicalRule -> Normalization ()
 addLexicalRule lr = do
-  modify $ \s@NormalizationState{ normLRules = nr} -> s{ normLRules = lr:nr }
+  modify $ \s -> normLRules ^%= (lr :) $ s
   return ()
 
 addRuleWithQQ :: ID -> ID -> SyntaxTopClause -> Normalization ()
@@ -125,26 +131,6 @@ extractSClause cl = do
   addRule ruleName ruleName cl
   saveProxyRuleName ruleName
   return $ ruleName
-
-{-
-isSimpleClause :: Clause -> Bool
-isSimpleClause (Id _) = True
-isSimpleClause (Lifted (Id _)) = True
-isSimpleClause (Ignore c) = isSimpleClause c
-isSimpleClause _ = False
-
-isNormalClause :: Clause -> Bool
-isNormalClause (Star c Nothing) = isSimpleClause c
-isNormalClause (Star c (Just c1)) = isSimpleClause c && isSimpleClause c1
-isNormalClause (Plus c Nothing) = isSimpleClause c
-isNormalClause (Plus c (Just c1)) = isSimpleClause c && isSimpleClause c1
-isNormalClause (Opt c) = isSimpleClause c
-isNormalClause (Alt cs) = all (\c -> case c of 
-                                       Alt _ -> False
-                                       _ -> isNormalClause c) cs
-isNormalClause (Seq _ cs) = all isSimpleClause cs
-isNormalClause _ = False
--}
 
 processRuleOptions :: IRule -> Normalization ()
 processRuleOptions r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIRuleOptions=ropts} = do
@@ -245,9 +231,9 @@ postNormalizeGroup (id, rules) = do
 
 postNormalizeGrammar :: Normalization ()
 postNormalizeGrammar = do
-  rules <- gets (M.toList . normSRules)
+  rules <- gets (M.toList . _normSRules)
   newRules <- mapM postNormalizeGroup rules
-  modify (\ s@NormalizationState{ normSRules = nr } -> s{ normSRules = foldr (uncurry M.insert) nr newRules } )
+  modify (\ s -> normSRules ^%= flip (foldr $ uncurry M.insert) newRules $ s)
 
 addStartGroup :: NormalGrammar -> NormalGrammar
 addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = tokens , getGrammarInfo = info } =
