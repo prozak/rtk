@@ -64,7 +64,7 @@ test-out/HaskellLexer.x test-out/HaskellParser.y : $(BIN_PATH) test-grammars/has
 	happy -ihappy_log.txt $< -o $@
 
 test-out/grammar-main.hs: test-grammars/grammar-main.hs
-	$(CP) test-grammars\grammar-main.hs test-out
+	$(CP) test-grammars/grammar-main.hs test-out
 	
 test-grammar: build test-out test-out/grammar-main.hs test-out/GrammarLexer.hs test-out/GrammarParser.hs
 	(cd test-out && ghc --make grammar-main.hs -o main)
@@ -76,7 +76,7 @@ test-java: build test-out test-out/JavaLexer.hs test-out/JavaParser.hs
 #	test-out/main test-grammars/grammar.pg
 
 test-haskell: build test-out test-out/HaskellLexer.hs test-out/HaskellParser.hs
-	$(CP) test-grammars\haskell-main.hs test-out
+	$(CP) test-grammars/haskell-main.hs test-out
 	(cd test-out && ghc --make haskell-main.hs -o haskell-rtk)
 	test-out/haskell-rtk Normalize.hs
 

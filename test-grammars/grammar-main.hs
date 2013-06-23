@@ -30,4 +30,5 @@ main = do
     let [grammar|grammar $StrLit:nm ; $importsOpt $ruleList|] = grm
     putStrLn $ show importsOpt
 --    putStrLn $ ppShow [ruleList| $ruleList_rl1 RuleAAA = $Clause:cl1; |]
+    putStrLn $ show grm
     return 0

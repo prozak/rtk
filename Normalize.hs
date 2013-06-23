@@ -15,6 +15,7 @@ import Data.Lens.Common
 import Data.Lens.Template
 
 import Control.Monad.State.Strict hiding (lift)
+import Data.Lens.Strict
 
 -- In the normal form top level clause of the non-lexical rule can be the following:
 -- 1. simple_clause *
@@ -43,8 +44,8 @@ type Normalization a = State NormalizationState a
 
 newNamePrefixed :: String -> Normalization String
 newNamePrefixed prefix = do
-  n <- gets _nameCounter
-  modify $ (\s -> nameCounter ^= n + 1 $ s)
+  n <- access nameCounter
+  nameCounter ~= n + 1
   return $ prefix ++ (show n)
 
 newName :: Normalization String
@@ -52,23 +53,23 @@ newName = newNamePrefixed "Rule_"
 
 saveProxyRuleName :: ID -> Normalization ()
 saveProxyRuleName ruleName = do
-  modify (\s -> proxyRuleNames ^%= S.insert ruleName $ s)
+  proxyRuleNames %= S.insert ruleName
   return ()
 
 addRule :: ID -> ID -> SyntaxTopClause -> Normalization ()
 addRule tdName ruleName clause = do
   let doAdd rs = Just $ (SyntaxRule ruleName clause) : (maybe [] id rs)
-  modify (\s -> normSRules ^%= M.alter doAdd tdName $ s)
+  normSRules %= M.alter doAdd tdName
   return ()
 
 addShortcut :: String -> String -> Normalization ()
 addShortcut strFrom strTo = do
-  modify (\s -> normShortcuts ^%= ((strFrom, strTo) :) $ s)
+  normShortcuts %= ((strFrom, strTo) :)
   return ()
 
 addAntiRule :: AntiRule -> Normalization ()
 addAntiRule rl = do
-  modify (\ s -> normAntiRules ^%= (rl :) $ s)
+  normAntiRules %= (rl :)
   return ()
 
 addQQLexRule :: ID -> Normalization ID
@@ -84,7 +85,7 @@ addQQLexRule tdName = do
 
 addLexicalRule :: LexicalRule -> Normalization ()
 addLexicalRule lr = do
-  modify $ \s -> normLRules ^%= (lr :) $ s
+  normLRules %= (lr :)
   return ()
 
 addRuleWithQQ :: ID -> ID -> SyntaxTopClause -> Normalization ()
@@ -231,9 +232,10 @@ postNormalizeGroup (id, rules) = do
 
 postNormalizeGrammar :: Normalization ()
 postNormalizeGrammar = do
-  rules <- gets (M.toList . _normSRules)
-  newRules <- mapM postNormalizeGroup rules
-  modify (\ s -> normSRules ^%= flip (foldr $ uncurry M.insert) newRules $ s)
+  rules <- access normSRules
+  newRules <- mapM postNormalizeGroup $ M.toList rules
+  normSRules %= flip (foldr $ uncurry M.insert) newRules
+  return ()
 
 addStartGroup :: NormalGrammar -> NormalGrammar
 addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = tokens , getGrammarInfo = info } =
