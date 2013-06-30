@@ -28,14 +28,6 @@ seqEParser (SLifted p _) = p
 
 data Seq a = Seq (Maybe (ASTConstructor a)) [SeqElem a]
 
-maybeAddASTType :: ASTGen a => Maybe String -> a (ASTType a)
-maybeAddASTType Nothing = addASTType Nothing
-maybeAddASTType (Just n) = do
-  mtp <- getASTType n
-  case mtp of
-    Just tp -> return tp
-    Nothing -> addASTType (Just n)
-
 generateGrammar :: Generator a => InitialGrammar -> a ()
 generateGrammar (InitialGrammar name imports rules) = mapM_ generateRule rules
 
@@ -60,6 +52,9 @@ generateClause :: Generator a => Maybe String -> Maybe String -> IClause -> a (P
 generateClause maybeTypeName maybeName (IAlt alts) = do
   --tp <- maybeAddASTType maybeTypeName
   tp <- addASTType maybeTypeName
+  case maybeName of
+    Just rn -> setRuleType tp rn
+    Nothing -> return ()
   seqs <- mapM (generateSeq tp) alts
   let parsers = map seqToPseq seqs
   parser <- addClause maybeName (PAlt parsers)
@@ -92,7 +87,7 @@ seqToPseq (Seq mc seqElems) = case find (isLifted . fst) (zip seqElems [0..]) of
 generateSubClause :: Generator a => IClause -> a (SeqElem a)
 generateSubClause (IId id) = do
   ~(Just parser) <- getParser id
-  ~(Just tp) <- getASTType id
+  ~(Just tp) <- getRuleASTType id
   return $ SNormal parser tp
 generateSubClause (ILifted clause) = do
   (SNormal parser tp) <- generateSubClause clause

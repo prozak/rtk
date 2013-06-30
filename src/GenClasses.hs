@@ -51,8 +51,10 @@ class (Monad a, ContentGen a) => ASTGen a where
     addASTType :: Maybe ASTTypeName -> a (ASTType a)
     addPrimitiveType :: ASTTypeName -> a (ASTType a)
     addListType :: ASTType a -> a (ASTType a)
+    setRuleType :: ASTType a -> RuleName -> a ()
     addSeqToASTType :: ASTType a -> Maybe ConstructorName -> [ASTType a] -> a (ASTConstructor a)
-    getASTType :: RuleName -> a (Maybe (ASTType a))
+    getASTType :: ASTTypeName -> a (Maybe (ASTType a))
+    getRuleASTType :: RuleName -> a (Maybe (ASTType a))
     getConstructorName :: ASTConstructor a -> a ConstructorName
     getConstructorParams :: ASTConstructor a -> a [ASTType a]
     getConstructorType :: ASTConstructor a -> a (ASTType a)

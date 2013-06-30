@@ -52,6 +52,7 @@ data YParser = YPToken TokenDef
 data XYState = XYState {
                         _tokDefs :: [TokenDef],
                         _macroDefs :: [MacroDef],
+                        _tokenMap :: M.Map String RuleRef,
                         _curRef :: Int,
                         _rules :: [RuleDef],
                         _ruleMap :: IM.IntMap YParser,
@@ -113,7 +114,7 @@ parserDefToRule name (PAlt alts) = do
 
 elemForParser :: (Monad m) => Int -> RuleRef -> XYGen m Elem
 elemForParser num ref = do
-  ~(Just parser) <- access' ruleMap >>= return . IM.lookup (fromRuleRef ref)
+  ~(Just parser) <- access ruleMap >>= return . IM.lookup (fromRuleRef ref)
   return $ case parser of
              (YPRule (Alt _ True _)) -> List num
              _ -> Var num
@@ -145,6 +146,7 @@ runParserGenRec xyGen = do
    startXYState = XYState {
                            _tokDefs = [],
                            _macroDefs = [],
+                           _tokenMap = M.empty,
                            _curRef = 0,
                            _rules = [],
                            _ruleMap = IM.empty,
@@ -181,13 +183,19 @@ instance (Monad m, ASTGen m) => ParserGen (XYGen m) where
 
     --addToken :: ASTGen a => String -> p (Parser p a)
     addToken str = do
-      name <- newRuleName "kw_"
-      newRuleRef False $ YPToken $ TokenDef name (IStrLit str) LNoData
+      oldTok <- access' tokenMap >>= return . M.lookup str
+      case oldTok of
+        Just r -> return r
+        Nothing -> do
+                    name <- newRuleName "kw_"
+                    res <- newRuleRef False $ YPToken $ TokenDef name (IStrLit str) LNoData
+                    tokenMap %= M.insert str res
+                    return res
 
     --getParser :: ASTGen a => RuleName -> p (Parser p a)
     getParser name = do
       -- TODO: Add error handling
-      access nameMap >>= return . trace ("lookup " ++ name) . (M.lookup name)
+      access nameMap >>= return . (M.lookup name)
 
     --liftAST :: ASTGen a => a c -> p c
     liftAST = XYGen . lift
@@ -206,8 +214,14 @@ instance (Monad m, ASTGen m) => ASTGen (XYGen m) where
     --addListType :: ASTType a -> a (ASTType a)
     addListType = liftAST . addListType
 
+    --setRuleType :: ASTType a -> RuleName -> a ()
+    setRuleType tp rn = liftAST $ setRuleType tp rn
+
     --addSeqToASTType :: ASTType a -> Maybe ConstructorName -> [ASTType a] -> a (ASTConstructor a)
     addSeqToASTType tp maybeN typeRefs = liftAST $ addSeqToASTType tp maybeN typeRefs
+
+    --getRuleASTType :: RuleName -> a (Maybe (ASTType a))
+    getRuleASTType = liftAST . getRuleASTType
 
     --getASTType :: RuleName -> a (ASTType a)
     getASTType = liftAST . getASTType

@@ -35,6 +35,7 @@ data ASTState = ASTState {
                           _typeMap :: IM.IntMap AType,
                           _nameCounter :: Int,
                           _nameMap :: M.Map ASTTypeName TypeRef,
+                          _ruleMap :: M.Map RuleName TypeRef,
                           _curRef :: Int
                          }
 
@@ -74,14 +75,16 @@ isTypeDef :: AType -> Bool
 isTypeDef (ATypeDef _) = True
 isTypeDef _ = False
 
-newTypeRef :: Monad m => AType -> SimpleASTGen m TypeRef
-newTypeRef theType = do
+newTypeRef :: Monad m => Bool -> AType -> SimpleASTGen m TypeRef
+newTypeRef addToNameMap theType = do
   ref <- access' curRef
   curRef %= (1 +)
   let name = aName theType
   typeMap %= IM.insert ref theType
   case name of 
-    Just nm -> nameMap %= trace ("type add " ++ nm) . M.insert nm (TypeRef ref)
+    Just nm -> if addToNameMap
+               then nameMap %= M.insert nm (TypeRef ref)
+               else return ()
     Nothing -> return ()
   return $ TypeRef ref
 
@@ -103,7 +106,8 @@ runASTGenRec astGen = do
                              _typeMap = IM.empty,
                              _nameCounter = 0,
                              _nameMap = M.empty,
-                             _curRef = 0
+                             _curRef = 0,
+                             _ruleMap = M.empty
                             }
 
 instance (Monad m) => ContentGen (SimpleASTGen m) where
@@ -116,17 +120,28 @@ instance (Monad m) => ASTGen (SimpleASTGen m) where
     type ASTConstructor (SimpleASTGen m) = DataDef
 
     --addASTType :: Maybe ASTTypeName -> a (ASTType a)
-    addASTType maybeN | trace ("addASTType " ++ show maybeN) True = do
+    addASTType maybeN = do
       name <- ensureName maybeN "Data"
-      newTypeRef (ATypeDef (TypeDef name []))
+      case maybeN of
+        Just n -> do
+          oldRef <- access' nameMap >>= return . M.lookup n
+          case oldRef of
+            Just tr -> return tr
+            Nothing -> newTypeRef True (ATypeDef (TypeDef name []))
+        Nothing -> newTypeRef False (ATypeDef (TypeDef name []))
 
     --addPrimitiveType :: ASTTypeName -> a (ASTType a)
     addPrimitiveType tn = do
-       newTypeRef (APrimType tn)
+       newTypeRef False (APrimType tn)
 
     --addListType :: ASTType a -> a (ASTType a)
     addListType tp = do
-      newTypeRef (AListType tp)
+      newTypeRef False (AListType tp)
+
+    --setRuleType :: ASTType a -> RuleName -> a ()
+    setRuleType tp rn = do
+      ruleMap %= M.insert rn tp
+      return ()
 
     --addSeqToASTType :: ASTType a -> Maybe ConstructorName -> [ASTType a] -> a (ASTConstructor a)
     addSeqToASTType tp maybeN typeRefs = do
@@ -135,9 +150,14 @@ instance (Monad m) => ASTGen (SimpleASTGen m) where
       typeMap %= IM.update (Just . addConstrToAType constr) (fromTypeRef tp)
       return constr
 
-    --getASTType :: RuleName -> a (Maybe (ASTType a))
-    getASTType nm | trace ("getASTType " ++ nm) True = do
+    --getASTType :: ASTTypeName -> a (Maybe (ASTType a))
+    getASTType nm = do
       theMap <- access nameMap
+      return $ M.lookup nm theMap
+
+    --getRuleASTType :: RuleName -> a (Maybe (ASTType a))
+    getRuleASTType nm = do
+      theMap <- access ruleMap
       return $ M.lookup nm theMap
 
     --getConstructorName :: ASTConstructor a -> a ConstructorName
