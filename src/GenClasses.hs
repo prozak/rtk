@@ -3,6 +3,7 @@ module GenClasses
     where
 
 import Parser
+import Control.Monad.State.Lazy
 
 type Content = String
 
@@ -44,7 +45,7 @@ type ConstructorName = String
 
 type ASTTypeName = String
 
-class (Monad a, ContentGen a) => ASTGen a where
+class (Monad a, MonadFix a, ContentGen a) => ASTGen a where
     type ASTType a
     type ASTConstructor a
 

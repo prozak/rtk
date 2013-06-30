@@ -49,6 +49,7 @@ generateRule (IRule mDTName mDTFunc ruleName clause options) = do
   return ()
 
 generateClause :: Generator a => Maybe String -> Maybe String -> IClause -> a (Parser a, ASTType a)
+generateClause maybeTypeName maybeName (IAlt [ISeq [clause]]) | not (isSimpleClause clause) = generateClause maybeTypeName maybeName clause
 generateClause maybeTypeName maybeName (IAlt alts) = do
   --tp <- maybeAddASTType maybeTypeName
   tp <- addASTType maybeTypeName
@@ -59,6 +60,15 @@ generateClause maybeTypeName maybeName (IAlt alts) = do
   let parsers = map seqToPseq seqs
   parser <- addClause maybeName (PAlt parsers)
   return (parser, tp)
+generateClause maybeTypeName maybeName (IStar clause Nothing) = do
+  SNormal subP subTp <- generateSubClause clause
+  tp <- addListType subTp
+  case maybeName of
+    Just rn -> setRuleType tp rn
+    Nothing -> return ()
+  parser <- addClause maybeName (PMany subP PStar Nothing)
+  return (parser, tp)
+generateClause _ _ cl = error $ "Do not know how to handle" ++ show cl
 
 generateSeq :: Generator a => (ASTType a) -> IClause -> a (Seq a)
 generateSeq tp (ISeq clauses) = do

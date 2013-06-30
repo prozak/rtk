@@ -37,7 +37,10 @@ data Seq = Seq [RuleRef] Action
 
 data Action = Cons Int Int
             | Nil
+            | AList Int
             | Simple Elem
+            | AJust Elem
+            | ANothing
             | Constructor ConstructorName [Elem]
     deriving Show
 
@@ -65,6 +68,8 @@ $(makeLens ''XYState)
 
 newtype XYGen m a = XYGen { fromXYGen :: FutureT XYState m a }
     deriving (Monad, MonadFuture XYState)
+
+deriving instance MonadFix m => MonadFix (XYGen m)
 
 yName :: YParser -> String
 yName (YPToken (TokenDef n _ _)) = n
@@ -100,10 +105,15 @@ newRuleName str = do
   nameCounter %= (1 +)
   return $ str ++ show ind
 
-parserDefToRule :: (Monad m, ASTGen m) => String -> ParserDef (XYGen m) -> XYGen m RuleDef
-parserDefToRule name (PAlt alts) = do
+parserDefToRule :: (Monad m, ASTGen m) => RuleRef -> String -> ParserDef (XYGen m) -> XYGen m RuleDef
+parserDefToRule rulePs name (PAlt alts) = do
   newAlts <- mapM pSeqToSeq alts
   return $ Alt name False newAlts
+parserDefToRule rulePs name (POpt parser) = do
+  elem <- elemForParser 0 parser
+  return $ Alt name False [Seq [parser] $ AJust elem, Seq [] $ ANothing]
+parserDefToRule rulePs name (PMany parser PStar Nothing) = do
+  return $ Alt name True [Seq [rulePs, parser] $ Cons 1 0, Seq [] $ Nil]  
 
 elemForParser :: (Monad m) => Int -> RuleRef -> XYGen m Elem
 elemForParser num ref = do
@@ -157,8 +167,9 @@ instance (Monad m, ASTGen m) => ParserGen (XYGen m) where
     --addClause :: ASTGen a => Maybe RuleName -> ParserDef p a -> p (Parser p a)
     addClause maybeN def = do
       name <- ensureRuleName maybeN "Rule_"
-      ruleDef <- parserDefToRule name def
-      newRuleRef (isJust maybeN) $ YPRule ruleDef
+      rec ruleDef <- parserDefToRule rulePs name def
+          rulePs <- newRuleRef (isJust maybeN) $ YPRule ruleDef
+      return rulePs
 
     -- addLexRule :: ASTGen a => Maybe RuleName -> LexRuleAction -> IClause -> p (Parser p a)
     addLexRule maybeN lact clause = do
@@ -423,5 +434,9 @@ genYSeq (Seq ruleRefs act) = do
   let actionDoc = case act of
                     Constructor nm elems -> text nm <+> hsep ( map (text . elemStr) elems )
                     Simple elem -> text $ elemStr elem
-                    Nil -> empty
+                    Nil -> text "[]"
+                    Cons a b -> [doc|$?(show $ a + 1) : $?(show $ b + 1)|]
+                    AList i -> [doc|[$?(show $ i + 1)]|]
+                    AJust elem -> [doc|Just ?(elemStr elem)|]
+                    ANothing -> text "Nothing"
   return [doc|??parseDoc { ??actionDoc }|]

@@ -103,7 +103,7 @@ instance (Monad m) => ContentGen (SimpleASTGen m) where
       astText <- genAST nm
       return [(nm ++ "AST.hs", astText)]
 
-instance (Monad m) => ASTGen (SimpleASTGen m) where
+instance (Monad m, MonadFix m) => ASTGen (SimpleASTGen m) where
     type ASTType (SimpleASTGen m) = TypeRef
     type ASTConstructor (SimpleASTGen m) = DataDef
 
