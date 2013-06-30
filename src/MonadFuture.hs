@@ -14,7 +14,7 @@ data FutureState a = FutureState {
                                  }
 
 newtype FutureT s m a = FutureT { fromFutureT :: StateT (FutureState s) m a }
-    deriving (Monad, MonadState (FutureState s), MonadTrans)
+    deriving (Monad, MonadTrans)
 
 class MonadFuture s m | m -> s where
     getFuture :: m s
@@ -22,9 +22,9 @@ class MonadFuture s m | m -> s where
     modifyPresent :: (s -> s) -> m ()
 
 instance Monad m => MonadFuture s (FutureT s m) where
-    getFuture = gets sFuture
-    getPresent = gets sPresent
-    modifyPresent func = modify $ \ ~(FutureState f p) -> FutureState f (func p)
+    getFuture = FutureT $ gets sFuture
+    getPresent = FutureT $ gets sPresent
+    modifyPresent func = FutureT $ modify $ \ ~(FutureState f p) -> FutureState f (func p)
 
 deriving instance MonadFix m => MonadFix (FutureT s m)
 

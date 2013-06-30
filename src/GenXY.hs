@@ -90,7 +90,7 @@ newRuleRef addName parser = do
   addParser parser
   ruleMap %= IM.insert ref parser
   if addName
-     then nameMap %= (trace ("add rule " ++ yName parser) $ M.insert (yName parser) (RuleRef ref))
+     then nameMap %= M.insert (yName parser) (RuleRef ref)
      else return () 
   return $ RuleRef ref
 
