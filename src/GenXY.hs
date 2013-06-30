@@ -1,4 +1,5 @@
-{-# LANGUAGE TypeFamilies, TemplateHaskell, MultiParamTypeClasses, FlexibleInstances, RecursiveDo, QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies, TemplateHaskell, MultiParamTypeClasses, FlexibleInstances, RecursiveDo, QuasiQuotes, GeneralizedNewtypeDeriving,
+   StandaloneDeriving #-}
 module GenXY(XYGen, runParserGen, runParserGenRec)
     where
 
@@ -8,7 +9,7 @@ import Parser
 import Control.Monad.State.Lazy
 import Data.Lens.Common
 import Data.Lens.Template
-import LensStateWrapper
+import MonadFuture
 import Data.Maybe
 import Debug.Trace
 import DocQuote
@@ -23,7 +24,7 @@ newtype RuleRef = RuleRef { fromRuleRef :: Int }
 data TokenDef = TokenDef String IClause LexRuleAction
     deriving Show
 
-instance Show LexRuleAction
+deriving instance Show LexRuleAction
 
 data MacroDef = MacroDef String IClause 
     deriving Show
@@ -62,16 +63,8 @@ data XYState = XYState {
 
 $(makeLens ''XYState)
 
-newtype XYGen m a = XYGen { fromXYGen :: StateT (XYState, XYState) m a }
-
-instance Monad m => Monad (XYGen m) where
-    return = XYGen . return
-    a >>= b = XYGen (fromXYGen a >>= fromXYGen . b) 
-
-instance Monad m => MonadState (XYState, XYState) (XYGen m) where
-    get = XYGen get
-    put = XYGen . put
-    state = XYGen . state
+newtype XYGen m a = XYGen { fromXYGen :: FutureT XYState m a }
+    deriving (Monad, MonadFuture XYState)
 
 yName :: YParser -> String
 yName (YPToken (TokenDef n _ _)) = n
@@ -91,7 +84,7 @@ addParser (YPRule rule) = do
 
 newRuleRef :: Monad m => Bool -> YParser -> XYGen m RuleRef
 newRuleRef addName parser = do
-  ref <- access' curRef
+  ref <- present curRef
   curRef %= (1 +)
   let name = yName parser
   addParser parser
@@ -103,7 +96,7 @@ newRuleRef addName parser = do
 
 newRuleName :: Monad m => RuleName -> XYGen m RuleName
 newRuleName str = do
-  ind <- access' nameCounter
+  ind <- present nameCounter
   nameCounter %= (1 +)
   return $ str ++ show ind
 
@@ -114,7 +107,7 @@ parserDefToRule name (PAlt alts) = do
 
 elemForParser :: (Monad m) => Int -> RuleRef -> XYGen m Elem
 elemForParser num ref = do
-  ~(Just parser) <- access ruleMap >>= return . IM.lookup (fromRuleRef ref)
+  ~(Just parser) <- future ruleMap >>= return . IM.lookup (fromRuleRef ref)
   return $ case parser of
              (YPRule (Alt _ True _)) -> List num
              _ -> Var num
@@ -134,14 +127,10 @@ ensureRuleName maybeN str = case maybeN of
                               Nothing -> newRuleName str
 
 runParserGen :: (Monad m) => XYState -> XYGen m a -> m a
-runParserGen st xyGen = do
-  ~(res, _) <- runStateT (fromXYGen xyGen) (st, st)
-  return res
+runParserGen st xyGen = runFutureT st (fromXYGen xyGen)
 
 runParserGenRec :: (MonadFix m, Monad m) => XYGen m a -> m (a, XYState)
-runParserGenRec xyGen = do
-  rec ~(res, ~(_, outState)) <- runStateT (fromXYGen xyGen) (outState, startXYState)
-  return (res, outState)
+runParserGenRec xyGen = runFutureTRec startXYState (fromXYGen xyGen)
  where
    startXYState = XYState {
                            _tokDefs = [],
@@ -183,7 +172,7 @@ instance (Monad m, ASTGen m) => ParserGen (XYGen m) where
 
     --addToken :: ASTGen a => String -> p (Parser p a)
     addToken str = do
-      oldTok <- access' tokenMap >>= return . M.lookup str
+      oldTok <- present tokenMap >>= return . M.lookup str
       case oldTok of
         Just r -> return r
         Nothing -> do
@@ -195,7 +184,7 @@ instance (Monad m, ASTGen m) => ParserGen (XYGen m) where
     --getParser :: ASTGen a => RuleName -> p (Parser p a)
     getParser name = do
       -- TODO: Add error handling
-      access nameMap >>= return . (M.lookup name)
+      future nameMap >>= return . (M.lookup name)
 
     --liftAST :: ASTGen a => a c -> p c
     liftAST = XYGen . lift
@@ -283,7 +272,7 @@ rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at
 
 genTokens :: Monad m => XYGen m Doc
 genTokens = do
-  toks <- access' tokDefs
+  toks <- present tokDefs
   tokenDefs <- mapM genTokDef toks
   return $ text "tokens :- " <+> vcat (tokenDefs ++ [text ". {rtkError}"])
 
@@ -298,7 +287,7 @@ genTokDef (TokenDef name clause lra) = do
 
 genADT :: Monad m => XYGen m Doc
 genADT = do
-  toks <- access' tokDefs
+  toks <- present tokDefs
   tokConstrs <- mapM genTokConstr toks
   return $ text "data Token = " <+> joinAlts ([text "EndOfFile"] ++ tokConstrs ++ [text "deriving Show" ])
 
@@ -400,7 +389,7 @@ improt ?name~AST
 
 genYTokens :: Monad m => XYGen m Doc
 genYTokens = do
-  toks <- access' tokDefs
+  toks <- present tokDefs
   defs <- mapM genYTokDef toks
   return $ vcat $ defs
 
@@ -414,7 +403,7 @@ genYTokDef (TokenDef name clause lra) = do
 
 genYRules :: Monad m => XYGen m Doc
 genYRules = do
-  rls <- access' rules
+  rls <- present rules
   defs <- mapM genYRule $ reverse rls
   return $ vcat $ punctuate (text "") $ defs
 
@@ -429,7 +418,7 @@ elemStr (List i) = "(reverse $" ++ show (i + 1) ++ ")"
 
 genYSeq :: Monad m => Seq -> XYGen m Doc
 genYSeq (Seq ruleRefs act) = do
-  ruleNames <- mapM (\ref -> access' ruleMap >>= return . yName . fromJust . IM.lookup (fromRuleRef ref)) ruleRefs
+  ruleNames <- mapM (\ref -> present ruleMap >>= return . yName . fromJust . IM.lookup (fromRuleRef ref)) ruleRefs
   let parseDoc = hsep $ map text ruleNames
   let actionDoc = case act of
                     Constructor nm elems -> text nm <+> hsep ( map (text . elemStr) elems )

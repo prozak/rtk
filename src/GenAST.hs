@@ -1,4 +1,5 @@
-{-# LANGUAGE TypeFamilies, TemplateHaskell, MultiParamTypeClasses, FlexibleInstances, RecursiveDo, QuasiQuotes  #-}
+{-# LANGUAGE TypeFamilies, TemplateHaskell, MultiParamTypeClasses, FlexibleInstances, RecursiveDo, QuasiQuotes,
+  GeneralizedNewtypeDeriving, StandaloneDeriving #-}
 module GenAST(SimpleASTGen, runASTGen, runASTGenRec)
     where
 
@@ -8,7 +9,7 @@ import Parser
 import Control.Monad.State.Lazy
 import Data.Lens.Common
 import Data.Lens.Template
-import LensStateWrapper
+import MonadFuture
 import Data.Maybe
 import Debug.Trace
 import DocQuote
@@ -41,23 +42,14 @@ data ASTState = ASTState {
 
 $(makeLens ''ASTState)
 
-newtype SimpleASTGen m a = SimpleASTGen { fromASTGen :: StateT (ASTState, ASTState) m a }
+newtype SimpleASTGen m a = SimpleASTGen { fromASTGen :: FutureT ASTState m a }
+    deriving (Monad, MonadFuture ASTState)
 
-instance Monad m => Monad (SimpleASTGen m) where
-    return = SimpleASTGen . return
-    a >>= b = SimpleASTGen (fromASTGen a >>= fromASTGen . b) 
-
-instance Monad m => MonadState (ASTState, ASTState) (SimpleASTGen m) where
-    get = SimpleASTGen get
-    put = SimpleASTGen . put
-    state = SimpleASTGen . state
-
-instance MonadFix m => MonadFix (SimpleASTGen m) where
-    mfix f = SimpleASTGen $ mfix (fromASTGen . f)
+deriving instance MonadFix m => MonadFix (SimpleASTGen m)
 
 newName :: Monad m => String -> SimpleASTGen m String
 newName str = do
-  ind <- access' nameCounter
+  ind <- present nameCounter
   nameCounter %= (1 +)
   return $ str ++ show ind
 
@@ -77,7 +69,7 @@ isTypeDef _ = False
 
 newTypeRef :: Monad m => Bool -> AType -> SimpleASTGen m TypeRef
 newTypeRef addToNameMap theType = do
-  ref <- access' curRef
+  ref <- present curRef
   curRef %= (1 +)
   let name = aName theType
   typeMap %= IM.insert ref theType
@@ -93,14 +85,10 @@ addConstrToAType def (ATypeDef (TypeDef nm datas)) =
     ATypeDef (TypeDef nm (def : datas))
 
 runASTGen :: (Monad m) => ASTState -> SimpleASTGen m a -> m a
-runASTGen st astGen = do
-  ~(res, _) <- runStateT (fromASTGen astGen) (st, st)
-  return res
+runASTGen st astGen = runFutureT st (fromASTGen astGen)
 
 runASTGenRec :: (MonadFix m, Monad m) => SimpleASTGen m a -> m (a, ASTState)
-runASTGenRec astGen = do
-  rec ~(res, ~(_, outState)) <- runStateT (fromASTGen astGen) (outState, startASTState)
-  return (res, outState)
+runASTGenRec astGen = runFutureTRec startASTState (fromASTGen astGen)
  where
    startASTState = ASTState {
                              _typeMap = IM.empty,
@@ -124,7 +112,7 @@ instance (Monad m) => ASTGen (SimpleASTGen m) where
       name <- ensureName maybeN "Data"
       case maybeN of
         Just n -> do
-          oldRef <- access' nameMap >>= return . M.lookup n
+          oldRef <- present nameMap >>= return . M.lookup n
           case oldRef of
             Just tr -> return tr
             Nothing -> newTypeRef True (ATypeDef (TypeDef name []))
@@ -152,12 +140,12 @@ instance (Monad m) => ASTGen (SimpleASTGen m) where
 
     --getASTType :: ASTTypeName -> a (Maybe (ASTType a))
     getASTType nm = do
-      theMap <- access nameMap
+      theMap <- future nameMap
       return $ M.lookup nm theMap
 
     --getRuleASTType :: RuleName -> a (Maybe (ASTType a))
     getRuleASTType nm = do
-      theMap <- access ruleMap
+      theMap <- future ruleMap
       return $ M.lookup nm theMap
 
     --getConstructorName :: ASTConstructor a -> a ConstructorName
@@ -186,7 +174,7 @@ import qualified Data.Generics as Gen
 
 genASTDatas :: Monad m => SimpleASTGen m Doc
 genASTDatas = do
-  types <- access' typeMap >>= return . (map snd) . IM.toList
+  types <- present typeMap >>= return . (map snd) . IM.toList
   let typeDefs = filter isTypeDef types
   typeDefs <- mapM genASTDef typeDefs
   return $ vcat typeDefs
@@ -198,7 +186,7 @@ genASTDef (ATypeDef (TypeDef name datas)) = do
 
 typeRefStr :: Monad m => TypeRef -> SimpleASTGen m String
 typeRefStr tr = do
-  aType <- access' typeMap >>= return . fromJust . IM.lookup (fromTypeRef tr)
+  aType <- present typeMap >>= return . fromJust . IM.lookup (fromTypeRef tr)
   case aType of
     AListType tr2 -> do
                   tn2 <- typeRefStr tr2
