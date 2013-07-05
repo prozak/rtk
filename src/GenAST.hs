@@ -14,12 +14,14 @@ import Data.Maybe
 import Debug.Trace
 import DocQuote
 import Text.PrettyPrint
+import Utils
+
+import qualified RefTable as R
 
 import qualified Data.IntMap.Lazy as IM
 import qualified Data.Map.Lazy as M
 
-newtype TypeRef = TypeRef { fromTypeRef :: Int }
-             deriving Show
+type TypeRef = R.Ref AType
 
 data TypeDef = TypeDef ASTTypeName [DataDef]
              deriving Show
@@ -33,11 +35,10 @@ data AType = ATypeDef TypeDef
              deriving Show
 
 data ASTState = ASTState {
-                          _typeMap :: IM.IntMap AType,
+                          _typeTab :: R.RefTable AType,
                           _nameCounter :: Int,
                           _nameMap :: M.Map ASTTypeName TypeRef,
-                          _ruleMap :: M.Map RuleName TypeRef,
-                          _curRef :: Int
+                          _ruleMap :: M.Map RuleName TypeRef
                          }
 
 $(makeLens ''ASTState)
@@ -47,16 +48,8 @@ newtype SimpleASTGen m a = SimpleASTGen { fromASTGen :: FutureT ASTState m a }
 
 deriving instance MonadFix m => MonadFix (SimpleASTGen m)
 
-newName :: Monad m => String -> SimpleASTGen m String
-newName str = do
-  ind <- present nameCounter
-  nameCounter %= (1 +)
-  return $ str ++ show ind
-
-ensureName :: Monad m => Maybe String -> String -> SimpleASTGen m String
-ensureName maybeN str = case maybeN of
-                          Just n -> return n
-                          Nothing -> newName str
+instance Monad m => NameGen (SimpleASTGen m) where
+    newName = newNameWithCounter nameCounter
 
 aName :: AType -> Maybe String
 aName (ATypeDef (TypeDef n _)) = Just n
@@ -69,16 +62,14 @@ isTypeDef _ = False
 
 newTypeRef :: Monad m => Bool -> AType -> SimpleASTGen m TypeRef
 newTypeRef addToNameMap theType = do
-  ref <- present curRef
-  curRef %= (1 +)
   let name = aName theType
-  typeMap %= IM.insert ref theType
+  ref <- R.newRef typeTab theType
   case name of 
     Just nm -> if addToNameMap
-               then nameMap %= M.insert nm (TypeRef ref)
+               then nameMap %= M.insert nm ref
                else return ()
     Nothing -> return ()
-  return $ TypeRef ref
+  return ref
 
 addConstrToAType :: DataDef -> AType -> AType
 addConstrToAType def (ATypeDef (TypeDef nm datas)) =
@@ -91,10 +82,9 @@ runASTGenRec :: (MonadFix m, Monad m) => SimpleASTGen m a -> m (a, ASTState)
 runASTGenRec astGen = runFutureTRec startASTState (fromASTGen astGen)
  where
    startASTState = ASTState {
-                             _typeMap = IM.empty,
+                             _typeTab = R.empty,
                              _nameCounter = 0,
                              _nameMap = M.empty,
-                             _curRef = 0,
                              _ruleMap = M.empty
                             }
 
@@ -135,7 +125,7 @@ instance (Monad m, MonadFix m) => ASTGen (SimpleASTGen m) where
     addSeqToASTType tp maybeN typeRefs = do
       name <- ensureName maybeN "Constr"
       let constr = DataDef name tp typeRefs
-      typeMap %= IM.update (Just . addConstrToAType constr) (fromTypeRef tp)
+      R.update tp (addConstrToAType constr) typeTab 
       return constr
 
     --getASTType :: ASTTypeName -> a (Maybe (ASTType a))
@@ -174,7 +164,7 @@ import qualified Data.Generics as Gen
 
 genASTDatas :: Monad m => SimpleASTGen m Doc
 genASTDatas = do
-  types <- present typeMap >>= return . (map snd) . IM.toList
+  types <- R.values present typeTab
   let typeDefs = filter isTypeDef types
   typeDefs <- mapM genASTDef typeDefs
   return $ vcat typeDefs
@@ -186,7 +176,7 @@ genASTDef (ATypeDef (TypeDef name datas)) = do
 
 typeRefStr :: Monad m => TypeRef -> SimpleASTGen m String
 typeRefStr tr = do
-  aType <- present typeMap >>= return . fromJust . IM.lookup (fromTypeRef tr)
+  Just aType <- R.lookup present tr typeTab
   case aType of
     AListType tr2 -> do
                   tn2 <- typeRefStr tr2
