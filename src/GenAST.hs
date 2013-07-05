@@ -32,6 +32,7 @@ data DataDef = DataDef ConstructorName TypeRef [TypeRef]
 data AType = ATypeDef TypeDef
            | APrimType ASTTypeName
            | AListType TypeRef
+           | AMaybeType TypeRef
              deriving Show
 
 data ASTState = ASTState {
@@ -97,8 +98,8 @@ instance (Monad m, MonadFix m) => ASTGen (SimpleASTGen m) where
     type ASTType (SimpleASTGen m) = TypeRef
     type ASTConstructor (SimpleASTGen m) = DataDef
 
-    --addASTType :: Maybe ASTTypeName -> a (ASTType a)
-    addASTType maybeN = do
+    --addASTType :: ASTTypeDecl a -> a (ASTType a)
+    addASTType (ASTData maybeN) = do
       name <- ensureName maybeN "Data"
       case maybeN of
         Just n -> do
@@ -107,14 +108,12 @@ instance (Monad m, MonadFix m) => ASTGen (SimpleASTGen m) where
             Just tr -> return tr
             Nothing -> newTypeRef True (ATypeDef (TypeDef name []))
         Nothing -> newTypeRef False (ATypeDef (TypeDef name []))
-
-    --addPrimitiveType :: ASTTypeName -> a (ASTType a)
-    addPrimitiveType tn = do
+    addASTType (ASTPrimitive tn) = do
        newTypeRef False (APrimType tn)
-
-    --addListType :: ASTType a -> a (ASTType a)
-    addListType tp = do
+    addASTType (ASTList tp) = do
       newTypeRef False (AListType tp)
+    addASTType (ASTMaybe tp) = do
+      newTypeRef False (AMaybeType tp)
 
     --setRuleType :: ASTType a -> RuleName -> a ()
     setRuleType tp rn = do
@@ -140,12 +139,6 @@ instance (Monad m, MonadFix m) => ASTGen (SimpleASTGen m) where
 
     --getConstructorName :: ASTConstructor a -> a ConstructorName
     getConstructorName (DataDef name _ _) = return name
-
-    --getConstructorParams :: ASTConstructor a -> a [ASTType a]
-    getConstructorParams (DataDef _ _ params) = return params
-  
-    --getConstructorType :: ASTConstructor a -> a (ASTType a)
-    getConstructorType (DataDef _ tp _) = return tp
 
 
 -- haskell AST generation routines
@@ -181,6 +174,9 @@ typeRefStr tr = do
     AListType tr2 -> do
                   tn2 <- typeRefStr tr2
                   return $ "[" ++ tn2 ++ "]"
+    AMaybeType tr2 -> do
+                  tn2 <- typeRefStr tr2
+                  return $ "(Maybe " ++ tn2 ++ ")"
     _ -> return $ fromJust $ aName aType
   --return $ fromJust $ aName aType
 

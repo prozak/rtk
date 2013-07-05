@@ -194,14 +194,8 @@ instance (Monad m, ASTGen m) => ASTGen (XYGen m) where
     type ASTType (XYGen m) = ASTType m
     type ASTConstructor (XYGen m) = ASTConstructor m
 
-    --addASTType :: Maybe ASTTypeName -> a (ASTType a)
-    addASTType = liftAST . addASTType 
-
-    --addPrimitiveType :: ASTTypeName -> a (ASTType a)
-    addPrimitiveType = liftAST . addPrimitiveType
-
-    --addListType :: ASTType a -> a (ASTType a)
-    addListType = liftAST . addListType
+    --addASTType :: ASTTypeDecl a -> a (ASTType a)
+    addASTType tp = liftAST $ addASTType tp
 
     --setRuleType :: ASTType a -> RuleName -> a ()
     setRuleType tp rn = liftAST $ setRuleType tp rn
@@ -217,13 +211,6 @@ instance (Monad m, ASTGen m) => ASTGen (XYGen m) where
 
     --getConstructorName :: ASTConstructor a -> a ConstructorName
     getConstructorName = liftAST . getConstructorName
-
-    --getConstructorParams :: ASTConstructor a -> a [ASTType a]
-    getConstructorParams = liftAST . getConstructorParams
-  
-    --getConstructorType :: ASTConstructor a -> a (ASTType a)
-    getConstructorType = liftAST . getConstructorType
-
 
 ----- X File Generation routines
 
