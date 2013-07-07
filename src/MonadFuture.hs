@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies, TemplateHaskell, MultiParamTypeClasses, FlexibleInstances, RecursiveDo, FunctionalDependencies, GeneralizedNewtypeDeriving,
     StandaloneDeriving  #-}
-module MonadFuture(MonadFuture, FutureState, FutureT, future, present, (~=), (%=), runFutureTRec, runFutureT, ifE, MonadCond)
+module MonadFuture(MonadFuture, FutureState, FutureT, future, present, (~=), (%=), runFutureTRec, runFutureT, ifE, MonadCond,
+                  focus)
     where
 
 import Control.Monad.State.Lazy
@@ -13,22 +14,22 @@ data FutureState a = FutureState {
                                  sPresent :: a
                                  }
 
-data FutureT s m a = FutureT { runFutureTr :: (FutureState s) -> m (a, FutureState s) }
+data FutureT s m a = FutureT { runFutureTr :: (FutureState s) -> m (a, s) }
 
 instance Monad m => Monad (FutureT s m) where
     -- (>>=) :: forall a b. m a -> (a -> m b) -> m b
-    (FutureT f1) >>= func = FutureT (\s -> do
-                                       ~(a, s) <- f1 s
-                                       runFutureTr (func a) s)
+    (FutureT f1) >>= func = FutureT (\s@(FutureState sf sp) -> do
+                                       ~(a, sp') <- f1 s
+                                       runFutureTr (func a) (FutureState sf sp'))
 
     -- return :: a -> m a
-    return a = FutureT (\s -> return (a, s))
+    return a = FutureT (\s -> return (a, sPresent s))
 
 instance MonadTrans (FutureT s) where
     -- lift :: Monad m => m a -> t m a
     lift comp = FutureT (\s -> do
                            res <- comp
-                           return (res, s))
+                           return (res, sPresent s))
 
 class Monad m => MonadFuture s m | m -> s where
     getFuture :: m s
@@ -39,20 +40,24 @@ class Monad m => MonadCond m where
     ifE :: Bool -> m a -> m a -> m a
 
 instance Monad m => MonadFuture s (FutureT s m) where
-    getFuture = FutureT $ \s -> return (sFuture s, s)
-    getPresent = FutureT $ \s -> return (sPresent s, s)
-    modifyPresent func = FutureT $ \ ~(FutureState f p) -> return ((), FutureState f (func p))
+    getFuture = FutureT $ \s -> return (sFuture s, sPresent s)
+    getPresent = FutureT $ \s -> return (sPresent s, sPresent s)
+    modifyPresent func = FutureT $ \ ~(FutureState f p) -> return ((), func p)
 
 instance Monad m => MonadCond (FutureT s m) where
     ifE cond ~(FutureT tF) ~(FutureT fF) = FutureT $ \ s -> do
-                                              ~(trueA, FutureState trueFuture truePresent) <- tF s 
-                                              ~(falseA, FutureState falseFuture falsePresent) <- fF s 
+                                              ~(trueA, truePresent) <- tF s 
+                                              ~(falseA, falsePresent) <- fF s 
                                               return (if cond then trueA else falseA,
-                                                      FutureState (if cond then trueFuture else falseFuture) 
-                                                                  (if cond then truePresent else falsePresent))
+                                                      if cond then truePresent else falsePresent)
 
 instance MonadFix m => MonadFix (FutureT s m) where
     mfix func = FutureT (\s -> mfix $ \ ~(a, _) -> runFutureTr (func a) s)
+
+focus :: Monad m => Lens s s1 -> FutureT s1 m a -> FutureT s m a
+focus l (FutureT f1) = FutureT $ \ (FutureState sf sp) -> do
+                         ~(a, sp') <- f1 (FutureState (getL l sf) (getL l sp)) 
+                         return (a, setL l sp' sp)
 
 future :: (Monad m, MonadFuture a m) => Lens a b -> m b
 future l = getFuture >>= return . (getL l) 
@@ -72,7 +77,7 @@ l %= f  = modifyPresent $ \ sw -> setL l (f (getL l sw)) sw
 
 runFutureTRec :: (Monad m, MonadFix m) => s -> FutureT s m a -> m (a, s)
 runFutureTRec startState comp = do
-  rec ~(res, ~(FutureState _ outState)) <- runFutureTr comp (FutureState outState startState)
+  rec ~(res, outState) <- runFutureTr comp (FutureState outState startState)
   return (res, outState)
 
 runFutureT :: (Monad m) => s -> FutureT s m a -> m a

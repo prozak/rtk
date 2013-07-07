@@ -15,6 +15,5 @@ Executable rtk
   Other-Modules:     
                      Lexer,
                      Parser
-  Extensions:        DeriveDataTypeable
   ghc-options:       -rtsopts
   Hs-Source-Dirs:    src
