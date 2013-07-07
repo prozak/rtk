@@ -6,8 +6,9 @@ import GenClasses
 import Data.List
 import Parser
 import Data.Maybe
+import MonadFuture
 
-type Generator a = (Monad a, ParserGen a, ASTGen a, ASTConstructor (ParserAST a) ~ ASTConstructor a)
+type Generator a = (Monad a, ParserGen a, ASTGen a, ASTConstructor (ParserAST a) ~ ASTConstructor a, MonadCond a)
 
 data SeqElem a = SNormal (Parser a) (ASTType a)
                | SIgnore (Parser a)
@@ -34,8 +35,16 @@ generateGrammar (InitialGrammar name imports rules) = mapM_ generateRule rules
 generateRule :: Generator a => IRule -> a ()
 generateRule (IRule mDTName mDTFunc ruleName clause options) | isLexicalRule ruleName = do
   if mDTName == Just "Ignore"
-     then addLexRule (Just ruleName) LIgnore clause
-     else addLexRule (Just ruleName) (LData (maybe "id" id mDTFunc) (maybe "String" id mDTName)) clause
+     then do
+           addLexRule (Just ruleName) LIgnore clause
+           tp <- addASTType (ASTPrimitive "String")
+           setRuleType tp ruleName
+     else do
+           if (elem OSymmacro options)
+              then addLexMacro (Just ruleName) clause
+              else addLexRule (Just ruleName) (LData (maybe "id" id mDTFunc) (maybe "String" id mDTName)) clause
+           tp <- addASTType (ASTPrimitive (maybe "String" id mDTName))
+           setRuleType tp ruleName
   return ()
 generateRule (IRule mDTName mDTFunc ruleName clause options) = do
   generateClause (maybe (Just ruleName) Just mDTName) (Just ruleName) clause
@@ -56,17 +65,37 @@ generateClause maybeTypeName maybeName (IStar clause maybeSep) =
   generateMany PStar clause maybeSep maybeTypeName maybeName
 generateClause maybeTypeName maybeName (IPlus clause maybeSep) =
   generateMany PPlus clause maybeSep maybeTypeName maybeName
+generateClause maybeTypeName maybeName (IOpt clause) = do
+  case maybeName of
+    Just ruleName -> do
+        generateClause maybeTypeName maybeName (IAlt [ISeq [clause], ISeq []])
+    Nothing -> do
+        ~(SNormal subP subTp) <- generateSubClause clause
+        tp <- addASTType (ASTMaybe subTp)
+        parser <- addClause maybeName (POpt subP)
+        return (parser, tp)
 generateClause _ _ cl = error $ "Do not know how to handle" ++ show cl
+
+isASTData :: ASTTypeDecl a -> Bool
+isASTData ASTData{} = True
+isASTData _ = False
 
 generateMany :: Generator a => PManyOp -> IClause -> (Maybe IClause) -> Maybe String -> Maybe String -> a (Parser a, ASTType a)
 generateMany manyOp clause maybeSep maybeTypeName maybeName = do
-  SNormal subP subTp <- generateSubClause clause
+  ~(SNormal subP subTp) <- generateSubClause clause
   maybeSepParser <- maybe (return Nothing) (\ a -> generateSubClause a >>= return . Just . seqEParser) maybeSep
   tp <- addASTType (ASTList subTp)
   case maybeName of
     Just rn -> setRuleType tp rn
     Nothing -> return ()
   parser <- addClause maybeName (PMany subP manyOp maybeSepParser)
+  td <- getASTTypeDecl subTp
+  --ifE (isASTData td)
+  --    (do
+         -- stub for future quasiquotation actions
+  --       addSeqToASTType subTp Nothing []
+  --       return ())
+  --    (return ())
   return (parser, tp)
 
 generateSeq :: Generator a => (ASTType a) -> IClause -> a (Seq a)

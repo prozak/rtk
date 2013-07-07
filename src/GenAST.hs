@@ -45,7 +45,7 @@ data ASTState = ASTState {
 $(makeLens ''ASTState)
 
 newtype SimpleASTGen m a = SimpleASTGen { fromASTGen :: FutureT ASTState m a }
-    deriving (Monad, MonadFuture ASTState)
+    deriving (Monad, MonadFuture ASTState, MonadCond)
 
 deriving instance MonadFix m => MonadFix (SimpleASTGen m)
 
@@ -140,7 +140,15 @@ instance (Monad m, MonadFix m) => ASTGen (SimpleASTGen m) where
     --getConstructorName :: ASTConstructor a -> a ConstructorName
     getConstructorName (DataDef name _ _) = return name
 
-
+    --getASTTypeDecl :: (ASTType a) -> a (ASTTypeDecl (ASTType a))
+    getASTTypeDecl tp = do
+      ~(Just at) <- R.lookup future tp typeTab
+      return $ case at of
+                 ATypeDef (TypeDef nm _) -> ASTData (Just nm)
+                 APrimType nm -> ASTPrimitive nm
+                 AListType tp -> ASTList tp
+                 AMaybeType tp -> ASTMaybe tp
+                
 -- haskell AST generation routines
 
 genAST :: Monad m => String -> SimpleASTGen m String

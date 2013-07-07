@@ -25,7 +25,7 @@ newRef_ (RefTable i tab) val = (RefTable (i + 1) $ IM.insert i val tab, Ref i)
 newRef :: (Monad m, MonadFuture s m) => Lens s (RefTable a) -> a -> m (Ref a)
 newRef tabLens val = do
   oldTab <- present tabLens
-  let (newTab, ref) = newRef_ oldTab val
+  let ~(newTab, ref) = newRef_ oldTab val
   tabLens ~= newTab
   return ref
 

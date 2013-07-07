@@ -60,3 +60,4 @@ class (Monad a, MonadFix a, ContentGen a) => ASTGen a where
     getASTType :: ASTTypeName -> a (Maybe (ASTType a))
     getRuleASTType :: RuleName -> a (Maybe (ASTType a))
     getConstructorName :: ASTConstructor a -> a ConstructorName
+    getASTTypeDecl :: (ASTType a) -> a (ASTTypeDecl (ASTType a))

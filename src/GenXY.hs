@@ -67,7 +67,7 @@ data XYState = XYState {
 $(makeLens ''XYState)
 
 newtype XYGen m a = XYGen { fromXYGen :: FutureT XYState m a }
-    deriving (Monad, MonadFuture XYState)
+    deriving (Monad, MonadFuture XYState, MonadCond)
 
 deriving instance MonadFix m => MonadFix (XYGen m)
 
@@ -109,6 +109,13 @@ parserDefToRule rulePs name (POpt parser) = do
   return $ Alt name False [Seq [parser] $ AJust elem, Seq [] $ ANothing]
 parserDefToRule rulePs name (PMany parser PStar Nothing) = do
   return $ Alt name True [Seq [rulePs, parser] $ Cons 1 0, Seq [] $ Nil]  
+parserDefToRule rulePs name (PMany parser PStar (Just sepP)) = do
+  plusRule <- addClause Nothing (PMany parser PPlus (Just sepP))
+  return $ Alt name True [Seq [plusRule] $ Simple $ Var 0, Seq [] $ Nil]  
+parserDefToRule rulePs name (PMany parser PPlus Nothing) = do
+  return $ Alt name True [Seq [rulePs, parser] $ Cons 1 0, Seq [parser] $ AList 0]
+parserDefToRule rulePs name (PMany parser PPlus (Just sepP)) = do
+  return $ Alt name True [Seq [rulePs, sepP, parser] $ Cons 2 0, Seq [parser] $ AList 0]
 
 elemForParser :: (Monad m) => Int -> RuleRef -> XYGen m Elem
 elemForParser num ref = do
@@ -145,6 +152,7 @@ runParserGenRec xyGen = runFutureTRec startXYState (fromXYGen xyGen)
 instance (Monad m, ASTGen m) => ContentGen (XYGen m) where
     generateContent nm = do
       cont <- liftAST $ generateContent nm
+      sortTokenDefs
       xText <- genX nm
       yText <- genY nm
       return $ (nm ++ "Parser.y", yText) : (nm ++ "Lexer.x", xText) : cont
@@ -212,6 +220,9 @@ instance (Monad m, ASTGen m) => ASTGen (XYGen m) where
     --getConstructorName :: ASTConstructor a -> a ConstructorName
     getConstructorName = liftAST . getConstructorName
 
+    --getASTTypeDecl :: (ASTType a) -> a (ASTTypeDecl (ASTType a))
+    getASTTypeDecl = liftAST . getASTTypeDecl     
+
 ----- X File Generation routines
 
 tokenName :: String -> String
@@ -220,13 +231,16 @@ tokenName name = "Tk__" ++ name
 genX :: Monad m => String -> XYGen m String
 genX grammarName = do
   tokens <- genTokens
+  macros <- genMacros
   adt <- genADT
   return $ render [doc|{
 module ?grammarName~Lexer(alexScanTokens, Token(..))
     where
 
 }
-%wrapper monad
+%wrapper "monad"
+
+??macros
 
 ??tokens
 
@@ -235,7 +249,7 @@ module ?grammarName~Lexer(alexScanTokens, Token(..))
 
 alexEOF = return EndOfFile
 alexScanTokens :: String -> [Token]
-alexScanTokens str =.
+alexScanTokens str =
                case alexScanTokens1 str of
                   Right toks -> toks
                   Left err -> error err
@@ -244,12 +258,13 @@ alexScanTokens1 str = runAlex str $ do
   let loop toks = do tok <- alexMonadScan
                      case tok of
                        EndOfFile -> return $ reverse toks
-                       _ -> let toks' = tok : toks.
+                       _ -> let toks' = tok : toks
                             in toks' `seq` loop toks'
   loop []
 simple1 :: (String -> Token) -> AlexInput -> Int -> Alex Token
 simple1 t (_, _, _, str) len = return $ t (take len str)
 
+simple :: Token -> AlexInput -> Int -> Alex Token
 simple t input len = return t
 
 rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at " ++ (show line) ++ " line, " ++ (show column) ++ " column" ++ ". Following chars :" ++ (take 10 str)
@@ -272,11 +287,23 @@ genTokDef (TokenDef name clause lra) = do
     LNoData -> return $ [doc|??clauseText { simple ?tname } |]
     LData func tp -> return $ [doc|??clauseText { simple1 $ ?tname . (?func~) } |]
 
+genMacros :: Monad m => XYGen m Doc
+genMacros = do
+  macros <- present macroDefs
+  macroDefTexts <- mapM genMacroDef macros
+  return $ vcat macroDefTexts
+
+genMacroDef :: Monad m => MacroDef -> XYGen m Doc
+genMacroDef (MacroDef name clause) = do
+  clauseText <- translateClauseForMacro clause
+  let tname = tokenName name
+  return [doc|$?tname = ??clauseText|]
+
 genADT :: Monad m => XYGen m Doc
 genADT = do
   toks <- present tokDefs
   tokConstrs <- mapM genTokConstr toks
-  return $ text "data Token = " <+> joinAlts ([text "EndOfFile"] ++ tokConstrs ++ [text "deriving Show" ])
+  return $ text "data Token = " <+> ((joinAlts ([text "EndOfFile"] ++ tokConstrs)) $$ text "deriving Show")
 
 genTokConstr :: Monad m => TokenDef -> XYGen m Doc
 genTokConstr (TokenDef name _ lra) = do
@@ -309,16 +336,26 @@ backquoteStrInBrackets str = concat (map (\chr -> if (case chr of
                                           else [chr] )
                                   str)
 
-{-                                          
-translateClauseForMacro (IStrLit s) = text s
-translateClauseForMacro (IRegExpLit re) = brackets $ text $ backquoteStrInBrackets re
-translateClauseForMacro (ISeq cls) = hsep $ punctuate (text " ") (map translateClauseForMacro cls)
-translateClauseForMacro (IAlt clauses) = hsep $ punctuate (text "|") (map translateClauseForMacro clauses)
-translateClauseForMacro cl = text $ "Cannot translate to macro def " ++ (show cl)
--}
+                                          
+translateClauseForMacro :: Monad m => IClause -> XYGen m Doc
+translateClauseForMacro (IStrLit s) = return $ text s
+translateClauseForMacro (IRegExpLit re) = return $ brackets $ text $ backquoteStrInBrackets re
+translateClauseForMacro (ISeq cls) = do
+  trs <- mapM translateClauseForMacro cls
+  return $ hsep $ punctuate (text " ") trs
+translateClauseForMacro (IAlt clauses) = do
+  trs <- mapM translateClauseForMacro clauses
+  return $ hsep $ punctuate (text "|") trs
+translateClauseForMacro cl = return $ text $ "Cannot translate to macro def " ++ (show cl)
 
 translateClause :: Monad m => IClause -> XYGen m Doc
-translateClause (IId name) = return [doc| $?name |]
+translateClause (IId tname) = do
+  Just ref <- present nameMap >>= return . (M.lookup tname)
+  Just yparser <- R.lookup present ref ruleTab
+  let name = tokenName tname
+  case yparser of
+    YPToken _ -> return [doc| @?name |]
+    YPMacro _ -> return [doc| $?name |]
 translateClause (IStrLit s)         = return $ doubleQuotes $ text $ backquoteStr s
 translateClause (IDot)              = return $ text "."
 translateClause (IRegExpLit re)     = return $ brackets $ text $ backquoteStrInBrackets re
@@ -357,7 +394,7 @@ module ?name~Parser
 
 import qualified Data.Generics as Gen
 import qualified ?name~Lexer as L
-improt ?name~AST
+import ?name~AST
 }
 
 %name parse?name
@@ -373,6 +410,18 @@ improt ?name~AST
 {
 }
 |]
+
+tokDefSimple :: TokenDef -> Bool
+tokDefSimple (TokenDef _ _ LIgnore) = True
+tokDefSimple (TokenDef _ _ LNoData) = True
+tokDefSimple _ = False
+
+sortTokenDefs' :: [TokenDef] -> [TokenDef]
+sortTokenDefs' toks' = let toks = reverse toks'
+                       in filter tokDefSimple toks ++ filter (not . tokDefSimple) toks
+
+sortTokenDefs :: Monad m => XYGen m ()
+sortTokenDefs = tokDefs %= sortTokenDefs'
 
 genYTokens :: Monad m => XYGen m Doc
 genYTokens = do
