@@ -15,6 +15,7 @@ import Debug.Trace
 import DocQuote
 import Text.PrettyPrint
 import Utils
+import Control.Monad.Trans
 
 import qualified Data.IntMap.Lazy as IM
 import qualified Data.Map.Lazy as M
@@ -67,7 +68,7 @@ data XYState = XYState {
 $(makeLens ''XYState)
 
 newtype XYGen m a = XYGen { fromXYGen :: FutureT XYState m a }
-    deriving (Monad, MonadFuture XYState, MonadCond)
+    deriving (Monad, MonadFuture XYState, MonadCond, MonadTrans)
 
 deriving instance MonadFix m => MonadFix (XYGen m)
 
@@ -90,17 +91,22 @@ addParser (YPRule rule) = do
   rules %= (rule :)
   return ()
 
-newRuleRef :: Monad m => Bool -> YParser -> XYGen m RuleRef
+newRuleRef :: (Monad m, MonadGenError m) => Bool -> YParser -> XYGen m RuleRef
 newRuleRef addName parser = do
   let name = yName parser
   addParser parser
   ref <- R.newRef ruleTab parser
   if addName
-     then nameMap %= M.insert (yName parser) ref
+     then do
+           nmap <- present nameMap
+           logError $ case M.lookup (yName parser) nmap of
+                        Just _ -> Just $ "Rule " ++ (yName parser) ++ " is redefined"
+                        Nothing -> Nothing
+           nameMap %= M.insert (yName parser) ref
      else return () 
   return ref
 
-parserDefToRule :: (Monad m, ASTGen m) => RuleRef -> String -> ParserDef (XYGen m) -> XYGen m RuleDef
+parserDefToRule :: (Monad m, MonadFix m, MonadGenError m) => RuleRef -> String -> ParserDef (XYGen m) -> XYGen m RuleDef
 parserDefToRule rulePs name (PAlt alts) = do
   newAlts <- mapM pSeqToSeq alts
   return $ Alt name False newAlts
@@ -117,26 +123,25 @@ parserDefToRule rulePs name (PMany parser PPlus Nothing) = do
 parserDefToRule rulePs name (PMany parser PPlus (Just sepP)) = do
   return $ Alt name True [Seq [rulePs, sepP, parser] $ Cons 2 0, Seq [parser] $ AList 0]
 
-elemForParser :: (Monad m) => Int -> RuleRef -> XYGen m Elem
+elemForParser :: (Monad m, MonadFix m, MonadGenError m) => Int -> RuleRef -> XYGen m Elem
 elemForParser num ref = do
   ~(Just parser) <- R.lookup future ref ruleTab
   return $ case parser of
              (YPRule (Alt _ True _)) -> List num
              _ -> Var num
 
-pSeqToSeq :: (Monad m, ASTGen m) => PSeq (XYGen m) -> XYGen m Seq
+pSeqToSeq :: (Monad m, MonadFix m, MonadGenError m) => PSeq (XYGen m) -> XYGen m Seq
 pSeqToSeq (POne parsers ind) = do
   elem <- elemForParser ind (parsers !! ind)
   return $ Seq parsers (Simple elem)
-pSeqToSeq (PSeq parsers constr inds) = do
+pSeqToSeq (PSeq parsers constrName inds) = do
   elems <- mapM (\ i -> elemForParser i (parsers !! i)) inds
-  constrName <- liftAST $ getConstructorName constr
   return $ Seq parsers (Constructor constrName elems)
 
 runParserGen :: (Monad m) => XYState -> XYGen m a -> m a
 runParserGen st xyGen = runFutureT st (fromXYGen xyGen)
 
-runParserGenRec :: (MonadFix m, Monad m) => XYGen m a -> m (a, XYState)
+runParserGenRec :: (MonadFix m, Monad m, MonadGenError m) => XYGen m a -> m (a, XYState)
 runParserGenRec xyGen = runFutureTRec startXYState (fromXYGen xyGen)
  where
    startXYState = XYState {
@@ -144,41 +149,40 @@ runParserGenRec xyGen = runFutureTRec startXYState (fromXYGen xyGen)
                            _macroDefs = [],
                            _tokenMap = M.empty,
                            _rules = [],
-                           _ruleTab = R.empty,
+                           _ruleTab = R.emptyWithError (YPToken $ TokenDef "Error" (IStrLit "Error") LIgnore),
                            _nameMap = M.empty,
                            _nameCounter = 0
                           }
 
-instance (Monad m, ASTGen m) => ContentGen (XYGen m) where
+instance (Monad m, ContentGen m) => ContentGen (XYGen m) where
     generateContent nm = do
-      cont <- liftAST $ generateContent nm
+      cont <- lift $ generateContent nm
       sortTokenDefs
       xText <- genX nm
       yText <- genY nm
       return $ (nm ++ "Parser.y", yText) : (nm ++ "Lexer.x", xText) : cont
 
-instance (Monad m, ASTGen m) => ParserGen (XYGen m) where
+instance (Monad m, MonadFix m, MonadGenError m) => ParserGen (XYGen m) where
     type Parser (XYGen m) = RuleRef 
-    type ParserAST (XYGen m) = m 
         
-    --addClause :: ASTGen a => Maybe RuleName -> ParserDef p a -> p (Parser p a)
+    --addClause :: Maybe RuleName -> ParserDef p -> p (Parser p)
     addClause maybeN def = do
       name <- ensureName maybeN "Rule_"
       rec ruleDef <- parserDefToRule rulePs name def
           rulePs <- newRuleRef (isJust maybeN) $ YPRule ruleDef
       return rulePs
 
-    -- addLexRule :: ASTGen a => Maybe RuleName -> LexRuleAction -> IClause -> p (Parser p a)
+    -- addLexRule :: Maybe RuleName -> LexRuleAction -> IClause -> p (Parser p)
     addLexRule maybeN lact clause = do
       name <- ensureName maybeN "tok_"
       newRuleRef (isJust maybeN) $ YPToken $ TokenDef name clause lact
       
-    --addLexMacro :: ASTGen a => Maybe RuleName -> IClause -> p (Parser p a)
+    --addLexMacro :: Maybe RuleName -> IClause -> p (Parser p)
     addLexMacro maybeN clause = do
       name <- ensureName maybeN "macro_"
       newRuleRef (isJust maybeN) $ YPMacro $ MacroDef name clause
 
-    --addToken :: ASTGen a => String -> p (Parser p a)
+    --addToken :: String -> p (Parser p)
     addToken str = do
       oldTok <- present tokenMap >>= return . M.lookup str
       case oldTok of
@@ -189,39 +193,37 @@ instance (Monad m, ASTGen m) => ParserGen (XYGen m) where
                     tokenMap %= M.insert str res
                     return res
 
-    --getParser :: ASTGen a => RuleName -> p (Parser p a)
+    --getParser :: RuleName -> p (Parser p)
     getParser name = do
       -- TODO: Add error handling
-      future nameMap >>= return . (M.lookup name)
+      mref <- future nameMap >>= return . (M.lookup name)
+      checkMaybeRef mref R.errorRef ("Rule " ++ name ++ " is undefined")
 
-    --liftAST :: ASTGen a => a c -> p c
-    liftAST = XYGen . lift
-
-
-instance (Monad m, ASTGen m) => ASTGen (XYGen m) where
+instance (ASTGen m, MonadFix m) => ASTGen (XYGen m) where
     type ASTType (XYGen m) = ASTType m
     type ASTConstructor (XYGen m) = ASTConstructor m
 
-    --addASTType :: ASTTypeDecl a -> a (ASTType a)
-    addASTType tp = liftAST $ addASTType tp
-
-    --setRuleType :: ASTType a -> RuleName -> a ()
-    setRuleType tp rn = liftAST $ setRuleType tp rn
+    --addASTType :: Maybe RuleName -> ASTTypeDecl a -> a (ASTType a)
+    addASTType mrn tp = lift $ addASTType mrn tp
 
     --addSeqToASTType :: ASTType a -> Maybe ConstructorName -> [ASTType a] -> a (ASTConstructor a)
-    addSeqToASTType tp maybeN typeRefs = liftAST $ addSeqToASTType tp maybeN typeRefs
+    addSeqToASTType tp maybeN typeRefs = lift $ addSeqToASTType tp maybeN typeRefs
 
     --getRuleASTType :: RuleName -> a (Maybe (ASTType a))
-    getRuleASTType = liftAST . getRuleASTType
+    getRuleASTType = lift . getRuleASTType
 
     --getASTType :: RuleName -> a (ASTType a)
-    getASTType = liftAST . getASTType
+    getASTType = lift . getASTType
 
     --getConstructorName :: ASTConstructor a -> a ConstructorName
-    getConstructorName = liftAST . getConstructorName
+    getConstructorName = lift . getConstructorName
 
     --getASTTypeDecl :: (ASTType a) -> a (ASTTypeDecl (ASTType a))
-    getASTTypeDecl = liftAST . getASTTypeDecl     
+    getASTTypeDecl = lift . getASTTypeDecl     
+
+instance (MonadGenError m) => MonadGenError (XYGen m) where
+    logError mErr = lift $ logError mErr
+    getErrors = lift getErrors
 
 ----- X File Generation routines
 

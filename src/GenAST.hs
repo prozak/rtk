@@ -15,6 +15,7 @@ import Debug.Trace
 import DocQuote
 import Text.PrettyPrint
 import Utils
+import Control.Monad.Trans
 
 import qualified RefTable as R
 
@@ -39,7 +40,8 @@ data ASTState = ASTState {
                           _typeTab :: R.RefTable AType,
                           _nameCounter :: Int,
                           _nameMap :: M.Map ASTTypeName TypeRef,
-                          _ruleMap :: M.Map RuleName TypeRef
+                          _ruleMap :: M.Map RuleName TypeRef,
+                          _errors :: [Maybe String]
                          }
 
 $(makeLens ''ASTState)
@@ -79,14 +81,38 @@ addConstrToAType def (ATypeDef (TypeDef nm datas)) =
 runASTGen :: (Monad m) => ASTState -> SimpleASTGen m a -> m a
 runASTGen st astGen = runFutureT st (fromASTGen astGen)
 
+addASTType' :: (Monad m) => ASTTypeDecl TypeRef -> SimpleASTGen m TypeRef
+addASTType' (ASTData maybeN) = do
+  name <- ensureName maybeN "Data"
+  case maybeN of
+    Just n -> do
+      oldRef <- present nameMap >>= return . M.lookup n
+      case oldRef of
+        Just tr -> return tr
+        Nothing -> newTypeRef True (ATypeDef (TypeDef name []))
+    Nothing -> newTypeRef False (ATypeDef (TypeDef name []))
+addASTType' (ASTPrimitive tn) = do
+  newTypeRef False (APrimType tn)
+addASTType' (ASTList tp) = do
+  newTypeRef False (AListType tp)
+addASTType' (ASTMaybe tp) = do
+  newTypeRef False (AMaybeType tp)
+
+setRuleType :: (Monad m) => TypeRef -> Maybe RuleName -> SimpleASTGen m ()
+setRuleType tp mrn =
+  case mrn of 
+    Just rn -> ruleMap %= M.insert rn tp
+    Nothing -> return ()
+
 runASTGenRec :: (MonadFix m, Monad m) => SimpleASTGen m a -> m (a, ASTState)
 runASTGenRec astGen = runFutureTRec startASTState (fromASTGen astGen)
  where
    startASTState = ASTState {
-                             _typeTab = R.empty,
+                             _typeTab = R.emptyWithError (APrimType "Error"),
                              _nameCounter = 0,
                              _nameMap = M.empty,
-                             _ruleMap = M.empty
+                             _ruleMap = M.empty,
+                             _errors = []
                             }
 
 instance (Monad m) => ContentGen (SimpleASTGen m) where
@@ -98,27 +124,11 @@ instance (Monad m, MonadFix m) => ASTGen (SimpleASTGen m) where
     type ASTType (SimpleASTGen m) = TypeRef
     type ASTConstructor (SimpleASTGen m) = DataDef
 
-    --addASTType :: ASTTypeDecl a -> a (ASTType a)
-    addASTType (ASTData maybeN) = do
-      name <- ensureName maybeN "Data"
-      case maybeN of
-        Just n -> do
-          oldRef <- present nameMap >>= return . M.lookup n
-          case oldRef of
-            Just tr -> return tr
-            Nothing -> newTypeRef True (ATypeDef (TypeDef name []))
-        Nothing -> newTypeRef False (ATypeDef (TypeDef name []))
-    addASTType (ASTPrimitive tn) = do
-       newTypeRef False (APrimType tn)
-    addASTType (ASTList tp) = do
-      newTypeRef False (AListType tp)
-    addASTType (ASTMaybe tp) = do
-      newTypeRef False (AMaybeType tp)
-
-    --setRuleType :: ASTType a -> RuleName -> a ()
-    setRuleType tp rn = do
-      ruleMap %= M.insert rn tp
-      return ()
+    --addASTType :: Maybe RuleName -> ASTTypeDecl a -> a (ASTType a)
+    addASTType mRuleName tp = do
+      ref <- addASTType' tp
+      setRuleType ref mRuleName
+      return ref
 
     --addSeqToASTType :: ASTType a -> Maybe ConstructorName -> [ASTType a] -> a (ASTConstructor a)
     addSeqToASTType tp maybeN typeRefs = do
@@ -132,10 +142,11 @@ instance (Monad m, MonadFix m) => ASTGen (SimpleASTGen m) where
       theMap <- future nameMap
       return $ M.lookup nm theMap
 
-    --getRuleASTType :: RuleName -> a (Maybe (ASTType a))
+    --getRuleASTType :: RuleName -> a (ASTType a)
     getRuleASTType nm = do
       theMap <- future ruleMap
-      return $ M.lookup nm theMap
+      let mref = M.lookup nm theMap
+      silentCheckMaybeRef mref R.errorRef 
 
     --getConstructorName :: ASTConstructor a -> a ConstructorName
     getConstructorName (DataDef name _ _) = return name
@@ -149,6 +160,10 @@ instance (Monad m, MonadFix m) => ASTGen (SimpleASTGen m) where
                  AListType tp -> ASTList tp
                  AMaybeType tp -> ASTMaybe tp
                 
+instance (Monad m) => MonadGenError (SimpleASTGen m) where
+    logError mErr = errors %= (mErr :)
+    getErrors = present errors >>= return . catMaybes
+
 -- haskell AST generation routines
 
 genAST :: Monad m => String -> SimpleASTGen m String

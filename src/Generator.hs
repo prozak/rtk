@@ -7,8 +7,9 @@ import Data.List
 import Parser
 import Data.Maybe
 import MonadFuture
+import Utils
 
-type Generator a = (Monad a, ParserGen a, ASTGen a, ASTConstructor (ParserAST a) ~ ASTConstructor a, MonadCond a)
+type Generator a = (Monad a, ParserGen a, ASTGen a, MonadCond a, MonadGenError a)
 
 data SeqElem a = SNormal (Parser a) (ASTType a)
                | SIgnore (Parser a)
@@ -37,14 +38,12 @@ generateRule (IRule mDTName mDTFunc ruleName clause options) | isLexicalRule rul
   if mDTName == Just "Ignore"
      then do
            addLexRule (Just ruleName) LIgnore clause
-           tp <- addASTType (ASTPrimitive "String")
-           setRuleType tp ruleName
+           addASTType (Just ruleName) (ASTPrimitive "String")
      else do
            if (elem OSymmacro options)
               then addLexMacro (Just ruleName) clause
               else addLexRule (Just ruleName) (LData (maybe "id" id mDTFunc) (maybe "String" id mDTName)) clause
-           tp <- addASTType (ASTPrimitive (maybe "String" id mDTName))
-           setRuleType tp ruleName
+           addASTType (Just ruleName) (ASTPrimitive (maybe "String" id mDTName))
   return ()
 generateRule (IRule mDTName mDTFunc ruleName clause options) = do
   generateClause (maybe (Just ruleName) Just mDTName) (Just ruleName) clause
@@ -53,12 +52,9 @@ generateRule (IRule mDTName mDTFunc ruleName clause options) = do
 generateClause :: Generator a => Maybe String -> Maybe String -> IClause -> a (Parser a, ASTType a)
 generateClause maybeTypeName maybeName (IAlt [ISeq [clause]]) | not (isSimpleClause clause) = generateClause maybeTypeName maybeName clause
 generateClause maybeTypeName maybeName (IAlt alts) = do
-  tp <- addASTType (ASTData maybeTypeName)
-  case maybeName of
-    Just rn -> setRuleType tp rn
-    Nothing -> return ()
+  tp <- addASTType maybeName (ASTData maybeTypeName)
   seqs <- mapM (generateSeq tp) alts
-  let parsers = map seqToPseq seqs
+  parsers <- mapM seqToPseq seqs
   parser <- addClause maybeName (PAlt parsers)
   return (parser, tp)
 generateClause maybeTypeName maybeName (IStar clause maybeSep) =
@@ -71,7 +67,7 @@ generateClause maybeTypeName maybeName (IOpt clause) = do
         generateClause maybeTypeName maybeName (IAlt [ISeq [clause], ISeq []])
     Nothing -> do
         ~(SNormal subP subTp) <- generateSubClause clause
-        tp <- addASTType (ASTMaybe subTp)
+        tp <- addASTType Nothing (ASTMaybe subTp)
         parser <- addClause maybeName (POpt subP)
         return (parser, tp)
 generateClause _ _ cl = error $ "Do not know how to handle" ++ show cl
@@ -84,12 +80,9 @@ generateMany :: Generator a => PManyOp -> IClause -> (Maybe IClause) -> Maybe St
 generateMany manyOp clause maybeSep maybeTypeName maybeName = do
   ~(SNormal subP subTp) <- generateSubClause clause
   maybeSepParser <- maybe (return Nothing) (\ a -> generateSubClause a >>= return . Just . seqEParser) maybeSep
-  tp <- addASTType (ASTList subTp)
-  case maybeName of
-    Just rn -> setRuleType tp rn
-    Nothing -> return ()
+  tp <- addASTType maybeName (ASTList subTp)
   parser <- addClause maybeName (PMany subP manyOp maybeSepParser)
-  td <- getASTTypeDecl subTp
+  --td <- getASTTypeDecl subTp
   --ifE (isASTData td)
   --    (do
          -- stub for future quasiquotation actions
@@ -116,16 +109,18 @@ typesOfSeqElems seqElems = if hasLiftedElem seqElems
                              then Nothing
                              else Just $ map (\ (SNormal p a) -> a) $ filter isNormal seqElems
 
-seqToPseq :: Generator a => Seq a -> PSeq a
+seqToPseq :: Generator a => Seq a -> a (PSeq a)
 seqToPseq (Seq mc seqElems) = case find (isLifted . fst) (zip seqElems [0..]) of
-                                Just (SLifted p tp, ind) -> POne (map seqEParser seqElems) ind
+                                Just (SLifted p tp, ind) -> return $ POne (map seqEParser seqElems) ind
                                 Nothing -> let inds = map snd (filter (isNormal . fst) (zip seqElems [0..]))
-                                           in PSeq (map seqEParser seqElems) (fromJust mc) inds
+                                           in do
+                                               consName <- getConstructorName (fromJust mc)
+                                               return $ PSeq (map seqEParser seqElems) consName inds
 
 generateSubClause :: Generator a => IClause -> a (SeqElem a)
 generateSubClause (IId id) = do
-  ~(Just parser) <- getParser id
-  ~(Just tp) <- getRuleASTType id
+  parser <- getParser id
+  tp <- getRuleASTType id
   return $ SNormal parser tp
 generateSubClause (ILifted clause) = do
   (SNormal parser tp) <- generateSubClause clause

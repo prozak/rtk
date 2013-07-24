@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies, TemplateHaskell, MultiParamTypeClasses, FlexibleInstances, RecursiveDo, FunctionalDependencies, GeneralizedNewtypeDeriving,
     StandaloneDeriving  #-}
 module MonadFuture(MonadFuture, FutureState, FutureT, future, present, (~=), (%=), runFutureTRec, runFutureT, ifE, MonadCond,
-                  focus)
+                  focus, MonadGenError, logError, getErrors)
     where
 
 import Control.Monad.State.Lazy
@@ -85,4 +85,8 @@ runFutureT startState comp = do
   (res, _) <- runFutureTr comp (FutureState startState startState)
   return res
 
+
+class (Monad m) => MonadGenError m where
+    logError :: Maybe String -> m ()
+    getErrors :: m [String]
 

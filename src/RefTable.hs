@@ -1,4 +1,4 @@
-module RefTable(RefTable, Ref, empty, newRef, RefTable.lookup, update, values)
+module RefTable(RefTable, Ref, empty, emptyWithError, errorRef, newRef, RefTable.lookup, update, values)
     where
 
 import Data.Lens.Common
@@ -17,7 +17,13 @@ newtype Ref a = Ref { fromRef :: Int }
     deriving Show
 
 empty :: RefTable a
-empty = RefTable 0 (IM.empty)
+empty = RefTable 1 (IM.empty)
+
+emptyWithError :: a -> RefTable a
+emptyWithError err = RefTable 1 (IM.insert 0 err $ IM.empty)
+
+errorRef :: Ref a
+errorRef = Ref 0
 
 newRef_ :: RefTable a -> a -> (RefTable a, Ref a)
 newRef_ (RefTable i tab) val = (RefTable (i + 1) $ IM.insert i val tab, Ref i)
@@ -44,7 +50,7 @@ update ref func tab =
   tab %= update_ ref func
 
 values_ :: RefTable a -> [a]
-values_ (RefTable _ tab) = map snd $ IM.toList tab
+values_ (RefTable _ tab) = map snd $ tail $ IM.toAscList tab
 
 values :: (Monad m, MonadFuture s m) => (Lens s (RefTable a) -> m (RefTable a)) -> Lens s (RefTable a) -> m [a]
 values when tab = 

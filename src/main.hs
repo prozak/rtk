@@ -15,6 +15,7 @@ import GenClasses
 import GenXY
 import GenAST
 import Generator
+import MonadFuture
 
 
 getGrammarFileName = do
@@ -23,9 +24,11 @@ getGrammarFileName = do
                 file:dir:_ -> (file, dir)
                 _ -> error $ "Usage: <pg-file> <output-directory>"
 
-myGenerate :: XYGen (SimpleASTGen Identity) b -> XYGen (SimpleASTGen Identity) a -> a
-myGenerate recComp normComp = let ((r, parserState), astState) = runIdentity $ runASTGenRec $ runParserGenRec recComp
-                              in runIdentity $ runASTGen astState $ runParserGen parserState normComp
+myGenerate :: XYGen (SimpleASTGen Identity) b -> XYGen (SimpleASTGen Identity) a -> Either [String] a
+myGenerate recComp normComp = let ((r, parserState), astState) = runIdentity $ runASTGenRec $ runParserGenRec (recComp >> getErrors)
+                              in case r of
+                                   [] -> Right $ runIdentity $ runASTGen astState $ runParserGen parserState normComp
+                                   _ -> Left r
 
 -- TODO: options parsing etc
 main = do
@@ -35,7 +38,11 @@ main = do
     print grammar
     let res = myGenerate (generateGrammar grammar) (generateContent (getIGrammarName grammar))
     --let res = runIdentity $ runASTGen $ generateTest
-    mapM_ (\ (fname, cont) -> writeFile (dir ++ "/" ++ fname) cont) res
+    case res of
+      Right res -> mapM_ (\ (fname, cont) -> writeFile (dir ++ "/" ++ fname) cont) res
+      Left errors -> do
+               putStrLn "Errors:"
+               mapM_ putStrLn errors
 --    let grammar = emitLoopsInGrammar . annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
 --    let grammar = annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
 --    generateASTFile "AST" grammar
