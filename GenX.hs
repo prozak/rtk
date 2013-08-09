@@ -122,6 +122,8 @@ backquoteStrInBrackets :: String -> String
 backquoteStrInBrackets str = concat (map (\chr -> if (case chr of
                                                         '[' -> True
                                                         ']' -> True
+                                                        '(' -> True
+                                                        ')' -> True
                                                         ' ' -> True
                                                         '*' -> True
                                                         '/' -> True

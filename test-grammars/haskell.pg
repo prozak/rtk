@@ -2,13 +2,13 @@ grammar 'Haskell';
 
 Haskell = Module ;
 
-Module = 'module' modid ExportsOpt 'where' Body | Body;
+Module = 'module' ModId ExportsOpt 'where' Body | Body;
 
 ExportsOpt = ( '(' ExportsList (',')?')' )?;
 
 ExportsList = Export * ',' ;
 
-Export = 'module' modid | QVar | QTyCon ( '(' '..' ')' | '(' CNameList ')')? | QTyCls ( '(' '..' ')' | '(' QVarList ')')?;
+Export = 'module' ModId | QVar | QTyCon ( '(' '..' ')' | '(' CNameList ')')? | QTyCls ( '(' '..' ')' | '(' QVarList ')')?;
 
 Body = '{' (ImpDeclList (';' TopDecls)? | ImpDeclList) '}' ;
 
@@ -19,12 +19,12 @@ ImportList = Import * ',' ;
 Var = varid;
 Con = conid;
 
-ModIdList = (modid '.')*;
+ModIdList = (ModId '.')*;
 
 QVarId = ModIdList varid;
 QVar = QVarId;
 
-QTyCls = ModIdList tycls;
+QTyCls = ModIdList TyCls;
 
 QTyCon = ModIdList TyCon;
 
@@ -37,15 +37,53 @@ QVarList = QVar * ',' ;
 Import = Var | TyCon ( '(' '..' ')' | '(' CNameList ')' )? ;
 
 OptQualified = ('qualified')?;
-OptQualifiedAs = ('as' modid)?;
+OptQualifiedAs = ('as' ModId)?;
 OptImpSpec = '(' ImportList (',')? ')' ;
 
-ImpDecl = 'import' OptQualified modid OptQualifiedAs OptImpSpec? ;
+ImpDecl = 'import' OptQualified ModId OptQualifiedAs OptImpSpec? ;
 
 TopDecls = TopDecl * ';';
 
 TopDecl = 'type' SimpleType '=' Type
-    | 'data' (Context '=>')? SimpleType '=' Constrs OptDeriving ;
+    | 'data' OptContext SimpleType '=' Constrs OptDeriving
+    | Decl;
+
+Decl = GenDecl |
+    (FunLhs | Pat) Rhs ;
+
+OptContext = (Context '=>')? ;
+
+GenDecl = Vars '::' OptContext Type
+    | Fixity OptInteger Ops;
+
+OptInteger = (integer)? ;
+
+Ops = Op * ',' ;
+
+Fixity = 'infixl' | 'infixr' | 'infix' ;
+
+FunLhs = Var ;
+
+OptWhere = ('where' Decls) ;
+
+DeclList = Decl * ';' ;
+
+Decls = '{' DeclList '}' ;
+
+Rhs = '=' Exp OptWhere
+    | GdRhs OptWhere;
+
+OptGdRhs = (GdRhs)? ;
+
+Gd = | ExpI ;
+
+OptExpTypeSignature = ('::' OptContext Type)?;
+
+Exp = ExpI OptExpTypeSignature ;
+
+ExpI = ExpI (QOp ExpI)*;
+
+GdRhs = Gd '=' Exp OptGdRhs ;
 
 Constrs = Constr * '|' ;
 
@@ -79,7 +117,7 @@ ATypeList = AType * ;
 
 AType = TyVar 
  | GTyCon
- | '(' (TypeList | ',' +) ')'
+ | '(' (TypeList /*| ',' +*/) ')' # TODO: this should be fixed
  | '[' (Type)? ']';
 
 GTyCon = QTyCon
@@ -96,9 +134,20 @@ varid = [a-zA-Z_] [a-zA-Z_0-9]* ;
 TyVar = varid ;
 
 TyCon = conid ;
-modid = conid ;
-tycls = conid ;
+ModId = conid ;
+TyCls = conid ;
+Op = varid | conid ;
+
+decimal = [0-9]+ ;
+octal = [0-7]+ ;
+hexadecimal = [0-9A-Fa-f]+ ;
+
+integer = decimal
+    | ('0o' | '0O') octal
+    | ('0x' | '0X') hexadecimal ;
 
 whitespace = [ \t\n] ;
 
-Ignore: comment = '--' .* [\n] ; 
+Ignore: comment = '--' .* [\n] ;
+ncomment = '{-' (.|[\n])* '-}' ;
+th = '$(' ([^\)]|[\n])* ')' ;
