@@ -57,6 +57,9 @@ test-out/JavaLexer.x test-out/JavaParser.y : $(BIN_PATH) test-grammars/java.pg
 test-out/HaskellLexer.x test-out/HaskellParser.y : $(BIN_PATH) test-grammars/haskell.pg
 	$(BIN_PATH) test-grammars/haskell.pg test-out
 
+test-out/PLexer.x test-out/PParser.y : $(BIN_PATH) test-grammars/p.pg
+	$(BIN_PATH) test-grammars/p.pg test-out
+
 %.hs : %.x
 	alex $< -o $@
 
@@ -82,3 +85,8 @@ test-haskell: build test-out test-out/HaskellLexer.hs test-out/HaskellParser.hs
 
 test-t1: test-out build
 	$(BIN_PATH) test-grammars/t1.pg test-out
+
+test-p: test-out build test-out/PLexer.hs test-out/PParser.hs
+	$(CP) test-grammars\p-main.hs test-out
+	(cd test-out && ghc --make p-main.hs -o p-rtk)
+	test-out/p-rtk expr.p
