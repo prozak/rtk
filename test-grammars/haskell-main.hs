@@ -18,7 +18,7 @@ getGrammarFileName = do
 main = do
     file <- getGrammarFileName
     content <- readFile file
-    let lexems = take 5 $ alexScanTokens content
+    let lexems = alexScanTokens content
     let prg = parseHaskell . alexScanTokens $ content
     putStrLn $ show lexems
     --putStrLn $ show prg

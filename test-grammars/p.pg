@@ -1,0 +1,13 @@
+grammar 'P';
+
+P = '(' 'lambda' '(' Id ')' E ')' ;
+E = '0' | '1' | Id
+               | '(' 'if0' E E E ')'
+               | '(' 'fold' E E '(' 'lambda' '(' Id Id ')' E ')' ')'
+               | '(' Op1 E ')'
+               | '(' Op2 E E ')';
+Op1 = 'not' | 'shl1' | 'shr1' | 'shr4' | 'shr16' ;
+Op2 = 'and' | 'or' | 'xor' | 'plus' ;
+Id = id;
+id = [a-z][a-z_0-9]* ;
+Ignore: ws = [ \t\n]+ ;
