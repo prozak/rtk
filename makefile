@@ -1,5 +1,8 @@
 .PHONY: clean help test
 
+# Ensure PATH includes cabal binaries
+export PATH := $(HOME)/.local/bin:$(PATH)
+
 default: help
 
 help:
@@ -24,7 +27,7 @@ else
 CP=cp
 RM=rm
 RM_OPT=-rf
-BIN_PATH=dist/build/rtk/rtk
+BIN_PATH=dist-newstyle/build/aarch64-osx/ghc-9.12.2/rtk-0.10/x/rtk/build/rtk/rtk
 endif
 
 SOURCES=$(wildcard *.hs *.x *.y)
@@ -38,8 +41,9 @@ clean:
 	cabal clean
 	cabal configure
 
-test:
-	runhaskell StrQuote_Test.hs
+test: test-out build
+	cabal exec ghc -- --make StrQuote_Test.hs -o test-out/strquote-test
+	./test-out/strquote-test
 
 test-out:
 ifeq ($(OS), Windows_NT)
@@ -64,13 +68,13 @@ test-out/PLexer.x test-out/PParser.y : $(BIN_PATH) test-grammars/p.pg
 	alex $< -o $@
 
 %.hs : %.y
-	happy -ihappy_log.txt $< -o $@
+	happy --ghc -ihappy_log.txt $< -o $@
 
 test-out/grammar-main.hs: test-grammars/grammar-main.hs
-	$(CP) test-grammars\grammar-main.hs test-out
+	$(CP) test-grammars/grammar-main.hs test-out
 	
 test-grammar: build test-out test-out/grammar-main.hs test-out/GrammarLexer.hs test-out/GrammarParser.hs
-	(cd test-out && ghc --make grammar-main.hs -o main)
+	cabal exec -- ghc --make -itest-out test-out/grammar-main.hs -o test-out/main
 	test-out/main test-grammars/grammar.pg
 
 test-java: build test-out test-out/JavaLexer.hs test-out/JavaParser.hs
@@ -79,7 +83,7 @@ test-java: build test-out test-out/JavaLexer.hs test-out/JavaParser.hs
 #	test-out/main test-grammars/grammar.pg
 
 test-haskell: build test-out test-out/HaskellLexer.hs test-out/HaskellParser.hs
-	$(CP) test-grammars\haskell-main.hs test-out
+	$(CP) test-grammars/haskell-main.hs test-out
 	(cd test-out && ghc --make haskell-main.hs -o haskell-rtk)
 	test-out/haskell-rtk Normalize.hs
 
@@ -87,6 +91,6 @@ test-t1: test-out build
 	$(BIN_PATH) test-grammars/t1.pg test-out
 
 test-p: test-out build test-out/PLexer.hs test-out/PParser.hs
-	$(CP) test-grammars\p-main.hs test-out
+	$(CP) test-grammars/p-main.hs test-out
 	(cd test-out && ghc --make p-main.hs -o p-rtk)
 	test-out/p-rtk expr.p

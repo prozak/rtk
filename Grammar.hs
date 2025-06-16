@@ -3,17 +3,8 @@
 module Grammar where
 
 import Parser
-import Language.Haskell.TH hiding (Clause)
-import Data.Char
-import Data.Generics
-import Data.Data
-import qualified Data.Map as Map
 import System.IO(hGetContents, openFile, IOMode(WriteMode), hClose)
 import Control.Exception(bracket)
-import Debug.Trace
-import Text.Printf
-
-import Control.Monad.State.Strict hiding (lift)
 
 {-
 generateConstructor :: String -> [ClauseItem] -> Q Con

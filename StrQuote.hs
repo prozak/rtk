@@ -3,14 +3,9 @@
 module StrQuote(str) where
  
 import Language.Haskell.TH
-import Language.Haskell.TH.Syntax
 import Language.Haskell.TH.Quote
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
-import Data.Generics
-import Data.Data
-import Text.PrettyPrint
-import Data.Maybe
 import Data.String.Utils
 import Data.List
 
@@ -25,7 +20,7 @@ getCodeToRun ('(' : rest) = getCodeToRunHelper rest 0 2
 getCodeToRun _ = Nothing
 
 processVarAndAfter varAndAfter =
-  case getCodeToRun $ tail varAndAfter of
+  case getCodeToRun $ drop 1 varAndAfter of
     Nothing ->
       let mbSpaceInd = findIndex (\c -> (c == ' ') || (c == '\n')) varAndAfter
           mbTildInd = findIndex ((==) '~') varAndAfter
@@ -35,13 +30,13 @@ processVarAndAfter varAndAfter =
             case mbTildInd of
               Nothing -> (varAndAfter, "")
               Just tildInd ->
-                  let (var, tildAndAfter) = splitAt tildInd varAndAfter in (var, tail tildAndAfter)
+                  let (var, tildAndAfter) = splitAt tildInd varAndAfter in (var, drop 1 tildAndAfter)
           Just spaceInd ->
             case mbTildInd of
               Nothing -> splitAt spaceInd varAndAfter
               Just tildInd ->
                 if tildInd < spaceInd
-                  then let (var, tildAndAfter) = splitAt tildInd varAndAfter in (var, tail tildAndAfter)
+                  then let (var, tildAndAfter) = splitAt tildInd varAndAfter in (var, drop 1 tildAndAfter)
                   else splitAt spaceInd varAndAfter
     Just ind -> splitAt ind varAndAfter
 
@@ -56,23 +51,23 @@ splitStringByVarsHelper str result =
 
 translateQName qname =
     case qname of
-      UnQual (Ident str) -> mkName str
-      UnQual (Symbol str) -> mkName str
+      UnQual () (Ident () str) -> mkName str
+      UnQual () (Symbol () str) -> mkName str
 
 translateQOp qop =
     case qop of
-      QVarOp qname -> global $ translateQName qname
+      QVarOp () qname -> varE $ translateQName qname
 
-convertToTHHelper (Paren e) = convertToTHHelper e
-convertToTHHelper (App e1 e2) = appE (convertToTHHelper e1) (convertToTHHelper e2)
-convertToTHHelper (InfixApp e1 qop e2) = uInfixE (convertToTHHelper e1) (translateQOp qop) (convertToTHHelper e2)
-convertToTHHelper (Var qnm) = global $ translateQName qnm
-convertToTHHelper (Lit (String str)) = stringE str
+convertToTHHelper (Paren () e) = convertToTHHelper e
+convertToTHHelper (App () e1 e2) = appE (convertToTHHelper e1) (convertToTHHelper e2)
+convertToTHHelper (InfixApp () e1 qop e2) = uInfixE (convertToTHHelper e1) (translateQOp qop) (convertToTHHelper e2)
+convertToTHHelper (Var () qnm) = varE $ translateQName qnm
+convertToTHHelper (Lit () (String () str _)) = stringE str
 
 convertToTH result = 
     case result of
       ParseOk expr -> convertToTHHelper expr
-      ParseFailed loc str -> stringE ("<" ++ str ++ ":" ++ show (srcColumn loc) ++ ">")
+      ParseFailed loc str -> stringE ("<" ++ str ++ ":" ++ show loc ++ ">")
 
 splitStringByVars str =
   let result = splitStringByVarsHelper (replace "|~]" "|]" str) []
@@ -80,7 +75,7 @@ splitStringByVars str =
              case str of
                "?()" -> [|$prevExpr ++ $(stringE "<empty expr>")|]
                '?' : '(' : rest ->
-                      let lifted = convertToTH $ parseExp $ '(' : rest--(appE (global (mkName "liftString")) (stringE $ '(' : rest))
+                      let lifted = convertToTH $ fmap (fmap (const ())) $ parseExp $ '(' : rest
                         in [|$prevExpr ++ $lifted|]
                "?" -> [|$prevExpr ++ $(stringE "<empty var name>")|]
                '?' : rest ->

@@ -1,27 +1,37 @@
+Cabal-Version:       2.2
 Name:                rtk
 Version:             0.10
 Description:         Generates rewrite facilities for the given grammar
-License:             GPL
---License-file:        LICENSE
+License:             GPL-3.0-or-later
 Author:              Nickolay Lysenko
 Maintainer:          nickolay.lysenko@gmail.com
 Build-Type:          Simple
-Cabal-Version:       >=1.6
 
 Library
   Exposed-Modules: 
                    Lexer,
                    Parser,
                    Grammar
-  Extensions:          DeriveDataTypeable
+  Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens
+  Default-Language: Haskell2010
+  Default-Extensions:  DeriveDataTypeable
 
 Executable rtk
   Main-is:           main.hs
-  Build-Depends:     base >= 4.0, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, data-lens, data-lens-template
-  Build-Tools:       happy
+  Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens, HUnit
+  Build-Tool-Depends: happy:happy, alex:alex
   Other-Modules:     
                      Lexer,
                      Parser,
-                     Grammar
-  Extensions:        DeriveDataTypeable
+                     Grammar,
+                     GenAST,
+                     GenQ,
+                     GenX,
+                     GenY,
+                     Normalize,
+                     PrintGrammar,
+                     StrQuote,
+                     StringLiterals
+  Default-Language: Haskell2010
+  Default-Extensions: DeriveDataTypeable
   ghc-options:       -rtsopts

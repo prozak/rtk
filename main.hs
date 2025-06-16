@@ -3,17 +3,13 @@ import System.Environment(getArgs)
 --import Control.Exception(bracket)
 import Lexer
 import Parser
-import Grammar
-import Text.Show.Pretty
 import StringLiterals
 import Normalize
-import PrintGrammar
 import GenY
 import GenX
 import GenQ
 
-import Language.Haskell.TH
-
+getGrammarFileName :: IO (String, String)
 getGrammarFileName = do
     args <- getArgs
     return $ case args of
@@ -21,6 +17,7 @@ getGrammarFileName = do
                 _ -> error $ "Usage: <pg-file> <output-directory>"
 
 -- TODO: options parsing etc
+main :: IO ()
 main = do
     (file, dir) <- getGrammarFileName
     content <- readFile file

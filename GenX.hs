@@ -3,7 +3,7 @@ module GenX (genX)
     where
 
 import Parser
-import Text.PrettyPrint
+import Text.PrettyPrint hiding ((<>))
 import qualified Data.Set as S
 import Grammar
 import StrQuote
@@ -39,14 +39,14 @@ genMacroText sMacroIds macroIds tokens =
                     case lrule of
                       (LexicalRule {getLRuleName = name, getLClause = cl }) ->
                         if name `S.member` macroIds
-                          then text "@" <> text name <+> text "=" <+> translateClause sMacroIds cl : result
+                          then (text "@" <> text name) <+> text "=" <+> translateClause sMacroIds cl : result
                           else result
                       (MacroRule {getLRuleName = name, getLClause = cl }) ->
-                          text "$" <> text name <+> text "=" <+> translateClauseForMacro cl : result)
+                          (text "$" <> text name) <+> text "=" <+> translateClauseForMacro cl : result)
              [] tokens
 
 genX :: NormalGrammar -> String
-genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = tokens, getNImports = imports}) = 
+genX (NormalGrammar { getNGrammarName = name, getLexicalRules = tokens, getNImports = imports}) = 
     render $ vcat [
                    header,
                    nl,
@@ -61,7 +61,7 @@ genX g@(NormalGrammar { getNGrammarName = name, getLexicalRules = tokens, getNIm
           tokensText = genTokens symMacroIds $ removeSymmacros tokens
           macroText = genMacroText symMacroIds macroIds tokens
           adt = genTokenADT $ removeSymmacros tokens
-          header = vcat [text "{", text "module" <+> text name <> text "Lexer(alexScanTokens, Token(..))", text "where", text imports, text " }", 
+          header = vcat [text "{", ((text "module" <+> text name) <> text "Lexer(alexScanTokens, Token(..))"), text "where", text imports, text " }", 
                          text "%wrapper \"monad\""]
           funs_text = [str|
 alexEOF = return EndOfFile
@@ -100,7 +100,7 @@ genTokenADT lexical_rules = text "data" <+> text "Token" <+> text "=" <+> (joinA
 
 genTokens :: S.Set String -> [LexicalRule] -> Doc
 genTokens smacroIds lexical_rules =
-  text "tokens" <+> text ":-" <+> vcat (map makeToken lexical_rules) <+> vcat [text ". { rtkError }"]
+  text "tokens" <+> text ":-" <+> vcat (map makeToken lexical_rules ++ [text ". { rtkError }"])
     where makeToken LexicalRule { getLRuleDataType = data_type, getLRuleFunc = func, getLRuleName = name, getLClause = cl } =
               translateClause smacroIds cl <+> makeProduction name data_type func
           makeProduction name data_type func =

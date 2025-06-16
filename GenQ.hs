@@ -128,7 +128,11 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                         case lst of
                                           [_, SSId typeName, _] -> (typeName, cName)
                                           _ -> ("", ""))
-                                      (getAltOfSeq $ getSClause $ head $ getSRules $ head rules)
+                                      (case rules of
+                                         (firstRule:_) -> case getSRules firstRule of
+                                           (firstSRule:_) -> getAltOfSeq $ getSClause firstSRule
+                                           [] -> []
+                                         [] -> [])
           rulesWithoutProxies = filterProxyRules proxyRules rules
           qqParseFuns =  intercalate "\n" 
                             $ map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->

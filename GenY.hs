@@ -2,15 +2,13 @@ module GenY (genY)
     where
 
 import Parser
-import Text.PrettyPrint
-import qualified Data.Map as Map
+import Text.PrettyPrint hiding ((<>))
 import qualified Data.Set as Set
 import GenAST
 import Grammar
-import Data.List
 
 genY :: NormalGrammar -> String
-genY g@(NormalGrammar name srules lex_rules _ _ _ info) = 
+genY g@(NormalGrammar name srules lex_rules _ _ _ _) = 
     render $ vcat [
                    text header,
                    nl,
@@ -54,7 +52,7 @@ genToken LexicalRule{ getLRuleName = name, getLRuleDataType = dtn } =
     case dtn of
         "Keyword" -> combineAlt (text name) (text "L." <> text (tokenName name))
         "Ignore"  -> empty
-        _         -> combineAlt (text name) (text "L." <> text (tokenName name) <+> text "$$")
+        _         -> combineAlt (text name) ((text "L." <> text (tokenName name)) <+> text "$$")
 
 genRule :: ListRuleSet -> SyntaxRule -> Doc
 -- <Rule>* with separator can only be expressed using two rules in LR grammar
@@ -63,14 +61,14 @@ genRule listRuleSet SyntaxRule{ getSClause = (STMany STStar cl (Just cl1)), getS
     let lstName = name ++ "__plus_list_"
     in
       vcat [
-            (text lstName) <+> (text ":") <+> (genTopClause listRuleSet lstName 
-                                               (STMany STPlus cl (Just cl1))) <> text "\n",
-            (text name) <+> (text ":") <+> (genOptPlusClause lstName) <> text "\n"
+            ((text lstName) <+> (text ":") <+> (genTopClause listRuleSet lstName 
+                                               (STMany STPlus cl (Just cl1)))) <> text "\n",
+            ((text name) <+> (text ":") <+> (genOptPlusClause lstName)) <> text "\n"
            ]
           
 
 genRule listRuleSet SyntaxRule{ getSClause = cl, getSRuleName = name } = 
-    (text name) <+> (text ":") <+> (genTopClause listRuleSet name cl) <> text "\n"
+    ((text name) <+> (text ":") <+> (genTopClause listRuleSet name cl)) <> text "\n"
 
 genTopClause :: ListRuleSet -> String -> SyntaxTopClause -> Doc
 

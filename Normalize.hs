@@ -4,15 +4,12 @@ module Normalize(normalizeTopLevelClauses, fillConstructorNames)
 
 import Parser
 import Grammar
-import Data.Char
 import Data.Generics
-import Data.Data
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.List as L
 import qualified Data.Set as S
-import Data.Lens.Common
-import Data.Lens.Template
+import Control.Lens
 
 import Control.Monad.State.Strict hiding (lift)
 
@@ -37,14 +34,14 @@ data NormalizationState = NormalizationState {
                                               _proxyRuleNames :: S.Set ID 
                                              }
 
-$(makeLens ''NormalizationState)
+$(makeLenses ''NormalizationState)
 
 type Normalization a = State NormalizationState a
 
 newNamePrefixed :: String -> Normalization String
 newNamePrefixed prefix = do
   n <- gets _nameCounter
-  modify $ (\s -> nameCounter ^= n + 1 $ s)
+  nameCounter .= (n + 1)
   return $ prefix ++ (show n)
 
 newName :: Normalization String
@@ -52,23 +49,23 @@ newName = newNamePrefixed "Rule_"
 
 saveProxyRuleName :: ID -> Normalization ()
 saveProxyRuleName ruleName = do
-  modify (\s -> proxyRuleNames ^%= S.insert ruleName $ s)
+  proxyRuleNames %= S.insert ruleName
   return ()
 
 addRule :: ID -> ID -> SyntaxTopClause -> Normalization ()
 addRule tdName ruleName clause = do
   let doAdd rs = Just $ (SyntaxRule ruleName clause) : (maybe [] id rs)
-  modify (\s -> normSRules ^%= M.alter doAdd tdName $ s)
+  normSRules %= M.alter doAdd tdName
   return ()
 
 addShortcut :: String -> String -> Normalization ()
 addShortcut strFrom strTo = do
-  modify (\s -> normShortcuts ^%= ((strFrom, strTo) :) $ s)
+  normShortcuts %= ((strFrom, strTo) :)
   return ()
 
 addAntiRule :: AntiRule -> Normalization ()
 addAntiRule rl = do
-  modify (\ s -> normAntiRules ^%= (rl :) $ s)
+  normAntiRules %= (rl :)
   return ()
 
 addQQLexRule :: ID -> Normalization ID
@@ -84,7 +81,7 @@ addQQLexRule tdName = do
 
 addLexicalRule :: LexicalRule -> Normalization ()
 addLexicalRule lr = do
-  modify $ \s -> normLRules ^%= (lr :) $ s
+  normLRules %= (lr :)
   return ()
 
 addRuleWithQQ :: ID -> ID -> SyntaxTopClause -> Normalization ()
@@ -233,7 +230,7 @@ postNormalizeGrammar :: Normalization ()
 postNormalizeGrammar = do
   rules <- gets (M.toList . _normSRules)
   newRules <- mapM postNormalizeGroup rules
-  modify (\ s -> normSRules ^%= flip (foldr $ uncurry M.insert) newRules $ s)
+  normSRules %= flip (foldr $ uncurry M.insert) newRules
 
 addStartGroup :: NormalGrammar -> NormalGrammar
 addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = tokens , getGrammarInfo = info } =
@@ -263,15 +260,16 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
                                                    getLRuleName = name, getLClause = (IStrLit name)}) $ M.toList ruleToStartInfo
       
       qqRule = SyntaxRule (fromJust (getStartRuleName info)) $ STAltOfSeq rulesClauses
-      startRule = head rules
+      (startRule:restRules) = rules
     in
-      ng { getSyntaxRuleGroups = startRule { getSRules = qqRule : getSRules startRule }: tail rules,
+      ng { getSyntaxRuleGroups = startRule { getSRules = qqRule : getSRules startRule }: restRules,
            getLexicalRules = newTokens ++ tokens,
            getGrammarInfo = info { getNameCounter = counter, getRuleToStartInfo = ruleToStartInfo }}
 
 normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar =
-  let firstID = getIRuleName $ head $ getIRules grammar
+  let (firstIRule:_) = getIRules grammar
+      firstID = getIRuleName firstIRule
       (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules) =
         runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty)
       firstRuleGroupRules = fromJust $ M.lookup firstID nrs
