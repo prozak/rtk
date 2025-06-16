@@ -1,0 +1,31 @@
+grammar 'JavaSimple';
+
+Java = CompilationUnit ;
+
+CompilationUnit = 
+  (Package)?
+  (ClassDeclaration)?  ;
+
+Package = 
+  'package' CompoundName ';' ;
+
+ClassDeclaration = 
+  'public'? 'class' id '{' FieldList '}' ;
+
+FieldList = Field* ;
+
+Field = 
+  Type id ';' ;
+
+Type = 
+  'int' 
+  | 'String'
+  | id ;
+
+CompoundName = 
+  id 
+  | (CompoundName '.' id) ;
+
+id = [a-zA-Z_][A-Za-z0-9_]* ;
+
+Ignore: ws = [ \t\n\r]+ ;
