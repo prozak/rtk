@@ -60,6 +60,9 @@ test-out/GrammarLexer.x test-out/GrammarParser.y : $(BIN_PATH) test-grammars/gra
 test-out/JavaLexer.x test-out/JavaParser.y : $(BIN_PATH) test-grammars/java.pg
 	$(BIN_PATH) test-grammars/java.pg test-out
 
+test-out/JavaSimpleLexer.x test-out/JavaSimpleParser.y : $(BIN_PATH) test-grammars/java-simple.pg
+	$(BIN_PATH) test-grammars/java-simple.pg test-out
+
 test-out/HaskellLexer.x test-out/HaskellParser.y : $(BIN_PATH) test-grammars/haskell.pg
 	$(BIN_PATH) test-grammars/haskell.pg test-out
 
@@ -67,10 +70,10 @@ test-out/PLexer.x test-out/PParser.y : $(BIN_PATH) test-grammars/p.pg
 	$(BIN_PATH) test-grammars/p.pg test-out
 
 %.hs : %.x
-	alex $< -o $@
+	cabal exec alex $< -- -o $@
 
 %.hs : %.y
-	happy --ghc -ihappy_log.txt $< -o $@
+	cabal exec happy $< -- --ghc -ihappy_log.txt -o $@
 
 test-out/grammar-main.hs: test-grammars/grammar-main.hs
 	$(CP) test-grammars/grammar-main.hs test-out
