@@ -96,7 +96,7 @@ Statement =
  |  IfStatement
   ;
 
-Statement: StatementWithoutIf = 
+StatementWithoutIf = 
 VariableDeclaration 
  |  Expression  ';'
  |  StatementBlock
