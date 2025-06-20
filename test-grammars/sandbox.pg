@@ -1,0 +1,10 @@
+grammar 'Sandbox';
+
+Sandbox = doccomment ;
+
+doccomment = '/**' ([^\*] | [\*] [^\/] | [\n])* '*/';
+ 
+# Whitespace and comments (ignored)
+Ignore: ws = [ \t\n\r]+ ;
+Ignore: comment = '//' .* ;
+Ignore: blockComment = '/*' ([^\*] | [\*] [^\/] | [\n])* '*/' ;

@@ -66,6 +66,9 @@ test-out/JavaSimpleLexer.x test-out/JavaSimpleParser.y : $(BIN_PATH) test-gramma
 test-out/HaskellLexer.x test-out/HaskellParser.y : $(BIN_PATH) test-grammars/haskell.pg
 	$(BIN_PATH) test-grammars/haskell.pg test-out
 
+test-out/SandboxLexer.x test-out/SandboxParser.y : $(BIN_PATH) test-grammars/sandbox.pg
+	$(BIN_PATH) test-grammars/sandbox.pg test-out
+
 test-out/PLexer.x test-out/PParser.y : $(BIN_PATH) test-grammars/p.pg
 	$(BIN_PATH) test-grammars/p.pg test-out
 
@@ -108,3 +111,8 @@ test-p: test-out build test-out/PLexer.hs test-out/PParser.hs
 	$(CP) test-grammars/p-main.hs test-out
 	(cd test-out && ghc --make p-main.hs -o p-rtk)
 	test-out/p-rtk expr.p
+
+test-sandbox: test-out build test-out/SandboxLexer.hs test-out/SandboxParser.hs
+	$(CP) test-grammars/sandbox-main.hs test-out
+	cabal exec -- ghc --make -itest-out test-out/sandbox-main.hs -o test-out/sandbox-rtk
+	test-out/sandbox-rtk test-grammars/test.sandbox
