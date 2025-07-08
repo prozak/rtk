@@ -130,6 +130,7 @@ backquoteStrInBrackets str = concat (map (\chr -> if (case chr of
                                                         '{' -> True
                                                         '}' -> True
                                                         '$' -> True
+                                                        '"' -> True
                                                         _   -> False)
                                           then ['\\', chr]
                                           else [chr] )
