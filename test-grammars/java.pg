@@ -2,23 +2,23 @@ grammar 'Java';
 
 Java = CompilationUnit ;
 
-OptDocComment = (DocComment)? ; 
+OptDocComment = (DocComment)? ;
 
-TypeDeclaration = 
- OptDocComment  ( ClassDeclaration | InterfaceDeclaration )  ';'  ;
+TypeDeclaration =
+ OptDocComment ( ClassDeclaration | InterfaceDeclaration )  ;
 
 ImportList = (ImportStatement)*;
-CompilationUnit  = 
+CompilationUnit  =
  (Package)?
  ImportList
  (TypeDeclaration)?  ;
 
-Package  = 
+Package  =
  'package' CompoundName  ';'  ;
 
-ImportStatement  = 
- 'import'  (  ( CompoundName  '.'  '*' ) 
- | CompoundName  )  ';'  ; 
+ImportStatement  =
+ 'import'  (  ( CompoundName  '.'  '*' )
+ | CompoundName  )  ';'  ;
 
 DocComment = doccomment;
 
@@ -28,62 +28,63 @@ ExtendsList = 'extends' CompoundName * 'extends' ;
 ImplementsList = 'implements' CompoundName + ',';
 FieldDeclarationList = FieldDeclaration *;
 
-ClassDeclaration  = 
- ModifierList  'class' id 
+ClassDeclaration  =
+ ModifierList  'class' id
  ExtendsList?
- ImplementsList? 
- '{'  FieldDeclarationList  '}'  ; 
+ ImplementsList?
+ '{'  FieldDeclarationList  '}'  ;
 
-InterfaceDeclaration  = 
- ModifierList  'interface' id 
+InterfaceDeclaration  =
+ ModifierList  'interface' id
  ExtendsList
- '{'  FieldDeclarationList  '}'  ; 
+ '{'  FieldDeclarationList  '}'  ;
 
-FieldDeclaration  = 
- (ModifierList ((  DocComment?  ( MethodDeclaration 
- | ConstructorDeclaration 
- | VariableDeclaration )  ) 
- | StaticInitializer)) 
- |  ';'  ; 
+FieldDeclaration  =
+ (ModifierList ((  DocComment?  ( MethodDeclaration
+ | ConstructorDeclaration
+ | VariableDeclaration
+ | ClassDeclaration ))
+ | StaticInitializer))
+ |  ';'  ;
 
 SquareBracketsList = ('[' OptExpression ']')* ;
 
-MethodDeclaration  = 
- Type id 
- '('  ParameterList  ')'  SquareBracketsList 
+MethodDeclaration  =
+ Type id
+ '('  ParameterList  ')'  SquareBracketsList
  ( StatementBlock  |  ';'  )  ;
 
-ConstructorDeclaration  = 
- id  '('  ParameterList  ')' 
-StatementBlock  ; 
+ConstructorDeclaration  =
+ id  '('  ParameterList  ')'
+StatementBlock  ;
 
-StatementBlock  =  '{'  StatementList  '}'  ; 
+StatementBlock  =  '{'  StatementList  '}'  ;
 
-VariableDeclaratorList = VariableDeclarator + ',' ;
+VariableDeclaratorList = VariableDeclarator (',' VariableDeclarator)* ;
 
-VariableDeclaration  = 
- Type VariableDeclaratorList 
-   ';'  ; 
+VariableDeclaration  =
+ Type VariableDeclaratorList
+   ';'  ;
 
 OptVariableInitializer = ('=' VariableInitializer)? ;
 
-VariableDeclarator  = 
- id  SquareBracketsList  OptVariableInitializer  ; 
+VariableDeclarator  =
+ id  SquareBracketsList  OptVariableInitializer  ;
 
 VariableInitializerList = VariableInitializer * ',' ( ',' )? ;
 
-VariableInitializer  = 
-Expression 
- |  '{'  VariableInitializerList  '}'  ; 
+VariableInitializer  =
+Expression
+ |  '{'  VariableInitializerList  '}'  ;
 
-StaticInitializer  = 
- StatementBlock  ; 
+StaticInitializer  =
+ StatementBlock  ;
 
-ParameterList  = 
-Parameter * ','  ; 
+ParameterList  =
+Parameter * ','  ;
 
-Parameter  = 
-Type id SquareBracketsList ; 
+Parameter  =
+Type id SquareBracketsList ;
 
 StatementList = Statement *;
 
@@ -96,8 +97,9 @@ Statement =
  |  IfStatement
   ;
 
-StatementWithoutIf = 
-VariableDeclaration 
+StatementWithoutIf =
+VariableDeclaration
+ |  'return'  OptExpression  ';'
  |  Expression  ';'
  |  StatementBlock
  |  DoStatement
@@ -106,7 +108,6 @@ VariableDeclaration
  |  TryStatement
  |  SwitchStatement
  |  'synchronized'  '(' Expression  ')' Statement
- |  'return'  OptExpression  ';'
  |  'throw' Expression ';'
  |  id  ':' Statement
  |  'break'  OptId  ';'
@@ -115,66 +116,66 @@ VariableDeclaration
 
 OptElsePart = ('else' Statement)? ;
 
-IfStatement = 
+IfStatement =
  'if'  '(' Expression  ')' StatementWithoutIf
-   OptElsePart ; 
+   OptElsePart ;
 
-DoStatement = 
- 'do' Statement  'while'  '(' Expression  ')'  ';'  ; 
+DoStatement =
+ 'do' Statement  'while'  '(' Expression  ')'  ';'  ;
 
-WhileStatement = 
- 'while'  '(' Expression  ')' Statement  ; 
+WhileStatement =
+ 'while'  '(' Expression  ')' Statement  ;
 
-ForStatement = 
- 'for'  '('  ( VariableDeclaration  |  ( Expression  ';'  )  |  ';'  ) 
- OptExpression  ';' 
- OptExpression  ';' 
- ')' Statement  ; 
+ForStatement =
+ 'for'  '('  ( VariableDeclaration  |  ( Expression  ';'  )  |  ';'  )
+ OptExpression  ';'
+ OptExpression  ';'
+ ')' Statement  ;
 
 CatchList = (  'catch'  '(' Parameter  ')' Statement)* ;
 
 OptFinally = ('finally' Statement)?;
 
-TryStatement = 
- 'try' Statement 
+TryStatement =
+ 'try' Statement
   CatchList
-  OptFinally  ; 
+  OptFinally  ;
 
-SwitchCaseList = ((  'case' Expression  ':'  ) 
- |  (  'default'  ':'  ) 
+SwitchCaseList = ((  'case' Expression  ':'  )
+ |  (  'default'  ':'  )
  | Statement )*;
 
-SwitchStatement = 
- 'switch'  '(' Expression  ')'  '{' 
- SwitchCaseList 
+SwitchStatement =
+ 'switch'  '(' Expression  ')'  '{'
+ SwitchCaseList
  '}'  ;
 
 UnaryOp =
-'-' 
- | '++' 
+'-'
+ | '++'
  | '--'
  | '!'
  | '~' ;
 
 Expression  =
- Assignment |
- ConditionalExpression;
-/*
- UnaryOp Expression
- | Expression (NumericExpressionEnd 
- | TestingExpressionEnd
- | LogicalExpressionEnd
- | BitExpressionEnd
- | '(' Arglist ')' 
- | '[' Expression  ']'
- | '.' Expression
- | ',' Expression
- | 'instanceof'  CompoundName )
- | CastingExpression
- | CreatingExpression
- | LiteralExpression
+ Assignment
+ | ConditionalExpression
+ | UnaryOp Expression
+ | CastExpression
+ | CreationExpression
+ | Literal
  | '(' Expression  ')'
- ;*/
+ # COMMENTED OUT - CAUSES LEFT RECURSION:
+ # | Expression (/*NumericExpressionEnd
+ # | TestingExpressionEnd
+ # | LogicalExpressionEnd
+ # | BitExpressionEnd
+ # | */'(' Arglist ')'
+ # | '[' Expression  ']'
+ # | '.' Expression
+ # | ',' Expression
+ # | 'instanceof'  CompoundName )
+ ;
 
 FieldAccess = Primary '.' id | 'super' '.' id ;
 
@@ -183,12 +184,12 @@ LeftHandSide = CompoundName
  | ArrayAccess ;
 
 AssignmentOp =
- '+=' 
- | '-=' 
- | '*=' 
+ '+='
+ | '-='
+ | '*='
  | '|='
- | '&=' 
- | '^=' 
+ | '&='
+ | '^='
  | '%=' ;
 
 Assignment = LeftHandSide AssignmentOp Expression;
@@ -249,65 +250,63 @@ MethodInvocation = CompoundName '(' Arglist ')' | Primary '.' id  '(' Arglist ')
 
 Arglist = Expression * ',' ;
 
-Type  = 
+Type  =
 TypeSpecifier  SquareBracketsList  ;
 
-TypeSpecifier = 
- 'boolean' 
- |  'byte' 
- |  'char' 
- |  'short' 
- |  'int' 
- |  'float' 
- |  'long' 
- |  'double' 
- | CompoundName  ; 
+TypeSpecifier =
+ 'boolean'
+ |  'byte'
+ |  'char'
+ |  'short'
+ |  'int'
+ |  'float'
+ |  'long'
+ |  'double'
+ | CompoundName  ;
 
-Modifier = 
- 'public' 
- |  'private' 
- |  'protected' 
- |  'static' 
- |  'final' 
- |  'native' 
- |  'synchronized' 
- |  'abstract' 
- |  'threadsafe' 
- |  'transient'  ; 
- 
-CompoundName = 
-id 
- |  (CompoundName  '.' id )  ;
+Modifier =
+ 'public'
+ |  'private'
+ |  'protected'
+ |  'static'
+ |  'final'
+ |  'native'
+ |  'synchronized'
+ |  'abstract'
+ |  'threadsafe'
+ |  'transient'  ;
 
-integerLiteral = 
- (  (  [1..9]  [0..9]*  ) 
- |  ( '0' [0..7]* )
- |  (  '0'  'x'  [0..9a..f]  [0..9a..f]*   )  ) 
- [l]?  ; 
+CompoundName =
+id ('.' id)*;
 
-floatLiteral  = 
- ( [0..9]+ '.' [0..9]* 'f'? )
- |  ( '.' [0..9]+ 'f'? )
- |  ( [0..9]+ 'f' ) ; 
+integerLiteral =
+ (  (  [1-9]  [0-9]*  )
+ |  ( '0' [0-7]* )
+ |  (  '0'  'x'  [0-9a-fA-F]+   )  )
+ [l]?  ;
 
-decimalDigits  = 
- [0..9]  [0..9]*  ; 
+floatLiteral  =
+ decimalDigits '.' decimalDigits? exponentPart? floatTypeSuffix?
+ |  '.' decimalDigits exponentPart? floatTypeSuffix?
+ |  decimalDigits floatTypeSuffix ;
 
-exponentPart  = 
- 'e'  (  '+'  |  '-'  )? decimalDigits  ; 
+decimalDigits  =
+ [0-9]+  ;
 
-floatTypeSuffix  = 
- 'f'  |  'd'  ; 
+exponentPart  =
+ 'e'  (  '+'  |  '-'  )? decimalDigits  ;
+
+floatTypeSuffix  =
+ 'f'  |  'd'  ;
 
 char  = '\'' . '\'' ;
 
-string  = '"' .* '"' ;
+string  = [\"] [\\x20-\\x21\\x23-\\x7E]* [\"] ;
 
-id = [a-zA-Z$_][A-Za-z$0-9_]* ;
-doccomment = '/**' .* '*/';
+id = [a-zA-Z$_][a-zA-Z$_0-9]* ;
+doccomment = '/**' (([^/] | [\n]) ([^\*] | [\*] [^/] | [\n])*)? '*/';
 
 # Whitespace and comments (ignored)
 Ignore: ws = [ \t\n\r]+ ;
 Ignore: comment = '//' [^\n]* '\n' ;
-Ignore: blockComment = '/*' ([^*] | [*] [^/])* '*/' ;
-
+Ignore: blockComment = '/*' (([^\*] | [\n]) ([^\*] | [\*] [^/] | [\n])*)? '*/' ;
