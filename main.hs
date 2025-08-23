@@ -1,6 +1,4 @@
-import System.IO(readFile, writeFile)
 import System.Environment(getArgs)
---import Control.Exception(bracket)
 import Lexer
 import Parser
 import StringLiterals
@@ -36,7 +34,7 @@ main = do
     let y_content = genY grammar1
     let x_content = genX grammar1
     let q_content = genQ grammar1
-    let info = getGrammarInfo grammar1
+--    let info = getGrammarInfo grammar1
 --    putStrLn $ ppShow grammar1
 --    putStrLn $ show $ getStartRuleName info
 --    putStrLn $ show $ getProxyRules info
@@ -55,4 +53,3 @@ loop end = do --alexMonadScan >>= \t -> loop end >>= \e -> return $ t : e
   case tok of
     Nothing -> return end
     Just t -> loop end >>= \e -> return $ t : e--}
-

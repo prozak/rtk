@@ -15,6 +15,7 @@ Library
   Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens
   Default-Language: Haskell2010
   Default-Extensions:  DeriveDataTypeable
+  ghc-options:       -Wall -Wunused-imports -Wunused-top-binds -Wunused-local-binds -Wunused-matches
 
 Executable rtk
   Main-is:           main.hs
@@ -34,4 +35,4 @@ Executable rtk
                      StringLiterals
   Default-Language: Haskell2010
   Default-Extensions: DeriveDataTypeable
-  ghc-options:       -rtsopts
+  ghc-options:       -rtsopts -Wall -Wunused-imports -Wunused-top-binds -Wunused-local-binds -Wunused-matches

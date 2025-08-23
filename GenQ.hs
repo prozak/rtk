@@ -3,8 +3,6 @@ module GenQ (genQ)
     where
 
 import Parser
-import Text.PrettyPrint
-import Grammar
 import qualified Data.Char as C
 import qualified Data.Map as M
 import Data.Maybe
@@ -17,10 +15,10 @@ sortNameToHaskellName "module" = "__module"
 sortNameToHaskellName "type" = "__type"
 sortNameToHaskellName "class" = "__class"
 sortNameToHaskellName "deriving" = "__deriving"
-sortNameToHaskellName str = str
+sortNameToHaskellName s = s
 
 genQ :: NormalGrammar -> String
-genQ g@(NormalGrammar name rules _ antiRules shortcuts _ info) = [str|{-# LANGUAGE TemplateHaskell #-}
+genQ (NormalGrammar name rules _ antiRules shortcuts _ info) = [str|{-# LANGUAGE TemplateHaskell #-}
 module ?name~QQ
 where
 
@@ -74,18 +72,12 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
           exp = "Exp"
           proxyRules = getProxyRules info
           qqFunName typ = [str|quote?name~?typ|]
-          -- typeNames = map getSDataTypeName $ filter (\srg -> case srg of
-          --                                                      SyntaxRuleGroup _ [SyntaxRule _ (STMany _ _ _)] -> False
-          --                                                      SyntaxRuleGroup _ [SyntaxRule _ (STOpt _ )] -> False
-          --                                                      _ -> True)
-          --                                           $ tail rules
           typeNames = map arQQName antiRules
           antiNameGen typ name = "anti" ++ name ++ typ
           antiTermGen typ = map (antiNameGen typ) typeNames
           antiExprsGen typ = foldr (\antiTerm res -> [str|?res `Generics.extQ` ?antiTerm|]) "const Nothing" $ antiTermGen typ
-          antiFunsGen typ = map (\(AntiRule name qqName consName isList) -> 
+          antiFunsGen typ = map (\(AntiRule name qqName consName isList) ->
                                         let antiName = antiNameGen typ qqName
-                                            antiElName = antiNameGen typ name
                                             varConstructor = case typ of
                                                                 "Pat" -> "TH.varP"
                                                                 "Exp" -> "TH.varE"
@@ -134,7 +126,7 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                            [] -> []
                                          [] -> [])
           rulesWithoutProxies = filterProxyRules proxyRules rules
-          qqParseFuns =  intercalate "\n" 
+          qqParseFuns =  intercalate "\n"
                             $ map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->
                                        let sortFunName = sortNameToHaskellName $ C.toLower s : rest
                                            dummy = "\"" ++ (fromJust $ M.lookup typeName $ getRuleToStartInfo info) ++ "\""

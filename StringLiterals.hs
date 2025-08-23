@@ -4,13 +4,12 @@ module StringLiterals (normalizeStringLiterals)
 import Parser
 import Data.Char
 import Data.Generics
-import Data.Data
 import qualified Data.Map as Map
 
 import Control.Monad.State.Strict hiding (lift)
 
 translateStrLiteral :: String -> String
-translateStrLiteral str = concat (map (\chr -> case chr of
+translateStrLiteral str = concat (map (\char -> case char of
                                                  '+' -> "_plus_"
                                                  '-' -> "_minus_"
                                                  '.' -> "_dot_"
@@ -27,8 +26,8 @@ translateStrLiteral str = concat (map (\chr -> case chr of
                                                  '~' -> "_tilde_"
                                                  '(' -> "_lparen_"
                                                  ')' -> "_rparen_"
-                                                 c | isAlpha c -> [chr]
-                                                 c | isDigit c -> [chr]
+                                                 c | isAlpha c -> [char]
+                                                 c | isDigit c -> [char]
                                                  _ -> "_symbol_")
                                   str)
 
@@ -77,5 +76,3 @@ normalizeStringLiterals :: InitialGrammar -> InitialGrammar
 normalizeStringLiterals grammar = let (InitialGrammar nm imports rules, StringLiteralsNormalizationState m _) = runState (doSLNM grammar) (StringLiteralsNormalizationState Map.empty 0)
                                       slRules sm = map (\ (k, v) -> IRule (Just "Keyword") (Just "id") v (IStrLit k) []) $ Map.toList sm
                                   in InitialGrammar nm imports (rules ++ slRules m)
-
-
