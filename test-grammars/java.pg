@@ -5,7 +5,7 @@ Java = CompilationUnit ;
 OptDocComment = (DocComment)? ;
 
 TypeDeclaration =
- OptDocComment ( ClassDeclaration | InterfaceDeclaration )  ;
+ OptDocComment ( ClassDeclaration | InterfaceDeclaration | EnumDeclaration | AnnotationDeclaration )  ;
 
 ImportList = (ImportStatement)*;
 CompilationUnit  =
@@ -22,22 +22,52 @@ ImportStatement  =
 
 DocComment = doccomment;
 
-ModifierList = Modifier *;
+# Annotations support
+Annotation = '@' CompoundName ('(' AnnotationArguments? ')')? ;
+
+AnnotationArguments = AnnotationElement (',' AnnotationElement)* ;
+
+AnnotationElement = (id '=')? Expression ;
+
+AnnotationList = Annotation* ;
+
+ModifierList = (Modifier | Annotation)* ;
 
 ExtendsList = ('extends' CompoundName (',' CompoundName)*)? ;
 ImplementsList = 'implements' CompoundName + ',';
 FieldDeclarationList = FieldDeclaration *;
 
 ClassDeclaration  =
- ModifierList  'class' id
+ ModifierList 'class' id TypeParameters
  ExtendsList?
  ImplementsList?
  '{'  FieldDeclarationList  '}'  ;
 
 InterfaceDeclaration  =
- ModifierList  'interface' id
+ ModifierList 'interface' id TypeParameters
  ExtendsList
  '{'  FieldDeclarationList  '}'  ;
+
+# Annotation declaration (@interface)
+AnnotationDeclaration =
+ ModifierList '@' 'interface' id
+ '{' AnnotationTypeElementList '}' ;
+
+AnnotationTypeElementList = AnnotationTypeElement* ;
+
+AnnotationTypeElement =
+ ModifierList Type id '(' ')' ('default' Expression)? ';'
+ | FieldDeclaration ;
+
+# Enum declaration
+EnumConstant = AnnotationList id ('(' Arglist ')')? ('{' FieldDeclarationList '}')? ;
+
+EnumConstantList = EnumConstant (',' EnumConstant)* (',')? ;
+
+EnumDeclaration =
+ ModifierList 'enum' id
+ ImplementsList?
+ '{' EnumConstantList (';' FieldDeclarationList)? '}' ;
 
 FieldDeclaration  =
  (ModifierList ((  DocComment?  ( MethodDeclaration
@@ -50,7 +80,7 @@ FieldDeclaration  =
 SquareBracketsList = ('[' OptExpression ']')* ;
 
 MethodDeclaration  =
- Type id
+ TypeParameters Type id
  '('  ParameterList  ')'  SquareBracketsList
  ( StatementBlock  |  ';'  )  ;
 
@@ -250,6 +280,15 @@ MethodInvocation = CompoundName '(' Arglist ')' | Primary '.' id  '(' Arglist ')
 
 Arglist = Expression * ',' ;
 
+# Generics support
+TypeArguments = ('<' TypeArgument (',' TypeArgument)* '>')? ;
+
+TypeArgument = Type | '?' (('extends' | 'super') Type)? ;
+
+TypeParameters = ('<' TypeParameter (',' TypeParameter)* '>')? ;
+
+TypeParameter = id ('extends' Type ('&' Type)*)? ;
+
 Type  =
 TypeSpecifier  SquareBracketsList  ;
 
@@ -263,7 +302,7 @@ TypeSpecifier =
  |  'long'
  |  'double'
  |  'void'
- | CompoundName  ;
+ | CompoundName TypeArguments ;
 
 Modifier =
  'public'
