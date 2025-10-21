@@ -24,7 +24,7 @@ DocComment = doccomment;
 
 ModifierList = Modifier *;
 
-ExtendsList = 'extends' CompoundName * 'extends' ;
+ExtendsList = ('extends' CompoundName (',' CompoundName)*)? ;
 ImplementsList = 'implements' CompoundName + ',';
 FieldDeclarationList = FieldDeclaration *;
 
@@ -129,7 +129,7 @@ WhileStatement =
 ForStatement =
  'for'  '('  ( VariableDeclaration  |  ( Expression  ';'  )  |  ';'  )
  OptExpression  ';'
- OptExpression  ';'
+ OptExpression
  ')' Statement  ;
 
 CatchList = (  'catch'  '(' Parameter  ')' Statement)* ;
@@ -262,6 +262,7 @@ TypeSpecifier =
  |  'float'
  |  'long'
  |  'double'
+ |  'void'
  | CompoundName  ;
 
 Modifier =
