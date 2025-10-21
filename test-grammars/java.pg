@@ -31,6 +31,9 @@ AnnotationElement = (id '=')? Expression ;
 
 AnnotationList = Annotation* ;
 
+# NOTE: ModifierList creates shift/reduce conflicts (~14) because the parser must decide
+# when to stop adding modifiers/annotations and start parsing the Type. These conflicts
+# resolve correctly with lookahead (inherent to the grammar design).
 ModifierList = (Modifier | Annotation)* ;
 
 ExtendsList = ('extends' CompoundName (',' CompoundName)*)? ;
@@ -146,6 +149,9 @@ VariableDeclaration
 
 OptElsePart = ('else' Statement)? ;
 
+# NOTE: If-else statements create shift/reduce conflicts due to the dangling-else problem.
+# The current design with StatementWithoutIf resolves this correctly by binding else to
+# the nearest if. These conflicts (~13) are acceptable and standard in Java parsers.
 IfStatement =
  'if'  '(' Expression  ')' StatementWithoutIf
    OptElsePart ;
@@ -180,22 +186,17 @@ SwitchStatement =
  SwitchCaseList
  '}'  ;
 
-UnaryOp =
-'-'
- | '++'
- | '--'
- | '!'
- | '~' ;
+# Expression Hierarchy
+# Restructured to eliminate reduce/reduce conflicts by ensuring a single parse path
+# through the operator precedence chain. Each expression level flows into the next
+# without overlapping alternatives.
+Expression = AssignmentExpression ;
 
-Expression  =
- Assignment
- | ConditionalExpression
- | UnaryOp Expression
- | CastExpression
- | CreationExpression
- | Literal
- | '(' Expression  ')'
- # COMMENTED OUT - CAUSES LEFT RECURSION:
+AssignmentExpression =
+ ConditionalExpression
+ | Assignment ;
+
+# COMMENTED OUT - CAUSES LEFT RECURSION:
  # | Expression (/*NumericExpressionEnd
  # | TestingExpressionEnd
  # | LogicalExpressionEnd
@@ -205,7 +206,6 @@ Expression  =
  # | '.' Expression
  # | ',' Expression
  # | 'instanceof'  CompoundName )
- ;
 
 FieldAccess = Primary '.' id | 'super' '.' id ;
 
@@ -262,13 +262,29 @@ PrefixOp = '++' | '--' | '+' | '-' | '~' | '!' ;
 
 PostfixOp = '++' | '--' ;
 
-PostExpression = PostfixExpression PostfixOp ;
+UnaryExpression =
+ PrefixOp UnaryExpression
+ | UnaryExpressionNotPlusMinus ;
 
-UnaryExpression = PrefixOp UnaryExpression | CastExpression | PostfixExpression ;
+UnaryExpressionNotPlusMinus =
+ PostfixExpression
+ | '~' UnaryExpression
+ | '!' UnaryExpression
+ | CastExpression ;
 
-PostfixExpression = Primary | CompoundName | PostExpression;
+PostfixExpression =
+ Primary
+ | PostfixExpression PostfixOp ;
 
-Primary = Literal | 'this' | '(' Expression ')' | CreationExpression | FieldAccess | MethodInvocation | ArrayAccess ;
+Primary =
+ Literal
+ | 'this'
+ | '(' Expression ')'
+ | CreationExpression
+ | FieldAccess
+ | MethodInvocation
+ | ArrayAccess
+ | CompoundName ;
 
 CreationExpression = 'new' Type ( '(' Arglist ')' | SquareBracketsList );
 
@@ -281,9 +297,20 @@ MethodInvocation = CompoundName '(' Arglist ')' | Primary '.' id  '(' Arglist ')
 Arglist = Expression * ',' ;
 
 # Generics support
+# NOTE: The '<' and '>' symbols create shift/reduce conflicts (~60) because they are used for both:
+#   - Type arguments: List<String>
+#   - Comparison operators: x < y
+# These conflicts resolve correctly with default shift behavior (standard for Java parsers).
 TypeArguments = ('<' TypeArgument (',' TypeArgument)* '>')? ;
 
-TypeArgument = Type | '?' (('extends' | 'super') Type)? ;
+TypeArgument =
+ Type
+ | WildcardType ;
+
+WildcardType =
+ '?'
+ | '?' 'extends' Type
+ | '?' 'super' Type ;
 
 TypeParameters = ('<' TypeParameter (',' TypeParameter)* '>')? ;
 
