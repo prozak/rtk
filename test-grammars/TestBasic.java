@@ -5,12 +5,4 @@ package com.example;
  */
 public class TestBasic {
     private int value;
-
-    public int getValue() {
-        return value;
-    }
-
-    public void setValue(int v) {
-        value = v;
-    }
 }

@@ -93,7 +93,7 @@ endef
 
 # Define test configurations: grammar-name, lexer-prefix, test-file
 $(eval $(call make-test-rule,grammar,Grammar,test-grammars/grammar.pg))
-$(eval $(call make-test-rule,java,Java,test-grammars/Test.java))
+$(eval $(call make-test-rule,java,Java,test-grammars/TestBasic.java))
 $(eval $(call make-test-rule,java-simple,JavaSimple,test-grammars/Simple.java))
 $(eval $(call make-test-rule,sandbox,Sandbox,test-grammars/test.sandbox))
 
