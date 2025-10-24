@@ -1,5 +1,9 @@
 .PHONY: clean help test test-all-java test-bootstrap test-debug test-debug-all test-debug-options $(GRAMMAR_TARGETS)
 
+# ============================================================================
+# Configuration
+# ============================================================================
+
 # Ensure PATH includes cabal binaries
 export PATH := $(HOME)/.local/bin:$(PATH)
 
@@ -7,35 +11,42 @@ export PATH := $(HOME)/.local/bin:$(PATH)
 GRAMMARS := $(basename $(notdir $(wildcard test-grammars/*.pg)))
 GRAMMAR_TARGETS := $(addprefix test-, $(GRAMMARS))
 
+# ============================================================================
+# Default target and help
+# ============================================================================
+
 default: help
 
 help:
-ifeq ($(OS), Windows_NT)
-	@echo Use 'build' target to launch build
-	@echo Use 'clean' target to clean binaries
-	@echo Use 'test-grammar' target to generate [xy] for test-grammars/grammar.pg
-	@echo Use 'test-t1' target to generate [xy] for test-grammars/t1.pg
-	@echo Use 'test-bootstrap' target to compare hand-written vs generated grammar files
-else
 	@echo "Use 'build' target to launch build"
 	@echo "Use 'clean' target to clean binaries"
 	@echo "Use 'test-bootstrap' target to compare hand-written vs generated grammar files"
 	@echo "Available grammar tests: $(GRAMMAR_TARGETS)"
-endif
+
+# ============================================================================
+# Platform-specific configuration
+# ============================================================================
 
 ifeq ($(OS), Windows_NT)
 CP=copy
 RM=rmdir
 RM_OPT=/s /q
+MKDIR_P=mkdir
 BIN_PATH=dist/build/rtk/rtk.exe
 RTK_EXEC=$(BIN_PATH)
 else
 CP=cp
 RM=rm
 RM_OPT=-rf
-BIN_PATH=dist-newstyle/build/aarch64-osx/ghc-9.12.2/rtk-0.10/x/rtk/build/rtk/rtk
+MKDIR_P=mkdir -p
+# Find the binary dynamically to support multiple platforms
+BIN_PATH=$(shell find dist-newstyle -name rtk -type f -path '*/build/rtk/rtk' 2>/dev/null | head -n 1)
 RTK_EXEC=cabal exec rtk --
 endif
+
+# ============================================================================
+# Build targets
+# ============================================================================
 
 SOURCES=$(wildcard *.hs *.x *.y)
 build:
@@ -44,23 +55,27 @@ build:
 $(BIN_PATH): $(SOURCES)
 	cabal build
 
+# ============================================================================
+# Clean and test targets
+# ============================================================================
+
 clean:
 	$(RM) $(RM_OPT) test-out
 	cabal clean
 	cabal configure
 
-test: test-out build
+test: build | test-out
 	cabal exec ghc -- --make StrQuote_Test.hs -o test-out/strquote-test
 	./test-out/strquote-test
 	cabal exec ghc -- --make EmptyGrammar_Test.hs -o test-out/emptygrammar-test
 	./test-out/emptygrammar-test
 
 test-out:
-ifeq ($(OS), Windows_NT)
-	mkdir test-out
-else
-	mkdir -p test-out
-endif
+	$(MKDIR_P) test-out
+
+# ============================================================================
+# Grammar generation rules
+# ============================================================================
 
 # Function to capitalize first letter
 capitalize = $(shell echo $(1) | awk '{print toupper(substr($$0,1,1)) tolower(substr($$0,2))}')
@@ -74,15 +89,15 @@ endef
 # Generate rules for each grammar
 $(foreach grammar,$(GRAMMARS),$(eval $(call make-grammar-rule,$(grammar))))
 
-# Special cases for grammars with different naming patterns
-test-out/JavaSimpleLexer.x test-out/JavaSimpleParser.y : build test-grammars/java-simple.pg
-	$(RTK_EXEC) test-grammars/java-simple.pg test-out
-
 %.hs : %.x
 	cabal exec alex -- $< -o $@
 
 %.hs : %.y
 	cabal exec happy -- $< --ghc -ihappy_log.txt -o $@
+
+# ============================================================================
+# Test execution rules
+# ============================================================================
 
 # Generic rule to copy main files
 test-out/%-main.hs: test-grammars/%-main.hs
@@ -90,7 +105,7 @@ test-out/%-main.hs: test-grammars/%-main.hs
 
 # Generic test rule - requires main file and test data to be defined
 define make-test-rule
-test-$(1): build test-out test-out/$(2)Lexer.hs test-out/$(2)Parser.hs test-out/$(1)-main.hs
+test-$(1): build test-out/$(2)Lexer.hs test-out/$(2)Parser.hs test-out/$(1)-main.hs | test-out
 	cabal exec -- ghc --make -itest-out test-out/$(1)-main.hs -o test-out/$(1)-main
 	test-out/$(1)-main $(3)
 endef
@@ -98,7 +113,7 @@ endef
 # Test rule for tests that share a main runner
 # Parameters: test-name, shared-main-name, lexer-prefix, test-file
 define make-shared-test-rule
-test-$(1): build test-out test-out/$(3)Lexer.hs test-out/$(3)Parser.hs test-out/$(2)-main.hs test-out/$(2)-main
+test-$(1): build test-out/$(3)Lexer.hs test-out/$(3)Parser.hs test-out/$(2)-main.hs test-out/$(2)-main | test-out
 	test-out/$(2)-main $(4)
 endef
 
@@ -111,6 +126,7 @@ $(eval $(call make-test-rule,grammar,Grammar,test-grammars/grammar.pg))
 $(eval $(call make-test-rule,java,Java,test-grammars/TestBasic.java))
 $(eval $(call make-test-rule,java-simple,JavaSimple,test-grammars/Simple.java))
 $(eval $(call make-test-rule,sandbox,Sandbox,test-grammars/test.sandbox))
+$(eval $(call make-test-rule,haskell,Haskell,Normalize.hs))
 
 # Additional Java tests using the Java grammar (java.pg) - all share java-main runner
 $(eval $(call make-shared-test-rule,java-minimal,java,Java,test-grammars/java/test-minimal.java))
@@ -139,33 +155,28 @@ test-all-java: test-java test-java-simple test-java-minimal test-java-field test
 	@echo "=== All Java tests completed successfully! ==="
 
 # Special cases that don't follow the pattern
-test-haskell: build test-out test-out/HaskellLexer.hs test-out/HaskellParser.hs
-	$(CP) test-grammars/haskell-main.hs test-out
-	(cd test-out && ghc --make haskell-main.hs -o haskell-rtk)
-	test-out/haskell-rtk Normalize.hs
-
-test-t1: test-out build
+test-t1: build | test-out
 	$(RTK_EXEC) test-grammars/t1.pg test-out
 
-test-p: test-out build test-out/PLexer.hs test-out/PParser.hs
+test-p: build test-out/PLexer.hs test-out/PParser.hs | test-out
 	$(CP) test-grammars/p-main.hs test-out
 	(cd test-out && ghc --make p-main.hs -o p-rtk)
 	test-out/p-rtk expr.p
 
 # Java quasi-quotation tests (separate from regular java-main parser driver)
-test-java-qq: test-out build test-out/JavaLexer.hs test-out/JavaParser.hs
+test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
 	$(CP) test-grammars/java-qq-test.hs test-out
 	cabal exec -- ghc --make -itest-out test-out/java-qq-test.hs -o test-out/java-qq-test
 	test-out/java-qq-test
 
 # Bootstrap comparison test - compares hand-written files with generated ones
-test-bootstrap: build test-out test-out/GrammarLexer.x test-out/GrammarParser.y test-out/GrammarQQ.hs
+test-bootstrap: build test-out/GrammarLexer.x test-out/GrammarParser.y test-out/GrammarQQ.hs | test-out
 	@echo ""
 	@echo "Running bootstrap comparison test..."
 	./compare-bootstrap.sh
 
 # Test debug options - uses grammar.pg as test subject
-test-debug: test-out build
+test-debug: build | test-out
 	@echo "========================================"
 	@echo "Testing RTK Debug Options"
 	@echo "========================================"
@@ -214,7 +225,7 @@ test-debug: test-out build
 	@echo "========================================"
 
 # Comprehensive test of all debug options with java-simple.pg
-test-debug-all: test-out build
+test-debug-all: build | test-out
 	@echo "========================================"
 	@echo "Comprehensive Debug Options Test"
 	@echo "Using java-simple.pg grammar"
@@ -284,7 +295,7 @@ test-debug-all: test-out build
 	@echo "========================================"
 
 # Automated test suite for all debug options
-test-debug-options: test-out build
+test-debug-options: build | test-out
 	@echo "========================================"
 	@echo "Running automated debug options test suite"
 	@echo "========================================"
