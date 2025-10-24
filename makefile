@@ -10,27 +10,23 @@ GRAMMAR_TARGETS := $(addprefix test-, $(GRAMMARS))
 default: help
 
 help:
-ifeq ($(OS), Windows_NT)
-	@echo Use 'build' target to launch build
-	@echo Use 'clean' target to clean binaries
-	@echo Use 'test-grammar' target to generate [xy] for test-grammars/grammar.pg
-	@echo Use 'test-t1' target to generate [xy] for test-grammars/t1.pg
-else
 	@echo "Use 'build' target to launch build"
 	@echo "Use 'clean' target to clean binaries"
 	@echo "Available grammar tests: $(GRAMMAR_TARGETS)"
-endif
 
 ifeq ($(OS), Windows_NT)
 CP=copy
 RM=rmdir
 RM_OPT=/s /q
+MKDIR_P=mkdir
 BIN_PATH=dist/build/rtk/rtk.exe
 else
 CP=cp
 RM=rm
 RM_OPT=-rf
-BIN_PATH=dist-newstyle/build/aarch64-osx/ghc-9.12.2/rtk-0.10/x/rtk/build/rtk/rtk
+MKDIR_P=mkdir -p
+# Find the binary dynamically to support multiple platforms
+BIN_PATH=$(shell find dist-newstyle -name rtk -type f -path '*/build/rtk/rtk' 2>/dev/null | head -n 1)
 endif
 
 SOURCES=$(wildcard *.hs *.x *.y)
@@ -49,11 +45,7 @@ test: test-out build
 	./test-out/strquote-test
 
 test-out:
-ifeq ($(OS), Windows_NT)
-	mkdir test-out
-else
-	mkdir -p test-out
-endif
+	$(MKDIR_P) test-out
 
 # Function to capitalize first letter
 capitalize = $(shell echo $(1) | awk '{print toupper(substr($$0,1,1)) tolower(substr($$0,2))}')
@@ -66,10 +58,6 @@ endef
 
 # Generate rules for each grammar
 $(foreach grammar,$(GRAMMARS),$(eval $(call make-grammar-rule,$(grammar))))
-
-# Special cases for grammars with different naming patterns
-test-out/JavaSimpleLexer.x test-out/JavaSimpleParser.y : $(BIN_PATH) test-grammars/java-simple.pg
-	$(BIN_PATH) test-grammars/java-simple.pg test-out
 
 %.hs : %.x
 	cabal exec alex $< -- -o $@
@@ -93,17 +81,9 @@ $(eval $(call make-test-rule,grammar,Grammar,test-grammars/grammar.pg))
 $(eval $(call make-test-rule,java,Java,test-grammars/Test.java))
 $(eval $(call make-test-rule,java-simple,JavaSimple,test-grammars/Simple.java))
 $(eval $(call make-test-rule,sandbox,Sandbox,test-grammars/test.sandbox))
+$(eval $(call make-test-rule,haskell,Haskell,Normalize.hs))
+$(eval $(call make-test-rule,p,P,expr.p))
 
 # Special cases that don't follow the pattern
-test-haskell: build test-out test-out/HaskellLexer.hs test-out/HaskellParser.hs
-	$(CP) test-grammars/haskell-main.hs test-out
-	(cd test-out && ghc --make haskell-main.hs -o haskell-rtk)
-	test-out/haskell-rtk Normalize.hs
-
 test-t1: test-out build
 	$(BIN_PATH) test-grammars/t1.pg test-out
-
-test-p: test-out build test-out/PLexer.hs test-out/PParser.hs
-	$(CP) test-grammars/p-main.hs test-out
-	(cd test-out && ghc --make p-main.hs -o p-rtk)
-	test-out/p-rtk expr.p
