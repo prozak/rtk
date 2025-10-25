@@ -66,6 +66,16 @@ jobs:
         echo "Testing base grammar..."
         make test-grammar
 
+    - name: Test debug options
+      run: |
+        echo "Testing all debug options..."
+        make test-debug
+
+    - name: Test comprehensive debug options
+      run: |
+        echo "Running comprehensive debug tests..."
+        make test-debug-all
+
     - name: Parse additional Java test files
       run: |
         echo "Parsing additional Java test files..."
