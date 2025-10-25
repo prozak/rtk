@@ -31,10 +31,10 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        Test test = new Test(42, '.');
-        Test test = new Test(42, "");
-        Test test = new Test(42, "Hello World");
-        System.out.println("Value: " + test.getValue());
-        System.out.println("Name: " + test.getName());
+        Test test1 = new Test(42, ".");
+        Test test2 = new Test(43, "");
+        Test test3 = new Test(44, "Hello World");
+        System.out.println("Value: " + test1.getValue());
+        System.out.println("Name: " + test1.getName());
     }
 }
