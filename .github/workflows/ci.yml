@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Haskell
+      uses: haskell-actions/setup@v2
+      with:
+        ghc-version: '9.6.4'
+        cabal-version: '3.10.2.0'
+        enable-stack: false
+
+    - name: Cache Cabal packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cabal/packages
+          ~/.cabal/store
+          dist-newstyle
+        key: ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
+        restore-keys: |
+          ${{ runner.os }}-cabal-
+
+    - name: Update Cabal package list
+      run: cabal update
+
+    - name: Install build tools (Alex and Happy)
+      run: |
+        cabal install alex happy --overwrite-policy=always
+        echo "$HOME/.cabal/bin" >> $GITHUB_PATH
+
+    - name: Configure project
+      run: cabal configure
+
+    - name: Build project
+      run: cabal build
+
+    - name: Run basic tests
+      run: make test
+
+    - name: Test Java grammar generation
+      run: |
+        echo "Testing Java grammar generation and parsing..."
+        make test-java
+
+    - name: Test Java simple grammar
+      run: |
+        echo "Testing simplified Java grammar..."
+        make test-java-simple
+
+    - name: Test grammar test
+      run: |
+        echo "Testing base grammar..."
+        make test-grammar
+
+    - name: Parse additional Java test files
+      run: |
+        echo "Parsing additional Java test files..."
+        if [ -d test-out ] && [ -f test-out/java-main ]; then
+          for java_file in test-grammars/*.java test-grammars/java/*.java; do
+            if [ -f "$java_file" ]; then
+              echo "Testing: $java_file"
+              ./test-out/java-main "$java_file" || echo "Failed to parse $java_file"
+            fi
+          done
+        fi
+
+    - name: Upload test artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-output
+        path: |
+          test-out/
+          happy_log.txt
+        if-no-files-found: ignore

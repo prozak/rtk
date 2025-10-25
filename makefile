@@ -26,15 +26,18 @@ CP=copy
 RM=rmdir
 RM_OPT=/s /q
 BIN_PATH=dist/build/rtk/rtk.exe
+RTK_EXEC=$(BIN_PATH)
 else
 CP=cp
 RM=rm
 RM_OPT=-rf
 BIN_PATH=dist-newstyle/build/aarch64-osx/ghc-9.12.2/rtk-0.10/x/rtk/build/rtk/rtk
+RTK_EXEC=cabal exec rtk --
 endif
 
 SOURCES=$(wildcard *.hs *.x *.y)
-build: $(BIN_PATH)
+build:
+	cabal build
 
 $(BIN_PATH): $(SOURCES)
 	cabal build
@@ -60,22 +63,22 @@ capitalize = $(shell echo $(1) | awk '{print toupper(substr($$0,1,1)) tolower(su
 
 # Generic rule to generate lexer and parser from grammar files
 define make-grammar-rule
-test-out/$(call capitalize,$(1))Lexer.x test-out/$(call capitalize,$(1))Parser.y : $(BIN_PATH) test-grammars/$(1).pg
-	$(BIN_PATH) test-grammars/$(1).pg test-out
+test-out/$(call capitalize,$(1))Lexer.x test-out/$(call capitalize,$(1))Parser.y : build test-grammars/$(1).pg
+	$(RTK_EXEC) test-grammars/$(1).pg test-out
 endef
 
 # Generate rules for each grammar
 $(foreach grammar,$(GRAMMARS),$(eval $(call make-grammar-rule,$(grammar))))
 
 # Special cases for grammars with different naming patterns
-test-out/JavaSimpleLexer.x test-out/JavaSimpleParser.y : $(BIN_PATH) test-grammars/java-simple.pg
-	$(BIN_PATH) test-grammars/java-simple.pg test-out
+test-out/JavaSimpleLexer.x test-out/JavaSimpleParser.y : build test-grammars/java-simple.pg
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out
 
 %.hs : %.x
-	cabal exec alex $< -- -o $@
+	cabal exec alex -- $< -o $@
 
 %.hs : %.y
-	cabal exec happy $< -- --ghc -ihappy_log.txt -o $@
+	cabal exec happy -- $< --ghc -ihappy_log.txt -o $@
 
 # Generic rule to copy main files
 test-out/%-main.hs: test-grammars/%-main.hs
@@ -90,7 +93,7 @@ endef
 
 # Define test configurations: grammar-name, lexer-prefix, test-file
 $(eval $(call make-test-rule,grammar,Grammar,test-grammars/grammar.pg))
-$(eval $(call make-test-rule,java,Java,test-grammars/Test.java))
+$(eval $(call make-test-rule,java,Java,test-grammars/TestBasic.java))
 $(eval $(call make-test-rule,java-simple,JavaSimple,test-grammars/Simple.java))
 $(eval $(call make-test-rule,sandbox,Sandbox,test-grammars/test.sandbox))
 
@@ -101,7 +104,7 @@ test-haskell: build test-out test-out/HaskellLexer.hs test-out/HaskellParser.hs
 	test-out/haskell-rtk Normalize.hs
 
 test-t1: test-out build
-	$(BIN_PATH) test-grammars/t1.pg test-out
+	$(RTK_EXEC) test-grammars/t1.pg test-out
 
 test-p: test-out build test-out/PLexer.hs test-out/PParser.hs
 	$(CP) test-grammars/p-main.hs test-out
