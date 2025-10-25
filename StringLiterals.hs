@@ -26,8 +26,8 @@ translateStrLiteral str = concat (map (\char -> case char of
                                                  '~' -> "_tilde_"
                                                  '(' -> "_lparen_"
                                                  ')' -> "_rparen_"
-                                                 c | isAlpha c -> [char]
-                                                 c | isDigit c -> [char]
+                                                 c | isAlpha c -> [c]
+                                                 c | isDigit c -> [c]
                                                  _ -> "_symbol_")
                                   str)
 

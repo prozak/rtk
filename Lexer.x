@@ -103,6 +103,7 @@ data Token = Grammar
 unBackQuote :: String -> String
 unBackQuote ('\\':'n':xs) = '\\':'n' : unBackQuote xs
 unBackQuote ('\\':'t':xs) = '\\':'t' : unBackQuote xs
+unBackQuote ('\\':'r':xs) = '\\':'r' : unBackQuote xs
 unBackQuote ('\\':c:xs) = c : unBackQuote xs
 unBackQuote (c:xs) = c : unBackQuote xs
 unBackQuote [] = []
