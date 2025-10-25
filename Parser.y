@@ -45,8 +45,9 @@ Grammar : grammar str ';' ImportsOpt Rules { InitialGrammar $2 $4 (reverse $5) }
 ImportsOpt : imports bigstr    { $2 }
            | {- empty -}       { "" }
 
-Rules : RuleWithOptions                    { [$1] } 
+Rules : RuleWithOptions                    { [$1] }
       | Rules RuleWithOptions              { $2 : $1 }
+      | {- empty -}                        { [] }
 
 
 RuleWithOptions : OptionsList Rule   { addRuleOptions (reverse $1) $2 }
@@ -100,7 +101,8 @@ OptDelim : {- empty -}          { Nothing }
 {
 
 parseError :: [L.Token] -> a
-parseError rest = error $ "Parse error" ++ (show rest)
+parseError [] = error "Parse error: unexpected end of input. Expected a grammar definition."
+parseError rest = error $ "Parse error near: " ++ (show (take 5 rest))
 
 data InitialGrammar = InitialGrammar { getIGrammarName :: String, getImports :: String, getIRules :: [IRule] }
                  deriving (Eq, Show, Typeable, Data)
