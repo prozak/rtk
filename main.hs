@@ -10,6 +10,8 @@ import DebugOptions
 import qualified Debug as D
 import System.IO (hFlush, stdout)
 import Control.Monad (when)
+import Data.Maybe (isJust, fromJust, catMaybes)
+import Control.Exception (evaluate)
 
 main :: IO ()
 main = do
@@ -19,15 +21,12 @@ main = do
     -- Load grammar file
     content <- readFile (grammarFile opts)
 
-    -- Initialize timing information list
-    timings <- if profileStages opts
-                  then return []
-                  else return []
-
     -- Stage 1: Lexical Analysis
-    (tokens, timings1) <- if profileStages opts
-        then D.timed "Lexical Analysis" $ evaluate' $ alexScanTokens content
-        else return (alexScanTokens content, [])
+    (tokens, maybeT1) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Lexical Analysis" $ evaluate $ alexScanTokens content
+            return (result, Just timing)
+        else return (alexScanTokens content, Nothing)
 
     when (debugTokens opts) $
         D.debugTokens opts tokens
@@ -36,9 +35,11 @@ main = do
         exitAfterDebug
 
     -- Stage 2: Parsing
-    (grammar, timings2) <- if profileStages opts
-        then D.timed "Parsing" $ evaluate' $ parse tokens
-        else return (parse tokens, [])
+    (grammar, maybeT2) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Parsing" $ evaluate $ parse tokens
+            return (result, Just timing)
+        else return (parse tokens, Nothing)
 
     when (debugParse opts) $
         D.debugInitialGrammar opts grammar
@@ -47,9 +48,11 @@ main = do
         exitAfterDebug
 
     -- Stage 3: String Literal Normalization
-    (grammar0, timings3) <- if profileStages opts
-        then D.timed "String Normalization" $ evaluate' $ normalizeStringLiterals grammar
-        else return (normalizeStringLiterals grammar, [])
+    (grammar0, maybeT3) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "String Normalization" $ evaluate $ normalizeStringLiterals grammar
+            return (result, Just timing)
+        else return (normalizeStringLiterals grammar, Nothing)
 
     when (debugStringNorm opts) $
         D.debugComparison opts "Before String Normalization" grammar "After String Normalization" grammar0
@@ -58,9 +61,11 @@ main = do
         exitAfterDebug
 
     -- Stage 4: Clause Normalization
-    (grammar1, timings4) <- if profileStages opts
-        then D.timed "Clause Normalization" $ evaluate' $ normalizeTopLevelClauses grammar0
-        else return (normalizeTopLevelClauses grammar0, [])
+    (grammar1, maybeT4) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Clause Normalization" $ evaluate $ normalizeTopLevelClauses grammar0
+            return (result, Just timing)
+        else return (normalizeTopLevelClauses grammar0, Nothing)
 
     when (debugClauseNorm opts) $
         D.debugNormalGrammar opts "CLAUSE NORMALIZATION OUTPUT" grammar1
@@ -69,9 +74,11 @@ main = do
         exitAfterDebug
 
     -- Stage 5: Constructor Name Filling
-    (grammar2, timings5) <- if profileStages opts
-        then D.timed "Constructor Name Filling" $ evaluate' $ fillConstructorNames grammar1
-        else return (fillConstructorNames grammar1, [])
+    (grammar2, maybeT5) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Constructor Name Filling" $ evaluate $ fillConstructorNames grammar1
+            return (result, Just timing)
+        else return (fillConstructorNames grammar1, Nothing)
 
     when (debugConstructors opts) $
         D.debugNormalGrammar opts "FINAL GRAMMAR (with Constructor Names)" grammar2
@@ -115,17 +122,23 @@ main = do
     -- Stage 6: Code Generation
     let grammar_name = getNGrammarName grammar2
 
-    (y_content, timings6) <- if profileStages opts
-        then D.timed "Y Code Generation" $ evaluate' $ genY grammar2
-        else return (genY grammar2, [])
+    (y_content, maybeT6) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Parser (Y) Generation" $ evaluate $ genY grammar2
+            return (result, Just timing)
+        else return (genY grammar2, Nothing)
 
-    (x_content, timings7) <- if profileStages opts
-        then D.timed "X Code Generation" $ evaluate' $ genX grammar2
-        else return (genX grammar2, [])
+    (x_content, maybeT7) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Lexer (X) Generation" $ evaluate $ genX grammar2
+            return (result, Just timing)
+        else return (genX grammar2, Nothing)
 
-    (q_content, timings8) <- if profileStages opts
-        then D.timed "Q Code Generation" $ evaluate' $ genQ grammar2
-        else return (genQ grammar2, [])
+    (q_content, maybeT8) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "QuasiQuoter (Q) Generation" $ evaluate $ genQ grammar2
+            return (result, Just timing)
+        else return (genQ grammar2, Nothing)
 
     -- Debug generated specs if requested
     when (debugParserSpec opts) $ do
@@ -149,7 +162,7 @@ main = do
 
     -- Show timing profile if requested
     when (profileStages opts) $ do
-        let allTimings = concat [timings1, timings2, timings3, timings4, timings5, timings6, timings7, timings8]
+        let allTimings = catMaybes [maybeT1, maybeT2, maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8]
         when (not $ null allTimings) $
             D.showTimingInfo opts allTimings
 
@@ -160,20 +173,9 @@ main = do
                         showStats opts, validateGrammar opts]) $ do
         putStrLn $ "Successfully generated files for " ++ grammar_name
 
--- Helper functions
-evaluate' :: a -> IO a
-evaluate' x = return x
-
+-- Helper function
 exitAfterDebug :: IO ()
 exitAfterDebug = do
     putStrLn ""
     putStrLn "Stopped after requested debug stage."
     error "Debug stage exit"
-
-isJust :: Maybe a -> Bool
-isJust (Just _) = True
-isJust Nothing = False
-
-fromJust :: Maybe a -> a
-fromJust (Just x) = x
-fromJust Nothing = error "fromJust: Nothing"

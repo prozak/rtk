@@ -220,7 +220,7 @@ analyzeGrammarConflicts opts grammar = do
 
     debugSubSection opts "Potential Ambiguities"
     -- Check for rules with many alternatives
-    let complexRules = filter hasMany SyntaxAlternatives sRuleGroups
+    let complexRules = filter hasManyAlternatives sRuleGroups
     if null complexRules
         then putStrLn "  No highly ambiguous rules found."
         else do
