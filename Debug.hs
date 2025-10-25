@@ -37,15 +37,12 @@ import qualified Lexer as L
 import Parser
 import DebugOptions
 import Text.Show.Pretty (ppShow)
-import System.IO (hFlush, stdout)
 import Data.Time.Clock (getCurrentTime, diffUTCTime, UTCTime)
-import Data.List (intercalate, nub, (\\), sortBy)
+import Data.List (intercalate, nub, (\\))
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Data.Maybe (fromMaybe, mapMaybe, isJust)
-import Data.Ord (comparing)
+import Data.Maybe (fromMaybe, mapMaybe)
 import Control.Exception (evaluate)
-import System.Mem (performGC)
 
 import qualified System.Console.ANSI as ANSI
 
@@ -371,15 +368,15 @@ checkUndefinedReferences :: DebugOptions -> [SyntaxRuleGroup] -> S.Set String ->
 checkUndefinedReferences opts groups allRules = do
     debugSubSection opts "Undefined References"
     let refs = S.fromList $ concatMap extractRefs groups
-        undefined = S.toList $ refs `S.difference` allRules
-    if null undefined
+        undefinedRefs = S.toList $ refs `S.difference` allRules
+    if null undefinedRefs
         then do
             putStrLn "  No undefined references."
             return 0
         else do
-            putStrLn $ "  Found " ++ show (length undefined) ++ " undefined references:"
-            mapM_ (putStrLn . ("    - " ++)) undefined
-            return (length undefined)
+            putStrLn $ "  Found " ++ show (length undefinedRefs) ++ " undefined references:"
+            mapM_ (putStrLn . ("    - " ++)) undefinedRefs
+            return (length undefinedRefs)
   where
     extractRefs grp = concatMap (extractFromRule . getSClause) (getSRules grp)
     extractFromRule (STMany _ sc _) = extractFromSimple sc
