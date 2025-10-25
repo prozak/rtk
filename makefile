@@ -1,4 +1,4 @@
-.PHONY: clean help test $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-all-java $(GRAMMAR_TARGETS)
 
 # Ensure PATH includes cabal binaries
 export PATH := $(HOME)/.local/bin:$(PATH)
@@ -96,6 +96,22 @@ $(eval $(call make-test-rule,grammar,Grammar,test-grammars/grammar.pg))
 $(eval $(call make-test-rule,java,Java,test-grammars/TestBasic.java))
 $(eval $(call make-test-rule,java-simple,JavaSimple,test-grammars/Simple.java))
 $(eval $(call make-test-rule,sandbox,Sandbox,test-grammars/test.sandbox))
+
+# Additional Java tests using the Java grammar (java.pg)
+$(eval $(call make-test-rule,java-minimal,Java,test-grammars/java/test-minimal.java))
+$(eval $(call make-test-rule,java-field-public,Java,test-grammars/java/test-field-public.java))
+$(eval $(call make-test-rule,java-package,Java,test-grammars/java/test-package.java))
+$(eval $(call make-test-rule,java-string,Java,test-grammars/java/test-simple-string.java))
+$(eval $(call make-test-rule,java-complex,Java,test-grammars/Complex.java))
+$(eval $(call make-test-rule,java-full,Java,test-grammars/Test.java))
+$(eval $(call make-test-rule,java-generics,Java,test-grammars/TestGenerics.java))
+$(eval $(call make-test-rule,java-enum,Java,test-grammars/TestEnum.java))
+$(eval $(call make-test-rule,java-annotations,Java,test-grammars/TestAnnotations.java))
+
+# Run all Java tests
+test-all-java: test-java test-java-simple test-java-minimal test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations
+	@echo ""
+	@echo "=== All Java tests completed successfully! ==="
 
 # Special cases that don't follow the pattern
 test-haskell: build test-out test-out/HaskellLexer.hs test-out/HaskellParser.hs
