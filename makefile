@@ -91,22 +91,32 @@ test-$(1): build test-out test-out/$(2)Lexer.hs test-out/$(2)Parser.hs test-out/
 	test-out/$(1)-main $(3)
 endef
 
+# Test rule for tests that share a main runner
+# Parameters: test-name, shared-main-name, lexer-prefix, test-file
+define make-shared-test-rule
+test-$(1): build test-out test-out/$(3)Lexer.hs test-out/$(3)Parser.hs test-out/$(2)-main.hs test-out/$(2)-main
+	test-out/$(2)-main $(4)
+
+test-out/$(2)-main: test-out/$(2)-main.hs test-out/$(3)Lexer.hs test-out/$(3)Parser.hs
+	cabal exec -- ghc --make -itest-out test-out/$(2)-main.hs -o test-out/$(2)-main
+endef
+
 # Define test configurations: grammar-name, lexer-prefix, test-file
 $(eval $(call make-test-rule,grammar,Grammar,test-grammars/grammar.pg))
 $(eval $(call make-test-rule,java,Java,test-grammars/TestBasic.java))
 $(eval $(call make-test-rule,java-simple,JavaSimple,test-grammars/Simple.java))
 $(eval $(call make-test-rule,sandbox,Sandbox,test-grammars/test.sandbox))
 
-# Additional Java tests using the Java grammar (java.pg)
-$(eval $(call make-test-rule,java-minimal,Java,test-grammars/java/test-minimal.java))
-$(eval $(call make-test-rule,java-field-public,Java,test-grammars/java/test-field-public.java))
-$(eval $(call make-test-rule,java-package,Java,test-grammars/java/test-package.java))
-$(eval $(call make-test-rule,java-string,Java,test-grammars/java/test-simple-string.java))
-$(eval $(call make-test-rule,java-complex,Java,test-grammars/Complex.java))
-$(eval $(call make-test-rule,java-full,Java,test-grammars/Test.java))
-$(eval $(call make-test-rule,java-generics,Java,test-grammars/TestGenerics.java))
-$(eval $(call make-test-rule,java-enum,Java,test-grammars/TestEnum.java))
-$(eval $(call make-test-rule,java-annotations,Java,test-grammars/TestAnnotations.java))
+# Additional Java tests using the Java grammar (java.pg) - all share java-main runner
+$(eval $(call make-shared-test-rule,java-minimal,java,Java,test-grammars/java/test-minimal.java))
+$(eval $(call make-shared-test-rule,java-field-public,java,Java,test-grammars/java/test-field-public.java))
+$(eval $(call make-shared-test-rule,java-package,java,Java,test-grammars/java/test-package.java))
+$(eval $(call make-shared-test-rule,java-string,java,Java,test-grammars/java/test-simple-string.java))
+$(eval $(call make-shared-test-rule,java-complex,java,Java,test-grammars/Complex.java))
+$(eval $(call make-shared-test-rule,java-full,java,Java,test-grammars/Test.java))
+$(eval $(call make-shared-test-rule,java-generics,java,Java,test-grammars/TestGenerics.java))
+$(eval $(call make-shared-test-rule,java-enum,java,Java,test-grammars/TestEnum.java))
+$(eval $(call make-shared-test-rule,java-annotations,java,Java,test-grammars/TestAnnotations.java))
 
 # Run all Java tests
 test-all-java: test-java test-java-simple test-java-minimal test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations
