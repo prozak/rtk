@@ -268,16 +268,18 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
 
 normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar =
-  let (firstIRule:_) = getIRules grammar
-      firstID = getIRuleName firstIRule
-      (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules) =
-        runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty)
-      firstRuleGroupRules = fromJust $ M.lookup firstID nrs
-      nrs1 = M.delete firstID nrs
-      firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
-      otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
-      groups = firstGroup : otherGroups
-    in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (getImports grammar) (GrammarInfo (Just firstID) M.empty counter proxyRules)
+  case getIRules grammar of
+    [] -> error $ "Grammar '" ++ (getIGrammarName grammar) ++ "' contains no rules"
+    (firstIRule:_) ->
+      let firstID = getIRuleName firstIRule
+          (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules) =
+            runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty)
+          firstRuleGroupRules = fromJust $ M.lookup firstID nrs
+          nrs1 = M.delete firstID nrs
+          firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
+          otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
+          groups = firstGroup : otherGroups
+        in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (getImports grammar) (GrammarInfo (Just firstID) M.empty counter proxyRules)
 
 data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String, antiVarMap :: M.Map String String }
 type FillName a = State FillNameState a

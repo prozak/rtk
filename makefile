@@ -50,6 +50,8 @@ clean:
 test: test-out build
 	cabal exec ghc -- --make StrQuote_Test.hs -o test-out/strquote-test
 	./test-out/strquote-test
+	cabal exec ghc -- --make EmptyGrammar_Test.hs -o test-out/emptygrammar-test
+	./test-out/emptygrammar-test
 
 test-out:
 ifeq ($(OS), Windows_NT)
