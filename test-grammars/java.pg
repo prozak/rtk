@@ -353,15 +353,12 @@ integerLiteral =
  [l]?  ;
 
 floatLiteral  =
- decimalDigits '.' decimalDigits? exponentPart? floatTypeSuffix?
- |  '.' decimalDigits exponentPart? floatTypeSuffix?
- |  decimalDigits floatTypeSuffix ;
-
-decimalDigits  =
- [0-9]+  ;
+ [0-9]+ '.' ([0-9]+)? exponentPart? floatTypeSuffix?
+ |  '.' [0-9]+ exponentPart? floatTypeSuffix?
+ |  [0-9]+ floatTypeSuffix ;
 
 exponentPart  =
- 'e'  (  '+'  |  '-'  )? decimalDigits  ;
+ 'e'  (  '+'  |  '-'  )? [0-9]+  ;
 
 floatTypeSuffix  =
  'f'  |  'd'  ;
