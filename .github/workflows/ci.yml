@@ -35,6 +35,14 @@ jobs:
           ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
           ${{ runner.os }}-cabal-
 
+    - name: Cache test outputs
+      uses: actions/cache@v4
+      with:
+        path: test-out
+        key: ${{ runner.os }}-test-out-${{ hashFiles('test-grammars/**', '*.hs', '*.x', '*.y', 'makefile') }}
+        restore-keys: |
+          ${{ runner.os }}-test-out-
+
     - name: Update Cabal package list
       run: cabal update
 
@@ -44,7 +52,7 @@ jobs:
     - name: Build project
       run: |
         export PATH="$HOME/.cabal/bin:$PATH"
-        cabal build --enable-tests --enable-benchmarks
+        cabal build --enable-tests --enable-benchmarks -j
 
     - name: Run all tests
       run: |
