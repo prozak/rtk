@@ -30,44 +30,54 @@ jobs:
           ~/.cabal/packages
           ~/.cabal/store
           dist-newstyle
-        key: ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
+        key: ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
         restore-keys: |
+          ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
           ${{ runner.os }}-cabal-
+
+    - name: Cache test outputs
+      id: cache-test-out
+      uses: actions/cache@v4
+      with:
+        path: test-out
+        key: ${{ runner.os }}-test-out-${{ hashFiles('test-grammars/**', '*.hs', '*.x', '*.y', 'makefile') }}
+        restore-keys: |
+          ${{ runner.os }}-test-out-
+
+    - name: Update timestamps on cached test outputs
+      run: |
+        # Update timestamps to prevent Make from thinking files are out of date
+        if [ -d test-out ]; then
+          echo "Updating timestamps on cached test-out files..."
+          find test-out -type f -exec touch {} +
+        fi
 
     - name: Update Cabal package list
       run: cabal update
 
     - name: Install build tools (Alex and Happy)
-      run: |
-        cabal install alex happy --overwrite-policy=always
-        echo "$HOME/.cabal/bin" >> $GITHUB_PATH
-
-    - name: Configure project
-      run: cabal configure
+      run: cabal install alex happy --installdir=$HOME/.cabal/bin --overwrite-policy=always --install-method=copy
 
     - name: Build project
-      run: cabal build
-
-    - name: Run basic tests
-      run: make test
-
-    - name: Test Java grammar generation
       run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+        cabal build --enable-tests --enable-benchmarks -j
+
+    - name: Run all tests
+      run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+        echo "Running basic tests..."
+        make test
+
         echo "Testing Java grammar generation and parsing..."
         make test-java
 
-    - name: Test Java simple grammar
-      run: |
         echo "Testing simplified Java grammar..."
         make test-java-simple
 
-    - name: Test grammar test
-      run: |
         echo "Testing base grammar..."
         make test-grammar
 
-    - name: Parse additional Java test files
-      run: |
         echo "Parsing additional Java test files..."
         if [ -d test-out ] && [ -f test-out/java-main ]; then
           for java_file in test-grammars/*.java test-grammars/java/*.java; do
