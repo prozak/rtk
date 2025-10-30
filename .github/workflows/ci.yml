@@ -69,24 +69,11 @@ jobs:
         echo "Running basic tests..."
         make test
 
-        echo "Testing Java grammar generation and parsing..."
-        make test-java
-
-        echo "Testing simplified Java grammar..."
-        make test-java-simple
-
         echo "Testing base grammar..."
         make test-grammar
 
-        echo "Parsing additional Java test files..."
-        if [ -d test-out ] && [ -f test-out/java-main ]; then
-          for java_file in test-grammars/*.java test-grammars/java/*.java; do
-            if [ -f "$java_file" ]; then
-              echo "Testing: $java_file"
-              ./test-out/java-main "$java_file" || echo "Failed to parse $java_file"
-            fi
-          done
-        fi
+        echo "Testing all Java files with comprehensive test suite..."
+        make test-all-java
 
     - name: Upload test artifacts
       if: always()
