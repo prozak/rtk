@@ -148,7 +148,7 @@ OptVariableInitializer = ('=' VariableInitializer)? ;
 VariableDeclarator  =
  id  SquareBracketsList  OptVariableInitializer  ;
 
-VariableInitializerList = VariableInitializer * ',' ( ',' )? ;
+VariableInitializerList = (VariableInitializer (',' VariableInitializer)* (',')?)? ;
 
 VariableInitializer  =
 Expression
@@ -158,7 +158,7 @@ StaticInitializer  =
  StatementBlock  ;
 
 ParameterList  =
-Parameter * ','  ;
+Parameter (',' Parameter)* ;
 
 Parameter  =
 Type id SquareBracketsList ;
@@ -237,8 +237,7 @@ SwitchStatement =
 Expression = AssignmentExpression ;
 
 AssignmentExpression =
- ConditionalExpression
- | Assignment ;
+ ConditionalExpression (AssignmentOp AssignmentExpression)? ;
 
 # COMMENTED OUT - CAUSES LEFT RECURSION:
  # | Expression (/*NumericExpressionEnd
@@ -251,22 +250,19 @@ AssignmentExpression =
  # | ',' Expression
  # | 'instanceof'  CompoundName )
 
-FieldAccess = Primary '.' id | 'super' '.' id ;
-
-LeftHandSide = CompoundName
- | FieldAccess
- | ArrayAccess ;
-
 AssignmentOp =
- '+='
+ '='
+ | '+='
  | '-='
  | '*='
+ | '/='
  | '|='
  | '&='
  | '^='
- | '%=' ;
-
-Assignment = LeftHandSide AssignmentOp Expression;
+ | '%='
+ | '<<='
+ | '>>='
+ | '>>>=' ;
 
 ConditionalExpression = ConditionalOrExpression | ConditionalOrExpression '?' Expression ':' ConditionalExpression ;
 
@@ -317,28 +313,25 @@ UnaryExpressionNotPlusMinus =
  | CastExpression ;
 
 PostfixExpression =
- Primary
- | PostfixExpression PostfixOp ;
+ PrimaryNoPostfix
+ | PostfixExpression PostfixOp
+ | PostfixExpression '.' id
+ | PostfixExpression '.' id '(' Arglist ')'
+ | PostfixExpression '[' Expression ']' ;
 
-Primary =
+PrimaryNoPostfix =
  Literal
  | 'this'
  | '(' Expression ')'
  | CreationExpression
- | FieldAccess
- | MethodInvocation
- | ArrayAccess
- | CompoundName ;
+ | CompoundName ('(' Arglist ')')?
+ | 'super' '.' id ('(' Arglist ')')? ;
 
 CreationExpression = 'new' Type ( '(' Arglist ')' | SquareBracketsList );
 
-ArrayAccess = CompoundName '[' Expression ']' | Primary '[' Expression ']' ;
-
 Literal = integerLiteral | floatLiteral | 'true' | 'false' | char | string | 'null' ;
 
-MethodInvocation = CompoundName '(' Arglist ')' | Primary '.' id  '(' Arglist ')' | 'super' '.' id '(' Arglist ')' ;
-
-Arglist = Expression * ',' ;
+Arglist = (Expression (',' Expression)*)? ;
 
 # Generics support
 # NOTE: The '<' and '>' symbols create shift/reduce conflicts (~60) because they are used for both:
