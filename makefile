@@ -119,12 +119,19 @@ $(eval $(call make-shared-test-rule,java-full,java,Java,test-grammars/Test.java)
 $(eval $(call make-shared-test-rule,java-generics,java,Java,test-grammars/TestGenerics.java))
 $(eval $(call make-shared-test-rule,java-enum,java,Java,test-grammars/TestEnum.java))
 $(eval $(call make-shared-test-rule,java-annotations,java,Java,test-grammars/TestAnnotations.java))
+$(eval $(call make-shared-test-rule,java-field,java,Java,test-grammars/java/test-field.java))
 $(eval $(call make-shared-test-rule,java-empty-method,java,Java,test-grammars/java/test-empty-method.java))
 $(eval $(call make-shared-test-rule,java-simple-return,java,Java,test-grammars/java/test-simple-return.java))
 $(eval $(call make-shared-test-rule,java-return-field,java,Java,test-grammars/java/test-return-field.java))
+$(eval $(call make-shared-test-rule,java-very-simple,java,Java,test-grammars/java/test-very-simple.java))
+$(eval $(call make-shared-test-rule,java-parameter-only,java,Java,test-grammars/java/test-parameter-only.java))
+$(eval $(call make-shared-test-rule,java-field-this,java,Java,test-grammars/java/test-field-this.java))
+$(eval $(call make-shared-test-rule,java-simple-assignment,java,Java,test-grammars/java/test-simple-assignment.java))
+$(eval $(call make-shared-test-rule,java-compound-assignment,java,Java,test-grammars/java/test-compound-assignment.java))
+$(eval $(call make-shared-test-rule,java-set-value,java,Java,test-grammars/java/test-set-value.java))
 
 # Run all Java tests
-test-all-java: test-java test-java-simple test-java-minimal test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method test-java-simple-return test-java-return-field
+test-all-java: test-java test-java-simple test-java-minimal test-java-field test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method test-java-simple-return test-java-return-field test-java-very-simple test-java-parameter-only test-java-field-this test-java-simple-assignment test-java-compound-assignment test-java-set-value
 	@echo ""
 	@echo "=== All Java tests completed successfully! ==="
 
