@@ -10,7 +10,8 @@ getJavaFileName = do
                 file:_ -> file
                 _ -> error $ "Usage: <java-file>"
 
--- TODO: options parsing etc
+-- Simple Java file parser driver
+-- For quasi-quotation tests, see java-qq-test.hs
 main = do
     file <- getJavaFileName
     content <- readFile file

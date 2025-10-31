@@ -75,6 +75,9 @@ jobs:
         echo "Testing all Java files with comprehensive test suite..."
         make test-all-java
 
+        echo "Testing Java quasi-quotations..."
+        make test-java-qq
+
     - name: Upload test artifacts
       if: always()
       uses: actions/upload-artifact@v4
