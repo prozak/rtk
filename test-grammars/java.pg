@@ -72,29 +72,73 @@ EnumDeclaration =
  ImplementsList?
  '{' EnumConstantList (';' FieldDeclarationList)? '}' ;
 
+# NOTE: MemberDeclaration unifies MethodDeclaration, VariableDeclaration, and ConstructorDeclaration
+# to eliminate ambiguity. All three can start with an identifier:
+# - Constructor: id '(' ...
+# - Method: Type id '(' ...  (where Type can be CompoundName, which is also id)
+# - Field: Type id ';' or '=' ...
+# By structuring alternatives carefully, we can distinguish them.
 FieldDeclaration  =
- (ModifierList ((  DocComment?  ( MethodDeclaration
- | ConstructorDeclaration
- | VariableDeclaration
+ (ModifierList ((  DocComment?  ( MemberDeclaration
  | ClassDeclaration ))
  | StaticInitializer))
  |  ';'  ;
 
 SquareBracketsList = ('[' OptExpression ']')* ;
 
-MethodDeclaration  =
- TypeParameters Type id
- '('  ParameterList  ')'  SquareBracketsList
- ( StatementBlock  |  ';'  )  ;
+# MemberDeclaration unifies constructors, methods, and fields
+# Strategy: Disambiguate early by checking what comes first
+# - Primitive type keyword → definitely method/field
+# - TypeParameters → definitely method (generic)
+# - id → could be constructor or reference type method/field
+MemberDeclaration =
+ PrimitiveTypeKeyword SquareBracketsList id MemberRest         # Primitive type method/field
+ | TypeParameters id MoreTypeSpecifier id MemberRest           # Generic method with any type
+ | id MemberAfterFirstId ;                                     # Constructor or reference type
 
-ConstructorDeclaration  =
- id  '('  ParameterList  ')'
-StatementBlock  ;
+# Primitive type keywords (from TypeSpecifier)
+PrimitiveTypeKeyword =
+ 'boolean' | 'byte' | 'char' | 'short' | 'int' | 'float' | 'long' | 'double' | 'void' ;
+
+# After first id (without TypeParameters or primitive type), branch on next token:
+MemberAfterFirstId =
+ '(' ParameterList? ')' StatementBlock                          # Constructor: id '(' ...
+ | MoreTypeSpecifier id MemberRest ;                            # Reference type: id ... id MemberRest
+
+# MoreTypeSpecifier handles the rest of a type after the first id
+# Could be: empty (simple type), '.' id (qualified), '<' ... '>' (generics), '[' ']' (array)
+MoreTypeSpecifier =
+ '.' id MoreTypeSpecifier                                       # Qualified name
+ | TypeArguments SquareBracketsList ;                            # Generics + array brackets
+
+# MemberRest branches on what follows "Type id":
+# - '(' indicates a method declaration
+# - '[' or '=' or ',' or ';' indicates a variable declaration
+MemberRest =
+ '(' ParameterList? ')' SquareBracketsList ( StatementBlock | ';' )
+ | SquareBracketsList OptVariableInitializer MoreVariableDeclarators ';' ;
+
+MoreVariableDeclarators = (',' VariableDeclarator)* ;
+
+# Legacy: MethodDeclaration is now unified with VariableDeclaration in MemberDeclaration above
+# MethodDeclaration  =
+#  TypeParameters Type id
+#  '('  ParameterList  ')'  SquareBracketsList
+#  ( StatementBlock  |  ';'  )  ;
+
+# Legacy: ConstructorDeclaration is now unified in MemberDeclaration above
+# ConstructorDeclaration  =
+#  id  '('  ParameterList  ')'
+# StatementBlock  ;
 
 StatementBlock  =  '{'  StatementList  '}'  ;
 
 VariableDeclaratorList = VariableDeclarator (',' VariableDeclarator)* ;
 
+# VariableDeclaration is used for:
+# 1. Local variable declarations inside method bodies (via StatementWithoutIf)
+# 2. For loops (via ForStatement)
+# Note: Field-level variable declarations use MemberDeclaration above
 VariableDeclaration  =
  Type VariableDeclaratorList
    ';'  ;

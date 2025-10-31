@@ -119,9 +119,10 @@ $(eval $(call make-shared-test-rule,java-full,java,Java,test-grammars/Test.java)
 $(eval $(call make-shared-test-rule,java-generics,java,Java,test-grammars/TestGenerics.java))
 $(eval $(call make-shared-test-rule,java-enum,java,Java,test-grammars/TestEnum.java))
 $(eval $(call make-shared-test-rule,java-annotations,java,Java,test-grammars/TestAnnotations.java))
+$(eval $(call make-shared-test-rule,java-empty-method,java,Java,test-grammars/java/test-empty-method.java))
 
 # Run all Java tests
-test-all-java: test-java test-java-simple test-java-minimal test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations
+test-all-java: test-java test-java-simple test-java-minimal test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method
 	@echo ""
 	@echo "=== All Java tests completed successfully! ==="
 
