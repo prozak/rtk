@@ -98,10 +98,11 @@ endef
 define make-shared-test-rule
 test-$(1): build test-out test-out/$(3)Lexer.hs test-out/$(3)Parser.hs test-out/$(2)-main.hs test-out/$(2)-main
 	test-out/$(2)-main $(4)
-
-test-out/$(2)-main: test-out/$(2)-main.hs test-out/$(3)Lexer.hs test-out/$(3)Parser.hs
-	cabal exec -- ghc --make -itest-out test-out/$(2)-main.hs -o test-out/$(2)-main
 endef
+
+# Shared main binary build rule (defined once, used by multiple tests)
+test-out/java-main: test-out/java-main.hs test-out/JavaLexer.hs test-out/JavaParser.hs
+	cabal exec -- ghc --make -itest-out test-out/java-main.hs -o test-out/java-main
 
 # Define test configurations: grammar-name, lexer-prefix, test-file
 $(eval $(call make-test-rule,grammar,Grammar,test-grammars/grammar.pg))
