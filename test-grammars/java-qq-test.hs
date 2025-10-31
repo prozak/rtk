@@ -168,8 +168,35 @@ main = do
     putStrLn $ "Literal [true]:"
     putStrLn $ ppShow lit3
 
+    -- Test 27: Pattern matching - Binary addition
+    -- NOTE: Variable names must start with a rule name prefix
+    -- Valid: $expression1, $expr1, $e1 (all match "Expression" rule)
+    -- Invalid: $left, $right (no rule matches "left" or "right")
+    putStrLn "\n--- Test 27: Pattern Matching (Binary Addition) ---"
+    case expr1 of
+        [expression| $expression1 + $expression2 |] -> do
+            putStrLn "Matched binary addition!"
+            putStrLn $ "  Left operand: " ++ ppShow expression1
+            putStrLn $ "  Right operand: " ++ ppShow expression2
+        _ -> putStrLn "No match"
+
+    -- Test 28: Pattern matching - Literal value
+    putStrLn "\n--- Test 28: Pattern Matching (Literal 42) ---"
+    case expr3 of
+        [expression| 42 |] -> putStrLn "Matched literal 42!"
+        _ -> putStrLn "No match (expected if not exactly 42)"
+
+    -- Test 29: Pattern matching - Assignment with expression variables
+    putStrLn "\n--- Test 29: Pattern Matching (Assignment) ---"
+    case stmt2 of
+        [statement| $expression1 = $expression2 ; |] -> do
+            putStrLn "Matched assignment!"
+            putStrLn $ "  LHS: " ++ ppShow expression1
+            putStrLn $ "  RHS: " ++ ppShow expression2
+        _ -> putStrLn "No match"
+
     putStrLn "\n=== All QuasiQuoter tests completed successfully! ==="
-    putStrLn $ "\nTotal tests run: 26"
+    putStrLn $ "\nTotal tests run: 29"
     putStrLn $ "Test coverage:"
     putStrLn $ "  - Basic expressions (Tests 1-3)"
     putStrLn $ "  - Basic statements (Tests 4-5)"
@@ -177,5 +204,12 @@ main = do
     putStrLn $ "  - Complex expressions (Tests 9-14)"
     putStrLn $ "  - Blocks and control flow (Tests 15-20)"
     putStrLn $ "  - CompoundName, modifiers, and literals (Tests 21-26)"
+    putStrLn $ "  - Pattern matching (Tests 27-29)"
+    putStrLn $ ""
+    putStrLn $ "Pattern Matching Note:"
+    putStrLn $ "  Variable names must start with a rule name prefix:"
+    putStrLn $ "  - $expression1, $expr, $e  (for Expression rule)"
+    putStrLn $ "  - $statement1, $stmt, $s   (for Statement rule)"
+    putStrLn $ "  See docs/pattern-matching-quasi-quotations.md for details"
 
     return 0
