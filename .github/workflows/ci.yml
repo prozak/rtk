@@ -66,17 +66,72 @@ jobs:
     - name: Run all tests
       run: |
         export PATH="$HOME/.cabal/bin:$PATH"
-        echo "Running basic tests..."
-        make test
 
-        echo "Testing base grammar..."
-        make test-grammar
+        # Create results file
+        results_file="test-results.txt"
+        > "$results_file"
 
-        echo "Testing all Java files with comprehensive test suite..."
-        make test-all-java
+        # Function to run a test and capture result
+        run_test() {
+          local test_name="$1"
+          local test_command="$2"
 
-        echo "Testing Java quasi-quotations..."
-        make test-java-qq
+          echo ""
+          echo "=========================================="
+          echo "Running: $test_name"
+          echo "=========================================="
+
+          if eval "$test_command"; then
+            echo "$test_name|PASS" >> "$results_file"
+            echo "✓ $test_name: PASSED"
+          else
+            echo "$test_name|FAIL" >> "$results_file"
+            echo "✗ $test_name: FAILED"
+          fi
+        }
+
+        # Run all tests (continue even if some fail)
+        run_test "Basic Unit Tests" "make test"
+        run_test "Base Grammar Test" "make test-grammar"
+        run_test "Java Test Suite" "make test-all-java"
+        run_test "Java QQ Tests" "make test-java-qq"
+
+    - name: Print test results summary
+      if: always()
+      run: |
+        results_file="test-results.txt"
+
+        echo ""
+        echo "=========================================="
+        echo "           TEST RESULTS SUMMARY"
+        echo "=========================================="
+        echo ""
+        printf "%-30s | %s\n" "TEST NAME" "RESULT"
+        printf "%-30s-+--------\n" "------------------------------"
+
+        # Track if any test failed
+        any_failed=0
+
+        while IFS='|' read -r test_name result; do
+          if [ "$result" = "PASS" ]; then
+            printf "%-30s | ✓ %s\n" "$test_name" "$result"
+          else
+            printf "%-30s | ✗ %s\n" "$test_name" "$result"
+            any_failed=1
+          fi
+        done < "$results_file"
+
+        echo ""
+        echo "=========================================="
+
+        # Exit with failure if any test failed
+        if [ $any_failed -eq 1 ]; then
+          echo "❌ One or more tests failed!"
+          exit 1
+        else
+          echo "✅ All tests passed!"
+          exit 0
+        fi
 
     - name: Upload test artifacts
       if: always()
