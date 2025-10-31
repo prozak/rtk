@@ -1,4 +1,4 @@
-.PHONY: clean help test test-all-java $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-all-java test-bootstrap $(GRAMMAR_TARGETS)
 
 # Ensure PATH includes cabal binaries
 export PATH := $(HOME)/.local/bin:$(PATH)
@@ -15,9 +15,11 @@ ifeq ($(OS), Windows_NT)
 	@echo Use 'clean' target to clean binaries
 	@echo Use 'test-grammar' target to generate [xy] for test-grammars/grammar.pg
 	@echo Use 'test-t1' target to generate [xy] for test-grammars/t1.pg
+	@echo Use 'test-bootstrap' target to compare hand-written vs generated grammar files
 else
 	@echo "Use 'build' target to launch build"
 	@echo "Use 'clean' target to clean binaries"
+	@echo "Use 'test-bootstrap' target to compare hand-written vs generated grammar files"
 	@echo "Available grammar tests: $(GRAMMAR_TARGETS)"
 endif
 
@@ -155,3 +157,9 @@ test-java-qq: test-out build test-out/JavaLexer.hs test-out/JavaParser.hs
 	$(CP) test-grammars/java-qq-test.hs test-out
 	cabal exec -- ghc --make -itest-out test-out/java-qq-test.hs -o test-out/java-qq-test
 	test-out/java-qq-test
+
+# Bootstrap comparison test - compares hand-written files with generated ones
+test-bootstrap: build test-out test-out/GrammarLexer.x test-out/GrammarParser.y test-out/GrammarQQ.hs
+	@echo ""
+	@echo "Running bootstrap comparison test..."
+	./compare-bootstrap.sh

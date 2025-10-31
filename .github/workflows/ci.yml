@@ -135,6 +135,20 @@ jobs:
           exit 0
         fi
 
+    - name: Bootstrap comparison test (informational)
+      continue-on-error: true
+      run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+        echo ""
+        echo "==========================================="
+        echo "Bootstrap Self-Hosting Comparison"
+        echo "==========================================="
+        echo "This test compares hand-written Lexer.x and Parser.y"
+        echo "with generated files from test-grammars/grammar.pg"
+        echo "to track progress toward RTK self-hosting."
+        echo ""
+        make test-bootstrap
+
     - name: Upload test artifacts
       if: always()
       uses: actions/upload-artifact@v4
