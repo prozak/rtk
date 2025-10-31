@@ -149,3 +149,9 @@ test-p: test-out build test-out/PLexer.hs test-out/PParser.hs
 	$(CP) test-grammars/p-main.hs test-out
 	(cd test-out && ghc --make p-main.hs -o p-rtk)
 	test-out/p-rtk expr.p
+
+# Java quasi-quotation tests (separate from regular java-main parser driver)
+test-java-qq: test-out build test-out/JavaLexer.hs test-out/JavaParser.hs
+	$(CP) test-grammars/java-qq-test.hs test-out
+	cabal exec -- ghc --make -itest-out test-out/java-qq-test.hs -o test-out/java-qq-test
+	test-out/java-qq-test
