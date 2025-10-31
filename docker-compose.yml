@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  rtk-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: rtk:dev
+    container_name: rtk-dev
+    volumes:
+      # Mount source code for live development
+      - .:/workspace
+      # Persist Cabal cache across container restarts
+      - cabal-cache:/root/.cabal
+      # Persist build artifacts
+      - build-cache:/workspace/dist-newstyle
+    working_dir: /workspace
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+
+  # Service for running tests
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: rtk:dev
+    volumes:
+      - .:/workspace
+      - cabal-cache:/root/.cabal
+      - build-cache:/workspace/dist-newstyle
+    working_dir: /workspace
+    command: make test
+    profiles:
+      - test
+
+  # Service for running all Java tests
+  test-java:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: rtk:dev
+    volumes:
+      - .:/workspace
+      - cabal-cache:/root/.cabal
+      - build-cache:/workspace/dist-newstyle
+    working_dir: /workspace
+    command: make test-all-java
+    profiles:
+      - test
+
+  # Service for building the project
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: rtk:dev
+    volumes:
+      - .:/workspace
+      - cabal-cache:/root/.cabal
+      - build-cache:/workspace/dist-newstyle
+    working_dir: /workspace
+    command: cabal build
+    profiles:
+      - build
+
+volumes:
+  cabal-cache:
+    driver: local
+  build-cache:
+    driver: local

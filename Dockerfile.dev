@@ -1,0 +1,41 @@
+# Development Dockerfile for RTK
+# This image includes all build tools and dependencies for local testing
+
+FROM haskell:9.6.4
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    make \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace
+
+# Update Cabal package list
+RUN cabal update
+
+# Install Alex and Happy globally
+RUN cabal install alex happy \
+    --installdir=/usr/local/bin \
+    --overwrite-policy=always \
+    --install-method=copy
+
+# Pre-configure Cabal to use correct paths
+ENV PATH="/root/.cabal/bin:/usr/local/bin:${PATH}"
+
+# Copy only dependency files first for better caching
+COPY rtk.cabal ./
+
+# Download and build dependencies (this layer will be cached)
+RUN cabal build --only-dependencies --enable-tests --enable-benchmarks || true
+
+# Copy the rest of the source code
+# (This happens at build time, but will be overridden by volume mount in development)
+COPY . .
+
+# Build the project (warm up the cache)
+RUN cabal build || true
+
+# Default command: open a bash shell for interactive development
+CMD ["/bin/bash"]

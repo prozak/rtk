@@ -1,0 +1,38 @@
+# Build artifacts
+dist
+dist-*
+.stack-work/
+.cabal-sandbox/
+cabal.sandbox.config
+*.hi
+*.o
+*.dyn_o
+*.dyn_hi
+
+# Test outputs
+test-out/
+happy_log.txt
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Docker files
+Dockerfile*
+.dockerignore
+docker-compose.yml
+
+# Documentation
+docs/
+*.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
