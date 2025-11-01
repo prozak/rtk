@@ -1,4 +1,3 @@
-import System.Environment(getArgs)
 import Lexer
 import Parser
 import StringLiterals
@@ -6,50 +5,175 @@ import Normalize
 import GenY
 import GenX
 import GenQ
+import DebugOptions
+import qualified Debug as D
+import Control.Monad (when)
+import Data.Maybe (isJust, fromJust, catMaybes)
+import Control.Exception (evaluate)
 
-getGrammarFileName :: IO (String, String)
-getGrammarFileName = do
-    args <- getArgs
-    return $ case args of
-                file:dir:_ -> (file, dir)
-                _ -> error $ "Usage: <pg-file> <output-directory>"
-
--- TODO: options parsing etc
 main :: IO ()
 main = do
-    (file, dir) <- getGrammarFileName
-    content <- readFile file
-    let grammar = parse . alexScanTokens $ content
---    let grammar = emitLoopsInGrammar . annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
---    let grammar = annotateGrammarWithNames . addStartRule . parse . alexScanTokens $ content
---    generateASTFile "AST" grammar
---    generateQQFile "Quote" grammar
-    let grammar0 = normalizeStringLiterals grammar
---    putStrLn "------ before noralization ------"
---    putStrLn $ showGrammar grammar0
-    let grammar1 = fillConstructorNames $ normalizeTopLevelClauses grammar0
---    putStrLn "------ after noralization ------"
---    putStrLn $ showGrammar grammar1
-    let grammar_name = getNGrammarName grammar1
-    let y_content = genY grammar1
-    let x_content = genX grammar1
-    let q_content = genQ grammar1
---    let info = getGrammarInfo grammar1
---    putStrLn $ ppShow grammar1
---    putStrLn $ show $ getStartRuleName info
---    putStrLn $ show $ getProxyRules info
-    writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
---    putStrLn $ show $ getRuleToStartInfo info
-    writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
---    putStrLn $ show $ getRuleToAntiInfo info
-    writeFile (dir ++ "/" ++ grammar_name ++ "QQ.hs") q_content
---    putStrLn $ (generateParserSpec grammar))
+    -- Parse command-line options
+    opts <- parseOptions
 
-{--run :: String -> Either String [Token]
-run content = runAlex content $ loop []
+    -- Load grammar file
+    content <- readFile (grammarFile opts)
 
-loop end = do --alexMonadScan >>= \t -> loop end >>= \e -> return $ t : e
-  tok <- alexMonadScan;
-  case tok of
-    Nothing -> return end
-    Just t -> loop end >>= \e -> return $ t : e--}
+    -- Stage 1: Lexical Analysis
+    (tokens, maybeT1) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Lexical Analysis" $ evaluate $ alexScanTokens content
+            return (result, Just timing)
+        else return (alexScanTokens content, Nothing)
+
+    when (debugTokens opts) $
+        D.printTokens opts tokens
+
+    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageLex) $
+        exitAfterDebug
+
+    -- Stage 2: Parsing
+    (grammar, maybeT2) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Parsing" $ evaluate $ parse tokens
+            return (result, Just timing)
+        else return (parse tokens, Nothing)
+
+    when (debugParse opts) $
+        D.printInitialGrammar opts grammar
+
+    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageParse) $
+        exitAfterDebug
+
+    -- Stage 3: String Literal Normalization
+    (grammar0, maybeT3) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "String Normalization" $ evaluate $ normalizeStringLiterals grammar
+            return (result, Just timing)
+        else return (normalizeStringLiterals grammar, Nothing)
+
+    when (debugStringNorm opts) $
+        D.printComparison opts "Before String Normalization" grammar "After String Normalization" grammar0
+
+    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageStringNorm) $
+        exitAfterDebug
+
+    -- Stage 4: Clause Normalization
+    (grammar1, maybeT4) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Clause Normalization" $ evaluate $ normalizeTopLevelClauses grammar0
+            return (result, Just timing)
+        else return (normalizeTopLevelClauses grammar0, Nothing)
+
+    when (debugClauseNorm opts) $
+        D.printNormalGrammar opts "CLAUSE NORMALIZATION OUTPUT" grammar1
+
+    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageClauseNorm) $
+        exitAfterDebug
+
+    -- Stage 5: Constructor Name Filling
+    (grammar2, maybeT5) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Constructor Name Filling" $ evaluate $ fillConstructorNames grammar1
+            return (result, Just timing)
+        else return (fillConstructorNames grammar1, Nothing)
+
+    when (debugConstructors opts) $
+        D.printNormalGrammar opts "FINAL GRAMMAR (with Constructor Names)" grammar2
+
+    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageFillNames) $
+        exitAfterDebug
+
+    -- Statistics and Analysis (before code generation)
+    when (showStats opts) $
+        D.showGrammarStats opts grammar grammar2
+
+    when (analyzeConflicts opts) $
+        D.analyzeGrammarConflicts opts grammar2
+
+    when (showRuleGraph opts) $
+        D.printRuleGraph opts grammar2
+
+    when (listRules opts) $
+        D.printRuleList opts grammar2
+
+    -- Validation
+    when (validateGrammar opts) $ do
+        valid <- D.runGrammarValidation opts grammar2
+        when (not valid) $
+            putStrLn "Warning: Grammar has validation issues."
+
+    when (showUnusedRules opts) $
+        D.findUnusedRules opts grammar2
+
+    when (checkLeftRecursion opts) $
+        D.detectLeftRecursion opts grammar2
+
+    when (suggestShortcuts opts) $
+        D.suggestGrammarShortcuts opts grammar2
+
+    -- Expand specific rule if requested
+    case expandRule opts of
+        Just ruleName -> D.showExpandedRule opts grammar2 ruleName
+        Nothing -> return ()
+
+    -- Stage 6: Code Generation
+    let grammar_name = getNGrammarName grammar2
+
+    (y_content, maybeT6) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Parser (Y) Generation" $ evaluate $ genY grammar2
+            return (result, Just timing)
+        else return (genY grammar2, Nothing)
+
+    (x_content, maybeT7) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Lexer (X) Generation" $ evaluate $ genX grammar2
+            return (result, Just timing)
+        else return (genX grammar2, Nothing)
+
+    (q_content, maybeT8) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "QuasiQuoter (Q) Generation" $ evaluate $ genQ grammar2
+            return (result, Just timing)
+        else return (genQ grammar2, Nothing)
+
+    -- Debug generated specs if requested
+    when (debugParserSpec opts) $ do
+        D.debugSection opts "GENERATED HAPPY PARSER SPECIFICATION"
+        putStrLn y_content
+
+    when (debugLexerSpec opts) $ do
+        D.debugSection opts "GENERATED ALEX LEXER SPECIFICATION"
+        putStrLn x_content
+
+    when (debugQQSpec opts) $ do
+        D.debugSection opts "GENERATED QUASIQUOTER CODE"
+        putStrLn q_content
+
+    -- Write output files (unless we're only validating)
+    when (not (validateGrammar opts) || not (validateGrammar opts && not (any id [debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts]))) $ do
+        let dir = outputDir opts
+        writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
+        writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
+        writeFile (dir ++ "/" ++ grammar_name ++ "QQ.hs") q_content
+
+    -- Show timing profile if requested
+    when (profileStages opts) $ do
+        let allTimings = catMaybes [maybeT1, maybeT2, maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8]
+        when (not $ null allTimings) $
+            D.showTimingInfo opts allTimings
+
+    -- Success message
+    when (not $ any id [debugTokens opts, debugParse opts, debugStringNorm opts,
+                        debugClauseNorm opts, debugConstructors opts,
+                        debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts,
+                        showStats opts, validateGrammar opts]) $ do
+        putStrLn $ "Successfully generated files for " ++ grammar_name
+
+-- Helper function
+exitAfterDebug :: IO ()
+exitAfterDebug = do
+    putStrLn ""
+    putStrLn "Stopped after requested debug stage."
+    error "Debug stage exit"
