@@ -8,9 +8,52 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint:
+    name: Lint (Check Unused Imports)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Haskell
+      uses: haskell-actions/setup@v2
+      with:
+        ghc-version: '9.6.4'
+        cabal-version: '3.10.2.0'
+        enable-stack: false
+      env:
+        GHCUP_INSTALL_BASE_PREFIX: ${{ runner.temp }}/ghcup
+
+    - name: Cache Cabal packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cabal/packages
+          ~/.cabal/store
+          dist-newstyle
+        key: ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
+        restore-keys: |
+          ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
+          ${{ runner.os }}-cabal-
+
+    - name: Update Cabal package list
+      run: cabal update
+
+    - name: Install build tools (Alex and Happy)
+      run: cabal install alex happy --installdir=$HOME/.cabal/bin --overwrite-policy=always --install-method=copy
+
+    - name: Build and check for warnings (treat as errors)
+      run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+        # Build with -Werror to treat all warnings as errors
+        # This will fail the build if there are any unused imports or other warnings
+        cabal build --ghc-options="-Werror" --enable-tests --enable-benchmarks -j
+
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
+    needs: lint
 
     steps:
     - name: Checkout repository

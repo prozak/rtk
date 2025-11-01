@@ -12,7 +12,9 @@ normalRulesNamed groups = map (\g -> (getSDataTypeName g, combineClauses $ map g
 
 combineClauses :: [SyntaxTopClause] -> SyntaxTopClause
 combineClauses [a] = a
-combineClauses alts = STAltOfSeq $ concat $ map (\(STAltOfSeq seqs) -> seqs) alts
+combineClauses alts = STAltOfSeq $ concat $ map extractSeqs alts
+  where extractSeqs (STAltOfSeq seqs) = seqs
+        extractSeqs _ = []
 
 type RulesMap = Map.Map ID ID
 
@@ -48,19 +50,19 @@ genConstructor :: RulesMap -> STSeq -> Doc
 genConstructor rmap (STSeq constructor clauses) = text constructor <+> (hsep $ map (genSimpleItem rmap) clauses)
 
 genItem :: RulesMap -> SyntaxTopClause -> Doc
-
 genItem rmap (STMany _ cl _) = brackets $ genSimpleItem rmap cl
 genItem rmap (STOpt cl) = parens $ text "Maybe" <+> genSimpleItem rmap cl
+genItem _ (STAltOfSeq _) = error "STAltOfSeq not supported in genItem"
 
 genSimpleItem :: RulesMap -> SyntaxSimpleClause -> Doc
-genSimpleItem rmap (SSId id) = text $ findRuleDataTypeName rmap id
-genSimpleItem _    (SSIgnore id) = empty
-genSimpleItem _    (SSLifted id) = error "lifted rules are not yet implemented"
+genSimpleItem rmap (SSId idName) = text $ findRuleDataTypeName rmap idName
+genSimpleItem _    (SSIgnore _) = empty
+genSimpleItem _    (SSLifted _) = error "lifted rules are not yet implemented"
 
 findRuleDataTypeName :: RulesMap -> ID -> ID
-findRuleDataTypeName rmap id = case Map.lookup id rmap of
+findRuleDataTypeName rmap idName = case Map.lookup idName rmap of
                                  Just r -> r
-                                 _      -> error $ "Reference to unknown rule " ++ id
+                                 _      -> error $ "Reference to unknown rule " ++ idName
 
 joinAlts :: [Doc] -> Doc
 joinAlts alts = vcat $ punctuate (text " |") alts

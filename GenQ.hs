@@ -56,8 +56,8 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
 
 ?qqShortCutsMapDef
 
-?(qqFunProtoGen exp)
-?(qqFunImplGen exp)
+?(qqFunProtoGen expType)
+?(qqFunImplGen expType)
 ?(qqFunProtoGen pat)
 ?(qqFunImplGen pat)
 ?antiFunsGenExp
@@ -69,25 +69,26 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
 ?qqParseFuns
 |]
     where pat = "Pat"
-          exp = "Exp"
+          expType = "Exp"
           proxyRules = getProxyRules info
           qqFunName typ = [str|quote?name~?typ|]
           typeNames = map arQQName antiRules
-          antiNameGen typ name = "anti" ++ name ++ typ
+          antiNameGen typ n = "anti" ++ n ++ typ
           antiTermGen typ = map (antiNameGen typ) typeNames
           antiExprsGen typ = foldr (\antiTerm res -> [str|?res `Generics.extQ` ?antiTerm|]) "const Nothing" $ antiTermGen typ
-          antiFunsGen typ = map (\(AntiRule name qqName consName isList) ->
+          antiFunsGen typ = map (\(AntiRule tdName qqName consName isList) ->
                                         let antiName = antiNameGen typ qqName
                                             varConstructor = case typ of
                                                                 "Pat" -> "TH.varP"
                                                                 "Exp" -> "TH.varE"
+                                                                _ -> "TH.varE"  -- default case
                                             listPatGen = [str|
-?antiName :: [ ?name ] -> Maybe (TH.Q TH.Pat)
+?antiName :: [ ?tdName ] -> Maybe (TH.Q TH.Pat)
 ?antiName [?consName v] = Just $ ?varConstructor (TH.mkName v)
 ?antiName _ = Nothing
 |]
                                             listExpGen = [str|
-?antiName :: [ ?name ] -> Maybe (TH.Q TH.Exp)
+?antiName :: [ ?tdName ] -> Maybe (TH.Q TH.Exp)
 ?antiName ((?consName v):rest) =
  let restExp = ?(dataToExpCall "Exp" "rest")
      lvar = TH.varE $ TH.mkName v
@@ -95,7 +96,7 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
 ?antiName _ = Nothing
 |]
                                             nonListGen = [str|
-?antiName :: ?name -> Maybe (TH.Q TH.?typ )
+?antiName :: ?tdName -> Maybe (TH.Q TH.?typ )
 ?antiName ( ?consName v) = Just $ ?varConstructor (TH.mkName v)
 ?antiName _ = Nothing
 |]
@@ -114,7 +115,7 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
 |] ++ dataToExpCall typ "expr"
           qqFunType = qqFunName "Type" ++ " s = return TH.ListT"
           qqFunDecs = qqFunName "Decs" ++ " s = return []"
-          antiFunsGenExp = unlines $ antiFunsGen exp
+          antiFunsGenExp = unlines $ antiFunsGen expType
           antiFunsGenPat = unlines $ antiFunsGen pat
           typeNameToConstructor = M.fromList $ map (\(STSeq cName lst) ->
                                         case lst of
@@ -127,20 +128,25 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                          [] -> [])
           rulesWithoutProxies = filterProxyRules proxyRules rules
           qqParseFuns =  intercalate "\n"
-                            $ map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->
-                                       let sortFunName = sortNameToHaskellName $ C.toLower s : rest
-                                           dummy = "\"" ++ (fromJust $ M.lookup typeName $ getRuleToStartInfo info) ++ "\""
-                                           getFun = "get" ++ typeName
-                                           dataConstructor = fromJust $ M.lookup typeName typeNameToConstructor
-                                       in
-                                         [str|?getFun ( ?dataConstructor s) = s
+                            $ map (\ruleGroup ->
+                                       case getSDataTypeName ruleGroup of
+                                         typeName@(s : rest) ->
+                                           let sortFunName = sortNameToHaskellName $ C.toLower s : rest
+                                               dummy = "\"" ++ (fromJust $ M.lookup typeName $ getRuleToStartInfo info) ++ "\""
+                                               getFun = "get" ++ typeName
+                                               dataConstructor = fromJust $ M.lookup typeName typeNameToConstructor
+                                           in
+                                             [str|?getFun ( ?dataConstructor s) = s
 
 ?sortFunName :: QuasiQuoter
-?sortFunName = QuasiQuoter (?(qqFunName exp) ?dummy ?getFun ) (?(qqFunName pat) ?dummy ?getFun ) ?(qqFunName "Type") ?(qqFunName "Decs")
-|])
+?sortFunName = QuasiQuoter (?(qqFunName expType) ?dummy ?getFun ) (?(qqFunName pat) ?dummy ?getFun ) ?(qqFunName "Type") ?(qqFunName "Decs")
+|]
+                                         _ -> "")
                                 rulesWithoutProxies
-          shortCutTypes = map (\SyntaxRuleGroup { getSDataTypeName = typeName@(s : rest)} ->
-                                ((C.toLower s : rest), typeName))
+          shortCutTypes = map (\ruleGroup ->
+                                case getSDataTypeName ruleGroup of
+                                  typeName@(s : rest) -> ((C.toLower s : rest), typeName)
+                                  _ -> ("", ""))
                             rulesWithoutProxies
           qqShortCutsMapDef = "qqShortcuts = M.fromList [ " ++ (intercalate ","
                                                                           (map (\(s, r) -> [str|("?s~","?r~")|])

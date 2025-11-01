@@ -3,7 +3,6 @@ module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
 import Parser
-import Grammar
 import Data.Generics
 import Data.Maybe
 import qualified Data.Map as M
@@ -89,15 +88,15 @@ addRuleWithQQ tdName ruleName clause = do
   case clause of
     STAltOfSeq altseqs ->
         case L.find (\(STSeq _ ssc) -> case ssc of
-                                         (SSLifted _ : others) -> True
+                                         (SSLifted _ : _) -> True
                                          _ -> False)
                     altseqs of
           Just _ -> addRule tdName ruleName clause
           Nothing -> qqAdd altseqs
-    STMany op (SSId rule) mcl -> do
+    STMany opType (SSId rule) mcl -> do
                 -- TODO: td name for the rule
                 newRule <- addListProxyRule rule rule ruleName
-                addRule tdName ruleName $ STMany op (SSId newRule) mcl
+                addRule tdName ruleName $ STMany opType (SSId newRule) mcl
     _ -> addRule tdName ruleName clause
   where qqAdd altseqs = do
           qqLexRule <- addQQLexRule tdName
@@ -130,21 +129,22 @@ extractSClause cl = do
   return $ ruleName
 
 processRuleOptions :: IRule -> Normalization ()
-processRuleOptions r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIRuleOptions=ropts} = do
-  let dtName = (maybe rn id dtn)
+processRuleOptions IRule{getIDataTypeName=dtn, getIRuleName=rn, getIRuleOptions=ropts} = do
+  let dtName = (maybe rn Prelude.id dtn)
   mapM_ (\ opt -> case opt of
                     OShortcuts lst -> mapM_ (\ shortcut -> do
                                                addShortcut shortcut dtName
                                                return ()) lst
+                    OSymmacro -> return ()  -- Handle symmacro option
                     ) ropts
 
 checkSimpleClause :: IClause -> Normalization SyntaxSimpleClause
-checkSimpleClause c@(IId id) = return $ SSId id
-checkSimpleClause c@(ILifted (IId id)) = return $ SSLifted id
-checkSimpleClause c@(IIgnore c1) = do
+checkSimpleClause (IId idName) = return $ SSId idName
+checkSimpleClause (ILifted (IId idName)) = return $ SSLifted idName
+checkSimpleClause (IIgnore c1) = do
   newC1 <- checkSimpleClause c1
   case newC1 of
-    SSId id -> return $ SSIgnore id
+    SSId idName -> return $ SSIgnore idName
     _ -> error $ "Ignore cannot be applied to " ++ show c1
 checkSimpleClause c = extractClause c >>= return . SSId
 
@@ -167,21 +167,21 @@ checkNormalClause (IAlt cs) = do
   return $ STAltOfSeq cs1
 checkNormalClause (ISeq [c]) = do
   checkNormalClause c
-checkNormalClause tc@(ISeq cs) = do
+checkNormalClause tc@(ISeq _) = do
   c1 <- checkNormalClauseSeq tc
   return $ STAltOfSeq [c1]
 checkNormalClause (ILifted c) = do
   c1 <- checkSimpleClause c
   case c1 of
-    SSId id -> return $ STAltOfSeq [STSeq "" [SSLifted id]]
+    SSId idName -> return $ STAltOfSeq [STSeq "" [SSLifted idName]]
     _ -> error $ "Lifted cannot be applied to " ++ show c1
 checkNormalClause (IIgnore c) = do
   c1 <- checkSimpleClause c
   case c1 of
-    SSId id -> return $ STAltOfSeq [STSeq "" [SSIgnore id]]
+    SSId idName -> return $ STAltOfSeq [STSeq "" [SSIgnore idName]]
     _ -> error $ "Ignore cannot be applied to " ++ show c1
-checkNormalClause (IId id) = do
-  return $ STAltOfSeq [STSeq "" [SSId id]]
+checkNormalClause (IId idName) = do
+  return $ STAltOfSeq [STSeq "" [SSId idName]]
 checkNormalClause c = error $ "Wrong clause " ++ show c
 
 checkNormalClauseSeq :: IClause -> Normalization STSeq
@@ -193,11 +193,11 @@ checkNormalClauseSeq ic = do
   return $ STSeq "" [c1]
 
 normalizeRule :: IRule -> Normalization ()
-normalizeRule r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIClause=cl} | not (isLexicalRule rn) = do
+normalizeRule r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIClause=cl, getIDataFunc=_, getIRuleOptions=_} | not (isLexicalRule rn) = do
   processRuleOptions r
   newCl <- checkNormalClause cl
-  addRuleWithQQ (maybe rn id dtn) rn newCl
-normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, getIClause=cl} | (isLexicalRule rn) = do
+  addRuleWithQQ (maybe rn Prelude.id dtn) rn newCl
+normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, getIClause=cl, getIRuleOptions=_} | (isLexicalRule rn) = do
   let (dtn1, df1) = case (dtn, df) of
                       (Nothing, Nothing) -> ("String", "id")
                       (Just d,  Nothing) -> (d,        "read")
@@ -208,6 +208,7 @@ normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, ge
       addLexicalRule $ MacroRule rn cl
     else
       addLexicalRule $ LexicalRule dtn1 df1 rn cl
+normalizeRule r = error $ "normalizeRule: unexpected rule pattern: " ++ show r
 
 doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do
@@ -216,15 +217,15 @@ doNM grammar = do
   postNormalizeGrammar
 
 postNormalizeGroup :: (ID, [SyntaxRule]) -> Normalization (ID, [SyntaxRule])
-postNormalizeGroup g@(id, [r]) = return g
-postNormalizeGroup (id, rules) = do
+postNormalizeGroup g@(_, [_]) = return g
+postNormalizeGroup (idName, rules) = do
   newRules <- mapM normRule rules
-  return (id, newRules)
+  return (idName, newRules)
       where
           normRule r@(SyntaxRule _ (STAltOfSeq _)) = return r
           normRule (SyntaxRule rn cl) = do
-                                   id <- extractSClause cl
-                                   return (SyntaxRule rn (STAltOfSeq [STSeq "" [SSId id]]))
+                                   extractedId <- extractSClause cl
+                                   return (SyntaxRule rn (STAltOfSeq [STSeq "" [SSId extractedId]]))
 
 postNormalizeGrammar :: Normalization ()
 postNormalizeGrammar = do
@@ -236,16 +237,16 @@ addStartGroup :: NormalGrammar -> NormalGrammar
 addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = tokens , getGrammarInfo = info } =
   let proxyRules = getProxyRules info
       (ruleToStartInfo, counter) = foldr
-                                     (\el (map, counter) ->
+                                     (\el (ruleMap, cnt) ->
                                         let typeName = getSDataTypeName el
                                         in
                                           if S.member typeName proxyRules
-                                            then (map, counter)
+                                            then (ruleMap, cnt)
                                             else
-                                              (M.insert typeName 
-                                                        ("tok_" ++ typeName ++ "_dummy_" ++ show counter)
-                                                        map,
-                                                counter + 1))
+                                              (M.insert typeName
+                                                        ("tok_" ++ typeName ++ "_dummy_" ++ show cnt)
+                                                        ruleMap,
+                                                cnt + 1))
                                      (M.empty, getNameCounter info)
                                      rules
       rulesClauses = map (\s ->
@@ -260,11 +261,12 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
                                                    getLRuleName = name, getLClause = (IStrLit name)}) $ M.toList ruleToStartInfo
       
       qqRule = SyntaxRule (fromJust (getStartRuleName info)) $ STAltOfSeq rulesClauses
-      (startRule:restRules) = rules
-    in
-      ng { getSyntaxRuleGroups = startRule { getSRules = qqRule : getSRules startRule }: restRules,
-           getLexicalRules = newTokens ++ tokens,
-           getGrammarInfo = info { getNameCounter = counter, getRuleToStartInfo = ruleToStartInfo }}
+    in case rules of
+      (startRule:restRules) ->
+        ng { getSyntaxRuleGroups = startRule { getSRules = qqRule : getSRules startRule }: restRules,
+             getLexicalRules = newTokens ++ tokens,
+             getGrammarInfo = info { getNameCounter = counter, getRuleToStartInfo = ruleToStartInfo }}
+      [] -> error "Grammar must have at least one rule group"
 
 normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar =
@@ -281,7 +283,7 @@ normalizeTopLevelClauses grammar =
           groups = firstGroup : otherGroups
         in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (getImports grammar) (GrammarInfo (Just firstID) M.empty counter proxyRules)
 
-data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String, antiVarMap :: M.Map String String }
+data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String }
 type FillName a = State FillNameState a
 
 newConstructorName :: FillName String
@@ -292,18 +294,17 @@ newConstructorName = do
     return $ "Ctr__" ++ b ++ "__" ++  (show n)
 
 fillConstructorName :: String -> STSeq -> FillName STSeq
-fillConstructorName dataName (STSeq "" l) = do
+fillConstructorName _ (STSeq "" l) = do
     n <- newConstructorName
     return $ STSeq n l
-fillConstructorName dataName seq = return seq 
+fillConstructorName _ seqValue = return seqValue
 
 fillConstructorNames :: NormalGrammar -> NormalGrammar
-fillConstructorNames ng@NormalGrammar { getSyntaxRuleGroups = rules, getGrammarInfo = info } = 
+fillConstructorNames ng@NormalGrammar { getSyntaxRuleGroups = rules, getGrammarInfo = info } =
     ng { getSyntaxRuleGroups = newrules, getGrammarInfo = info }
-      where (newrules, newmap) = foldr ( \r (res, oldmap) ->
-                                            let (rule, newmap) = doRename (getSDataTypeName r) r in (rule:res, M.union newmap oldmap)) ([], M.empty) rules
-            doRename n dat = let (dat1, (FillNameState _ _ map)) = runState (everywhereM (mkM (fillConstructorName n)) dat) (FillNameState 0 n M.empty)
-                               in (dat1, map)
+      where newrules = map (\r -> doRename (getSDataTypeName r) r) rules
+            doRename n dat = let (dat1, (FillNameState _ _)) = runState (everywhereM (mkM (fillConstructorName n)) dat) (FillNameState 0 n)
+                               in dat1
 
 removeOpts :: IClause -> IClause
 removeOpts (IOpt c) = IAlt [ISeq [], ISeq [c]]

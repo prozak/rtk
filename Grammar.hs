@@ -3,8 +3,6 @@
 module Grammar where
 
 import Parser
-import System.IO(hGetContents, openFile, IOMode(WriteMode), hClose)
-import Control.Exception(bracket)
 
 {-
 generateConstructor :: String -> [ClauseItem] -> Q Con
@@ -172,6 +170,7 @@ isNotIgnored SSId{} = True
 isNotIgnored SSLifted{} = True
 isNotIgnored _ = False
 
+isSymmacro :: LexicalRule -> Bool
 isSymmacro (MacroRule _ _) = True
 isSymmacro _               = False
 

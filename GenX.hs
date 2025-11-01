@@ -9,7 +9,7 @@ import Grammar
 import StrQuote
 
 getMacroIdsFromClause :: IClause -> S.Set String
-getMacroIdsFromClause (IId str) = S.singleton str
+getMacroIdsFromClause (IId s) = S.singleton s
 getMacroIdsFromClause (IOpt clause) = getMacroIdsFromClause clause
 getMacroIdsFromClause (IPlus clause _) = getMacroIdsFromClause clause
 getMacroIdsFromClause (IStar clause _) = getMacroIdsFromClause clause
@@ -97,12 +97,14 @@ genTokenADT lexical_rules = text "data" <+> text "Token" <+> text "=" <+> (joinA
                    "Keyword" -> token_name
                    "Ignore"  -> empty
                    _         -> token_name <+> text data_type
+          makeToken (MacroRule _ _) = empty
 
 genTokens :: S.Set String -> [LexicalRule] -> Doc
 genTokens smacroIds lexical_rules =
   text "tokens" <+> text ":-" <+> vcat (map makeToken lexical_rules ++ [text ". { rtkError }"])
     where makeToken LexicalRule { getLRuleDataType = data_type, getLRuleFunc = func, getLRuleName = name, getLClause = cl } =
               translateClause smacroIds cl <+> makeProduction name data_type func
+          makeToken (MacroRule _ _) = empty
           makeProduction name data_type func =
             let token_name = text $ tokenName name in
               case data_type of
@@ -111,15 +113,15 @@ genTokens smacroIds lexical_rules =
                    _         -> text "{ simple1 $ " <+> token_name <+> text "." <+> (parens $ text func) <+> text "}"
 
 backquoteStr :: String -> String
-backquoteStr str = concat (map (\chr -> if (case chr of
+backquoteStr s = concat (map (\chr -> if (case chr of
                                                  '"'  -> True
                                                  _    -> False)
                                           then ['\\', chr]
                                           else [chr] )
-                                  str)
+                                  s)
 
 backquoteStrInBrackets :: String -> String
-backquoteStrInBrackets str = concat (map (\chr -> if (case chr of
+backquoteStrInBrackets s = concat (map (\chr -> if (case chr of
                                                         '[' -> True
                                                         ']' -> True
                                                         '(' -> True
@@ -134,26 +136,28 @@ backquoteStrInBrackets str = concat (map (\chr -> if (case chr of
                                                         _   -> False)
                                           then ['\\', chr]
                                           else [chr] )
-                                  str)
+                                  s)
 
+translateClauseForMacro :: IClause -> Doc
 translateClauseForMacro (IStrLit s) = text s
 translateClauseForMacro (IRegExpLit re) = brackets $ text $ backquoteStrInBrackets re
 translateClauseForMacro (ISeq cls) = hsep $ punctuate (text " ") (map translateClauseForMacro cls)
 translateClauseForMacro (IAlt clauses) = hsep $ punctuate (text "|") (map translateClauseForMacro clauses)
 translateClauseForMacro cl = text $ "Cannot translate to macro def " ++ (show cl)
 
+translateClause :: S.Set ID -> IClause -> Doc
 translateClause sMacroIds (IId name) | name `S.member` sMacroIds =
   text "$" <> text name
-translateClause sMacroIds (IId name) =
+translateClause _ (IId name) =
   text "@" <> text name
 translateClause _ (IStrLit s)         = doubleQuotes $ text $ backquoteStr s
 translateClause _ (IDot)              = text "."
 translateClause _ (IRegExpLit re)     = brackets $ text $ backquoteStrInBrackets re
 translateClause sMacroIds (IStar cl Nothing)  = translateClause sMacroIds cl <+> text "*"
 -- a* ~x --> (a(x a)*)?
-translateClause _ (IStar cl (Just _)) = error $ "Star (*) clauses with delimiters are not supported in lexical rules"
+translateClause _ (IStar _ (Just _)) = error $ "Star (*) clauses with delimiters are not supported in lexical rules"
 translateClause sMacroIds (IPlus cl Nothing)  = translateClause sMacroIds cl <+> text "+"
-translateClause _ (IPlus cl (Just _)) = error $ "Plus (+) clauses with delimiters are not supported in lexical rules"
+translateClause _ (IPlus _ (Just _)) = error $ "Plus (+) clauses with delimiters are not supported in lexical rules"
 translateClause sMacroIds (IAlt clauses)      = parens $ hsep $ punctuate (text "|") (map (translateClause sMacroIds) clauses)
 translateClause sMacroIds (ISeq clauses)    = hsep $ punctuate (text " ") (map (translateClause sMacroIds) clauses)
 translateClause sMacroIds (IOpt clause)       = translateClause sMacroIds clause <+> text "?"

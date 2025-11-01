@@ -37,8 +37,8 @@ tokens:-
     "$"                 { simple  Dollar }
     ")"                 { simple  RParen }
     "("                 { simple  LParen }
-    $squote ($notsq | "\'")* $squote   { simple1 $ StrLit . (reverse.tail.reverse.tail) . unBackQuote }
-    "[" ([^\]]|"\]")* "]"      { simple1 $ RegExpLit . (reverse.tail.reverse.tail) . unBackQuote }
+    $squote ($notsq | "\'")* $squote   { simple1 $ StrLit . (reverse.drop 1.reverse.drop 1) . unBackQuote }
+    "[" ([^\]]|"\]")* "]"      { simple1 $ RegExpLit . (reverse.drop 1.reverse.drop 1) . unBackQuote }
     "*"                 { simple Star }
     "+"                 { simple Plus }
     $alpha $alphaDigit* { simple1 Id }
@@ -131,11 +131,11 @@ catBigstrs [] = []
 
 alexEOF = return EndOfFile
 
-rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at " ++ (show line) ++ " line, " ++ (show column) ++ " column" ++ ". Following chars :" ++ (take 10 str)
+rtkError ((AlexPn _ line column), _, _, str) _ = alexError $ "lexical error at " ++ (show line) ++ " line, " ++ (show column) ++ " column" ++ ". Following chars :" ++ (take 10 str)
 
 simple1 :: (String -> Token) -> AlexInput -> Int -> Alex Token
 simple1 t (_, _, _, str) len = return $ t (take len str)
 
-simple t input len = return t
+simple t _ _ = return t
 
 }

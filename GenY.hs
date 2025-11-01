@@ -53,6 +53,7 @@ genToken LexicalRule{ getLRuleName = name, getLRuleDataType = dtn } =
         "Keyword" -> combineAlt (text name) (text "L." <> text (tokenName name))
         "Ignore"  -> empty
         _         -> combineAlt (text name) ((text "L." <> text (tokenName name)) <+> text "$$")
+genToken (MacroRule _ _) = empty
 
 genRule :: ListRuleSet -> SyntaxRule -> Doc
 -- <Rule>* with separator can only be expressed using two rules in LR grammar
@@ -73,7 +74,7 @@ genRule listRuleSet SyntaxRule{ getSClause = cl, getSRuleName = name } =
 genTopClause :: ListRuleSet -> String -> SyntaxTopClause -> Doc
 
 -- Ignore is not expected in the cl
-genTopClause lrs rn (STMany op cl Nothing) = joinAlts [base, step]
+genTopClause _ rn (STMany op cl Nothing) = joinAlts [base, step]
     where (baseAlt,alt) = case op of
                             STStar -> ("[]", emptyAlt)
                             STPlus -> ("[$1]", clDoc)
@@ -81,10 +82,12 @@ genTopClause lrs rn (STMany op cl Nothing) = joinAlts [base, step]
           step = combineAlt (text rn <+> clDoc) (text "$2 : $1")
           clDoc = genSimpleClause cl
 
-genTopClause lrs rn (STMany STPlus cl (Just cl1)) = joinAlts [base, step]
+genTopClause _ rn (STMany STPlus cl (Just cl1)) = joinAlts [base, step]
     where base = combineAlt clDoc (text "[$1]")
           step = combineAlt (text rn <+> genSimpleClause cl1 <+> clDoc) (text "$3 : $1")
           clDoc = genSimpleClause cl
+
+genTopClause _ _ (STMany STStar _ (Just _)) = error "STMany with STStar and separator not supported in this position"
 
 genTopClause lrs _ (STOpt cl) = joinAlts [present, not_present]
     where present = combineAlt (genSimpleClause cl)
@@ -92,15 +95,16 @@ genTopClause lrs _ (STOpt cl) = joinAlts [present, not_present]
           constructor_call = hsep $ enumClauses lrs [cl]
           not_present = combineAlt emptyAlt (text "Nothing")
 
-genTopClause lrs rn (STAltOfSeq clauses) = joinAlts $ map (genClauseSeq lrs) clauses
+genTopClause lrs _ (STAltOfSeq clauses) = joinAlts $ map (genClauseSeq lrs) clauses
 
+genOptPlusClause :: String -> Doc
 genOptPlusClause lstName = joinAlts [present, not_present]
     where present = combineAlt (text lstName)
                                (text "$1")
           not_present = combineAlt emptyAlt (text "[]")
 
 genClauseSeq :: ListRuleSet -> STSeq -> Doc
-genClauseSeq lrs (STSeq constructor clauses) | isClauseSeqLifted clauses = combineAlt rule production
+genClauseSeq lrs (STSeq _ clauses) | isClauseSeqLifted clauses = combineAlt rule production
     where rule = hsep (map genSimpleClause clauses)
           production = hsep $ (enumClauses lrs clauses)
 genClauseSeq lrs (STSeq constructor clauses)  = combineAlt rule production
@@ -109,22 +113,24 @@ genClauseSeq lrs (STSeq constructor clauses)  = combineAlt rule production
 
 genSimpleClause :: SyntaxSimpleClause -> Doc
 -- TODO: check whether reverse is needed (monad again) (switch to left recursion)
-genSimpleClause (SSId id) = text id
-genSimpleClause (SSIgnore id) = text id
+genSimpleClause (SSId idName) = text idName
+genSimpleClause (SSIgnore idName) = text idName
  -- TODO: no lifted yet, need monad with rules map here
-genSimpleClause (SSLifted id) = text id
+genSimpleClause (SSLifted idName) = text idName
 
 enumClauses :: ListRuleSet -> [SyntaxSimpleClause] -> [Doc]
 enumClauses lrs cls = f cls 1 []
-    where f (ssc:tail) count acc | isNotIgnored ssc = f tail (count + 1) 
+    where f (ssc:rest) count acc | isNotIgnored ssc = f rest (count + 1)
                                                         (if Set.member (getSID ssc) lrs
-                                                            then ((text "(reverse $" <> int count <> text ")") : acc) 
+                                                            then ((text "(reverse $" <> int count <> text ")") : acc)
                                                             else ((text "$" <> int count) : acc))
-          f (_:       tail) count acc               = f tail (count + 1) acc
+          f (_:       rest) count acc               = f rest (count + 1) acc
           f []              _     acc               = reverse acc
           getSID (SSId n) = n
           getSID (SSLifted n) = n
+          getSID (SSIgnore n) = n
 
+emptyAlt :: Doc
 emptyAlt = text "{- empty -}"
 
 joinAlts :: [Doc] -> Doc
