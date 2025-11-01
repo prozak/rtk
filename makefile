@@ -1,4 +1,4 @@
-.PHONY: clean help test test-all-java test-bootstrap $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-all-java test-bootstrap test-debug test-debug-all test-debug-options $(GRAMMAR_TARGETS)
 
 # Ensure PATH includes cabal binaries
 export PATH := $(HOME)/.local/bin:$(PATH)
@@ -163,3 +163,129 @@ test-bootstrap: build test-out test-out/GrammarLexer.x test-out/GrammarParser.y 
 	@echo ""
 	@echo "Running bootstrap comparison test..."
 	./compare-bootstrap.sh
+
+# Test debug options - uses grammar.pg as test subject
+test-debug: test-out build
+	@echo "========================================"
+	@echo "Testing RTK Debug Options"
+	@echo "========================================"
+	@echo ""
+	@echo ">>> Testing --stats option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --stats
+	@echo ""
+	@echo ">>> Testing --debug-tokens option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --debug-tokens | head -20
+	@echo ""
+	@echo ">>> Testing --debug-parse option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --debug-parse | head -20
+	@echo ""
+	@echo ">>> Testing --list-rules option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --list-rules
+	@echo ""
+	@echo ">>> Testing --validate-grammar option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --validate-grammar
+	@echo ""
+	@echo ">>> Testing --show-rule-graph option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --show-rule-graph
+	@echo ""
+	@echo ">>> Testing --analyze-conflicts option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --analyze-conflicts
+	@echo ""
+	@echo ">>> Testing --unused-rules option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --unused-rules
+	@echo ""
+	@echo ">>> Testing --check-left-recursion option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --check-left-recursion
+	@echo ""
+	@echo ">>> Testing --suggest-shortcuts option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --suggest-shortcuts
+	@echo ""
+	@echo ">>> Testing --profile-stages option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --profile-stages
+	@echo ""
+	@echo ">>> Testing --debug-parser-spec option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --debug-parser-spec | head -30
+	@echo ""
+	@echo ">>> Testing --debug-constructors option"
+	$(RTK_EXEC) test-grammars/grammar.pg test-out --debug-constructors | head -30
+	@echo ""
+	@echo "========================================"
+	@echo "All debug option tests completed!"
+	@echo "========================================"
+
+# Comprehensive test of all debug options with java-simple.pg
+test-debug-all: test-out build
+	@echo "========================================"
+	@echo "Comprehensive Debug Options Test"
+	@echo "Using java-simple.pg grammar"
+	@echo "========================================"
+	@echo ""
+	@echo "=== Pipeline Stage Inspection ==="
+	@echo ">>> --debug-tokens"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --debug-tokens > test-out/debug-tokens.txt
+	@echo "    Output saved to test-out/debug-tokens.txt"
+	@echo ">>> --debug-parse"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --debug-parse > test-out/debug-parse.txt
+	@echo "    Output saved to test-out/debug-parse.txt"
+	@echo ">>> --debug-string-norm"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --debug-string-norm > test-out/debug-string-norm.txt
+	@echo "    Output saved to test-out/debug-string-norm.txt"
+	@echo ">>> --debug-clause-norm"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --debug-clause-norm > test-out/debug-clause-norm.txt
+	@echo "    Output saved to test-out/debug-clause-norm.txt"
+	@echo ">>> --debug-constructors"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --debug-constructors > test-out/debug-constructors.txt
+	@echo "    Output saved to test-out/debug-constructors.txt"
+	@echo ""
+	@echo "=== Output Inspection ==="
+	@echo ">>> --debug-parser-spec"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --debug-parser-spec > test-out/debug-parser-spec.txt
+	@echo "    Output saved to test-out/debug-parser-spec.txt"
+	@echo ">>> --debug-lexer-spec"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --debug-lexer-spec > test-out/debug-lexer-spec.txt
+	@echo "    Output saved to test-out/debug-lexer-spec.txt"
+	@echo ">>> --debug-qq-spec"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --debug-qq-spec > test-out/debug-qq-spec.txt
+	@echo "    Output saved to test-out/debug-qq-spec.txt"
+	@echo ""
+	@echo "=== Statistics and Analysis ==="
+	@echo ">>> --stats"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --stats | tee test-out/debug-stats.txt
+	@echo ">>> --analyze-conflicts"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --analyze-conflicts | tee test-out/debug-conflicts.txt
+	@echo ">>> --show-rule-graph"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --show-rule-graph > test-out/debug-rule-graph.txt
+	@echo "    Output saved to test-out/debug-rule-graph.txt"
+	@echo ">>> --list-rules"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --list-rules > test-out/debug-list-rules.txt
+	@echo "    Output saved to test-out/debug-list-rules.txt"
+	@echo ""
+	@echo "=== Validation ==="
+	@echo ">>> --validate-grammar"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --validate-grammar | tee test-out/debug-validate.txt
+	@echo ">>> --unused-rules"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --unused-rules | tee test-out/debug-unused.txt
+	@echo ">>> --check-left-recursion"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --check-left-recursion | tee test-out/debug-left-rec.txt
+	@echo ">>> --suggest-shortcuts"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --suggest-shortcuts | tee test-out/debug-shortcuts.txt
+	@echo ""
+	@echo "=== Performance Profiling ==="
+	@echo ">>> --profile-stages"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --profile-stages | tee test-out/debug-profile.txt
+	@echo ""
+	@echo "=== Combined Options ==="
+	@echo ">>> --stats --validate-grammar --profile-stages"
+	$(RTK_EXEC) test-grammars/java-simple.pg test-out --stats --validate-grammar --profile-stages | tee test-out/debug-combined.txt
+	@echo ""
+	@echo "========================================"
+	@echo "All comprehensive debug tests completed!"
+	@echo "Debug outputs saved in test-out/debug-*.txt"
+	@echo "========================================"
+
+# Automated test suite for all debug options
+test-debug-options: test-out build
+	@echo "========================================"
+	@echo "Running automated debug options test suite"
+	@echo "========================================"
+	@./test-debug-options.sh
