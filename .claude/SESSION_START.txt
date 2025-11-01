@@ -1,0 +1,12 @@
+⚠️  CLAUDE: READ THIS FIRST EVERY SESSION ⚠️
+
+ENVIRONMENT: CLI Container (Ubuntu 24.04)
+
+❌ NO HASKELL: GHC, Cabal, Stack NOT available and CANNOT be installed
+❌ DO NOT: Check for Haskell tools or try to run Haskell tests
+✅ CAN DO: Edit code, git ops, analyze, plan, use Node/Java/Python/Go/Rust
+
+TESTING: Push to GitHub - CI has Haskell toolchain
+PERSISTENCE: Repo files persist, system packages DO NOT
+
+Full details: .claude/ENVIRONMENT.md
