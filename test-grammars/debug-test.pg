@@ -1,0 +1,33 @@
+grammar 'DebugTest';
+
+# This grammar is designed to test all debug options
+
+# Start rule - will be reached
+Program = Statement *;
+
+# Various statement types (some will be unreachable)
+Statement = Assignment
+          | IfStatement
+          | WhileLoop
+          | Block;
+
+# Reachable rules
+Assignment = identifier '=' Expression ';';
+Expression = Term (('+' | '-') Term)*;
+Term = Factor (('*' | '/') Factor)*;
+Factor = identifier | number | '(' Expression ')';
+
+IfStatement = 'if' '(' Expression ')' Statement;
+IfStatement = 'if' '(' Expression ')' Statement 'else' Statement;
+
+WhileLoop = 'while' '(' Expression ')' Statement;
+
+Block = '{' Statement * '}';
+
+# Unreachable rules (to test --unused-rules)
+UnusedRule1 = 'unused' identifier;
+UnusedRule2 = UnusedRule1 *;
+
+# Lexical rules
+identifier = ['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9']* ;
+number = ['0'-'9']+;
