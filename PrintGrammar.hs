@@ -1,9 +1,6 @@
 module PrintGrammar
     where
 
-import Text.PrettyPrint.HughesPJ
-import Parser
-
 {-
 showGrammar = render.grammar2Doc
 
