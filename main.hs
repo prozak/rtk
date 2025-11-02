@@ -16,6 +16,28 @@ main = do
     -- Parse command-line options
     opts <- parseOptions
 
+    -- Check for experimental generated parser mode
+    when (useGenerated opts) $ do
+        putStrLn "=========================================="
+        putStrLn "EXPERIMENTAL: Using Generated Parsers"
+        putStrLn "=========================================="
+        putStrLn ""
+        putStrLn "This mode uses parsers generated from test-grammars/grammar.pg"
+        putStrLn "instead of the hand-written Lexer.x and Parser.y."
+        putStrLn ""
+        putStrLn "Status: NOT YET IMPLEMENTED"
+        putStrLn ""
+        putStrLn "To implement:"
+        putStrLn "  1. Run: make test-grammar"
+        putStrLn "  2. This generates: test-out/GrammarLexer.x, GrammarParser.y, GrammarQQ.hs"
+        putStrLn "  3. Compile these to create generated parser modules"
+        putStrLn "  4. Integrate into main.hs dual-mode logic"
+        putStrLn ""
+        putStrLn "This is Prototype 1 of the self-hosting roadmap."
+        putStrLn "See docs/self-hosting-strategy.md for details."
+        putStrLn "=========================================="
+        error "Generated parser mode not yet available"
+
     -- Load grammar file
     content <- readFile (grammarFile opts)
 
