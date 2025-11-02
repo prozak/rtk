@@ -74,6 +74,7 @@ data DebugOptions = DebugOptions
 
     -- Special modes
     , interactive :: Bool
+    , useGenerated :: Bool  -- Use generated parsers instead of hand-written
     } deriving (Eq, Show)
 
 -- | Default debug options (all disabled)
@@ -108,6 +109,7 @@ defaultDebugOptions file dir = DebugOptions
     , debugOutputDir = Nothing
     , debugLog = Nothing
     , interactive = False
+    , useGenerated = False  -- Default to hand-written parsers
     }
 
 -- | Parse debug stage from string
@@ -248,6 +250,9 @@ debugOptionsParser = DebugOptions
         ( long "interactive"
        <> short 'i'
        <> help "Step through compilation stages interactively" )
+    <*> switch
+        ( long "use-generated"
+       <> help "Use generated parsers (experimental, for bootstrap testing)" )
 
 -- | Parse command-line options
 parseOptions :: IO DebugOptions

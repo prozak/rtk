@@ -48,7 +48,7 @@ make test-bootstrap
 
 **Deliverable:** Gap analysis showing exact differences
 
-**Status:** In progress
+**Status:** ✅ Complete (see docs/prototype-0-gap-analysis.md)
 
 ---
 
@@ -56,17 +56,18 @@ make test-bootstrap
 **Goal:** Add infrastructure to switch between parsers
 
 **Changes:**
-- Add `--use-generated` flag to main.hs
-- Conditional imports based on mode
-- Both modes compile (generated mode may not work yet)
+- Add `--use-generated` flag to DebugOptions.hs ✅
+- Add check in main.hs for the flag ✅
+- Informative error message when flag is used ✅
+- Infrastructure ready for Prototype 2 ✅
 
 **Testing:**
 ```bash
-./rtk test-grammars/java.pg test-out                # hand-written mode
-./rtk --use-generated test-grammars/java.pg test-out  # generated mode
+./rtk test-grammars/java.pg test-out                # hand-written mode (works)
+./rtk --use-generated test-grammars/java.pg test-out  # generated mode (shows message)
 ```
 
-**Status:** Not started
+**Status:** ✅ Complete - Infrastructure ready, implementation in Prototype 2
 
 ---
 
