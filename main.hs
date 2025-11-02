@@ -1,5 +1,6 @@
 import Lexer
 import Parser
+import TokenProcessing
 import StringLiterals
 import Normalize
 import GenY
@@ -42,11 +43,19 @@ main = do
     content <- readFile (grammarFile opts)
 
     -- Stage 1: Lexical Analysis
-    (tokens, maybeT1) <- if profileStages opts
+    (rawTokens, maybeT1) <- if profileStages opts
         then do
             (result, timing) <- D.timed "Lexical Analysis" $ evaluate $ alexScanTokens content
             return (result, Just timing)
         else return (alexScanTokens content, Nothing)
+
+    -- Stage 1.5: Token Post-Processing
+    -- Process escape sequences and concatenate multi-line strings
+    (tokens, maybeT1_5) <- if profileStages opts
+        then do
+            (result, timing) <- D.timed "Token Post-Processing" $ evaluate $ processTokens rawTokens
+            return (result, Just timing)
+        else return (processTokens rawTokens, Nothing)
 
     when (debugTokens opts) $
         D.printTokens opts tokens
@@ -182,7 +191,7 @@ main = do
 
     -- Show timing profile if requested
     when (profileStages opts) $ do
-        let allTimings = catMaybes [maybeT1, maybeT2, maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8]
+        let allTimings = catMaybes [maybeT1, maybeT1_5, maybeT2, maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8]
         when (not $ null allTimings) $
             D.showTimingInfo opts allTimings
 

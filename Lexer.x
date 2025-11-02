@@ -37,8 +37,8 @@ tokens:-
     "$"                 { simple  Dollar }
     ")"                 { simple  RParen }
     "("                 { simple  LParen }
-    $squote ($notsq | "\'")* $squote   { simple1 $ StrLit . (reverse.drop 1.reverse.drop 1) . unBackQuote }
-    "[" ([^\]]|"\]")* "]"      { simple1 $ RegExpLit . (reverse.drop 1.reverse.drop 1) . unBackQuote }
+    $squote ($notsq | "\'")* $squote   { simple1 $ StrLit . (reverse.drop 1.reverse.drop 1) }
+    "[" ([^\]]|"\]")* "]"      { simple1 $ RegExpLit . (reverse.drop 1.reverse.drop 1) }
     "*"                 { simple Star }
     "+"                 { simple Plus }
     $alpha $alphaDigit* { simple1 Id }
@@ -100,14 +100,6 @@ data Token = Grammar
     | EndOfFile
       deriving (Eq, Show)
 
-unBackQuote :: String -> String
-unBackQuote ('\\':'n':xs) = '\\':'n' : unBackQuote xs
-unBackQuote ('\\':'t':xs) = '\\':'t' : unBackQuote xs
-unBackQuote ('\\':'r':xs) = '\\':'r' : unBackQuote xs
-unBackQuote ('\\':c:xs) = c : unBackQuote xs
-unBackQuote (c:xs) = c : unBackQuote xs
-unBackQuote [] = []
-
 alexScanTokens :: String -> [Token]
 alexScanTokens str = 
                case alexScanTokens1 str of
@@ -117,17 +109,10 @@ alexScanTokens str =
 alexScanTokens1 str = runAlex str $ do
   let loop toks = do tok <- alexMonadScan
                      case tok of
-                       EndOfFile -> return $ catBigstrs $ reverse toks
-                       _ -> let toks' = tok : toks 
+                       EndOfFile -> return $ reverse toks
+                       _ -> let toks' = tok : toks
                             in toks' `seq` loop toks'
   loop []
-
-catBigstrs :: [Token] -> [Token]
-catBigstrs (BigStr s1 : toks) = case catBigstrs toks of
-                (BigStr s2 : toks') -> (BigStr (s1 ++ ('\n' : s2)) : toks')
-                _ -> BigStr s1 : toks
-catBigstrs (tok : toks) = tok : catBigstrs toks
-catBigstrs [] = []
 
 alexEOF = return EndOfFile
 
