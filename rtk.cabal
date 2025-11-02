@@ -24,6 +24,7 @@ Executable rtk
   Other-Modules:
                      Lexer,
                      Parser,
+                     TokenProcessing,
                      Grammar,
                      GenAST,
                      GenQ,
