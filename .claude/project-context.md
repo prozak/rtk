@@ -97,6 +97,55 @@ All tests pass successfully as of 2025-11-01.
 **Build Warnings**: Some warnings about unused imports/matches are expected
 **Parser Conflicts**: Java grammar has known shift/reduce and reduce/reduce conflicts (this is normal for complex grammars)
 
+## Debugging Guidelines
+
+**CRITICAL - Bash Command Limitations in Claude Code**:
+
+Commands like `tail`, `head`, `cat`, etc. exist but **FAIL when used in pipes after PATH exports**:
+
+```bash
+# ❌ FAILS - tail: command not found
+export PATH="/root/.cabal/bin:$PATH" && cabal build | tail -50
+
+# ❌ FAILS - same issue with semicolon
+export PATH="/root/.cabal/bin:$PATH"; echo "test" | tail -1
+
+# ✅ WORKS - but impractical for most debugging
+cabal build | /usr/bin/tail -50
+```
+
+**Root Cause**: When `export PATH=...` is used with `&&` or `;` in the same command as a pipe, the piped commands (like `tail`, `head`) cannot be found, even though they exist at `/usr/bin/tail`, etc.
+
+**SOLUTION - Always Use Claude Code Tools**:
+
+Claude Code provides specialized tools (Read, Grep, Glob, Edit, Write) that are **NOT bash commands** - they are direct function calls to Claude Code's infrastructure, completely independent of the shell environment.
+
+**Why Claude Code Tools Work**:
+- `tail`, `head`, `cat` = Bash commands executed through `/bin/bash` → Subject to PATH issues
+- `Read`, `Grep`, `Glob` = Claude Code tools invoked via API → No shell involved, no PATH dependency
+
+**Read Tool Benefits**:
+- **NEVER use `tail`, `head`, or `cat`** - they fail when PATH is modified
+- **ALWAYS use the Read tool** - it's a Claude Code function, not a bash command
+- Provides:
+  - Automatic line numbering (cat -n format)
+  - Efficient reading of specific line ranges with offset/limit parameters
+  - Better handling of large files
+  - Ability to read from any offset (for viewing end of file)
+  - Works regardless of PATH, environment variables, or shell state
+
+**Examples**:
+- ❌ Will fail: `cabal build 2>&1 | tail -50`
+- ❌ Will fail: `cat test-out/JavaParser.hs | head -100`
+- ✅ Reliable: Use Read tool with file_path and optional offset/limit parameters
+- ✅ For build output: Redirect to file first, then use Read tool
+
+**Other debugging practices**:
+- Use **Grep tool** for searching file contents (not `grep` or `rg` bash commands)
+- Use **Glob tool** for finding files by pattern (not `find` or `ls` bash commands)
+- Use **Edit tool** for modifying files (not `sed` or `awk` bash commands)
+- Reserve bash commands for actual system operations (git, build tools, package managers, etc.)
+
 ## Documentation
 
 - `BOOTSTRAP.md` - Bootstrap self-hosting documentation
