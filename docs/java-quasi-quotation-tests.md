@@ -30,37 +30,34 @@ This file is separate from `java-main.hs`, which remains a simple parser driver 
 
 ## Current Test Cases
 
-The java-qq-test.hs file includes the following quasi-quotation tests:
+The java-qq-test.hs file includes **26 comprehensive tests** covering quasi-quotation construction:
 
-### Test 1: Simple Expression
+### Construction Tests (Tests 1-26)
+
+Building AST nodes from Java syntax:
+
+- **Basic expressions** (Tests 1-3): binary operators, method calls, literals
+- **Basic statements** (Tests 4-5): return and assignment statements
+- **Multi-argument method calls** (Tests 6-8): 2-arg, 3-arg, nested calls
+- **Complex expressions** (Tests 9-14): operators, arrays, ternary, new, cast, strings
+- **Blocks and control flow** (Tests 15-20): statement blocks, if/else, while, for
+- **CompoundName, modifiers, literals** (Tests 21-26): qualified names, modifiers, literals
+
+Example:
 ```haskell
 let expr1 = [expression| x + y |]
-```
-Tests basic binary operator expressions.
-
-### Test 2: Method Call (Single Argument)
-```haskell
-let expr2 = [expression| obj.method(arg) |]
-```
-Tests method invocation with a single argument. This previously failed on multi-argument calls.
-
-### Test 3: Literal Expression
-```haskell
-let expr3 = [expression| 42 |]
-```
-Tests simple integer literal expressions.
-
-### Test 4: Return Statement
-```haskell
 let stmt1 = [statement| return; |]
+let block1 = [statementBlock| { return x; } |]
 ```
-Tests return statement parsing. This previously failed.
 
-### Test 5: Assignment Statement
-```haskell
-let stmt2 = [statement| x = 5; |]
-```
-Tests simple assignment statements. This previously failed in method bodies.
+### What's Not Supported
+
+**Pattern Matching** and **Anti-Quotation (Splicing)** are not currently functional for the Java grammar:
+
+- ❌ Pattern matching: `case expr of [expression| $e1 + $e2 |] -> ...` fails with parse errors
+- ❌ Anti-quotation: `let e = [expression| x |] in [expression| $e + 1 |]` fails with parse errors
+
+Only **construction** mode works: directly building AST nodes from Java syntax literals.
 
 ## Building and Running Tests
 
@@ -136,37 +133,56 @@ make test-all-java
 - `[expression| ... |]` returns type `Expression`
 - `[statement| ... |]` returns type `Statement`
 
+## Quasi-Quotation Features
+
+### Supported: Construction
+Build AST nodes directly from Java syntax:
+```haskell
+let expr = [expression| x + y * z |]
+let stmt = [statement| return x; |]
+let block = [statementBlock| { x = 1; return x; } |]
+```
+
+### Not Supported: Anti-Quotation and Pattern Matching
+
+**Anti-Quotation (Splicing)**: Not functional - produces parse errors
+```haskell
+-- This does NOT work for Java grammar:
+let e1 = [expression| a |]
+let e2 = [expression| $e1 + b |]  -- Parse error
+```
+
+**Pattern Matching**: Not functional - produces parse errors
+```haskell
+-- This does NOT work for Java grammar:
+case expr of
+    [expression| $e1 + $e2 |] -> ...  -- Parse error
+```
+
+Only construction mode is currently supported for the Java quasi-quoter.
+
 ## Extending Tests
 
 To add more quasi-quotation tests:
 
 1. **Check available rules**: Look at java.pg for rule names
-2. **Use lowercase names**: Rule `Expression` becomes quasi-quoter `expression`
+2. **Use camelCase names**: Rule `StatementBlock` becomes quasi-quoter `statementBlock`
 3. **Include complete syntax**: Statements need semicolons, etc.
 4. **Test incrementally**: Start simple, add complexity gradually
+5. **Respect reserved keywords**: Can't use `type` (Haskell keyword)
 
-### Suggested Additional Tests
+### Available Quasi-Quoters
 
-Based on the grammar, these quasi-quoters should be available:
+Based on the Java grammar (partial list):
 
-- `[type| int |]` - Type specifications
-- `[compoundname| java.util.List |]` - Package/class names
+- `[expression| x + y |]` - Expressions
+- `[statement| return x; |]` - Statements
+- `[statementBlock| { ... } |]` - Code blocks
+- `[compoundName| java.util.List |]` - Package/class names
 - `[modifier| public |]` - Access modifiers
 - `[literal| "hello" |]` - Literals
-- `[block| { return x; } |]` - Code blocks
 
-## Pattern Matching with Quasi-Quotations
-
-Quasi-quotations can also be used for pattern matching:
-
-```haskell
-case expr of
-    [expression| $id1 + $id2 |] ->
-        putStrLn $ "Binary addition: " ++ show id1 ++ " + " ++ show id2
-    _ -> putStrLn "Other expression"
-```
-
-Variables in patterns use `$varName` syntax to capture AST nodes.
+**Note**: Pattern matching is not currently supported for the Java grammar.
 
 ## References
 

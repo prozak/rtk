@@ -170,6 +170,7 @@ main = do
 
     putStrLn "\n=== All QuasiQuoter tests completed successfully! ==="
     putStrLn $ "\nTotal tests run: 26"
+    putStrLn $ ""
     putStrLn $ "Test coverage:"
     putStrLn $ "  - Basic expressions (Tests 1-3)"
     putStrLn $ "  - Basic statements (Tests 4-5)"
@@ -177,5 +178,12 @@ main = do
     putStrLn $ "  - Complex expressions (Tests 9-14)"
     putStrLn $ "  - Blocks and control flow (Tests 15-20)"
     putStrLn $ "  - CompoundName, modifiers, and literals (Tests 21-26)"
+    putStrLn $ ""
+    putStrLn $ "Quasi-Quotation Feature Demonstrated:"
+    putStrLn $ "  Construction: Building AST nodes from Java syntax"
+    putStrLn $ ""
+    putStrLn $ "Note: Pattern matching and anti-quotation (splicing) are"
+    putStrLn $ "      not currently functional for the Java grammar."
+    putStrLn $ "      Only construction mode is supported."
 
     return 0
