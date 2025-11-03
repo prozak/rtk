@@ -17,6 +17,49 @@ But RTK includes:
 
 This grammar file can generate equivalent lexer and parser code automatically.
 
+## Bootstrap Build System
+
+RTK now includes a **multi-stage bootstrap build system** to support self-hosting development.
+
+### Quick Start
+
+```bash
+# Generate parsers from grammar.pg
+make generate-bootstrap
+
+# Full bootstrap build and test
+./build-bootstrap.sh
+
+# Clean generated files
+make clean-generated
+```
+
+### Build Stages
+
+**Stage 0: Hand-Written Parser** (Always available)
+- Uses `Lexer.x` and `Parser.y`
+- Stable, checked into repository
+- `make build` - Build with hand-written parser
+
+**Stage 1: Generate from grammar.pg**
+- Uses Stage 0 to generate parsers
+- Creates files in `src/generated/` (NOT in git)
+- `make generate-bootstrap` - Generate and compile
+
+**Stage 2: Build with Generated Parser** (Experimental)
+- Uses generated parsers from Stage 1
+- Testing via `--use-generated` flag
+- `make test-self-hosting` - Test self-hosting
+
+### File Management
+
+Generated files are **NOT checked into git**:
+- `src/generated/Grammar*.{x,y,hs}` are in `.gitignore`
+- Regenerated automatically from `grammar.pg`
+- Clean history, no merge conflicts
+
+See `docs/bootstrapping-strategy.md` for detailed explanation of the approach.
+
 ## Running the Test
 
 ### Locally

@@ -9,3 +9,14 @@ test-out
 test-results
 happy_log.txt
 dist-newstyle
+
+# Generated parser files from grammar.pg (regenerated on build)
+# Keep: src/generated/README.md, src/generated/ASTAdapter.hs
+src/generated/GrammarLexer.x
+src/generated/GrammarParser.y
+src/generated/GrammarQQ.hs
+src/generated/GrammarLexer.hs
+src/generated/GrammarParser.hs
+src/generated/Grammar.hs
+src/generated/*.hi
+src/generated/*.o
