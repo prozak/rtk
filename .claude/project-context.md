@@ -97,6 +97,31 @@ All tests pass successfully as of 2025-11-01.
 **Build Warnings**: Some warnings about unused imports/matches are expected
 **Parser Conflicts**: Java grammar has known shift/reduce and reduce/reduce conflicts (this is normal for complex grammars)
 
+## Git Commit Practices
+
+**CRITICAL - Keep Commits Minimal and Clean**:
+
+When working on a PR, follow these strict guidelines:
+
+1. **Minimize commit count**: Keep the number of commits as small as possible
+2. **Only commit when necessary**: Don't create intermediate commits for work-in-progress changes
+3. **Avoid anti-patterns**:
+   - ❌ NEVER introduce code in one commit and remove it in a later commit of the same PR
+   - ❌ NEVER make multiple commits for small, related changes
+   - ❌ NEVER commit debugging code, temporary changes, or experimental code that will be removed later
+4. **Use git commit --amend**: When making corrections or additions to recent work, amend the existing commit rather than creating a new one
+5. **Think before committing**: Plan your changes completely before making the first commit
+6. **Batch related changes**: Group all related changes into a single, well-crafted commit
+
+**Good commit practices**:
+- ✅ Complete the entire feature/fix before committing
+- ✅ Review all changes thoroughly before creating the commit
+- ✅ Write clear, descriptive commit messages that explain the "why"
+- ✅ If you need to make corrections, use `git commit --amend` instead of new commits
+- ✅ Only create multiple commits when working on truly separate, independent features
+
+**Remember**: A clean git history with minimal, meaningful commits is far better than many small, incremental commits that show the messy development process.
+
 ## Debugging Guidelines
 
 **CRITICAL - Bash Command Limitations in Claude Code**:
