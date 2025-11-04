@@ -12,63 +12,86 @@ import Control.Monad (when)
 import Data.Maybe (isJust, fromJust, catMaybes)
 import Control.Exception (evaluate)
 
+-- Generated parser modules (for --use-generated mode)
+-- These are only available after running: make generate-bootstrap
+import qualified GrammarLexer as GenLex
+import qualified GrammarParser as GenParse
+import qualified ASTAdapter
+
 main :: IO ()
 main = do
     -- Parse command-line options
     opts <- parseOptions
 
-    -- Check for experimental generated parser mode
+    -- Show message for experimental generated parser mode
     when (useGenerated opts) $ do
         putStrLn "=========================================="
         putStrLn "EXPERIMENTAL: Using Generated Parsers"
         putStrLn "=========================================="
         putStrLn ""
-        putStrLn "This mode uses parsers generated from test-grammars/grammar.pg"
-        putStrLn "instead of the hand-written Lexer.x and Parser.y."
+        putStrLn "Using parsers generated from test-grammars/grammar.pg"
+        putStrLn "instead of hand-written Lexer.x and Parser.y"
         putStrLn ""
-        putStrLn "Status: NOT YET IMPLEMENTED"
+        putStrLn "Note: Generated files must exist in src/generated/"
+        putStrLn "      Run 'make generate-bootstrap' if not present"
         putStrLn ""
-        putStrLn "To implement:"
-        putStrLn "  1. Run: make test-grammar"
-        putStrLn "  2. This generates: test-out/GrammarLexer.x, GrammarParser.y, GrammarQQ.hs"
-        putStrLn "  3. Compile these to create generated parser modules"
-        putStrLn "  4. Integrate into main.hs dual-mode logic"
-        putStrLn ""
-        putStrLn "This is Prototype 1 of the self-hosting roadmap."
         putStrLn "See docs/self-hosting-strategy.md for details."
         putStrLn "=========================================="
-        error "Generated parser mode not yet available"
+        putStrLn ""
 
     -- Load grammar file
     content <- readFile (grammarFile opts)
 
-    -- Stage 1: Lexical Analysis
-    (rawTokens, maybeT1) <- if profileStages opts
+    -- Dual-mode parsing: use either hand-written or generated parser
+    (grammar, maybeT1, maybeT1_5, maybeT2) <- if useGenerated opts
         then do
-            (result, timing) <- D.timed "Lexical Analysis" $ evaluate $ alexScanTokens content
-            return (result, Just timing)
-        else return (alexScanTokens content, Nothing)
+            -- GENERATED PARSER MODE
+            -- Stage 1+2: Combined lexical analysis and parsing with generated parser
+            (genGrammar, timing) <- if profileStages opts
+                then do
+                    (result, t) <- D.timed "Generated Lexer+Parser" $ evaluate $
+                        GenParse.parseGrammar (GenLex.alexScanTokens content)
+                    return (result, Just t)
+                else return (GenParse.parseGrammar (GenLex.alexScanTokens content), Nothing)
 
-    -- Stage 1.5: Token Post-Processing
-    -- Process escape sequences and concatenate multi-line strings
-    (tokens, maybeT1_5) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Token Post-Processing" $ evaluate $ processTokens rawTokens
-            return (result, Just timing)
-        else return (processTokens rawTokens, Nothing)
+            -- Stage 2.5: Convert generated AST to hand-written AST
+            (convertedGrammar, convTiming) <- if profileStages opts
+                then do
+                    (result, t) <- D.timed "AST Conversion" $ evaluate $ ASTAdapter.convertGrammar genGrammar
+                    return (result, Just t)
+                else return (ASTAdapter.convertGrammar genGrammar, Nothing)
 
-    when (debugTokens opts) $
-        D.printTokens opts tokens
+            return (convertedGrammar, timing, convTiming, Nothing)
+        else do
+            -- HAND-WRITTEN PARSER MODE (original logic)
+            -- Stage 1: Lexical Analysis
+            (rawTokens, t1) <- if profileStages opts
+                then do
+                    (result, timing) <- D.timed "Lexical Analysis" $ evaluate $ alexScanTokens content
+                    return (result, Just timing)
+                else return (alexScanTokens content, Nothing)
 
-    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageLex) $
-        exitAfterDebug
+            -- Stage 1.5: Token Post-Processing
+            (tokens, t1_5) <- if profileStages opts
+                then do
+                    (result, timing) <- D.timed "Token Post-Processing" $ evaluate $ processTokens rawTokens
+                    return (result, Just timing)
+                else return (processTokens rawTokens, Nothing)
 
-    -- Stage 2: Parsing
-    (grammar, maybeT2) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Parsing" $ evaluate $ parse tokens
-            return (result, Just timing)
-        else return (parse tokens, Nothing)
+            when (debugTokens opts) $
+                D.printTokens opts tokens
+
+            when (isJust (debugStage opts) && fromJust (debugStage opts) == StageLex) $
+                exitAfterDebug
+
+            -- Stage 2: Parsing
+            (parsedGrammar, t2) <- if profileStages opts
+                then do
+                    (result, timing) <- D.timed "Parsing" $ evaluate $ parse tokens
+                    return (result, Just timing)
+                else return (parse tokens, Nothing)
+
+            return (parsedGrammar, t1, t1_5, t2)
 
     when (debugParse opts) $
         D.printInitialGrammar opts grammar

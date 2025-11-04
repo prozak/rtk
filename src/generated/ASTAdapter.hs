@@ -11,7 +11,6 @@ module ASTAdapter
 
 import qualified Parser as Hand
 import qualified GrammarParser as Gen
-import Data.Maybe (fromMaybe)
 
 -- | Convert generated Grammar to hand-written InitialGrammar
 convertGrammar :: Gen.Grammar -> Hand.InitialGrammar
@@ -25,10 +24,17 @@ convertGrammar other =
     error $ "ASTAdapter.convertGrammar: unexpected Grammar constructor: " ++ show other
 
 -- | Convert StrLit to String
+-- Note: Generated lexer includes quotes, hand-written strips them
 convertStrLit :: Gen.StrLit -> String
-convertStrLit (Gen.Ctr__StrLit__0 str) = str
+convertStrLit (Gen.Ctr__StrLit__0 str) = stripQuotes str
 convertStrLit (Gen.Anti_StrLit24 qqVar) =
     error $ "QuasiQuoted StrLit not supported in concrete grammar: $StrLit:" ++ qqVar
+
+-- | Strip surrounding single quotes from string literals
+-- The generated lexer includes quotes, but hand-written lexer strips them
+stripQuotes :: String -> String
+stripQuotes ('\'':rest) = reverse (drop 1 (reverse rest))  -- Remove leading and trailing '
+stripQuotes str = str  -- No quotes to strip
 
 -- | Convert Name to String
 convertName :: Gen.Name -> String
