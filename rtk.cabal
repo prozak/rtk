@@ -22,6 +22,9 @@ Executable rtk
   hs-source-dirs:    ., src/generated
   Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens, HUnit, optparse-applicative, time, ansi-terminal
   Build-Tool-Depends: happy:happy, alex:alex
+  Autogen-Modules:
+                     GrammarLexer,
+                     GrammarParser
   Other-Modules:
                      Lexer,
                      Parser,

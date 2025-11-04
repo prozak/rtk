@@ -7,7 +7,6 @@ module ASTAdapter
 -- to the hand-written AST format used by the rest of RTK.
 --
 -- Implementation uses traditional pattern matching on generated constructors.
--- See docs/reference-generated/AST-MAPPING.md for detailed mapping guide.
 
 import qualified Parser as Hand
 import qualified GrammarParser as Gen

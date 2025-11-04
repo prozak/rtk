@@ -11,6 +11,8 @@ happy_log.txt
 dist-newstyle
 
 # Generated parser files from grammar.pg (regenerated on build)
+# Exception: Stub versions of GrammarLexer.hs and GrammarParser.hs ARE tracked
+#            (force-added with git add -f) to allow initial build in CI
 # Keep: src/generated/README.md, src/generated/ASTAdapter.hs
 src/generated/GrammarLexer.x
 src/generated/GrammarParser.y
