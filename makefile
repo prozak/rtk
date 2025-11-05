@@ -1,4 +1,4 @@
-.PHONY: clean help test test-all-java test-bootstrap test-debug test-debug-all test-debug-options $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -149,8 +149,15 @@ $(eval $(call make-shared-test-rule,java-simple-assignment,java,Java,test-gramma
 $(eval $(call make-shared-test-rule,java-compound-assignment,java,Java,test-grammars/java/test-compound-assignment.java))
 $(eval $(call make-shared-test-rule,java-set-value,java,Java,test-grammars/java/test-set-value.java))
 
+# JavaDoc comment tests (blank line + {@link Class#method()} regression tests)
+$(eval $(call make-shared-test-rule,java-javadoc-blank-link,java,Java,test-grammars/java/javadoc/test-blank-then-link.java))
+$(eval $(call make-shared-test-rule,java-javadoc-minimal-hash,java,Java,test-grammars/java/javadoc/test-minimal-hash.java))
+$(eval $(call make-shared-test-rule,java-javadoc-minimal-fail,java,Java,test-grammars/java/javadoc/test-minimal-fail.java))
+$(eval $(call make-shared-test-rule,java-javadoc-link-tag,java,Java,test-grammars/java/javadoc/test-link-tag.java))
+$(eval $(call make-shared-test-rule,java-javadoc-just-hash,java,Java,test-grammars/java/javadoc/test-just-hash.java))
+
 # Run all Java tests
-test-all-java: test-java test-java-simple test-java-minimal test-java-field test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method test-java-simple-return test-java-return-field test-java-very-simple test-java-parameter-only test-java-field-this test-java-simple-assignment test-java-compound-assignment test-java-set-value
+test-all-java: test-java test-java-simple test-java-minimal test-java-field test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method test-java-simple-return test-java-return-field test-java-very-simple test-java-parameter-only test-java-field-this test-java-simple-assignment test-java-compound-assignment test-java-set-value test-java-javadoc-blank-link test-java-javadoc-minimal-hash test-java-javadoc-minimal-fail test-java-javadoc-link-tag test-java-javadoc-just-hash
 	@echo ""
 	@echo "=== All Java tests completed successfully! ==="
 
@@ -300,3 +307,51 @@ test-debug-options: build | test-out
 	@echo "Running automated debug options test suite"
 	@echo "========================================"
 	@./test-debug-options.sh
+
+# ============================================================================
+# Java Test Suite (external codebases)
+# ============================================================================
+
+# Test Apache Commons Lang main sources (259 files)
+test-suite-commons-lang: build
+	@echo "========================================"
+	@echo "Testing Apache Commons Lang (main sources)"
+	@echo "========================================"
+	@./test-java-suite.sh test-suites/commons-lang/src/main/java test-results/commons-lang-main
+
+# Test Apache Commons Lang test sources (267 files)
+test-suite-commons-lang-tests: build
+	@echo "========================================"
+	@echo "Testing Apache Commons Lang (test sources)"
+	@echo "========================================"
+	@./test-java-suite.sh test-suites/commons-lang/src/test/java test-results/commons-lang-tests
+
+# Test both main and test sources
+test-suite-commons-lang-all: test-suite-commons-lang test-suite-commons-lang-tests
+	@echo ""
+	@echo "========================================"
+	@echo "Apache Commons Lang complete test suite finished"
+	@echo "========================================"
+
+# Analyze failure patterns from most recent test run
+analyze-failures:
+	@if [ -z "$(DIR)" ]; then \
+		LATEST=$$(ls -td test-results/*/ 2>/dev/null | head -1); \
+		if [ -z "$$LATEST" ]; then \
+			echo "No test results found. Run a test suite first."; \
+			exit 1; \
+		fi; \
+		echo "Analyzing latest results: $$LATEST"; \
+		./analyze-failures.sh "$$LATEST"; \
+	else \
+		./analyze-failures.sh "$(DIR)"; \
+	fi
+
+# Quick test on a single directory
+test-suite: build
+	@if [ -z "$(DIR)" ]; then \
+		echo "Usage: make test-suite DIR=<path-to-java-sources>"; \
+		echo "Example: make test-suite DIR=test-suites/commons-lang/src/main/java"; \
+		exit 1; \
+	fi
+	@./test-java-suite.sh "$(DIR)" "test-results/$$(basename $(DIR))-$$(date +%Y%m%d-%H%M%S)"

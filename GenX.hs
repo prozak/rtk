@@ -153,10 +153,10 @@ translateClause _ (IId name) =
 translateClause _ (IStrLit s)         = doubleQuotes $ text $ backquoteStr s
 translateClause _ (IDot)              = text "."
 translateClause _ (IRegExpLit re)     = brackets $ text $ backquoteStrInBrackets re
-translateClause sMacroIds (IStar cl Nothing)  = translateClause sMacroIds cl <+> text "*"
+translateClause sMacroIds (IStar cl Nothing)  = translateClause sMacroIds cl <> text "*"
 -- a* ~x --> (a(x a)*)?
 translateClause _ (IStar _ (Just _)) = error $ "Star (*) clauses with delimiters are not supported in lexical rules"
-translateClause sMacroIds (IPlus cl Nothing)  = translateClause sMacroIds cl <+> text "+"
+translateClause sMacroIds (IPlus cl Nothing)  = translateClause sMacroIds cl <> text "+"
 translateClause _ (IPlus _ (Just _)) = error $ "Plus (+) clauses with delimiters are not supported in lexical rules"
 translateClause sMacroIds (IAlt clauses)      = parens $ hsep $ punctuate (text "|") (map (translateClause sMacroIds) clauses)
 translateClause sMacroIds (ISeq clauses)    = hsep $ punctuate (text " ") (map (translateClause sMacroIds) clauses)

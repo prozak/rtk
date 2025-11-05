@@ -15,6 +15,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
 
     - name: Setup Haskell
       uses: haskell-actions/setup@v2
@@ -138,6 +140,26 @@ jobs:
         else
           echo "✅ All tests passed!"
           exit 0
+        fi
+
+    - name: Apache Commons Lang test suite (informational)
+      continue-on-error: true
+      run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+        export LC_ALL=C.UTF-8
+        echo ""
+        echo "==========================================="
+        echo "Apache Commons Lang Test Suite"
+        echo "==========================================="
+        echo "Testing Java parser against 259 real-world Java 8 files."
+        echo "This is informational - many files use unsupported Java 8"
+        echo "features (lambdas, method references, etc)."
+        echo ""
+        make test-suite-commons-lang || true
+        echo ""
+        if [ -f test-results/commons-lang-main/report.txt ]; then
+          echo "Results summary:"
+          head -20 test-results/commons-lang-main/report.txt
         fi
 
     - name: Bootstrap comparison test (informational)
