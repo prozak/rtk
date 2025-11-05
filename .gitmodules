@@ -1,0 +1,3 @@
+[submodule "test-suites/commons-lang"]
+	path = test-suites/commons-lang
+	url = https://github.com/apache/commons-lang.git

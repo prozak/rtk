@@ -405,9 +405,13 @@ char  = '\'' . '\'' ;
 string  = [\"] [\\x20-\\x21\\x23-\\x7E]* [\"] ;
 
 id = [a-zA-Z$_][a-zA-Z$_0-9]* ;
-doccomment = '/**' (([^/] | [\n]) ([^\*] | [\*] [^/] | [\n])*)? '*/';
+# Fixed: Split [*] [^/] into explicit cases for better Alex DFA generation
+# This fixes blank line + {@link Class#method()} parsing issues
+doccomment = '/**' ([\n] | [^*\n] | [*] [^/\n] | [*] [\n])* '*/';
 
 # Whitespace and comments (ignored)
 Ignore: ws = [ \t\n\r]+ ;
 Ignore: comment = '//' [^\n]* '\n' ;
-Ignore: blockComment = '/*' (([^\*] | [\n]) ([^\*] | [\*] [^/] | [\n])*)? '*/' ;
+# Block comment must not match /** (which is doccomment)
+# Same fix applied as doccomment
+Ignore: blockComment = '/*' [^*] ([\n] | [^*\n] | [*] [^/\n] | [*] [\n])* '*/' ;
