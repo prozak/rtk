@@ -5,6 +5,7 @@ import Parser
 import Text.PrettyPrint
 import Grammar
 import qualified Data.Map as Map
+import qualified Data.List as List
 
 normalRulesNamed :: [SyntaxRuleGroup] -> [(ID, SyntaxTopClause)]
 normalRulesNamed groups = map (\g -> (getSDataTypeName g, combineClauses $ map getSClause $ getSRules g))
@@ -12,9 +13,13 @@ normalRulesNamed groups = map (\g -> (getSDataTypeName g, combineClauses $ map g
 
 combineClauses :: [SyntaxTopClause] -> SyntaxTopClause
 combineClauses [a] = a
-combineClauses alts = STAltOfSeq $ concat $ map extractSeqs alts
+combineClauses alts = STAltOfSeq $ deduplicateByConstructor $ concat $ map extractSeqs alts
   where extractSeqs (STAltOfSeq seqs) = seqs
         extractSeqs _ = []
+        -- Deduplicate alternatives with the same constructor name (e.g., Anti_Expression)
+        -- This is necessary for shared types where the same anti-alternative is added to multiple rules
+        deduplicateByConstructor seqs = List.nubBy sameConstructor seqs
+        sameConstructor (STSeq c1 _) (STSeq c2 _) = c1 == c2
 
 type RulesMap = Map.Map ID ID
 

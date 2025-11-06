@@ -234,9 +234,11 @@ SwitchStatement =
 # Restructured to eliminate reduce/reduce conflicts by ensuring a single parse path
 # through the operator precedence chain. Each expression level flows into the next
 # without overlapping alternatives.
-Expression = AssignmentExpression ;
+#
+# UPDATED: All expression rules now use shared "Expression" type for QQ support
+Expression : Expression = AssignmentExpression ;
 
-AssignmentExpression =
+Expression : AssignmentExpression =
  ConditionalExpression (AssignmentOp AssignmentExpression)? ;
 
 # COMMENTED OUT - CAUSES LEFT RECURSION:
@@ -264,62 +266,62 @@ AssignmentOp =
  | '>>='
  | '>>>=' ;
 
-ConditionalExpression = ConditionalOrExpression | ConditionalOrExpression '?' Expression ':' ConditionalExpression ;
+Expression : ConditionalExpression = ConditionalOrExpression | ConditionalOrExpression '?' Expression ':' ConditionalExpression ;
 
-ConditionalOrExpression = ConditionalAndExpression | ConditionalOrExpression '||' ConditionalAndExpression ;
+Expression : ConditionalOrExpression = ConditionalAndExpression | ConditionalOrExpression '||' ConditionalAndExpression ;
 
-ConditionalAndExpression = InclusiveOrEpression | ConditionalAndExpression '&&' InclusiveOrEpression ;
+Expression : ConditionalAndExpression = InclusiveOrEpression | ConditionalAndExpression '&&' InclusiveOrEpression ;
 
-InclusiveOrEpression = ExclusiveOrExpression | InclusiveOrEpression '|' ExclusiveOrExpression;
+Expression : InclusiveOrEpression = ExclusiveOrExpression | InclusiveOrEpression '|' ExclusiveOrExpression;
 
-ExclusiveOrExpression = AndExpression | ExclusiveOrExpression '^' AndExpression ;
+Expression : ExclusiveOrExpression = AndExpression | ExclusiveOrExpression '^' AndExpression ;
 
-AndExpression = EqualityExpression | AndExpression '&' EqualityExpression ;
+Expression : AndExpression = EqualityExpression | AndExpression '&' EqualityExpression ;
 
 EqualityOp = '==' | '!=' ;
 
-EqualityExpression = RelationalExpression | EqualityExpression EqualityOp RelationalExpression ;
+Expression : EqualityExpression = RelationalExpression | EqualityExpression EqualityOp RelationalExpression ;
 
 RelationalOp = '<' | '>' | '<=' | '>=' ;
 
-RelationalExpression = ShiftExpression | RelationalExpression RelationalOp ShiftExpression | RelationalExpression 'instanceof' Type ;
+Expression : RelationalExpression = ShiftExpression | RelationalExpression RelationalOp ShiftExpression | RelationalExpression 'instanceof' Type ;
 
 ShiftOp = '>>' | '<<' | '>>>' ;
 
-ShiftExpression = AdditiveExpression | ShiftExpression ShiftOp AdditiveExpression ;
+Expression : ShiftExpression = AdditiveExpression | ShiftExpression ShiftOp AdditiveExpression ;
 
 AdditiveOp = '+' | '-' ;
 
-AdditiveExpression = MultiplicativeExpression | AdditiveExpression AdditiveOp MultiplicativeExpression ;
+Expression : AdditiveExpression = MultiplicativeExpression | AdditiveExpression AdditiveOp MultiplicativeExpression ;
 
 MultiplicativeOp = '*' | '/' | '%' ;
 
-MultiplicativeExpression = UnaryExpression | MultiplicativeExpression MultiplicativeOp UnaryExpression ;
+Expression : MultiplicativeExpression = UnaryExpression | MultiplicativeExpression MultiplicativeOp UnaryExpression ;
 
-CastExpression = '(' Type ')' UnaryExpression ;
+Expression : CastExpression = '(' Type ')' UnaryExpression ;
 
 PrefixOp = '++' | '--' | '+' | '-' | '~' | '!' ;
 
 PostfixOp = '++' | '--' ;
 
-UnaryExpression =
+Expression : UnaryExpression =
  PrefixOp UnaryExpression
  | UnaryExpressionNotPlusMinus ;
 
-UnaryExpressionNotPlusMinus =
+Expression : UnaryExpressionNotPlusMinus =
  PostfixExpression
  | '~' UnaryExpression
  | '!' UnaryExpression
  | CastExpression ;
 
-PostfixExpression =
+Expression : PostfixExpression =
  PrimaryNoPostfix
  | PostfixExpression PostfixOp
  | PostfixExpression '.' id
  | PostfixExpression '.' id '(' Arglist ')'
  | PostfixExpression '[' Expression ']' ;
 
-PrimaryNoPostfix =
+Expression : PrimaryNoPostfix =
  Literal
  | 'this'
  | '(' Expression ')'

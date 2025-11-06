@@ -77,12 +77,12 @@ test-out:
 # Grammar generation rules
 # ============================================================================
 
-# Function to capitalize first letter
-capitalize = $(shell echo $(1) | awk '{print toupper(substr($$0,1,1)) tolower(substr($$0,2))}')
+# Function to capitalize first letter and handle hyphenated names (e.g., java-simple → JavaSimple)
+capitalize = $(shell echo $(1) | awk -F'-' '{for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2); print}' OFS='')
 
 # Generic rule to generate lexer and parser from grammar files
 define make-grammar-rule
-test-out/$(call capitalize,$(1))Lexer.x test-out/$(call capitalize,$(1))Parser.y : build test-grammars/$(1).pg
+test-out/$(call capitalize,$(1))Lexer.x test-out/$(call capitalize,$(1))Parser.y : build test-grammars/$(1).pg | test-out
 	$(RTK_EXEC) test-grammars/$(1).pg test-out
 endef
 

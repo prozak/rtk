@@ -44,9 +44,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: test-out
-        key: ${{ runner.os }}-test-out-${{ hashFiles('test-grammars/**', '*.hs', '*.x', '*.y', 'makefile') }}
+        key: v2-${{ runner.os }}-test-out-${{ hashFiles('test-grammars/**', 'Normalize.hs', 'CodeGen.hs', '*.x', '*.y', 'makefile') }}
         restore-keys: |
-          ${{ runner.os }}-test-out-
+          v2-${{ runner.os }}-test-out-
 
     - name: Update timestamps on cached test outputs
       run: |
