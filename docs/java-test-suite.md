@@ -33,11 +33,13 @@ make analyze-failures
 ### Run Tests
 
 ```bash
-# Test main sources (259 files)
-make test-suite-commons-lang
+# Full parsing tests (informational only)
+make test-suite-commons-lang           # Main sources (259 files)
+make test-suite-commons-lang-all       # All sources (526 files)
 
-# Test with test sources (526 files)
-make test-suite-commons-lang-all
+# Lexical parsing tests (required - fails on errors)
+make test-lex-commons-lang             # Main sources (259 files)
+make test-lex-commons-lang-all         # All sources (526 files)
 
 # Analyze failures
 make analyze-failures DIR=test-results/commons-lang-main
@@ -46,6 +48,8 @@ make analyze-failures DIR=test-results/commons-lang-main
 ### Test Scripts
 
 - **test-java-suite.sh**: Automated test runner with progress bar
+  - Supports `--lex-only` flag for lexical parsing only
+  - Usage: `./test-java-suite.sh [--lex-only] <directory> [output-dir]`
 - **analyze-failures.sh**: Categorizes errors and generates reports
 
 ### Adding New Test Suites
@@ -88,11 +92,22 @@ Many test failures are expected for code using these features.
 
 ## CI Integration
 
-The test suite runs in CI as an informational step (continue-on-error):
+### Lexical Parsing Tests (Required)
+
+Lexical parsing tests run as **required** tests in CI and will fail the build if errors occur:
+```yaml
+run_test "Apache Commons Lexical Tests" "make test-lex-commons-lang-all"
+```
+
+This ensures that the Java lexer can tokenize all Apache Commons Java files without errors.
+
+### Full Parsing Tests (Informational)
+
+Full parsing tests run as informational steps (continue-on-error) to track progress:
 ```yaml
 - name: Apache Commons Lang test suite (informational)
   continue-on-error: true
   run: make test-suite-commons-lang
 ```
 
-This tracks parser progress without blocking CI.
+This tracks parser progress without blocking CI, as many files use unsupported Java 8 features (lambdas, method references, etc.).

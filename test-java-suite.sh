@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Test runner for parsing a suite of Java files
-# Usage: ./test-java-suite.sh <directory> [output-dir]
+# Usage: ./test-java-suite.sh [--lex-only] [--blacklist <file>] <directory> [output-dir]
 
 set -euo pipefail
 
@@ -11,10 +11,32 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Parse options
+LEX_ONLY=false
+BLACKLIST_FILE=""
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --lex-only)
+            LEX_ONLY=true
+            shift
+            ;;
+        --blacklist)
+            BLACKLIST_FILE="$2"
+            shift 2
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 # Check arguments
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 <directory> [output-dir]"
+    echo "Usage: $0 [--lex-only] [--blacklist <file>] <directory> [output-dir]"
     echo "Example: $0 test-suites/commons-lang/src/main/java results/commons-lang"
+    echo "Example: $0 --lex-only test-suites/commons-lang/src/main/java results/commons-lang-lex"
+    echo "Example: $0 --lex-only --blacklist test-suites/commons-lang/lexer-blacklist.txt test-suites/commons-lang/src/main/java"
     exit 1
 fi
 
@@ -27,21 +49,41 @@ if [ ! -d "$JAVA_DIR" ]; then
     exit 1
 fi
 
-# Check if Java parser exists
-if [ ! -f "test-out/java-main" ]; then
-    echo -e "${YELLOW}Java parser not found. Building...${NC}"
-    make test-out/java-main || {
-        echo -e "${RED}Failed to build Java parser${NC}"
-        exit 1
-    }
+# Use JAVA_PARSER from environment if set, otherwise default to test-out/java-main
+if [ -z "${JAVA_PARSER:-}" ]; then
+    # Check if Java parser exists
+    if [ ! -f "test-out/java-main" ]; then
+        echo -e "${YELLOW}Java parser not found. Building...${NC}"
+        make test-out/java-main || {
+            echo -e "${RED}Failed to build Java parser${NC}"
+            exit 1
+        }
+    fi
+    JAVA_PARSER="./test-out/java-main"
+else
+    echo -e "${BLUE}Using custom Java parser: $JAVA_PARSER${NC}"
 fi
-
-JAVA_PARSER="./test-out/java-main"
 
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR/failed"
 mkdir -p "$OUTPUT_DIR/succeeded"
+
+# Load blacklist if provided
+declare -A BLACKLIST
+if [ -n "$BLACKLIST_FILE" ]; then
+    if [ ! -f "$BLACKLIST_FILE" ]; then
+        echo -e "${RED}Error: Blacklist file $BLACKLIST_FILE does not exist${NC}"
+        exit 1
+    fi
+    echo -e "${BLUE}Loading blacklist from $BLACKLIST_FILE...${NC}"
+    while IFS= read -r line; do
+        # Skip comments and empty lines
+        [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+        BLACKLIST["$line"]=1
+    done < "$BLACKLIST_FILE"
+    echo -e "${BLUE}Loaded ${#BLACKLIST[@]} blacklisted files${NC}"
+fi
 
 # Find all Java files
 echo -e "${BLUE}Finding Java files in $JAVA_DIR...${NC}"
@@ -59,8 +101,10 @@ echo ""
 # Initialize counters
 SUCCESS_COUNT=0
 FAIL_COUNT=0
+BLACKLIST_COUNT=0
 declare -a FAILED_FILES
 declare -a SUCCESS_FILES
+declare -a BLACKLISTED_FILES
 
 # Progress bar function
 progress_bar() {
@@ -88,8 +132,22 @@ for java_file in "${JAVA_FILES[@]}"; do
     # Get relative path for reporting
     REL_PATH="${java_file#$JAVA_DIR/}"
 
-    # Try to parse the file
-    if $JAVA_PARSER "$java_file" > "$OUTPUT_DIR/tmp.out" 2>&1; then
+    # Check if file is blacklisted
+    if [ -n "$BLACKLIST_FILE" ] && [ -n "${BLACKLIST[$REL_PATH]:-}" ]; then
+        BLACKLIST_COUNT=$((BLACKLIST_COUNT + 1))
+        BLACKLISTED_FILES+=("$REL_PATH")
+        echo "$REL_PATH" >> "$OUTPUT_DIR/blacklisted.txt" 2>/dev/null || true
+        continue
+    fi
+
+    # Try to parse the file (with optional --lex-only flag)
+    if [ "$LEX_ONLY" = true ]; then
+        PARSER_CMD="$JAVA_PARSER --lex-only $java_file"
+    else
+        PARSER_CMD="$JAVA_PARSER $java_file"
+    fi
+
+    if $PARSER_CMD > "$OUTPUT_DIR/tmp.out" 2>&1; then
         SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
         SUCCESS_FILES+=("$REL_PATH")
         echo "$REL_PATH" >> "$OUTPUT_DIR/succeeded/list.txt"
@@ -108,21 +166,35 @@ echo ""
 echo ""
 
 # Calculate statistics
-SUCCESS_RATE=$((SUCCESS_COUNT * 100 / TOTAL_FILES))
-FAIL_RATE=$((FAIL_COUNT * 100 / TOTAL_FILES))
+TESTED_FILES=$((TOTAL_FILES - BLACKLIST_COUNT))
+if [ $TESTED_FILES -gt 0 ]; then
+    SUCCESS_RATE=$((SUCCESS_COUNT * 100 / TESTED_FILES))
+    FAIL_RATE=$((FAIL_COUNT * 100 / TESTED_FILES))
+else
+    SUCCESS_RATE=0
+    FAIL_RATE=0
+fi
 
 # Generate summary report
 REPORT_FILE="$OUTPUT_DIR/report.txt"
+MODE_DESC="Full Parse"
+if [ "$LEX_ONLY" = true ]; then
+    MODE_DESC="Lexical Analysis Only"
+fi
+
 cat > "$REPORT_FILE" << EOF
 Java Test Suite Report
 =======================
 Generated: $(date)
 Test Directory: $JAVA_DIR
 Output Directory: $OUTPUT_DIR
+Mode: $MODE_DESC
 
 Summary Statistics
 ------------------
 Total Files:    $TOTAL_FILES
+Blacklisted:    $BLACKLIST_COUNT
+Tested:         $TESTED_FILES
 Successful:     $SUCCESS_COUNT ($SUCCESS_RATE%)
 Failed:         $FAIL_COUNT ($FAIL_RATE%)
 
@@ -142,6 +214,10 @@ echo -e "${BLUE}======================================${NC}"
 echo -e "${BLUE}Test Suite Results${NC}"
 echo -e "${BLUE}======================================${NC}"
 echo -e "Total Files:    $TOTAL_FILES"
+if [ $BLACKLIST_COUNT -gt 0 ]; then
+    echo -e "${YELLOW}Blacklisted:    $BLACKLIST_COUNT${NC}"
+    echo -e "Tested:         $TESTED_FILES"
+fi
 echo -e "${GREEN}Successful:     $SUCCESS_COUNT ($SUCCESS_RATE%)${NC}"
 if [ $FAIL_COUNT -gt 0 ]; then
     echo -e "${RED}Failed:         $FAIL_COUNT ($FAIL_RATE%)${NC}"

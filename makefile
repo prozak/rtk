@@ -1,4 +1,4 @@
-.PHONY: clean help test test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -312,25 +312,48 @@ test-debug-options: build | test-out
 # Java Test Suite (external codebases)
 # ============================================================================
 
-# Test Apache Commons Lang main sources (259 files)
+# Test Apache Commons Lang main sources (259 files) - Full parsing (informational)
 test-suite-commons-lang: build
 	@echo "========================================"
 	@echo "Testing Apache Commons Lang (main sources)"
 	@echo "========================================"
 	@./test-java-suite.sh test-suites/commons-lang/src/main/java test-results/commons-lang-main
 
-# Test Apache Commons Lang test sources (267 files)
+# Test Apache Commons Lang test sources (267 files) - Full parsing (informational)
 test-suite-commons-lang-tests: build
 	@echo "========================================"
 	@echo "Testing Apache Commons Lang (test sources)"
 	@echo "========================================"
 	@./test-java-suite.sh test-suites/commons-lang/src/test/java test-results/commons-lang-tests
 
-# Test both main and test sources
+# Test both main and test sources - Full parsing (informational)
 test-suite-commons-lang-all: test-suite-commons-lang test-suite-commons-lang-tests
 	@echo ""
 	@echo "========================================"
 	@echo "Apache Commons Lang complete test suite finished"
+	@echo "========================================"
+
+# Lexical parsing tests for Apache Commons Lang (required tests, will fail on errors)
+# Uses manual Alex lexer with start codes to handle comments with single quotes
+test-lex-commons-lang: test-out/java-main-manual
+	@echo "========================================"
+	@echo "Lexical Parsing: Apache Commons Lang (main sources)"
+	@echo "This is a REQUIRED test - failures will break the build"
+	@echo "========================================"
+	@JAVA_PARSER=./test-out/java-main-manual ./test-java-suite.sh --lex-only --blacklist test-suites/commons-lang-lexer-blacklist.txt test-suites/commons-lang/src/main/java test-results/commons-lang-lex-main
+
+test-lex-commons-lang-tests: test-out/java-main-manual
+	@echo "========================================"
+	@echo "Lexical Parsing: Apache Commons Lang (test sources)"
+	@echo "This is a REQUIRED test - failures will break the build"
+	@echo "========================================"
+	@JAVA_PARSER=./test-out/java-main-manual ./test-java-suite.sh --lex-only --blacklist test-suites/commons-lang-lexer-blacklist-tests.txt test-suites/commons-lang/src/test/java test-results/commons-lang-lex-tests
+
+# Test both main and test sources with lexical parsing only
+test-lex-commons-lang-all: test-lex-commons-lang test-lex-commons-lang-tests
+	@echo ""
+	@echo "========================================"
+	@echo "Apache Commons Lang lexical parsing tests completed"
 	@echo "========================================"
 
 # Analyze failure patterns from most recent test run
@@ -355,3 +378,21 @@ test-suite: build
 		exit 1; \
 	fi
 	@./test-java-suite.sh "$(DIR)" "test-results/$$(basename $(DIR))-$$(date +%Y%m%d-%H%M%S)"
+
+# Manual Alex lexer testing (bypassing RTK generation)
+# Lexical-only testing - no parser needed
+# Uses JavaLexerManual module to avoid conflicting with RTK-generated JavaLexer
+test-out/java-main-manual: test-grammars/JavaLexer-manual.x test-grammars/java-main-manual.hs | test-out
+	cabal exec alex -- test-grammars/JavaLexer-manual.x -o test-out/JavaLexerManual.hs
+	cp test-grammars/java-main-manual.hs test-out/java-main-manual.hs
+	cabal exec -- ghc --make -itest-out test-out/java-main-manual.hs -o test-out/java-main-manual
+
+# Test manual lexer on Apache Commons
+test-lex-commons-lang-manual: test-out/java-main-manual
+	@echo "========================================"
+	@echo "Testing Manual Alex Lexer (bypassing RTK)"
+	@echo "========================================"
+	@JAVA_PARSER=./test-out/java-main-manual ./test-java-suite.sh --lex-only test-suites/commons-lang/src/main/java test-results/commons-lang-lex-manual
+
+.PHONY: test-lex-commons-lang-manual
+
