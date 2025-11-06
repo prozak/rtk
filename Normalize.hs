@@ -30,7 +30,9 @@ data NormalizationState = NormalizationState {
                                               _nameCounter :: Int,
                                               _normAntiRules :: [AntiRule],
                                               _normShortcuts :: [(String, String)],
-                                              _proxyRuleNames :: S.Set ID 
+                                              _proxyRuleNames :: S.Set ID,
+                                              _qqLexRuleCache :: M.Map ID ID,
+                                              _antiRuleCache :: M.Map ID ID
                                              }
 
 $(makeLenses ''NormalizationState)
@@ -69,8 +71,9 @@ addAntiRule rl = do
 
 addQQLexRule :: ID -> Normalization ID
 addQQLexRule tdName = do
-  termKindName <- newNamePrefixed $ "qq_" ++ tdName
-  addLexicalRule $ LexicalRule "String" "(tail . dropWhile (/= ':'))" termKindName 
+  -- Use deterministic name based on type name, not counter
+  let termKindName = "qq_" ++ tdName
+  addLexicalRule $ LexicalRule "String" "(tail . dropWhile (/= ':'))" termKindName
                      (IAlt [ISeq [IStrLit "$",
                                   IStrLit tdName,
                                   IStrLit ":",
@@ -78,10 +81,36 @@ addQQLexRule tdName = do
                                   IStar (IRegExpLit "A-Za-z0-9_") Nothing]])
   return termKindName
 
+-- Cached version of addQQLexRule that reuses existing QQ lex rules for the same type
+addQQLexRuleCached :: ID -> Normalization ID
+addQQLexRuleCached tdName = do
+  cache <- gets _qqLexRuleCache
+  case M.lookup tdName cache of
+    Just lexRuleName -> return lexRuleName  -- Reuse existing rule
+    Nothing -> do
+      lexRuleName <- addQQLexRule tdName
+      qqLexRuleCache %= M.insert tdName lexRuleName  -- Cache it
+      return lexRuleName
+
 addLexicalRule :: LexicalRule -> Normalization ()
 addLexicalRule lr = do
   normLRules %= (lr :)
   return ()
+
+-- Cached version of anti-rule creation that reuses existing constructors for the same type
+-- Only adds the AntiRule to the list ONCE per type, not once per grammar rule
+-- Uses deterministic naming: Anti_{TypeName} instead of counter-based names
+addAntiRuleCached :: ID -> Bool -> Normalization ID
+addAntiRuleCached tdName isList = do
+  cache <- gets _antiRuleCache
+  case M.lookup tdName cache of
+    Just constr -> return constr  -- Reuse existing constructor, don't add duplicate AntiRule
+    Nothing -> do
+      -- Use deterministic name based on type name, not counter
+      let constr = "Anti_" ++ tdName
+      addAntiRule $ AntiRule tdName tdName constr isList  -- Only called ONCE per type
+      antiRuleCache %= M.insert tdName constr  -- Cache it
+      return constr
 
 addRuleWithQQ :: ID -> ID -> SyntaxTopClause -> Normalization ()
 addRuleWithQQ tdName ruleName clause = do
@@ -99,17 +128,19 @@ addRuleWithQQ tdName ruleName clause = do
                 addRule tdName ruleName $ STMany opType (SSId newRule) mcl
     _ -> addRule tdName ruleName clause
   where qqAdd altseqs = do
-          qqLexRule <- addQQLexRule tdName
-          constr <- newNamePrefixed $ "Anti_" ++ tdName
-          addAntiRule $ AntiRule tdName tdName constr False
+          qqLexRule <- addQQLexRuleCached tdName     -- Use cached version
+          constr <- addAntiRuleCached tdName False   -- Use cached version
+          -- For shared types, add anti-alternative to ALL rules (GenAST deduplicates constructors)
+          -- This ensures splicing works in all grammar contexts, not just the first rule
           addRule tdName ruleName $ STAltOfSeq (STSeq constr [SSId qqLexRule] : altseqs)
 
 addListProxyRule :: ID -> ID -> ID -> Normalization ID
 addListProxyRule tdName elemRuleName listName = do
   ruleName <- newNamePrefixed $ "ListElem_" ++ listName
-  qqLexRule <- addQQLexRule listName
-  constr <- newNamePrefixed $ "Anti_" ++ listName
-  addAntiRule $ AntiRule tdName listName constr True
+  qqLexRule <- addQQLexRuleCached listName    -- Use cached version
+  constr <- addAntiRuleCached tdName True     -- Use cached version
+  -- For shared types, add anti-alternative to ALL rules (GenAST deduplicates constructors)
+  -- This ensures splicing works in all grammar contexts, not just the first rule
   addRule tdName ruleName $ STAltOfSeq [STSeq constr [SSId qqLexRule], STSeq "" [SSLifted elemRuleName]]
   return ruleName
 
@@ -274,8 +305,8 @@ normalizeTopLevelClauses grammar =
     [] -> error $ "Grammar '" ++ (getIGrammarName grammar) ++ "' contains no rules"
     (firstIRule:_) ->
       let firstID = getIRuleName firstIRule
-          (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules) =
-            runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty)
+          (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _) =
+            runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty)
           firstRuleGroupRules = fromJust $ M.lookup firstID nrs
           nrs1 = M.delete firstID nrs
           firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
