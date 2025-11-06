@@ -1,6 +1,7 @@
-# RTK Project Context
+# RTK Project - Development Guide
 
 ## Project Overview
+
 RTK (Rewrite ToolKit) is a tool for generating parser and rewrite facilities from grammar specifications.
 
 **Language**: Haskell
@@ -55,33 +56,123 @@ alex <Grammar>Lexer.x -o <Grammar>Lexer.hs
 happy <Grammar>Parser.y -o <Grammar>Parser.hs
 ```
 
-## Dependencies
+---
 
-### External Tools Required
-- Alex (lexer generator)
-- Happy (parser generator)
+## Haskell Environment Setup
 
-### Key Haskell Packages
-- `base` - Standard library
-- `syb` - Scrap Your Boilerplate (generic programming)
-- `template-haskell` - Template Haskell metaprogramming
-- `haskell-src-exts` - Haskell source manipulation
-- `haskell-src-meta` - Converting between TH and HSE
-- `lens` - Lens-based accessors
-- `HUnit` - Unit testing
-- `containers`, `mtl`, `pretty`, `pretty-show`, `MissingH`
+### Environment Status
+This project requires a Haskell build environment. The setup has been verified and working as of 2025-11-01.
 
-## Environment Requirements
+### Installation Restrictions
+- **GHCup installer is BLOCKED**: Cannot access https://get-ghcup.haskell.org (403 error)
+- **Sudo is NOT available**: Permission issues with /etc/sudo.conf
+- **Running as root**: Can use apt-get directly without sudo
 
-**Operating System**: Linux (tested on Ubuntu)
-**Architecture**: x86_64
-**Runtime**: Root user environment
+### Required Packages
+- GHC (Glasgow Haskell Compiler): version 9.4.7
+- Cabal (Build tool): version 3.8.1.0
+- Happy (Parser generator): version 2.1.7
+- Alex (Lexer generator): version 3.5.4.0
 
-**Critical Environment Variables**:
-- `PATH` must include `~/.cabal/bin` for alex/happy
-- `LANG=C.UTF-8` and `LC_ALL=C.UTF-8` for proper Unicode handling in tests
+### Installation Steps
+
+#### 1. Install GHC and Cabal via apt
+```bash
+apt-get install -y ghc cabal-install
+```
+
+This installs:
+- GHC 9.4.7
+- Cabal 3.8.1.0
+- Required dependencies (libgmp-dev, libbsd-dev, libmd-dev)
+
+#### 2. Update Cabal Package Index
+```bash
+cabal update
+```
+
+This creates ~/.cabal/config and downloads the Hackage package list.
+
+#### 3. Install Build Tools (Happy and Alex)
+```bash
+cabal install happy alex
+```
+
+This installs the tools to ~/.cabal/bin/
+
+#### 4. Update PATH Environment Variable
+```bash
+export PATH="/root/.cabal/bin:$PATH"
+```
+
+This makes happy and alex available for the build process.
+
+#### 5. Build the RTK Project
+```bash
+cabal build
+```
+
+This will:
+- Download and build ~58 Haskell dependencies
+- Build the RTK library and executable
+- Place the executable in: dist-newstyle/build/x86_64-linux/ghc-9.4.7/rtk-0.10/x/rtk/build/rtk/rtk
+
+### Environment Variables for Tests
+
+When running tests, set UTF-8 locale to avoid encoding issues:
+```bash
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+export PATH="/root/.cabal/bin:$PATH"
+```
+
+### Verification Commands
+
+After setup, verify installation:
+```bash
+ghc --version        # Should show: 9.4.7
+cabal --version      # Should show: 3.8.1.0
+~/.cabal/bin/happy --version   # Should show: 2.1.7
+~/.cabal/bin/alex --version    # Should show: 3.5.4.0
+```
+
+### Build Artifacts
+
+- **Executable**: `dist-newstyle/build/x86_64-linux/ghc-9.4.7/rtk-0.10/x/rtk/build/rtk/rtk`
+- **Test output**: `test-out/` directory
+- **Cabal binaries**: `~/.cabal/bin/` (happy, alex)
+- **Cabal packages**: `~/.cabal/store/`
+
+### Quick Setup Script
+
+For fresh environment setup, run all steps at once:
+```bash
+# Install base packages
+apt-get install -y ghc cabal-install
+
+# Update cabal
+cabal update
+
+# Install build tools
+cabal install happy alex
+
+# Set environment
+export PATH="/root/.cabal/bin:$PATH"
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+
+# Build project
+cabal build
+
+# Run tests
+make test
+```
+
+---
 
 ## Testing
+
+### Running Tests
 
 The project has comprehensive tests:
 - Unit tests for core functionality
@@ -91,11 +182,30 @@ The project has comprehensive tests:
 
 All tests pass successfully as of 2025-11-01.
 
-## Development Notes
+#### Basic Unit Tests
+```bash
+make test
+```
 
-**File Encoding**: UTF-8 required for proper test output
-**Build Warnings**: Some warnings about unused imports/matches are expected
-**Parser Conflicts**: Java grammar has known shift/reduce and reduce/reduce conflicts (this is normal for complex grammars)
+Runs:
+- StrQuote_Test (string quotation handling)
+- EmptyGrammar_Test (grammar parsing edge cases)
+
+#### Bootstrap Comparison Test
+```bash
+make test-bootstrap
+```
+
+Compares hand-written grammar parser with auto-generated version.
+
+#### Java Grammar Tests
+```bash
+make test-java-minimal        # Minimal Java file
+make test-java-qq             # Java quasi-quotation tests
+make test-all-java            # All Java tests
+```
+
+---
 
 ## Git Commit Practices
 
@@ -121,6 +231,8 @@ When working on a PR, follow these strict guidelines:
 - ✅ Only create multiple commits when working on truly separate, independent features
 
 **Remember**: A clean git history with minimal, meaningful commits is far better than many small, incremental commits that show the messy development process.
+
+---
 
 ## Debugging Guidelines
 
@@ -171,8 +283,72 @@ Claude Code provides specialized tools (Read, Grep, Glob, Edit, Write) that are 
 - Use **Edit tool** for modifying files (not `sed` or `awk` bash commands)
 - Reserve bash commands for actual system operations (git, build tools, package managers, etc.)
 
+---
+
+## Dependencies
+
+### External Tools Required
+- Alex (lexer generator)
+- Happy (parser generator)
+
+### Key Haskell Packages
+- `base` - Standard library
+- `syb` - Scrap Your Boilerplate (generic programming)
+- `template-haskell` - Template Haskell metaprogramming
+- `haskell-src-exts` - Haskell source manipulation
+- `haskell-src-meta` - Converting between TH and HSE
+- `lens` - Lens-based accessors
+- `HUnit` - Unit testing
+- `containers`, `mtl`, `pretty`, `pretty-show`, `MissingH`
+
+---
+
+## Environment Requirements
+
+**Operating System**: Linux (tested on Ubuntu)
+**Architecture**: x86_64
+**Runtime**: Root user environment
+
+**Critical Environment Variables**:
+- `PATH` must include `~/.cabal/bin` for alex/happy
+- `LANG=C.UTF-8` and `LC_ALL=C.UTF-8` for proper Unicode handling in tests
+
+---
+
+## Development Notes
+
+**File Encoding**: UTF-8 required for proper test output
+**Build Warnings**: Some warnings about unused imports/matches are expected
+**Parser Conflicts**: Java grammar has known shift/reduce and reduce/reduce conflicts (this is normal for complex grammars)
+
+---
+
+## Common Issues
+
+### Issue: Unicode character encoding errors in test output
+**Solution**: Set UTF-8 locale before running tests:
+```bash
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+```
+
+### Issue: alex/happy not found during build
+**Solution**: Ensure PATH includes ~/.cabal/bin:
+```bash
+export PATH="/root/.cabal/bin:$PATH"
+```
+
+### Issue: Package update fails with mirror warnings
+**Expected**: Mirror lookup may fail but package updates still work.
+```
+Warning: Caught exception during _mirrors lookup:res_query: does not exist
+Warning: No mirrors found for http://hackage.haskell.org/
+```
+This is normal and can be ignored.
+
+---
+
 ## Documentation
 
 - `BOOTSTRAP.md` - Bootstrap self-hosting documentation
-- `Claude.MD` - Development context (possibly for AI assistants)
 - `docs/java-quasi-quotation-tests.md` - Java QQ test documentation
