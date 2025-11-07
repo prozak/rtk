@@ -20,7 +20,7 @@ Library
 Executable rtk
   Main-is:           main.hs
   hs-source-dirs:    ., src/generated
-  Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens, HUnit, optparse-applicative, time, ansi-terminal
+  Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens, HUnit, optparse-applicative, time, ansi-terminal, regex-posix, regex-base
   Build-Tool-Depends: happy:happy, alex:alex
   Autogen-Modules:
                      GrammarLexer,
@@ -42,6 +42,7 @@ Executable rtk
                      Debug,
                      GrammarLexer,
                      GrammarParser,
+                     GrammarQQ,
                      ASTAdapter
   Default-Language: Haskell2010
   Default-Extensions: DeriveDataTypeable
