@@ -2,7 +2,7 @@
 # RTK Bootstrap Build Script
 #
 # This script performs a multi-stage bootstrap build of RTK using generated
-# parsers from grammar.pg. See docs/bootstrapping-strategy.md for details.
+# parsers from grammar.pg. See BOOTSTRAP.md for details.
 
 set -e  # Exit on error
 

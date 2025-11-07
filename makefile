@@ -35,7 +35,7 @@ help:
 	@echo ""
 	@echo "Available grammar tests: $(GRAMMAR_TARGETS)"
 	@echo ""
-	@echo "See docs/bootstrapping-strategy.md for details on self-hosting"
+	@echo "See BOOTSTRAP.md for details on self-hosting"
 
 # ============================================================================
 # Platform-specific configuration
@@ -374,7 +374,7 @@ test-suite: build
 # Bootstrap Build System (Self-Hosting)
 #============================================================================
 # These targets support building RTK with generated parsers from grammar.pg
-# See docs/bootstrapping-strategy.md for details
+# See BOOTSTRAP.md for details
 
 .PHONY: generate-bootstrap build-bootstrap clean-generated prepare-stubs
 
