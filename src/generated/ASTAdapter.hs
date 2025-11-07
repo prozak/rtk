@@ -26,7 +26,7 @@ convertGrammar other =
 -- Note: Generated lexer includes quotes, hand-written strips them
 convertStrLit :: Gen.StrLit -> String
 convertStrLit (Gen.Ctr__StrLit__0 str) = stripQuotes str
-convertStrLit (Gen.Anti_StrLit24 qqVar) =
+convertStrLit (Gen.Anti_StrLit qqVar) =
     error $ "QuasiQuoted StrLit not supported in concrete grammar: $StrLit:" ++ qqVar
 
 -- | Strip surrounding single quotes from string literals
@@ -38,24 +38,22 @@ stripQuotes str = str  -- No quotes to strip
 -- | Convert Name to String
 convertName :: Gen.Name -> String
 convertName (Gen.Ctr__Name__0 str) = str
-convertName (Gen.Anti_Name26 qqVar) =
+convertName (Gen.Anti_Name qqVar) =
     error $ "QuasiQuoted Name not supported in concrete grammar: $Name:" ++ qqVar
-convertName (Gen.Anti_IdList17 qqVar) =
-    error $ "QuasiQuoted IdList not supported in concrete grammar: $IdList:" ++ qqVar
 
 -- | Convert ImportsOpt to String
 convertImports :: Gen.ImportsOpt -> String
 convertImports Gen.Ctr__ImportsOpt__0 = ""
-convertImports (Gen.Ctr__ImportsOpt__1 (Gen.Ctr__Rule_2__0 bigstr)) = bigstr
-convertImports (Gen.Anti_ImportsOpt4 qqVar) =
+convertImports (Gen.Ctr__ImportsOpt__1 (Gen.Ctr__Rule_0__0 bigstr)) = bigstr
+convertImports (Gen.Anti_ImportsOpt qqVar) =
     error $ "QuasiQuoted ImportsOpt not supported: $ImportsOpt:" ++ qqVar
 
 -- | Convert OptDelim to Maybe IClause
 convertOptDelim :: Gen.OptDelim -> Maybe Hand.IClause
 convertOptDelim Gen.Ctr__OptDelim__0 = Nothing
-convertOptDelim (Gen.Ctr__OptDelim__1 (Gen.Ctr__Rule_20__0 clause)) =
+convertOptDelim (Gen.Ctr__OptDelim__1 (Gen.Ctr__Rule_4__0 clause)) =
     Just (convertClause clause)
-convertOptDelim (Gen.Anti_OptDelim22 qqVar) =
+convertOptDelim (Gen.Anti_OptDelim qqVar) =
     error $ "QuasiQuoted OptDelim not supported: $OptDelim:" ++ qqVar
 
 -- | Convert Rule to IRule
@@ -106,11 +104,8 @@ convertRule (Gen.Ctr__Rule__4 opts rule) =
     let baseRule = convertRule rule
     in baseRule { Hand.getIRuleOptions = map convertOption opts ++ Hand.getIRuleOptions baseRule }
 
-convertRule (Gen.Anti_Rule9 qqVar) =
+convertRule (Gen.Anti_Rule qqVar) =
     error $ "QuasiQuoted Rule not supported: $Rule:" ++ qqVar
-
-convertRule (Gen.Anti_RuleList7 qqVar) =
-    error $ "QuasiQuoted RuleList not supported: $RuleList:" ++ qqVar
 
 -- | Convert Option to IOption
 convertOption :: Gen.Option -> Hand.IOption
@@ -118,10 +113,8 @@ convertOption (Gen.Ctr__Option__0 names) =
     Hand.OShortcuts (map convertName names)
 convertOption Gen.Ctr__Option__1 =
     Hand.OSymmacro
-convertOption (Gen.Anti_Option14 qqVar) =
+convertOption (Gen.Anti_Option qqVar) =
     error $ "QuasiQuoted Option not supported: $Option:" ++ qqVar
-convertOption (Gen.Anti_OptionList12 qqVar) =
-    error $ "QuasiQuoted OptionList not supported: $OptionList:" ++ qqVar
 
 -- | Convert Clause to IClause
 convertClause :: Gen.Clause -> Hand.IClause
@@ -181,5 +174,5 @@ convertClause (Gen.Ctr__Clause__14 c1 c2) =
     flattenAlt c = [convertClause c]
 
 -- Anti-quotation (used in quasi-quotation patterns)
-convertClause (Gen.Anti_Clause19 qqVar) =
+convertClause (Gen.Anti_Clause qqVar) =
     error $ "QuasiQuoted Clause not supported: $Clause:" ++ qqVar

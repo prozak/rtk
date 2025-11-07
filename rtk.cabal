@@ -24,7 +24,8 @@ Executable rtk
   Build-Tool-Depends: happy:happy, alex:alex
   Autogen-Modules:
                      GrammarLexer,
-                     GrammarParser
+                     GrammarParser,
+                     GrammarQQ
   Other-Modules:
                      Lexer,
                      Parser,
