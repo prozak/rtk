@@ -62,6 +62,11 @@ jobs:
     - name: Install build tools (Alex and Happy)
       run: cabal install alex happy --installdir=$HOME/.cabal/bin --overwrite-policy=always --install-method=copy
 
+    - name: Prepare stub modules for initial build
+      run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+        make prepare-stubs
+
     - name: Build project with linting (treat warnings as errors)
       run: |
         export PATH="$HOME/.cabal/bin:$PATH"
@@ -104,6 +109,8 @@ jobs:
         run_test "Debug Options Test" "make test-debug"
         run_test "Comprehensive Debug Test" "make test-debug-all"
         run_test "Automated Debug Options" "make test-debug-options"
+        run_test "Bootstrap Generation" "make generate-bootstrap"
+        run_test "Self-Hosting Test" "make test-self-hosting"
 
     - name: Print test results summary
       if: always()

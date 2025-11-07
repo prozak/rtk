@@ -211,7 +211,7 @@ cabal build -f generated-parser
 
 ## References
 
-- BOOTSTRAP.md - Current test infrastructure
+- docs/BOOTSTRAP.md - Current test infrastructure
 - compare-bootstrap.sh - Comparison script
 - test-grammars/grammar.pg - RTK's self-description
 

@@ -1,5 +1,4 @@
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternGuards #-}
 module ASTAdapter
     ( convertGrammar
     ) where
@@ -7,237 +6,173 @@ module ASTAdapter
 -- This module converts the auto-generated AST from GrammarParser.hs
 -- to the hand-written AST format used by the rest of RTK.
 --
--- APPROACH: Use RTK's own quasi-quotation features to pattern match
--- on the generated AST. This demonstrates dogfooding and makes the
--- conversion code more declarative and readable.
+-- Implementation uses traditional pattern matching on generated constructors.
 
 import qualified Parser as Hand
--- Once generated files exist, uncomment:
--- import qualified GrammarParser as Gen
--- import qualified GrammarQQ as QQ
+import qualified GrammarParser as Gen
 
 -- | Convert generated Grammar to hand-written InitialGrammar
-convertGrammar :: Hand.InitialGrammar  -- Placeholder signature
-convertGrammar = error "ASTAdapter.convertGrammar not yet implemented - waiting for generated parser files"
-
-{- TODO: Implement after generating files
-
-Once GrammarParser.y, GrammarLexer.x, and GrammarQQ.hs are generated,
-we can use RTK's own quasi-quotation to elegantly pattern match on the
-generated AST.
-
-## APPROACH 1: Using QuasiQuotation for Pattern Matching
-
-```haskell
-{-# LANGUAGE QuasiQuotes #-}
-import qualified GrammarParser as Gen
-import qualified GrammarQQ as QQ
-
--- Top-level conversion using quasi-quotation
 convertGrammar :: Gen.Grammar -> Hand.InitialGrammar
-convertGrammar [QQ.grammar| grammar $name ';' $imports $rules |] =
+convertGrammar (Gen.Ctr__Grammar__11 strLit importsOpt ruleList) =
     Hand.InitialGrammar
-        { Hand.getIGrammarName = name
-        , Hand.getImports = imports
-        , Hand.getIRules = map convertRule rules
+        { Hand.getIGrammarName = convertStrLit strLit
+        , Hand.getImports = convertImports importsOpt
+        , Hand.getIRules = map convertRule ruleList
         }
+convertGrammar other =
+    error $ "ASTAdapter.convertGrammar: unexpected Grammar constructor: " ++ show other
 
--- Convert a rule using pattern matching with quasi-quotation
+-- | Convert StrLit to String
+-- Note: Generated lexer includes quotes, hand-written strips them
+convertStrLit :: Gen.StrLit -> String
+convertStrLit (Gen.Ctr__StrLit__0 str) = stripQuotes str
+convertStrLit (Gen.Anti_StrLit qqVar) =
+    error $ "QuasiQuoted StrLit not supported in concrete grammar: $StrLit:" ++ qqVar
+
+-- | Strip surrounding single quotes from string literals
+-- The generated lexer includes quotes, but hand-written lexer strips them
+stripQuotes :: String -> String
+stripQuotes ('\'':rest) = reverse (drop 1 (reverse rest))  -- Remove leading and trailing '
+stripQuotes str = str  -- No quotes to strip
+
+-- | Convert Name to String
+convertName :: Gen.Name -> String
+convertName (Gen.Ctr__Name__0 str) = str
+convertName (Gen.Anti_Name qqVar) =
+    error $ "QuasiQuoted Name not supported in concrete grammar: $Name:" ++ qqVar
+
+-- | Convert ImportsOpt to String
+convertImports :: Gen.ImportsOpt -> String
+convertImports Gen.Ctr__ImportsOpt__0 = ""
+convertImports (Gen.Ctr__ImportsOpt__1 (Gen.Ctr__Rule_0__0 bigstr)) = bigstr
+convertImports (Gen.Anti_ImportsOpt qqVar) =
+    error $ "QuasiQuoted ImportsOpt not supported: $ImportsOpt:" ++ qqVar
+
+-- | Convert OptDelim to Maybe IClause
+convertOptDelim :: Gen.OptDelim -> Maybe Hand.IClause
+convertOptDelim Gen.Ctr__OptDelim__0 = Nothing
+convertOptDelim (Gen.Ctr__OptDelim__1 (Gen.Ctr__Rule_4__0 clause)) =
+    Just (convertClause clause)
+convertOptDelim (Gen.Anti_OptDelim qqVar) =
+    error $ "QuasiQuoted OptDelim not supported: $OptDelim:" ++ qqVar
+
+-- | Convert Rule to IRule
 convertRule :: Gen.Rule -> Hand.IRule
 
--- Simple rule: Name = Clause ;
-convertRule [QQ.rule| $name = $clause ; |] =
+-- id = clause ;
+convertRule (Gen.Ctr__Rule__0 name clause) =
     Hand.IRule
         { Hand.getIDataTypeName = Nothing
         , Hand.getIDataFunc = Nothing
-        , Hand.getIRuleName = name
+        , Hand.getIRuleName = convertName name
         , Hand.getIClause = convertClause clause
         , Hand.getIRuleOptions = []
         }
 
--- Typed rule: Type : Name = Clause ;
-convertRule [QQ.rule| $dtype : $name = $clause ; |] =
+-- id : id = clause ;
+convertRule (Gen.Ctr__Rule__1 name1 name2 clause) =
     Hand.IRule
-        { Hand.getIDataTypeName = Just dtype
+        { Hand.getIDataTypeName = Just (convertName name1)
         , Hand.getIDataFunc = Nothing
-        , Hand.getIRuleName = name
+        , Hand.getIRuleName = convertName name2
         , Hand.getIClause = convertClause clause
         , Hand.getIRuleOptions = []
         }
 
--- Typed rule with function: Type . Func : Name = Clause ;
-convertRule [QQ.rule| $dtype . $func : $name = $clause ; |] =
+-- id . id : id = clause ;
+convertRule (Gen.Ctr__Rule__2 name1 name2 name3 clause) =
     Hand.IRule
-        { Hand.getIDataTypeName = Just dtype
-        , Hand.getIDataFunc = Just func
-        , Hand.getIRuleName = name
+        { Hand.getIDataTypeName = Just (convertName name1)
+        , Hand.getIDataFunc = Just (convertName name2)
+        , Hand.getIRuleName = convertName name3
         , Hand.getIClause = convertClause clause
         , Hand.getIRuleOptions = []
         }
 
--- Typed rule without data type: . Func : Name = Clause ;
-convertRule [QQ.rule| . $func : $name = $clause ; |] =
+-- . id : id = clause ;
+convertRule (Gen.Ctr__Rule__3 name1 name2 clause) =
     Hand.IRule
         { Hand.getIDataTypeName = Nothing
-        , Hand.getIDataFunc = Just func
-        , Hand.getIRuleName = name
+        , Hand.getIDataFunc = Just (convertName name1)
+        , Hand.getIRuleName = convertName name2
         , Hand.getIClause = convertClause clause
         , Hand.getIRuleOptions = []
         }
 
--- Convert clauses using quasi-quotation
+-- options + rule
+convertRule (Gen.Ctr__Rule__4 opts rule) =
+    let baseRule = convertRule rule
+    in baseRule { Hand.getIRuleOptions = map convertOption opts ++ Hand.getIRuleOptions baseRule }
+
+convertRule (Gen.Anti_Rule qqVar) =
+    error $ "QuasiQuoted Rule not supported: $Rule:" ++ qqVar
+
+-- | Convert Option to IOption
+convertOption :: Gen.Option -> Hand.IOption
+convertOption (Gen.Ctr__Option__0 names) =
+    Hand.OShortcuts (map convertName names)
+convertOption Gen.Ctr__Option__1 =
+    Hand.OSymmacro
+convertOption (Gen.Anti_Option qqVar) =
+    error $ "QuasiQuoted Option not supported: $Option:" ++ qqVar
+
+-- | Convert Clause to IClause
 convertClause :: Gen.Clause -> Hand.IClause
 
--- Identifier: Name
-convertClause [QQ.clause| $name:id |] =
-    Hand.IId name
+-- id
+convertClause (Gen.Ctr__Clause__1 name) =
+    Hand.IId (convertName name)
 
--- String literal: 'string'
-convertClause [QQ.clause| $str:str |] =
-    Hand.IStrLit str
+-- 'str'
+convertClause (Gen.Ctr__Clause__2 strLit) =
+    Hand.IStrLit (convertStrLit strLit)
 
--- Dot: .
-convertClause [QQ.clause| . |] =
+-- .
+convertClause Gen.Ctr__Clause__3 =
     Hand.IDot
 
--- Regex: [pattern]
-convertClause [QQ.clause| $regex:regex |] =
-    Hand.IRegExpLit regex
+-- [regexp]
+convertClause (Gen.Ctr__Clause__4 regexp) =
+    Hand.IRegExpLit regexp
 
--- Star: Clause *
-convertClause [QQ.clause| $clause * |] =
-    Hand.IStar (convertClause clause) Nothing
+-- clause * (with optional delimiter)
+convertClause (Gen.Ctr__Clause__5 clause optDelim) =
+    Hand.IStar (convertClause clause) (convertOptDelim optDelim)
 
--- Star with delimiter: Clause * ~ Delimiter
-convertClause [QQ.clause| $clause * ~ $delim |] =
-    Hand.IStar (convertClause clause) (Just $ convertClause delim)
+-- clause + (with optional delimiter)
+convertClause (Gen.Ctr__Clause__6 clause optDelim) =
+    Hand.IPlus (convertClause clause) (convertOptDelim optDelim)
 
--- Plus: Clause +
-convertClause [QQ.clause| $clause + |] =
-    Hand.IPlus (convertClause clause) Nothing
-
--- Plus with delimiter: Clause + ~ Delimiter
-convertClause [QQ.clause| $clause + ~ $delim |] =
-    Hand.IPlus (convertClause clause) (Just $ convertClause delim)
-
--- Optional: Clause ?
-convertClause [QQ.clause| $clause ? |] =
+-- clause ?
+convertClause (Gen.Ctr__Clause__7 clause) =
     Hand.IOpt (convertClause clause)
 
--- Alternation: Clause | Clause | ...
-convertClause [QQ.clause| $clauses:alt |] =
-    Hand.IAlt (map convertClause clauses)
-
--- Sequence: Clause Clause ...
-convertClause [QQ.clause| $clauses:seq |] =
-    Hand.ISeq (map convertClause clauses)
-
--- Lifted: , Clause
-convertClause [QQ.clause| , $clause |] =
+-- , clause (lifted)
+convertClause (Gen.Ctr__Clause__9 clause) =
     Hand.ILifted (convertClause clause)
 
--- Ignored: ! Clause
-convertClause [QQ.clause| ! $clause |] =
+-- ! clause (ignored)
+convertClause (Gen.Ctr__Clause__10 clause) =
     Hand.IIgnore (convertClause clause)
 
--- Parenthesized: ( Clause )
-convertClause [QQ.clause| ( $clause ) |] =
-    convertClause clause  -- Unwrap parentheses
-```
+-- clause clause ... (sequence)
+-- Need to flatten nested Ctr__Clause__12 into a list
+convertClause (Gen.Ctr__Clause__12 c1 c2) =
+    Hand.ISeq (flattenSeq c1 ++ flattenSeq c2)
+  where
+    flattenSeq :: Gen.Clause -> [Hand.IClause]
+    flattenSeq (Gen.Ctr__Clause__12 a b) = flattenSeq a ++ flattenSeq b
+    flattenSeq c = [convertClause c]
 
-## APPROACH 2: Hybrid - QuasiQuotation + Traditional Pattern Matching
+-- clause | clause ... (alternation)
+-- Need to flatten nested Ctr__Clause__14 into a list
+convertClause (Gen.Ctr__Clause__14 c1 c2) =
+    Hand.IAlt (flattenAlt c1 ++ flattenAlt c2)
+  where
+    flattenAlt :: Gen.Clause -> [Hand.IClause]
+    flattenAlt (Gen.Ctr__Clause__14 a b) = flattenAlt a ++ flattenAlt b
+    flattenAlt c = [convertClause c]
 
-If quasi-quotation for pattern matching isn't fully supported, we can use QQ
-for building/matching at a high level and traditional pattern matching for details:
-
-```haskell
-import qualified GrammarQQ as QQ
-import Language.Haskell.TH.Quote (QuasiQuoter(..))
-
-convertGrammar :: Gen.Grammar -> Hand.InitialGrammar
-convertGrammar genGrammar =
-    case genGrammar of
-        -- Try to match using QQ pattern
-        (matchGrammarPattern -> Just (name, imports, rules)) ->
-            Hand.InitialGrammar
-                { Hand.getIGrammarName = name
-                , Hand.getImports = imports
-                , Hand.getIRules = map convertRule rules
-                }
-        -- Fallback to constructor matching
-        Gen.Grammar strLit importsOpt ruleList ->
-            Hand.InitialGrammar
-                { Hand.getIGrammarName = extractStr strLit
-                , Hand.getImports = extractImports importsOpt
-                , Hand.getIRules = map convertRule (extractRules ruleList)
-                }
-
--- Helper to match grammar pattern using QQ
-matchGrammarPattern :: Gen.Grammar -> Maybe (String, String, [Gen.Rule])
-matchGrammarPattern gram =
-    -- Use GrammarQQ to parse and extract components
-    case QQ.parseGrammar gram of
-        Just components -> Just components
-        Nothing -> Nothing
-```
-
-## APPROACH 3: String-Based QuasiQuotation (Pragmatic)
-
-If generated QQ doesn't support pattern matching, use it for validation/parsing:
-
-```haskell
-convertGrammar :: Gen.Grammar -> Hand.InitialGrammar
-convertGrammar genGrammar =
-    let grammarStr = Gen.prettyPrint genGrammar  -- Convert AST back to string
-        parsed = QQ.parseWithGrammarQQ grammarStr  -- Re-parse with QQ
-    in case parsed of
-        Just [QQ.grammarMatch| grammar $name ';' $imports $rules |] ->
-            -- Build hand-written AST from matched components
-            Hand.InitialGrammar name imports (map convertRule rules)
-        Nothing ->
-            error $ "Failed to parse generated grammar: " ++ grammarStr
-```
-
-## Benefits of QuasiQuotation Approach
-
-1. **Dogfooding**: RTK uses its own features to parse its own grammar
-2. **Declarative**: Pattern matching reads like the grammar itself
-3. **Maintainable**: Changes to grammar.pg automatically update patterns
-4. **Self-Documenting**: The QQ patterns show the grammar structure clearly
-5. **Type-Safe**: QQ ensures we're matching valid grammar constructs
-
-## Implementation Strategy
-
-1. Generate GrammarQQ.hs: `rtk test-grammars/grammar.pg src/generated/`
-2. Inspect GrammarQQ.hs to see what quasi-quoters are available
-3. Check if QQ supports pattern matching (quotePat implementation)
-4. If yes: Use Approach 1 (full QQ pattern matching)
-5. If partial: Use Approach 2 (hybrid)
-6. If no pattern support: Use Approach 3 (string-based) or fallback to traditional
-
-## Next Steps
-
-After generating files, check GrammarQQ.hs for:
-```haskell
--- Look for these exports:
-module GrammarQQ where
-
-grammar :: QuasiQuoter  -- For matching Grammar
-rule :: QuasiQuoter     -- For matching Rule
-clause :: QuasiQuoter   -- For matching Clause
-
--- Check if quotePat is implemented:
-grammar = QuasiQuoter
-    { quoteExp = ...
-    , quotePat = ...  -- If this exists, Approach 1 works!
-    , quoteType = ...
-    , quoteDec = ...
-    }
-```
-
-If quotePat is defined, we can use quasi-quotation for pattern matching.
-If not, we'll fall back to traditional pattern matching but can still use
-QQ for validation and testing.
-
--}
-
+-- Anti-quotation (used in quasi-quotation patterns)
+convertClause (Gen.Anti_Clause qqVar) =
+    error $ "QuasiQuoted Clause not supported: $Clause:" ++ qqVar
