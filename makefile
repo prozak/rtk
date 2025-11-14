@@ -394,5 +394,34 @@ test-lex-commons-lang-manual: test-out/java-main-manual
 	@echo "========================================"
 	@JAVA_PARSER=./test-out/java-main-manual ./test-java-suite.sh --lex-only test-suites/commons-lang/src/main/java test-results/commons-lang-lex-manual
 
-.PHONY: test-lex-commons-lang-manual
+# Full parsing with RTK-generated lexer + parser
+# Uses both JavaLexer and JavaParser generated from java.pg
+test-out/java-main-full: test-grammars/java-main-full.hs test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
+	cp test-grammars/java-main-full.hs test-out/java-main-full.hs
+	cabal exec -- ghc --make -itest-out test-out/java-main-full.hs -o test-out/java-main-full
+
+# Full parsing tests on Apache Commons Lang (main sources)
+test-parse-commons-lang: test-out/java-main-full
+	@echo "========================================"
+	@echo "Full Parsing: Apache Commons Lang (main sources)"
+	@echo "Using Manual Lexer + Generated Parser"
+	@echo "========================================"
+	@JAVA_PARSER=./test-out/java-main-full ./test-java-suite.sh test-suites/commons-lang/src/main/java test-results/commons-lang-parse-main
+
+# Full parsing tests on Apache Commons Lang (test sources)
+test-parse-commons-lang-tests: test-out/java-main-full
+	@echo "========================================"
+	@echo "Full Parsing: Apache Commons Lang (test sources)"
+	@echo "Using Manual Lexer + Generated Parser"
+	@echo "========================================"
+	@JAVA_PARSER=./test-out/java-main-full ./test-java-suite.sh test-suites/commons-lang/src/test/java test-results/commons-lang-parse-tests
+
+# Full parsing tests on both main and test sources
+test-parse-commons-lang-all: test-parse-commons-lang test-parse-commons-lang-tests
+	@echo ""
+	@echo "========================================"
+	@echo "Apache Commons Lang full parsing tests completed"
+	@echo "========================================"
+
+.PHONY: test-lex-commons-lang-manual test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all
 
