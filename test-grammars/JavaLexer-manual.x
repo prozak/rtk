@@ -1,5 +1,5 @@
 {
-module JavaLexerManual(alexScanTokens, Token(..))
+module JavaLexer(alexScanTokens, Token(..))
 where
 
  }

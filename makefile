@@ -423,5 +423,41 @@ test-parse-commons-lang-all: test-parse-commons-lang test-parse-commons-lang-tes
 	@echo "Apache Commons Lang full parsing tests completed"
 	@echo "========================================"
 
-.PHONY: test-lex-commons-lang-manual test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all
+# Hybrid parsing with manual lexer + generated parser (Phase 1)
+# Uses manual JavaLexer (with start codes) + generated JavaParser (RTK)
+# This isolates parser issues from lexer bugs
+# We generate JavaLexer.hs from the manual .x file, replacing the RTK-generated lexer
+test-out/java-main-hybrid: test-grammars/JavaLexer-manual.x test-grammars/java-main-hybrid.hs test-out/JavaParser.hs | test-out
+	@echo "Generating JavaLexer.hs from manual lexer (replaces RTK-generated)..."
+	cabal exec alex -- test-grammars/JavaLexer-manual.x -o test-out/JavaLexer.hs
+	cp test-grammars/java-main-hybrid.hs test-out/java-main-hybrid.hs
+	cabal exec -- ghc --make -itest-out test-out/java-main-hybrid.hs -o test-out/java-main-hybrid
+
+# Phase 1: Hybrid parsing tests on Apache Commons Lang (main sources)
+test-hybrid-commons-lang: test-out/java-main-hybrid
+	@echo "========================================"
+	@echo "PHASE 1: Hybrid Parsing Test"
+	@echo "Manual Lexer + Generated Parser"
+	@echo "Apache Commons Lang (main sources)"
+	@echo "========================================"
+	@JAVA_PARSER=./test-out/java-main-hybrid ./test-java-suite.sh test-suites/commons-lang/src/main/java test-results/commons-lang-hybrid-main
+
+# Phase 1: Hybrid parsing tests on Apache Commons Lang (test sources)
+test-hybrid-commons-lang-tests: test-out/java-main-hybrid
+	@echo "========================================"
+	@echo "PHASE 1: Hybrid Parsing Test"
+	@echo "Manual Lexer + Generated Parser"
+	@echo "Apache Commons Lang (test sources)"
+	@echo "========================================"
+	@JAVA_PARSER=./test-out/java-main-hybrid ./test-java-suite.sh test-suites/commons-lang/src/test/java test-results/commons-lang-hybrid-tests
+
+# Phase 1: Test both main and test sources with hybrid setup
+test-hybrid-commons-lang-all: test-hybrid-commons-lang test-hybrid-commons-lang-tests
+	@echo ""
+	@echo "========================================"
+	@echo "PHASE 1: Hybrid parsing tests completed"
+	@echo "This shows true parser pass rate (lexer bugs isolated)"
+	@echo "========================================"
+
+.PHONY: test-lex-commons-lang-manual test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all test-hybrid-commons-lang test-hybrid-commons-lang-tests test-hybrid-commons-lang-all
 
