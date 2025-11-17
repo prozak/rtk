@@ -32,7 +32,7 @@ data NormalizationState = NormalizationState {
                                               _normShortcuts :: [(String, String)],
                                               _proxyRuleNames :: S.Set ID,
                                               _qqLexRuleCache :: M.Map ID ID,
-                                              _antiRuleCache :: M.Map ID ID
+                                              _antiRuleCache :: M.Map (ID, Bool) ID
                                              }
 
 $(makeLenses ''NormalizationState)
@@ -98,18 +98,18 @@ addLexicalRule lr = do
   return ()
 
 -- Cached version of anti-rule creation that reuses existing constructors for the same type
--- Only adds the AntiRule to the list ONCE per type, not once per grammar rule
--- Uses deterministic naming: Anti_{TypeName} instead of counter-based names
+-- Only adds the AntiRule to the list ONCE per (type, isList) combination
+-- Uses deterministic naming: Anti_{TypeName} or Anti_{TypeName}_List
 addAntiRuleCached :: ID -> Bool -> Normalization ID
 addAntiRuleCached tdName isList = do
   cache <- gets _antiRuleCache
-  case M.lookup tdName cache of
+  case M.lookup (tdName, isList) cache of
     Just constr -> return constr  -- Reuse existing constructor, don't add duplicate AntiRule
     Nothing -> do
-      -- Use deterministic name based on type name, not counter
-      let constr = "Anti_" ++ tdName
-      addAntiRule $ AntiRule tdName tdName constr isList  -- Only called ONCE per type
-      antiRuleCache %= M.insert tdName constr  -- Cache it
+      -- Use deterministic name based on type name and isList flag
+      let constr = "Anti_" ++ tdName ++ (if isList then "_List" else "")
+      addAntiRule $ AntiRule tdName tdName constr isList  -- Only called ONCE per (type, isList)
+      antiRuleCache %= M.insert (tdName, isList) constr  -- Cache it
       return constr
 
 addRuleWithQQ :: ID -> ID -> SyntaxTopClause -> Normalization ()

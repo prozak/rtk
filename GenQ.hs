@@ -73,11 +73,11 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
           proxyRules = getProxyRules info
           qqFunName typ = [str|quote?name~?typ|]
           typeNames = map arQQName antiRules
-          antiNameGen typ n = "anti" ++ n ++ typ
-          antiTermGen typ = map (antiNameGen typ) typeNames
+          antiNameGen typ n isList = "anti" ++ n ++ (if isList then "List" else "") ++ typ
+          antiTermGen typ = map (\ar -> antiNameGen typ (arQQName ar) (arIsList ar)) antiRules
           antiExprsGen typ = foldr (\antiTerm res -> [str|?res `Generics.extQ` ?antiTerm|]) "const Nothing" $ antiTermGen typ
           antiFunsGen typ = map (\(AntiRule tdName qqName consName isList) ->
-                                        let antiName = antiNameGen typ qqName
+                                        let antiName = antiNameGen typ qqName isList
                                             varConstructor = case typ of
                                                                 "Pat" -> "TH.varP"
                                                                 "Exp" -> "TH.varE"
