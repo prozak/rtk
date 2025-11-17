@@ -1,0 +1,19 @@
+grammar 'AntiRuleCacheBug';
+
+/* This grammar triggers the anti-rule cache collision bug */
+/* The Expr type is shared between Statement and ExprList */
+
+Expr = 'num'
+     | 'var' ;
+
+/* First usage: Expr in non-list QQ context */
+/* Comma (,) is the lifting operator for quasi-quotation */
+Statement = 'stmt' ,Expr ';' ;
+
+/* Second usage: Expr in list context (many + lifted) */
+/* Both rules use the same Expr type for QQ */
+/* When processing these, addAntiRuleCached is called with: */
+/* - "Expr" and isList=False for Statement */
+/* - "Expr" and isList=True for ExprList */
+/* But cache only keys on "Expr", so returns wrong isList value */
+ExprList = ,Expr * ;

@@ -6,6 +6,7 @@
 *.dyn_o
 dist
 test-out
+test-out-*
 test-results
 happy_log.txt
 dist-newstyle

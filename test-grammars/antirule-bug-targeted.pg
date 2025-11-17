@@ -1,0 +1,16 @@
+grammar 'AntiRuleBugTargeted';
+
+/* This test specifically targets the cache collision bug */
+
+/* Base type with NO QQ (no lifted elements) */
+Item = 'item' ;
+
+/* First: Foo rule WITH lifted element (non-list context) */
+/* This calls addAntiRuleCached "Foo" False */
+Foo = ,Item ;
+
+/* Second: Bar rule with Foo* (list context) */
+/* This calls addListProxyRule "Foo" ... */
+/* which calls addAntiRuleCached "Foo" True */
+/* CACHE COLLISION: returns cached "Foo" with isList=False */
+Bar = ,Foo* ;
