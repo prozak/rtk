@@ -334,20 +334,20 @@ test-suite-commons-lang-all: test-suite-commons-lang test-suite-commons-lang-tes
 	@echo "========================================"
 
 # Lexical parsing tests for Apache Commons Lang (required tests, will fail on errors)
-# Uses manual Alex lexer with start codes to handle comments with single quotes
-test-lex-commons-lang: test-out/java-main-manual
+# Uses RTK-generated Alex lexer (escape sequence fix enables proper comment handling)
+test-lex-commons-lang: test-out/java-main
 	@echo "========================================"
 	@echo "Lexical Parsing: Apache Commons Lang (main sources)"
 	@echo "This is a REQUIRED test - failures will break the build"
 	@echo "========================================"
-	@JAVA_PARSER=./test-out/java-main-manual ./test-java-suite.sh --lex-only --blacklist test-suites/commons-lang-lexer-blacklist.txt test-suites/commons-lang/src/main/java test-results/commons-lang-lex-main
+	@JAVA_PARSER=./test-out/java-main ./test-java-suite.sh --lex-only --blacklist test-suites/commons-lang-lexer-blacklist.txt test-suites/commons-lang/src/main/java test-results/commons-lang-lex-main
 
-test-lex-commons-lang-tests: test-out/java-main-manual
+test-lex-commons-lang-tests: test-out/java-main
 	@echo "========================================"
 	@echo "Lexical Parsing: Apache Commons Lang (test sources)"
 	@echo "This is a REQUIRED test - failures will break the build"
 	@echo "========================================"
-	@JAVA_PARSER=./test-out/java-main-manual ./test-java-suite.sh --lex-only --blacklist test-suites/commons-lang-lexer-blacklist-tests.txt test-suites/commons-lang/src/test/java test-results/commons-lang-lex-tests
+	@JAVA_PARSER=./test-out/java-main ./test-java-suite.sh --lex-only --blacklist test-suites/commons-lang-lexer-blacklist-tests.txt test-suites/commons-lang/src/test/java test-results/commons-lang-lex-tests
 
 # Test both main and test sources with lexical parsing only
 test-lex-commons-lang-all: test-lex-commons-lang test-lex-commons-lang-tests
@@ -379,20 +379,4 @@ test-suite: build
 	fi
 	@./test-java-suite.sh "$(DIR)" "test-results/$$(basename $(DIR))-$$(date +%Y%m%d-%H%M%S)"
 
-# Manual Alex lexer testing (bypassing RTK generation)
-# Lexical-only testing - no parser needed
-# Uses JavaLexerManual module to avoid conflicting with RTK-generated JavaLexer
-test-out/java-main-manual: test-grammars/JavaLexer-manual.x test-grammars/java-main-manual.hs | test-out
-	cabal exec alex -- test-grammars/JavaLexer-manual.x -o test-out/JavaLexerManual.hs
-	cp test-grammars/java-main-manual.hs test-out/java-main-manual.hs
-	cabal exec -- ghc --make -itest-out test-out/java-main-manual.hs -o test-out/java-main-manual
-
-# Test manual lexer on Apache Commons
-test-lex-commons-lang-manual: test-out/java-main-manual
-	@echo "========================================"
-	@echo "Testing Manual Alex Lexer (bypassing RTK)"
-	@echo "========================================"
-	@JAVA_PARSER=./test-out/java-main-manual ./test-java-suite.sh --lex-only test-suites/commons-lang/src/main/java test-results/commons-lang-lex-manual
-
-.PHONY: test-lex-commons-lang-manual
 

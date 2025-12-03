@@ -145,12 +145,25 @@ translateClauseForMacro (ISeq cls) = hsep $ punctuate (text " ") (map translateC
 translateClauseForMacro (IAlt clauses) = hsep $ punctuate (text "|") (map translateClauseForMacro clauses)
 translateClauseForMacro cl = text $ "Cannot translate to macro def " ++ (show cl)
 
+-- Detect Alex escape sequences that should be output as bare escapes, not quoted strings.
+-- In Alex: "\n" = literal backslash+n, but \n = newline character.
+-- When grammar has '\n', we want to generate \n (the escape), not "\n" (literal).
+isAlexEscape :: String -> Bool
+isAlexEscape "\\n" = True   -- newline
+isAlexEscape "\\t" = True   -- tab
+isAlexEscape "\\r" = True   -- carriage return
+isAlexEscape "\\f" = True   -- form feed
+isAlexEscape "\\v" = True   -- vertical tab
+isAlexEscape _ = False
+
 translateClause :: S.Set ID -> IClause -> Doc
 translateClause sMacroIds (IId name) | name `S.member` sMacroIds =
   text "$" <> text name
 translateClause _ (IId name) =
   text "@" <> text name
-translateClause _ (IStrLit s)         = doubleQuotes $ text $ backquoteStr s
+translateClause _ (IStrLit s)
+  | isAlexEscape s = text s   -- output bare escape: \n, \t, etc.
+  | otherwise      = doubleQuotes $ text $ backquoteStr s
 translateClause _ (IDot)              = text "."
 translateClause _ (IRegExpLit re)     = brackets $ text $ backquoteStrInBrackets re
 translateClause sMacroIds (IStar cl Nothing)  = translateClause sMacroIds cl <> text "*"
