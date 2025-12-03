@@ -86,28 +86,39 @@ This installs:
 - Cabal 3.8.1.0
 - Required dependencies (libgmp-dev, libbsd-dev, libmd-dev)
 
-#### 2. Update Cabal Package Index
+#### 2. Configure HTTPS for Hackage Repository
+```bash
+mkdir -p ~/.cabal
+cat > ~/.cabal/config << 'EOF'
+repository hackage.haskell.org
+  url: https://hackage.haskell.org/
+EOF
+```
+
+**CRITICAL**: This step MUST be done before `cabal update`. The default cabal configuration uses HTTP which causes connection failures and delays. Using HTTPS ensures reliable package downloads.
+
+#### 3. Update Cabal Package Index
 ```bash
 cabal update
 ```
 
-This creates ~/.cabal/config and downloads the Hackage package list.
+This downloads the Hackage package list using the HTTPS repository configured above.
 
-#### 3. Install Build Tools (Happy and Alex)
+#### 4. Install Build Tools (Happy and Alex)
 ```bash
 cabal install happy alex
 ```
 
 This installs the tools to ~/.cabal/bin/
 
-#### 4. Update PATH Environment Variable
+#### 5. Update PATH Environment Variable
 ```bash
 export PATH="/root/.cabal/bin:$PATH"
 ```
 
 This makes happy and alex available for the build process.
 
-#### 5. Build the RTK Project
+#### 6. Build the RTK Project
 ```bash
 cabal build
 ```
@@ -150,7 +161,14 @@ For fresh environment setup, run all steps at once:
 # Install base packages
 apt-get install -y ghc cabal-install
 
-# Update cabal
+# Configure HTTPS for Hackage (CRITICAL - must be done before cabal update)
+mkdir -p ~/.cabal
+cat > ~/.cabal/config << 'EOF'
+repository hackage.haskell.org
+  url: https://hackage.haskell.org/
+EOF
+
+# Update cabal package index
 cabal update
 
 # Install build tools
@@ -338,13 +356,21 @@ export LC_ALL=C.UTF-8
 export PATH="/root/.cabal/bin:$PATH"
 ```
 
-### Issue: Package update fails with mirror warnings
-**Expected**: Mirror lookup may fail but package updates still work.
+### Issue: Package update fails with HTTP mirror warnings
+**Problem**: Using HTTP instead of HTTPS causes connection failures and delays:
 ```
 Warning: Caught exception during _mirrors lookup:res_query: does not exist
 Warning: No mirrors found for http://hackage.haskell.org/
 ```
-This is normal and can be ignored.
+**Solution**: Configure HTTPS in ~/.cabal/config BEFORE running `cabal update`:
+```bash
+mkdir -p ~/.cabal
+cat > ~/.cabal/config << 'EOF'
+repository hackage.haskell.org
+  url: https://hackage.haskell.org/
+EOF
+```
+Then run `cabal update`. This ensures reliable package downloads without HTTP mirror lookup issues.
 
 ---
 
