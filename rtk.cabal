@@ -2,9 +2,10 @@ Cabal-Version:       2.2
 Name:                rtk
 Version:             0.10
 Description:         Generates rewrite facilities for the given grammar
-License:             GPL-3.0-or-later
-Author:              Nickolay Lysenko
-Maintainer:          nickolay.lysenko@gmail.com
+License:             MIT
+License-File:        LICENSE
+Author:              prozak
+Maintainer:          prozak
 Build-Type:          Simple
 
 Library
