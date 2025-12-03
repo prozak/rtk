@@ -112,7 +112,7 @@ PrimitiveTypeKeyword =
 
 # After first id (without TypeParameters or primitive type), branch on next token:
 MemberAfterFirstId =
- '(' ParameterList? ')' StatementBlock                          # Constructor: id '(' ...
+ '(' ParameterList? ')' ThrowsClause? StatementBlock            # Constructor: id '(' ...
  | MoreTypeSpecifier id MemberRest ;                            # Reference type: id ... id MemberRest
 
 # MoreTypeSpecifier handles the rest of a type after the first id
@@ -121,11 +121,14 @@ MoreTypeSpecifier =
  '.' id MoreTypeSpecifier                                       # Qualified name
  | TypeArguments SquareBracketsList ;                            # Generics + array brackets
 
+# Throws clause for methods and constructors
+ThrowsClause = 'throws' CompoundName (',' CompoundName)* ;
+
 # MemberRest branches on what follows "Type id":
 # - '(' indicates a method declaration
 # - '[' or '=' or ',' or ';' indicates a variable declaration
 MemberRest =
- '(' ParameterList? ')' SquareBracketsList ( StatementBlock | ';' )
+ '(' ParameterList? ')' SquareBracketsList ThrowsClause? ( StatementBlock | ';' )
  | SquareBracketsList OptVariableInitializer MoreVariableDeclarators ';' ;
 
 MoreVariableDeclarators = (',' VariableDeclarator)* ;
@@ -149,8 +152,9 @@ VariableDeclaratorList = VariableDeclarator (',' VariableDeclarator)* ;
 # 1. Local variable declarations inside method bodies (via StatementWithoutIf)
 # 2. For loops (via ForStatement)
 # Note: Field-level variable declarations use MemberDeclaration above
+# Local variable declarations support 'final' modifier
 VariableDeclaration  =
- Type VariableDeclaratorList
+ ('final')? Type VariableDeclaratorList
    ';'  ;
 
 OptVariableInitializer = ('=' VariableInitializer)? ;
@@ -170,8 +174,9 @@ StaticInitializer  =
 ParameterList  =
 Parameter (',' Parameter)* ;
 
+# Parameter supports modifiers (final), varargs (...), and array brackets
 Parameter  =
-Type id SquareBracketsList ;
+ModifierList Type ('...')? id SquareBracketsList ;
 
 StatementList = Statement *;
 
@@ -216,11 +221,28 @@ DoStatement =
 WhileStatement =
  'while'  '(' Expression  ')' Statement  ;
 
+# Enhanced for-each: for ([final] Type var : collection)
+# Traditional for: for (init; condition; update)
+# Note: Grammar factored to defer decision until ':' vs '=' is seen
+# This avoids LALR conflicts between enhanced and traditional for
 ForStatement =
- 'for'  '('  ( VariableDeclaration  |  ( Expression  ';'  )  |  ';'  )
- OptExpression  ';'
- OptExpression
- ')' Statement  ;
+ 'for' '(' ForInit ')' Statement  ;
+
+# ForInit handles both enhanced for-each and traditional for
+# After seeing [final] Type id, ForVarRest determines which form:
+#   ':' Expression -> enhanced for-each
+#   SquareBracketsList OptVariableInitializer... -> traditional for
+ForInit =
+ 'final' Type id ForVarRest
+ | Type id ForVarRest
+ | Expression ';' OptExpression ';' OptExpression
+ | ';' OptExpression ';' OptExpression
+ ;
+
+ForVarRest =
+ ':' Expression
+ | SquareBracketsList OptVariableInitializer MoreVariableDeclarators ';' OptExpression ';' OptExpression
+ ;
 
 CatchList = (  'catch'  '(' Parameter  ')' Statement)* ;
 

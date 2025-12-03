@@ -3,10 +3,16 @@
 # - Lambda expressions (->)
 # - Method references (::)
 # - Anonymous inner classes
-# - Enhanced for-each with colon
+# - Diamond operator (<>)
 #
-# Total: 253 files blacklisted, 14 files passing
+# Total: 248 files blacklisted, 20 files passing
 # As grammar support is added, remove files from this list
+#
+# Recently added support (this PR):
+# - Enhanced for-each: for (Type var : collection)
+# - Varargs: Type... name
+# - Throws clauses: method() throws Exception
+# - Final local variables: final Type var = value
 
 org/apache/commons/lang3/AbstractLangTest.java
 org/apache/commons/lang3/AnnotationUtilsTest.java
@@ -45,7 +51,6 @@ org/apache/commons/lang3/LangAssertions.java
 org/apache/commons/lang3/LocaleUtilsTest.java
 org/apache/commons/lang3/LongRangeTest.java
 org/apache/commons/lang3/NotImplementedExceptionTest.java
-org/apache/commons/lang3/ObjectToStringRuntimeException.java
 org/apache/commons/lang3/ObjectUtilsTest.java
 org/apache/commons/lang3/RandomStringUtilsTest.java
 org/apache/commons/lang3/RandomUtilsTest.java
@@ -196,18 +201,15 @@ org/apache/commons/lang3/reflect/ConstructorUtilsTest.java
 org/apache/commons/lang3/reflect/FieldUtilsTest.java
 org/apache/commons/lang3/reflect/InheritanceUtilsTest.java
 org/apache/commons/lang3/reflect/Lang1703Test.java
+org/apache/commons/lang3/reflect/Lang1792Test.java
 org/apache/commons/lang3/reflect/MethodUtilsTest.java
-org/apache/commons/lang3/reflect/PackageBean.java
-org/apache/commons/lang3/reflect/PublicSubBean.java
 org/apache/commons/lang3/reflect/TypeLiteralTest.java
 org/apache/commons/lang3/reflect/TypeUtilsTest.java
 org/apache/commons/lang3/reflect/testbed/Ambig.java
 org/apache/commons/lang3/reflect/testbed/Annotated.java
 org/apache/commons/lang3/reflect/testbed/GenericParent.java
-org/apache/commons/lang3/reflect/testbed/PackageBeanOtherPackage.java
 org/apache/commons/lang3/reflect/testbed/Parent.java
 org/apache/commons/lang3/reflect/testbed/PrivatelyShadowedChild.java
-org/apache/commons/lang3/reflect/testbed/PublicSubBeanOtherPackage.java
 org/apache/commons/lang3/reflect/testbed/StringParameterizedChild.java
 org/apache/commons/lang3/stream/FailableStreamTest.java
 org/apache/commons/lang3/stream/IntStreamsTest.java
@@ -240,7 +242,6 @@ org/apache/commons/lang3/time/DateUtilsTest.java
 org/apache/commons/lang3/time/DurationFormatUtilsTest.java
 org/apache/commons/lang3/time/DurationUtilsTest.java
 org/apache/commons/lang3/time/FastDateFormatTest.java
-org/apache/commons/lang3/time/FastDateFormat_PrinterTest.java
 org/apache/commons/lang3/time/FastDateParserSDFTest.java
 org/apache/commons/lang3/time/FastDateParserTest.java
 org/apache/commons/lang3/time/FastDateParser_MoreOrLessTest.java

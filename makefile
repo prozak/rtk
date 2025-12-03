@@ -118,8 +118,10 @@ test-$(1): build test-out/$(3)Lexer.hs test-out/$(3)Parser.hs test-out/$(2)-main
 endef
 
 # Shared main binary build rule (defined once, used by multiple tests)
+# Note: -fforce-recomp ensures recompilation even if .o files appear up-to-date
+# This is needed because CI caching can leave stale .o files with updated timestamps
 test-out/java-main: test-out/java-main.hs test-out/JavaLexer.hs test-out/JavaParser.hs
-	cabal exec -- ghc --make -itest-out test-out/java-main.hs -o test-out/java-main
+	cabal exec -- ghc --make -fforce-recomp -itest-out test-out/java-main.hs -o test-out/java-main
 
 # Define test configurations: grammar-name, lexer-prefix, test-file
 $(eval $(call make-test-rule,grammar,Grammar,test-grammars/grammar.pg))
