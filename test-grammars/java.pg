@@ -391,16 +391,13 @@ integerLiteral =
  |  (  '0'  'x'  [0-9a-fA-F]+   )  )
  [l]?  ;
 
+# Float literal with inlined exponent and suffix patterns
+# Exponent: 'e' ('+' | '-')? [0-9]+
+# Suffix: [fd] (f for float, d for double)
 floatLiteral  =
- [0-9]+ '.' ([0-9]+)? exponentPart? floatTypeSuffix?
- |  '.' [0-9]+ exponentPart? floatTypeSuffix?
- |  [0-9]+ floatTypeSuffix ;
-
-exponentPart  =
- 'e'  (  '+'  |  '-'  )? [0-9]+  ;
-
-floatTypeSuffix  =
- 'f'  |  'd'  ;
+ [0-9]+ '.' ([0-9]+)? ('e' ('+' | '-')? [0-9]+)? [fd]?
+ |  '.' [0-9]+ ('e' ('+' | '-')? [0-9]+)? [fd]?
+ |  [0-9]+ [fd] ;
 
 # Character literal: handles simple chars and escape sequences
 # Simple char: 'a', single-char escapes: '\n', '\t', and Unicode: '\u0041'
