@@ -102,6 +102,7 @@ jobs:
         run_test "Java Test Suite" "make test-all-java"
         run_test "Java QQ Tests" "make test-java-qq"
         run_test "Apache Commons Lexical Tests" "make test-lex-commons-lang-all"
+        run_test "Apache Commons Parser Tests" "make test-parse-commons-lang-all"
         run_test "Debug Options Test" "make test-debug"
         run_test "Comprehensive Debug Test" "make test-debug-all"
         run_test "Automated Debug Options" "make test-debug-options"

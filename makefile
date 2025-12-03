@@ -1,4 +1,4 @@
-.PHONY: clean help test test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -354,6 +354,29 @@ test-lex-commons-lang-all: test-lex-commons-lang test-lex-commons-lang-tests
 	@echo ""
 	@echo "========================================"
 	@echo "Apache Commons Lang lexical parsing tests completed"
+	@echo "========================================"
+
+# Full parsing tests for Apache Commons Lang (required tests, will fail on errors)
+# Uses RTK-generated Happy parser with blacklist for unsupported Java 8+ features
+test-parse-commons-lang: test-out/java-main
+	@echo "========================================"
+	@echo "Full Parsing: Apache Commons Lang (main sources)"
+	@echo "This is a REQUIRED test - failures will break the build"
+	@echo "========================================"
+	@JAVA_PARSER=./test-out/java-main ./test-java-suite.sh --blacklist test-suites/commons-lang-parser-blacklist.txt test-suites/commons-lang/src/main/java test-results/commons-lang-parse-main
+
+test-parse-commons-lang-tests: test-out/java-main
+	@echo "========================================"
+	@echo "Full Parsing: Apache Commons Lang (test sources)"
+	@echo "This is a REQUIRED test - failures will break the build"
+	@echo "========================================"
+	@JAVA_PARSER=./test-out/java-main ./test-java-suite.sh --blacklist test-suites/commons-lang-parser-blacklist-tests.txt test-suites/commons-lang/src/test/java test-results/commons-lang-parse-tests
+
+# Test both main and test sources with full parsing
+test-parse-commons-lang-all: test-parse-commons-lang test-parse-commons-lang-tests
+	@echo ""
+	@echo "========================================"
+	@echo "Apache Commons Lang full parsing tests completed"
 	@echo "========================================"
 
 # Analyze failure patterns from most recent test run
