@@ -402,9 +402,17 @@ exponentPart  =
 floatTypeSuffix  =
  'f'  |  'd'  ;
 
-char  = '\'' . '\'' ;
+# Character literal: handles simple chars and escape sequences
+# Simple char: 'a', single-char escapes: '\n', '\t', and Unicode: '\u0041'
+# Use [\\x5C] (hex for backslash) to avoid RTK lexer escaping issues
+char  = '\'' . '\''
+      | '\'' [\\x5C] . '\''
+      | '\'' [\\x5C] 'u' [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] '\'' ;
 
-string  = [\"] [\\x20-\\x21\\x23-\\x7E]* [\"] ;
+# String literal: handles escape sequences like \", \\, \n, etc.
+# Use negated class to match any char except quote, backslash, newline, CR
+# Allow backslash followed by any char for escape sequences
+string  = [\"] ([^\\x22\\x5C\\x0A\\x0D] | [\\x5C] .)* [\"] ;
 
 id = [a-zA-Z$_][a-zA-Z$_0-9]* ;
 # Fixed: Split [*] [^/] into explicit cases for better Alex DFA generation
@@ -416,4 +424,5 @@ Ignore: ws = [ \t\n\r]+ ;
 Ignore: comment = '//' [^\n]* '\n' ;
 # Block comment must not match /** (which is doccomment)
 # Same fix applied as doccomment
-Ignore: blockComment = '/*' [^*] ([\n] | [^*\n] | [*] [^/\n] | [*] [\n])* '*/' ;
+# Note: [^*] doesn't match newline in Alex, so we use ([^*\n] | [\n])
+Ignore: blockComment = '/*' ([^*\n] | [\n]) ([\n] | [^*\n] | [*] [^/\n] | [*] [\n])* '*/' ;

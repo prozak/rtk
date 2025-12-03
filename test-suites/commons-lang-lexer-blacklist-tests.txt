@@ -1,24 +1,2 @@
 # Blacklist for lexical parsing tests (test sources)
-# These files contain Java char literals with escape sequences (e.g., '\n', '\t')
-# which the grammar's char pattern doesn't support (it only matches single chars).
-# The char pattern would need to be: char = '\'' (. | '\\' .) '\'' ;
-org/apache/commons/lang3/CharUtilsTest.java
-org/apache/commons/lang3/ClassUtilsOssFuzzTest.java
-org/apache/commons/lang3/ClassUtilsTest.java
-org/apache/commons/lang3/ObjectUtilsTest.java
-org/apache/commons/lang3/RandomStringUtilsTest.java
-org/apache/commons/lang3/StreamsTest.java
-org/apache/commons/lang3/StringEscapeUtilsTest.java
-org/apache/commons/lang3/StringUtilsAbbreviateTest.java
-org/apache/commons/lang3/StringUtilsStartsEndsWithTest.java
-org/apache/commons/lang3/StringUtilsTest.java
-org/apache/commons/lang3/StringUtilsTrimStripTest.java
-org/apache/commons/lang3/builder/JsonToStringStyleTest.java
-org/apache/commons/lang3/math/NumberUtilsTest.java
-org/apache/commons/lang3/reflect/TypeUtilsTest.java
-org/apache/commons/lang3/stream/StreamsTest.java
-org/apache/commons/lang3/text/ExtendedMessageFormatTest.java
-org/apache/commons/lang3/text/StrMatcherTest.java
-org/apache/commons/lang3/text/StrTokenizerTest.java
-org/apache/commons/lang3/time/FastDateParser_TimeZoneStrategyTest.java
-org/apache/commons/lang3/time/GmtTimeZoneTest.java
+# Empty - all tests enabled
