@@ -70,7 +70,8 @@ mkdir -p "$OUTPUT_DIR/failed"
 mkdir -p "$OUTPUT_DIR/succeeded"
 
 # Load blacklist if provided
-declare -A BLACKLIST
+declare -A BLACKLIST=()  # Initialize as empty associative array
+BLACKLIST_LOADED=0
 if [ -n "$BLACKLIST_FILE" ]; then
     if [ ! -f "$BLACKLIST_FILE" ]; then
         echo -e "${RED}Error: Blacklist file $BLACKLIST_FILE does not exist${NC}"
@@ -81,8 +82,9 @@ if [ -n "$BLACKLIST_FILE" ]; then
         # Skip comments and empty lines
         [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
         BLACKLIST["$line"]=1
+        BLACKLIST_LOADED=$((BLACKLIST_LOADED + 1))
     done < "$BLACKLIST_FILE"
-    echo -e "${BLUE}Loaded ${#BLACKLIST[@]} blacklisted files${NC}"
+    echo -e "${BLUE}Loaded ${BLACKLIST_LOADED} blacklisted files${NC}"
 fi
 
 # Find all Java files
