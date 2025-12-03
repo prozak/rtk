@@ -78,10 +78,20 @@ EnumDeclaration =
 # - Method: Type id '(' ...  (where Type can be CompoundName, which is also id)
 # - Field: Type id ';' or '=' ...
 # By structuring alternatives carefully, we can distinguish them.
+#
+# NOTE: DocComment comes BEFORE ModifierList to match standard Java style:
+#   /** doc */ public int field;
+# NOT: public /** doc */ int field;
+# NestedTypeDeclaration handles all nested type declarations (class, interface, enum, annotation)
+# These all share the same pattern: Javadoc? Modifiers TypeKeyword Name ...
+NestedTypeDeclaration =
+ ClassDeclaration
+ | InterfaceDeclaration
+ | EnumDeclaration
+ | AnnotationDeclaration ;
+
 FieldDeclaration  =
- (ModifierList ((  DocComment?  ( MemberDeclaration
- | ClassDeclaration ))
- | StaticInitializer))
+ OptDocComment (ModifierList ((MemberDeclaration | NestedTypeDeclaration) | StaticInitializer))
  |  ';'  ;
 
 SquareBracketsList = ('[' OptExpression ']')* ;

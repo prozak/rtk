@@ -5,7 +5,7 @@
 # - Anonymous inner classes
 # - Enhanced for-each with colon
 #
-# Total: 255 files blacklisted, 12 files passing
+# Total: 253 files blacklisted, 14 files passing
 # As grammar support is added, remove files from this list
 
 org/apache/commons/lang3/AbstractLangTest.java
@@ -67,7 +67,6 @@ org/apache/commons/lang3/StringUtilsTest.java
 org/apache/commons/lang3/StringUtilsTrimStripTest.java
 org/apache/commons/lang3/StringUtilsValueOfTest.java
 org/apache/commons/lang3/StringsTest.java
-org/apache/commons/lang3/Supplementary.java
 org/apache/commons/lang3/SystemPropertiesTest.java
 org/apache/commons/lang3/SystemUtilsTest.java
 org/apache/commons/lang3/ThreadUtilsTest.java
@@ -209,7 +208,6 @@ org/apache/commons/lang3/reflect/testbed/PackageBeanOtherPackage.java
 org/apache/commons/lang3/reflect/testbed/Parent.java
 org/apache/commons/lang3/reflect/testbed/PrivatelyShadowedChild.java
 org/apache/commons/lang3/reflect/testbed/PublicSubBeanOtherPackage.java
-org/apache/commons/lang3/reflect/testbed/StaticContainer.java
 org/apache/commons/lang3/reflect/testbed/StringParameterizedChild.java
 org/apache/commons/lang3/stream/FailableStreamTest.java
 org/apache/commons/lang3/stream/IntStreamsTest.java
