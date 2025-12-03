@@ -1,12 +1,28 @@
 Cabal-Version:       2.2
 Name:                rtk
 Version:             0.10
-Description:         Generates rewrite facilities for the given grammar
+Synopsis:            Parser and rewrite facility generator from grammar specifications
+Description:         RTK (Rewrite ToolKit) generates Alex lexer and Happy parser
+                     files from grammar specifications. It supports quasi-quotation
+                     for embedding parsed syntax in Haskell code.
 License:             MIT
 License-File:        LICENSE
 Author:              prozak
-Maintainer:          prozak
+Maintainer:          nickolay.lysenko@gmail.com
+Homepage:            https://github.com/prozak/rtk
+Bug-Reports:         https://github.com/prozak/rtk/issues
+Category:            Language, Development
 Build-Type:          Simple
+Tested-With:         GHC == 9.4.7
+
+Extra-Source-Files:
+    CHANGELOG.md
+    README.md
+    test-grammars/*.pg
+
+Source-Repository head
+    Type:     git
+    Location: https://github.com/prozak/rtk.git
 
 Library
   Exposed-Modules: 
