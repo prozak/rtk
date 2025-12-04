@@ -1,0 +1,309 @@
+{-# LANGUAGE QuasiQuotes #-}
+-- | Pretty Printer Generator
+-- Generates Haskell code that converts AST back to source code
+module GenPP (genPP)
+    where
+
+import Parser
+import Text.PrettyPrint hiding ((<>))
+import qualified Text.PrettyPrint as PP
+import qualified Data.Map as Map
+import qualified Data.Set as Set
+import qualified Data.List as List
+import Grammar
+import StrQuote
+
+-- | Map from lexical rule name to its string literal (for keywords/operators)
+type LiteralMap = Map.Map ID String
+
+-- | Map from rule name to its data type name
+type RulesMap = Map.Map ID ID
+
+-- | Build a map from lexical rule names to their string literals
+-- Only includes rules where the clause is a simple IStrLit (keywords, operators)
+buildLiteralMap :: [LexicalRule] -> LiteralMap
+buildLiteralMap rules = Map.fromList
+    [ (getLRuleName r, s)
+    | r@LexicalRule{} <- rules
+    , IStrLit s <- [getLClause r]
+    ]
+
+-- | Build a map from rule names to data type names
+buildRulesMap :: NormalGrammar -> RulesMap
+buildRulesMap NormalGrammar{ getSyntaxRuleGroups = groups, getLexicalRules = lrules } =
+    Map.fromList $ concat
+        (map (\lr -> (getLRuleName lr, getLRuleDataType lr)) (removeSymmacros lrules) :
+         map (\g -> map (\r -> (getSRuleName r, getSDataTypeName g)) $ getSRules g) groups)
+
+-- | Check if a lexical rule is for a keyword
+isKeywordRule :: LexicalRule -> Bool
+isKeywordRule LexicalRule{ getLRuleDataType = "Keyword" } = True
+isKeywordRule _ = False
+
+-- | Layout hints for smart formatting
+data LayoutHint
+    = HintBlockStart      -- After '{' - increase indent, newline
+    | HintBlockEnd        -- Before '}' - decrease indent, newline
+    | HintStatementEnd    -- After ';' - newline at same indent
+    | HintKeyword         -- Space around keywords
+    | HintOperator        -- Space around operators
+    | HintComma           -- Space after comma
+    | HintOpenParen       -- No space after '('
+    | HintCloseParen      -- No space before ')'
+    | HintNone            -- Default spacing
+    deriving (Eq, Show)
+
+-- | Determine layout hint for a literal
+layoutHint :: String -> LayoutHint
+layoutHint "{" = HintBlockStart
+layoutHint "}" = HintBlockEnd
+layoutHint ";" = HintStatementEnd
+layoutHint "," = HintComma
+layoutHint "(" = HintOpenParen
+layoutHint ")" = HintCloseParen
+layoutHint "[" = HintOpenParen
+layoutHint "]" = HintCloseParen
+-- Operators
+layoutHint "+" = HintOperator
+layoutHint "-" = HintOperator
+layoutHint "*" = HintOperator
+layoutHint "/" = HintOperator
+layoutHint "=" = HintOperator
+layoutHint "==" = HintOperator
+layoutHint "!=" = HintOperator
+layoutHint "<" = HintOperator
+layoutHint ">" = HintOperator
+layoutHint "<=" = HintOperator
+layoutHint ">=" = HintOperator
+layoutHint "&&" = HintOperator
+layoutHint "||" = HintOperator
+layoutHint "&" = HintOperator
+layoutHint "|" = HintOperator
+layoutHint "^" = HintOperator
+layoutHint "?" = HintOperator
+layoutHint ":" = HintOperator
+layoutHint "+=" = HintOperator
+layoutHint "-=" = HintOperator
+layoutHint "*=" = HintOperator
+layoutHint "/=" = HintOperator
+-- Keywords (common ones)
+layoutHint s
+    | s `elem` keywords = HintKeyword
+    | otherwise = HintNone
+  where
+    keywords = ["class", "interface", "enum", "extends", "implements",
+                "public", "private", "protected", "static", "final",
+                "abstract", "synchronized", "volatile", "transient",
+                "native", "strictfp", "if", "else", "while", "for",
+                "do", "switch", "case", "default", "break", "continue",
+                "return", "throw", "try", "catch", "finally", "new",
+                "instanceof", "this", "super", "void", "null", "true",
+                "false", "package", "import", "throws", "assert"]
+
+-- | Generate the complete pretty printer module
+genPP :: NormalGrammar -> String
+genPP grammar = render $ vcat
+    [ text header
+    , text ""
+    , text "-- | Indentation amount"
+    , text "indentAmount :: Int"
+    , text "indentAmount = 4"
+    , text ""
+    , text "-- | Helper to add spacing based on layout hints"
+    , text "spaced :: Doc -> Doc -> Doc"
+    , text "spaced a b = a <+> b"
+    , text ""
+    , text "-- | Helper for block formatting"
+    , text "block :: [Doc] -> Doc"
+    , text "block contents = vcat contents"
+    , text ""
+    , text "-- | Helper for comma-separated lists"
+    , text "commaSep :: [Doc] -> Doc"
+    , text "commaSep = hsep . punctuate (text \",\")"
+    , text ""
+    , text "-- | Helper for semicolon-terminated statements"
+    , text "stmtSep :: [Doc] -> Doc"
+    , text "stmtSep = vcat . map (<> text \";\")"
+    , text ""
+    , typeSynonyms
+    , text ""
+    , ppFunctions
+    ]
+  where
+    litMap = buildLiteralMap (getLexicalRules grammar)
+    rulesMap = buildRulesMap grammar
+    groups = getSyntaxRuleGroups grammar
+    name = getNGrammarName grammar
+
+    header = [str|
+-- | Auto-generated pretty printer for |] ++ name ++ [str|
+
+-- This module provides functions to convert AST nodes back to source code.
+-- Generated by RTK (Rewrite ToolKit)
+
+module |] ++ name ++ [str|PP where
+
+import Text.PrettyPrint
+import |] ++ name ++ [str|Parser
+|]
+
+    -- Generate type synonyms for list types
+    typeSynonyms = vcat $ map (genTypeSynonym rulesMap) $
+        filter hasListClause (normalRules groups)
+
+    hasListClause SyntaxRule{ getSClause = STMany{} } = True
+    hasListClause _ = False
+
+    -- Generate pp functions for each type
+    ppFunctions = vcat $ map (genPPFunction litMap rulesMap) groups
+
+-- | Generate type synonym comment for list types
+genTypeSynonym :: RulesMap -> SyntaxRule -> Doc
+genTypeSynonym _ SyntaxRule{ getSRuleName = name, getSClause = STMany _ cl mSep } =
+    text "-- " <> text name <> text " is a list of " <> text (getSSId cl) <>
+    maybe empty (\s -> text " separated by " <> text (getSSId s)) mSep
+genTypeSynonym _ _ = empty
+
+getSSId :: SyntaxSimpleClause -> String
+getSSId (SSId n) = n
+getSSId (SSLifted n) = n
+getSSId (SSIgnore n) = n
+
+-- | Generate pretty printer function for a rule group
+genPPFunction :: LiteralMap -> RulesMap -> SyntaxRuleGroup -> Doc
+genPPFunction litMap rulesMap group =
+    vcat
+        [ text ""
+        , text "-- | Pretty print" <+> text typeName
+        , text funcName <+> text "::" <+> text typeName <+> text "-> Doc"
+        , cases
+        ]
+  where
+    typeName = getSDataTypeName group
+    funcName = "pp" ++ typeName
+    rules = getSRules group
+    -- Combine all rules into a single clause for pattern matching
+    combinedClause = combineClauses $ map getSClause rules
+    cases = genPPCases litMap rulesMap funcName typeName combinedClause
+
+-- | Combine multiple clauses (from rules with same type) into one
+combineClauses :: [SyntaxTopClause] -> SyntaxTopClause
+combineClauses [a] = a
+combineClauses alts = STAltOfSeq $ List.nubBy sameConstructor $ concat $ map extractSeqs alts
+  where
+    extractSeqs (STAltOfSeq seqs) = seqs
+    extractSeqs _ = []
+    sameConstructor (STSeq c1 _) (STSeq c2 _) = c1 == c2
+
+-- | Generate pattern match cases for a clause
+genPPCases :: LiteralMap -> RulesMap -> String -> String -> SyntaxTopClause -> Doc
+genPPCases litMap rulesMap funcName typeName clause = case clause of
+    STMany op elemClause mSepClause ->
+        genPPListCase litMap rulesMap funcName typeName op elemClause mSepClause
+    STOpt elemClause ->
+        genPPOptCase litMap rulesMap funcName typeName elemClause
+    STAltOfSeq seqs ->
+        vcat $ map (genPPSeqCase litMap rulesMap funcName) $
+            filter (not . isLiftedSeq) seqs
+
+-- | Check if a sequence is just a lifted element
+isLiftedSeq :: STSeq -> Bool
+isLiftedSeq (STSeq _ clauses) = case filter isNotIgnored clauses of
+    [SSLifted _] -> True
+    _ -> False
+
+-- | Generate case for list type (STMany)
+genPPListCase :: LiteralMap -> RulesMap -> String -> String -> STManyOp -> SyntaxSimpleClause -> Maybe SyntaxSimpleClause -> Doc
+genPPListCase litMap rulesMap funcName typeName _op elemClause mSepClause =
+    text funcName <+> text "xs" <+> text "=" <+> body
+  where
+    elemPP = genPPClauseCall litMap rulesMap elemClause
+    sepDoc = case mSepClause of
+        Just sepClause -> case Map.lookup (getSSId sepClause) litMap of
+            Just lit -> text "text" <+> doubleQuotes (text lit)
+            Nothing -> text "text" <+> doubleQuotes (text ",")  -- default separator
+        Nothing -> text "text" <+> doubleQuotes (text " ")  -- space separator
+    body = text "hsep $ punctuate" <+> parens sepDoc <+>
+           parens (text "map" <+> parens elemPP <+> text "xs")
+
+-- | Generate case for optional type (STOpt)
+genPPOptCase :: LiteralMap -> RulesMap -> String -> String -> SyntaxSimpleClause -> Doc
+genPPOptCase litMap rulesMap funcName _ elemClause =
+    vcat
+        [ text funcName <+> text "Nothing" <+> text "= empty"
+        , text funcName <+> text "(Just x)" <+> text "=" <+>
+          genPPClauseCall litMap rulesMap elemClause <+> text "x"
+        ]
+
+-- | Generate case for a sequence (constructor)
+genPPSeqCase :: LiteralMap -> RulesMap -> String -> STSeq -> Doc
+genPPSeqCase litMap rulesMap funcName (STSeq constructor clauses) =
+    text funcName <+> pattern' <+> text "=" <+> body
+  where
+    -- Filter out ignored clauses for the pattern (they're not in the AST)
+    nonIgnored = filter isNotIgnored clauses
+    varNames = zipWith (\_ i -> "v" ++ show i) nonIgnored ([1..] :: [Int])
+    pattern' = if null nonIgnored
+               then text constructor
+               else parens $ text constructor <+> hsep (map text varNames)
+
+    -- Build the body by going through all clauses
+    body = if null bodyParts
+           then text "empty"
+           else hsep $ punctuate (text " <+>") bodyParts
+
+    bodyParts = genPPBodyParts litMap rulesMap clauses varNames
+
+-- | Generate body parts for a sequence, handling both stored and ignored elements
+genPPBodyParts :: LiteralMap -> RulesMap -> [SyntaxSimpleClause] -> [String] -> [Doc]
+genPPBodyParts litMap rulesMap clauses varNames = go clauses varNames
+  where
+    go [] _ = []
+    go (cl:rest) vars = case cl of
+        SSIgnore idName ->
+            -- Look up the literal for this lexical rule
+            case Map.lookup idName litMap of
+                Just lit -> formatLiteral lit : go rest vars
+                Nothing  -> go rest vars  -- Skip if no literal found
+        SSId idName ->
+            case vars of
+                (v:vs) -> genPPCall litMap rulesMap idName v : go rest vs
+                [] -> error "Not enough variable names"
+        SSLifted idName ->
+            case vars of
+                (v:vs) -> genPPCall litMap rulesMap idName v : go rest vs
+                [] -> error "Not enough variable names"
+
+-- | Format a literal with appropriate spacing hints
+formatLiteral :: String -> Doc
+formatLiteral lit = case layoutHint lit of
+    HintBlockStart -> text "text" <+> doubleQuotes (text lit) <+> text "<> text \"\\n\""
+    HintBlockEnd   -> text "text \"\\n\"" <+> text "<>" <+> text "text" <+> doubleQuotes (text lit)
+    HintStatementEnd -> text "text" <+> doubleQuotes (text lit)
+    _ -> text "text" <+> doubleQuotes (text lit)
+
+-- | Generate a call to pretty print a sub-element
+genPPCall :: LiteralMap -> RulesMap -> ID -> String -> Doc
+genPPCall _ rulesMap idName varName =
+    case Map.lookup idName rulesMap of
+        Just dataType
+            | dataType == "String" -> text "text" <+> text varName
+            | dataType == "Int"    -> text "int" <+> text varName
+            | dataType == "Keyword" -> text "text" <+> doubleQuotes (text idName)  -- Keywords are literals
+            | otherwise -> text ("pp" ++ dataType) <+> text varName
+        Nothing ->
+            -- Unknown type, just use text
+            text "text" <+> parens (text "show" <+> text varName)
+
+-- | Generate a pretty print call for a clause (used in list/optional cases)
+genPPClauseCall :: LiteralMap -> RulesMap -> SyntaxSimpleClause -> Doc
+genPPClauseCall _ rulesMap (SSId idName) =
+    case Map.lookup idName rulesMap of
+        Just dataType
+            | dataType == "String" -> text "text"
+            | dataType == "Int"    -> text "int"
+            | dataType == "Keyword" -> text "text"
+            | otherwise -> text ("pp" ++ dataType)
+        Nothing -> text "text . show"
+genPPClauseCall litMap rulesMap (SSLifted idName) = genPPClauseCall litMap rulesMap (SSId idName)
+genPPClauseCall _ _ (SSIgnore _) = text "const empty"

@@ -41,6 +41,10 @@ data DebugOptions = DebugOptions
     , debugParserSpec :: Bool
     , debugLexerSpec :: Bool
     , debugQQSpec :: Bool
+    , debugPPSpec :: Bool
+
+    -- Code generation options
+    , generatePP :: Bool
 
     -- Analysis and statistics
     , showStats :: Bool
@@ -90,6 +94,8 @@ defaultDebugOptions file dir = DebugOptions
     , debugParserSpec = False
     , debugLexerSpec = False
     , debugQQSpec = False
+    , debugPPSpec = False
+    , generatePP = False
     , showStats = False
     , analyzeConflicts = False
     , showRuleGraph = False
@@ -170,6 +176,14 @@ debugOptionsParser = DebugOptions
     <*> switch
         ( long "debug-qq-spec"
        <> help "Print generated quasiquoter code" )
+    <*> switch
+        ( long "debug-pp-spec"
+       <> help "Print generated pretty printer code" )
+
+    -- Code generation options
+    <*> switch
+        ( long "generate-pp"
+       <> help "Generate pretty printer module" )
 
     -- Analysis and statistics
     <*> switch

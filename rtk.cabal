@@ -47,6 +47,7 @@ Executable rtk
                      GenQ,
                      GenX,
                      GenY,
+                     GenPP,
                      Normalize,
                      PrintGrammar,
                      StrQuote,

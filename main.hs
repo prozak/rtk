@@ -6,6 +6,7 @@ import Normalize
 import GenY
 import GenX
 import GenQ
+import GenPP
 import DebugOptions
 import qualified Debug as D
 import Control.Monad (when)
@@ -169,6 +170,15 @@ main = do
             return (result, Just timing)
         else return (genQ grammar2, Nothing)
 
+    -- Generate pretty printer if requested
+    (pp_content, maybeT9) <- if generatePP opts
+        then if profileStages opts
+            then do
+                (result, timing) <- D.timed "PrettyPrinter (PP) Generation" $ evaluate $ genPP grammar2
+                return (Just result, Just timing)
+            else return (Just $ genPP grammar2, Nothing)
+        else return (Nothing, Nothing)
+
     -- Debug generated specs if requested
     when (debugParserSpec opts) $ do
         D.debugSection opts "GENERATED HAPPY PARSER SPECIFICATION"
@@ -182,16 +192,26 @@ main = do
         D.debugSection opts "GENERATED QUASIQUOTER CODE"
         putStrLn q_content
 
+    when (debugPPSpec opts) $ do
+        D.debugSection opts "GENERATED PRETTY PRINTER CODE"
+        case pp_content of
+            Just pp -> putStrLn pp
+            Nothing -> putStrLn "(Pretty printer not generated - use --generate-pp to enable)"
+
     -- Write output files (unless we're only validating)
     when (not (validateGrammar opts) || not (validateGrammar opts && not (any id [debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts]))) $ do
         let dir = outputDir opts
         writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
         writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
         writeFile (dir ++ "/" ++ grammar_name ++ "QQ.hs") q_content
+        -- Write pretty printer if generated
+        case pp_content of
+            Just pp -> writeFile (dir ++ "/" ++ grammar_name ++ "PP.hs") pp
+            Nothing -> return ()
 
     -- Show timing profile if requested
     when (profileStages opts) $ do
-        let allTimings = catMaybes [maybeT1, maybeT1_5, maybeT2, maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8]
+        let allTimings = catMaybes [maybeT1, maybeT1_5, maybeT2, maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8, maybeT9]
         when (not $ null allTimings) $
             D.showTimingInfo opts allTimings
 
@@ -199,8 +219,9 @@ main = do
     when (not $ any id [debugTokens opts, debugParse opts, debugStringNorm opts,
                         debugClauseNorm opts, debugConstructors opts,
                         debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts,
-                        showStats opts, validateGrammar opts]) $ do
-        putStrLn $ "Successfully generated files for " ++ grammar_name
+                        debugPPSpec opts, showStats opts, validateGrammar opts]) $ do
+        let ppMsg = if generatePP opts then " (including pretty printer)" else ""
+        putStrLn $ "Successfully generated files for " ++ grammar_name ++ ppMsg
 
 -- Helper function
 exitAfterDebug :: IO ()
