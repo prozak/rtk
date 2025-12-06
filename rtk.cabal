@@ -36,7 +36,8 @@ Library
 
 Executable rtk
   Main-is:           main.hs
-  Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens, HUnit, optparse-applicative, time, ansi-terminal
+  hs-source-dirs:    ., src/generated
+  Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens, HUnit, optparse-applicative, time, ansi-terminal, regex-posix, regex-base
   Build-Tool-Depends: happy:happy, alex:alex
   Other-Modules:
                      Lexer,
@@ -52,7 +53,12 @@ Executable rtk
                      StrQuote,
                      StringLiterals,
                      DebugOptions,
-                     Debug
+                     Debug,
+                     -- Generated parser modules (for --use-generated mode)
+                     GrammarLexer,
+                     GrammarParser,
+                     GrammarQQ,
+                     ASTAdapter
   Default-Language: Haskell2010
   Default-Extensions: DeriveDataTypeable
   ghc-options:       -rtsopts -Wall -Wunused-imports -Wunused-top-binds -Wunused-local-binds -Wunused-matches

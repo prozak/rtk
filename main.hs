@@ -8,70 +8,93 @@ import GenX
 import GenQ
 import DebugOptions
 import qualified Debug as D
-import Control.Monad (when)
+import Control.Monad (when, unless)
 import Data.Maybe (isJust, fromJust, catMaybes)
 import Control.Exception (evaluate)
+
+-- Generated parser modules (for --use-generated mode)
+import qualified GrammarLexer as GenL
+import qualified GrammarParser as GenP
+import ASTAdapter (convertGrammar)
 
 main :: IO ()
 main = do
     -- Parse command-line options
     opts <- parseOptions
 
-    -- Check for experimental generated parser mode
-    when (useGenerated opts) $ do
-        putStrLn "=========================================="
-        putStrLn "EXPERIMENTAL: Using Generated Parsers"
-        putStrLn "=========================================="
-        putStrLn ""
-        putStrLn "This mode uses parsers generated from test-grammars/grammar.pg"
-        putStrLn "instead of the hand-written Lexer.x and Parser.y."
-        putStrLn ""
-        putStrLn "Status: NOT YET IMPLEMENTED"
-        putStrLn ""
-        putStrLn "To implement:"
-        putStrLn "  1. Run: make test-grammar"
-        putStrLn "  2. This generates: test-out/GrammarLexer.x, GrammarParser.y, GrammarQQ.hs"
-        putStrLn "  3. Compile these to create generated parser modules"
-        putStrLn "  4. Integrate into main.hs dual-mode logic"
-        putStrLn ""
-        putStrLn "This is Prototype 1 of the self-hosting roadmap."
-        putStrLn "See docs/self-hosting-strategy.md for details."
-        putStrLn "=========================================="
-        error "Generated parser mode not yet available"
-
     -- Load grammar file
     content <- readFile (grammarFile opts)
 
-    -- Stage 1: Lexical Analysis
-    (rawTokens, maybeT1) <- if profileStages opts
+    -- Parse using either generated or hand-written parser
+    (grammar, maybeT1, maybeT1_5, maybeT2) <- if useGenerated opts
         then do
-            (result, timing) <- D.timed "Lexical Analysis" $ evaluate $ alexScanTokens content
-            return (result, Just timing)
-        else return (alexScanTokens content, Nothing)
+            -- EXPERIMENTAL: Using Generated Parsers (Prototype 2)
+            when (not $ any id [debugTokens opts, debugParse opts]) $ do
+                putStrLn "=========================================="
+                putStrLn "EXPERIMENTAL: Using Generated Parsers"
+                putStrLn "=========================================="
 
-    -- Stage 1.5: Token Post-Processing
-    -- Process escape sequences and concatenate multi-line strings
-    (tokens, maybeT1_5) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Token Post-Processing" $ evaluate $ processTokens rawTokens
-            return (result, Just timing)
-        else return (processTokens rawTokens, Nothing)
+            -- Stage 1: Lexical Analysis (using generated lexer)
+            (genTokens, t1) <- if profileStages opts
+                then do
+                    (result, timing) <- D.timed "Lexical Analysis (Generated)" $ evaluate $ GenL.alexScanTokens content
+                    return (result, Just timing)
+                else return (GenL.alexScanTokens content, Nothing)
 
-    when (debugTokens opts) $
-        D.printTokens opts tokens
+            -- Stage 2: Parsing (using generated parser)
+            (genGrammar, t2) <- if profileStages opts
+                then do
+                    (result, timing) <- D.timed "Parsing (Generated)" $ evaluate $ GenP.parseGrammar genTokens
+                    return (result, Just timing)
+                else return (GenP.parseGrammar genTokens, Nothing)
 
-    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageLex) $
-        exitAfterDebug
+            -- Stage 2.5: AST Conversion (generated -> hand-written)
+            (handGrammar, t2_5) <- if profileStages opts
+                then do
+                    (result, timing) <- D.timed "AST Conversion" $ evaluate $ convertGrammar genGrammar
+                    return (result, Just timing)
+                else return (convertGrammar genGrammar, Nothing)
 
-    -- Stage 2: Parsing
-    (grammar, maybeT2) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Parsing" $ evaluate $ parse tokens
-            return (result, Just timing)
-        else return (parse tokens, Nothing)
+            when (debugParse opts) $
+                D.printInitialGrammar opts handGrammar
 
-    when (debugParse opts) $
-        D.printInitialGrammar opts grammar
+            return (handGrammar, t1, t2_5, t2)
+
+        else do
+            -- Normal mode: Hand-written Parsers
+
+            -- Stage 1: Lexical Analysis
+            (rawTokens, t1) <- if profileStages opts
+                then do
+                    (result, timing) <- D.timed "Lexical Analysis" $ evaluate $ alexScanTokens content
+                    return (result, Just timing)
+                else return (alexScanTokens content, Nothing)
+
+            -- Stage 1.5: Token Post-Processing
+            -- Process escape sequences and concatenate multi-line strings
+            (tokens, t1_5) <- if profileStages opts
+                then do
+                    (result, timing) <- D.timed "Token Post-Processing" $ evaluate $ processTokens rawTokens
+                    return (result, Just timing)
+                else return (processTokens rawTokens, Nothing)
+
+            when (debugTokens opts) $
+                D.printTokens opts tokens
+
+            when (isJust (debugStage opts) && fromJust (debugStage opts) == StageLex) $
+                exitAfterDebug
+
+            -- Stage 2: Parsing
+            (parsedGrammar, t2) <- if profileStages opts
+                then do
+                    (result, timing) <- D.timed "Parsing" $ evaluate $ parse tokens
+                    return (result, Just timing)
+                else return (parse tokens, Nothing)
+
+            when (debugParse opts) $
+                D.printInitialGrammar opts parsedGrammar
+
+            return (parsedGrammar, t1, t1_5, t2)
 
     when (isJust (debugStage opts) && fromJust (debugStage opts) == StageParse) $
         exitAfterDebug

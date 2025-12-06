@@ -10,3 +10,7 @@ test-results
 happy_log.txt
 dist-newstyle
 cabal.project.local
+
+# Test output directories
+test-out-generated/
+test-out-hand/
