@@ -32,7 +32,8 @@ data NormalizationState = NormalizationState {
                                               _normShortcuts :: [(String, String)],
                                               _proxyRuleNames :: S.Set ID,
                                               _qqLexRuleCache :: M.Map ID ID,
-                                              _antiRuleCache :: M.Map ID ID
+                                              _antiRuleCache :: M.Map ID ID,
+                                              _ruleToTypeName :: M.Map ID ID
                                              }
 
 $(makeLenses ''NormalizationState)
@@ -123,9 +124,11 @@ addRuleWithQQ tdName ruleName clause = do
           Just _ -> addRule tdName ruleName clause
           Nothing -> qqAdd altseqs
     STMany opType (SSId rule) mcl -> do
-                -- For list rules, use the element rule name as the type for QQ splicing
-                -- TODO: Look up actual type data name for the element rule if different
-                newRule <- addListProxyRule rule rule ruleName
+                -- For list rules, look up the actual type data name for the element rule
+                -- This handles cases where the element rule has a shared type (e.g., Expression : AddExpr)
+                typeMap <- use ruleToTypeName
+                let elemTypeName = M.findWithDefault rule rule typeMap
+                newRule <- addListProxyRule elemTypeName rule ruleName
                 addRule tdName ruleName $ STMany opType (SSId newRule) mcl
     _ -> addRule tdName ruleName clause
   where qqAdd altseqs = do
@@ -242,6 +245,13 @@ normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, ge
       addLexicalRule $ LexicalRule dtn1 df1 rn cl
 normalizeRule r = error $ "normalizeRule: unexpected rule pattern: " ++ show r
 
+-- Build a map from rule name to type data name for all rules in the grammar.
+-- This is needed to look up the correct type when processing list rules.
+buildRuleToTypeMap :: InitialGrammar -> M.Map ID ID
+buildRuleToTypeMap grammar = M.fromList $ map ruleMapping $ getIRules grammar
+  where
+    ruleMapping r = (getIRuleName r, maybe (getIRuleName r) id (getIDataTypeName r))
+
 doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do
   let grammar0 = everywhereBut (False `mkQ` (isLexicalRule . getIRuleName)) (mkT removeOpts) grammar
@@ -306,8 +316,9 @@ normalizeTopLevelClauses grammar =
     [] -> error $ "Grammar '" ++ (getIGrammarName grammar) ++ "' contains no rules"
     (firstIRule:_) ->
       let firstID = getIRuleName firstIRule
-          (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _) =
-            runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty)
+          ruleTypeMap = buildRuleToTypeMap grammar
+          (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _ _) =
+            runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap)
           firstRuleGroupRules = fromJust $ M.lookup firstID nrs
           nrs1 = M.delete firstID nrs
           firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
