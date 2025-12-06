@@ -123,7 +123,8 @@ addRuleWithQQ tdName ruleName clause = do
           Just _ -> addRule tdName ruleName clause
           Nothing -> qqAdd altseqs
     STMany opType (SSId rule) mcl -> do
-                -- TODO: td name for the rule
+                -- For list rules, use the element rule name as the type for QQ splicing
+                -- TODO: Look up actual type data name for the element rule if different
                 newRule <- addListProxyRule rule rule ruleName
                 addRule tdName ruleName $ STMany opType (SSId newRule) mcl
     _ -> addRule tdName ruleName clause
@@ -137,10 +138,10 @@ addRuleWithQQ tdName ruleName clause = do
 addListProxyRule :: ID -> ID -> ID -> Normalization ID
 addListProxyRule tdName elemRuleName listName = do
   ruleName <- newNamePrefixed $ "ListElem_" ++ listName
-  qqLexRule <- addQQLexRuleCached listName    -- Use cached version
-  constr <- addAntiRuleCached tdName True     -- Use cached version
-  -- For shared types, add anti-alternative to ALL rules (GenAST deduplicates constructors)
-  -- This ensures splicing works in all grammar contexts, not just the first rule
+  -- For list splicing, use the element type (not the list type) for QQ pattern
+  -- e.g., for "AnnotationList = Annotation*", use $Annotation:foo to splice elements
+  qqLexRule <- addQQLexRuleCached tdName
+  constr <- addAntiRuleCached tdName True
   addRule tdName ruleName $ STAltOfSeq [STSeq constr [SSId qqLexRule], STSeq "" [SSLifted elemRuleName]]
   return ruleName
 
