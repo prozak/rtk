@@ -10,3 +10,4 @@ test-results
 happy_log.txt
 dist-newstyle
 cabal.project.local
+test-suites/commons-lang-repo/
