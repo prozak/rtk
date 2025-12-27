@@ -319,7 +319,14 @@ normalizeTopLevelClauses grammar =
           ruleTypeMap = buildRuleToTypeMap grammar
           (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _ _) =
             runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap)
-          firstRuleGroupRules = fromJust $ M.lookup firstID nrs
+          firstRuleGroupRules = case M.lookup firstID nrs of
+            Just rules -> rules
+            Nothing -> error $ "Grammar error: The first rule '" ++ firstID ++ "' was not found in syntax rules.\n" ++
+                               "This usually happens because the rule name starts with a lowercase letter.\n" ++
+                               "In RTK grammar convention:\n" ++
+                               "  - Syntax rules (grammar rules) must start with an UPPERCASE letter (e.g., 'Tinyc', 'Function')\n" ++
+                               "  - Lexical rules (token definitions) start with a lowercase letter (e.g., 'int', 'id')\n" ++
+                               "Please rename your first rule to start with an uppercase letter."
           nrs1 = M.delete firstID nrs
           firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
           otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
