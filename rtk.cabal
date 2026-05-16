@@ -48,7 +48,6 @@ Executable rtk
                      GenX,
                      GenY,
                      Normalize,
-                     PrintGrammar,
                      StrQuote,
                      StringLiterals,
                      DebugOptions,
