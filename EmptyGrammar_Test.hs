@@ -6,6 +6,7 @@ import StringLiterals (normalizeStringLiterals)
 import Normalize (normalizeTopLevelClauses)
 import Test.HUnit
 import Control.Exception (catch, evaluate, ErrorCall(..))
+import Data.List (isInfixOf)
 
 -- Test that an empty grammar file (with grammar declaration but no rules)
 -- produces the expected error message
@@ -68,17 +69,6 @@ testValidGrammar = TestCase $ do
     case result of
         Left err -> assertFailure $ "Valid grammar should parse without error, but got: " ++ err
         Right _ -> putStrLn "✓ Valid grammar test passed"
-
--- Helper function to check if a string contains a substring
-isInfixOf :: String -> String -> Bool
-isInfixOf needle haystack = any (isPrefixOf needle) (tails haystack)
-  where
-    tails [] = [[]]
-    tails s@(_:xs) = s : tails xs
-
-    isPrefixOf [] _ = True
-    isPrefixOf _ [] = False
-    isPrefixOf (x:xs) (y:ys) = x == y && isPrefixOf xs ys
 
 main :: IO ()
 main = do

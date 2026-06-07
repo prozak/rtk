@@ -182,8 +182,8 @@ main = do
         D.debugSection opts "GENERATED QUASIQUOTER CODE"
         putStrLn q_content
 
-    -- Write output files (unless we're only validating)
-    when (not (validateGrammar opts) || not (validateGrammar opts && not (any id [debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts]))) $ do
+    -- Write output files (unless we're only validating without dumping any spec)
+    when (not (validateGrammar opts) || any id [debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts]) $ do
         let dir = outputDir opts
         writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
         writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
