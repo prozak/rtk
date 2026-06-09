@@ -27,6 +27,14 @@ jobs:
       env:
         GHCUP_INSTALL_BASE_PREFIX: ${{ runner.temp }}/ghcup
 
+    # The custom GHCUP_INSTALL_BASE_PREFIX above (a permission workaround)
+    # makes ghcup install the pinned toolchain under runner.temp, but the
+    # setup action only puts the image's stock ~/.ghcup/bin on PATH. Without
+    # this step, builds silently use whatever GHC the runner image ships
+    # (currently 9.14.x) instead of the pinned versions.
+    - name: Put pinned GHC/Cabal on PATH
+      run: echo "${{ runner.temp }}/ghcup/.ghcup/bin" >> "$GITHUB_PATH"
+
     - name: Cache Cabal packages
       uses: actions/cache@v4
       with:
