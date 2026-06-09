@@ -39,18 +39,27 @@ jobs:
           ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
           ${{ runner.os }}-cabal-
 
+    # Cache generated lexers/parsers and compiled test binaries. The key must
+    # hash every input that influences what RTK generates: all root *.hs/*.x/*.y
+    # sources (the rtk binary is built from exactly these, including the
+    # generators GenX/GenY/GenQ/GenAST), the cabal file, the grammars, the
+    # makefile, and this workflow (GHC/tool versions). No restore-keys fallback:
+    # a partially matching cache would restore outputs from older sources, and
+    # the timestamp refresh below would then stop Make from ever regenerating
+    # them. Exact match or regenerate from scratch.
     - name: Cache test outputs
       id: cache-test-out
       uses: actions/cache@v4
       with:
         path: test-out
-        key: v2-${{ runner.os }}-test-out-${{ hashFiles('test-grammars/**', 'Normalize.hs', 'CodeGen.hs', '*.x', '*.y', 'makefile') }}
-        restore-keys: |
-          v2-${{ runner.os }}-test-out-
+        key: v3-${{ runner.os }}-test-out-${{ hashFiles('*.hs', '*.x', '*.y', 'rtk.cabal', 'test-grammars/**', 'makefile', '.github/workflows/ci.yml') }}
 
     - name: Update timestamps on cached test outputs
       run: |
-        # Update timestamps to prevent Make from thinking files are out of date
+        # Refresh timestamps so Make sees cached outputs as newer than the
+        # checked-out sources. Safe only because the cache key above is an
+        # exact hash of all generator inputs: a hit means the outputs were
+        # produced from identical sources.
         if [ -d test-out ]; then
           echo "Updating timestamps on cached test-out files..."
           find test-out -type f -exec touch {} +
