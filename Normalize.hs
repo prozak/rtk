@@ -141,9 +141,13 @@ addRuleWithQQ tdName ruleName clause = do
 addListProxyRule :: ID -> ID -> ID -> Normalization ID
 addListProxyRule tdName elemRuleName listName = do
   ruleName <- newNamePrefixed $ "ListElem_" ++ listName
-  -- For list splicing, use the element type (not the list type) for QQ pattern
-  -- e.g., for "AnnotationList = Annotation*", use $Annotation:foo to splice elements
-  qqLexRule <- addQQLexRuleCached tdName
+  -- The QQ token is named after the LIST rule (e.g. $RuleList:xs for
+  -- "RuleList = Rule*"), because GenQ's anti functions for isList rules
+  -- splice whole lists: in patterns the anti node binds the entire list,
+  -- in expressions it prepends a list variable to the remaining elements.
+  -- The anti constructor lives in the ELEMENT's type (Anti_<ElemType>),
+  -- since the token parses in element position within the list.
+  qqLexRule <- addQQLexRuleCached listName
   constr <- addAntiRuleCached tdName True
   addRule tdName ruleName $ STAltOfSeq [STSeq constr [SSId qqLexRule], STSeq "" [SSLifted elemRuleName]]
   return ruleName
