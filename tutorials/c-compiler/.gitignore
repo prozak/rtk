@@ -1,0 +1,8 @@
+gen/
+build/
+/ncc
+/test-qq
+*.hi
+*.o
+*.s
+tests/valid/*_ref

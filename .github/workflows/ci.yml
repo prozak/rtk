@@ -162,6 +162,8 @@ jobs:
         # Quoters and splices against a type that exists only through rule
         # annotations (the synthesized cover rule, issue #14).
         run_test "Issue 14 QQ Tests" "make test-i14-qq"
+        run_test "P QQ Pattern Matching Tests" "make test-p"
+        run_test "C Compiler Tutorial" "make -C tutorials/c-compiler test"
         run_test "Apache Commons Lexical Tests" "make test-lex-commons-lang-all"
         run_test "Apache Commons Parser Tests" "make test-parse-commons-lang-all"
         # test-debug and test-debug-all exercise the same debug flags but
