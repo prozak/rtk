@@ -1,4 +1,4 @@
-Cabal-Version:       2.2
+Cabal-Version:       2.4
 Name:                rtk
 Version:             0.10
 Synopsis:            Parser and rewrite facility generator from grammar specifications
@@ -19,26 +19,21 @@ Extra-Source-Files:
     CHANGELOG.md
     README.md
     test-grammars/*.pg
+    test/golden/**/*.x
+    test/golden/**/*.y
+    test/golden/**/*.hs
 
 Source-Repository head
     Type:     git
     Location: https://github.com/prozak/rtk.git
 
-Library
-  Exposed-Modules: 
-                   Lexer,
-                   Parser,
-                   Grammar
-  Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens
-  Default-Language: Haskell2010
-  Default-Extensions:  DeriveDataTypeable
+Common warnings
+  Default-Language:  Haskell2010
   ghc-options:       -Wall -Wunused-imports -Wunused-top-binds -Wunused-local-binds -Wunused-matches
 
-Executable rtk
-  Main-is:           main.hs
-  Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens, HUnit, optparse-applicative, time, ansi-terminal
-  Build-Tool-Depends: happy:happy, alex:alex
-  Other-Modules:
+Library
+  Import:            warnings
+  Exposed-Modules:
                      Lexer,
                      Parser,
                      TokenProcessing,
@@ -53,6 +48,36 @@ Executable rtk
                      StringLiterals,
                      DebugOptions,
                      Debug
-  Default-Language: Haskell2010
-  Default-Extensions: DeriveDataTypeable
-  ghc-options:       -rtsopts -Wall -Wunused-imports -Wunused-top-binds -Wunused-local-binds -Wunused-matches
+  Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens, optparse-applicative, time, ansi-terminal
+  Build-Tool-Depends: happy:happy, alex:alex
+  Default-Extensions:  DeriveDataTypeable
+
+Executable rtk
+  Import:            warnings
+  Main-is:           main.hs
+  Hs-Source-Dirs:    app
+  Build-Depends:     base >= 4.7 && < 5, rtk
+  ghc-options:       -rtsopts
+
+-- In-process tests of the generation pipeline (lex/parse/normalize/generate).
+-- They do not need alex, happy, or a GHC compile cycle, so they are fast and
+-- can run with plain `cabal test`.
+Test-Suite unit
+  Import:            warnings
+  Type:              exitcode-stdio-1.0
+  Main-Is:           UnitTests.hs
+  Hs-Source-Dirs:    test
+  Other-Modules:     TestSupport
+  Build-Depends:     base >= 4.7 && < 5, rtk, HUnit, containers, directory, filepath
+
+-- Golden tests: generated .x/.y/QQ.hs output for every grammar under
+-- test-grammars/ is compared against snapshots in test/golden/.
+-- Refresh the snapshots with `make accept-golden` after intentional
+-- generator changes.
+Test-Suite golden
+  Import:            warnings
+  Type:              exitcode-stdio-1.0
+  Main-Is:           GoldenTests.hs
+  Hs-Source-Dirs:    test
+  Other-Modules:     TestSupport
+  Build-Depends:     base >= 4.7 && < 5, rtk, HUnit, directory, filepath

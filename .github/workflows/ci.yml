@@ -41,11 +41,25 @@ jobs:
         path: |
           ~/.cabal/packages
           ~/.cabal/store
-          dist-newstyle
         key: ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
         restore-keys: |
           ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
           ${{ runner.os }}-cabal-
+
+    # dist-newstyle gets its own cache, restored only when the .cabal file is
+    # unchanged (no restore-keys fallback). Restoring it across a component
+    # layout change poisons the build: e.g. when the executable stopped
+    # compiling Lexer/Parser itself, a restored cache still had the
+    # preprocessed Lexer.hs/Parser.hs in the executable's build directory,
+    # GHC picked them up as (unlisted) home modules shadowing the library,
+    # and -Wmissing-home-modules failed the -Werror build. The content-
+    # addressed ~/.cabal/store above is safe to share across layouts;
+    # dist-newstyle is not.
+    - name: Cache project build directory
+      uses: actions/cache@v4
+      with:
+        path: dist-newstyle
+        key: ${{ runner.os }}-dist-newstyle-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
 
     # Cache generated lexers/parsers and compiled test binaries. The key must
     # hash every input that influences what RTK generates: all root *.hs/*.x/*.y
@@ -60,7 +74,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: test-out
-        key: v3-${{ runner.os }}-test-out-${{ hashFiles('*.hs', '*.x', '*.y', 'rtk.cabal', 'test-grammars/**', 'makefile', '.github/workflows/ci.yml') }}
+        key: v3-${{ runner.os }}-test-out-${{ hashFiles('*.hs', 'app/*.hs', '*.x', '*.y', 'rtk.cabal', 'test-grammars/**', 'makefile', '.github/workflows/ci.yml') }}
 
     - name: Update timestamps on cached test outputs
       run: |
@@ -118,7 +132,9 @@ jobs:
         }
 
         # Run all tests (continue even if some fail)
-        run_test "Basic Unit Tests" "make test"
+        # `make test` runs the cabal test suites: unit tests (normalization
+        # invariants etc.) and golden tests of the generated .x/.y/QQ output.
+        run_test "Cabal Test Suites" "make test"
         run_test "Base Grammar Test" "make test-grammar"
         run_test "Java Test Suite" "make test-all-java"
         run_test "Java QQ Tests" "make test-java-qq"

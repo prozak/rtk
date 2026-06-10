@@ -1,0 +1,130 @@
+{
+module GrammarLexer(alexScanTokens, Token(..))
+where
+
+import Data.List
+import qualified Data.Map as M
+
+ }
+%wrapper "monad"
+
+$dq = "
+$ndq = [^\"]
+
+tokens :- "tok_Clause_dummy_14" { simple Tk__tok_Clause_dummy_14 }
+          "tok_Grammar_dummy_15" { simple Tk__tok_Grammar_dummy_15 }
+          "tok_IdList_dummy_13" { simple Tk__tok_IdList_dummy_13 }
+          "tok_ImportsOpt_dummy_12" { simple Tk__tok_ImportsOpt_dummy_12 }
+          "tok_Name_dummy_11" { simple Tk__tok_Name_dummy_11 }
+          "tok_OptDelim_dummy_10" { simple Tk__tok_OptDelim_dummy_10 }
+          "tok_Option_dummy_9" { simple Tk__tok_Option_dummy_9 }
+          "tok_OptionList_dummy_8" { simple Tk__tok_OptionList_dummy_8 }
+          "tok_Rule_dummy_7" { simple Tk__tok_Rule_dummy_7 }
+          "tok_RuleList_dummy_6" { simple Tk__tok_RuleList_dummy_6 }
+          "tok_StrLit_dummy_5" { simple Tk__tok_StrLit_dummy_5 }
+          "~" { simple Tk__tok__tilde__16 }
+          "|" { simple Tk__tok__pipe__11 }
+          "imports" { simple Tk__tok_imports_2 }
+          "grammar" { simple Tk__tok_grammar_0 }
+          "@symmacro" { simple Tk__tok__symbol_symmacro_9 }
+          "@shortcuts" { simple Tk__tok__symbol_shortcuts_6 }
+          "?" { simple Tk__tok__symbol__15 }
+          "=" { simple Tk__tok__eql__3 }
+          ";" { simple Tk__tok__semi__1 }
+          ":" { simple Tk__tok__colon__4 }
+          "." { simple Tk__tok__dot__5 }
+          "," { simple Tk__tok__coma__10 }
+          "+" { simple Tk__tok__plus__14 }
+          "*" { simple Tk__tok__star__13 }
+          ")" { simple Tk__tok__rparen__8 }
+          "(" { simple Tk__tok__lparen__7 }
+          "!" { simple Tk__tok__exclamation__12 }
+          ("/*"  ([^\*]| [\*]  [^\/]| [\n])*  "*/") ;
+          ("#"  .*  [\n]) ;
+          ([\ \t\n]+) ;
+          ("["  ([^\]]| "\]")*  "]") { simple1 $  Tk__regexplit . (id) }
+          ($dq  $dq  $dq  ($ndq| $dq  $ndq| $dq  $dq  $ndq| [\n])*  $dq  $dq  $dq) { simple1 $  Tk__bigstr . (id) }
+          ("'"  ([^']| "\'")*  "'") { simple1 $  Tk__str . (id) }
+          ([a-zA-Z]  [A-Za-z0-9_]*) { simple1 $  Tk__id . (id) }
+          ("$"  "Name"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Name . ((tail . dropWhile (/= ':'))) }
+          ("$"  "StrLit"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_StrLit . ((tail . dropWhile (/= ':'))) }
+          ("$"  "OptDelim"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_OptDelim . ((tail . dropWhile (/= ':'))) }
+          ("$"  "Clause"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Clause . ((tail . dropWhile (/= ':'))) }
+          ("$"  "IdList"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_IdList . ((tail . dropWhile (/= ':'))) }
+          ("$"  "Option"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Option . ((tail . dropWhile (/= ':'))) }
+          ("$"  "OptionList"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_OptionList . ((tail . dropWhile (/= ':'))) }
+          ("$"  "Rule"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Rule . ((tail . dropWhile (/= ':'))) }
+          ("$"  "RuleList"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_RuleList . ((tail . dropWhile (/= ':'))) }
+          ("$"  "ImportsOpt"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_ImportsOpt . ((tail . dropWhile (/= ':'))) }
+          ("$"  "Grammar"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Grammar . ((tail . dropWhile (/= ':'))) }
+          . { rtkError }
+
+{
+data Token = EndOfFile |
+             Tk__tok_Clause_dummy_14 |
+             Tk__tok_Grammar_dummy_15 |
+             Tk__tok_IdList_dummy_13 |
+             Tk__tok_ImportsOpt_dummy_12 |
+             Tk__tok_Name_dummy_11 |
+             Tk__tok_OptDelim_dummy_10 |
+             Tk__tok_Option_dummy_9 |
+             Tk__tok_OptionList_dummy_8 |
+             Tk__tok_Rule_dummy_7 |
+             Tk__tok_RuleList_dummy_6 |
+             Tk__tok_StrLit_dummy_5 |
+             Tk__tok__tilde__16 |
+             Tk__tok__pipe__11 |
+             Tk__tok_imports_2 |
+             Tk__tok_grammar_0 |
+             Tk__tok__symbol_symmacro_9 |
+             Tk__tok__symbol_shortcuts_6 |
+             Tk__tok__symbol__15 |
+             Tk__tok__eql__3 |
+             Tk__tok__semi__1 |
+             Tk__tok__colon__4 |
+             Tk__tok__dot__5 |
+             Tk__tok__coma__10 |
+             Tk__tok__plus__14 |
+             Tk__tok__star__13 |
+             Tk__tok__rparen__8 |
+             Tk__tok__lparen__7 |
+             Tk__tok__exclamation__12 |
+             Tk__regexplit String |
+             Tk__bigstr String |
+             Tk__str String |
+             Tk__id String |
+             Tk__qq_Name String |
+             Tk__qq_StrLit String |
+             Tk__qq_OptDelim String |
+             Tk__qq_Clause String |
+             Tk__qq_IdList String |
+             Tk__qq_Option String |
+             Tk__qq_OptionList String |
+             Tk__qq_Rule String |
+             Tk__qq_RuleList String |
+             Tk__qq_ImportsOpt String |
+             Tk__qq_Grammar String
+             deriving (Show)
+
+alexEOF = return EndOfFile
+alexScanTokens :: String -> [Token]
+alexScanTokens str = 
+               case alexScanTokens1 str of
+                  Right toks -> toks
+                  Left err -> error err
+
+alexScanTokens1 str = runAlex str $ do
+  let loop toks = do tok <- alexMonadScan
+                     case tok of
+                       EndOfFile -> return $ reverse toks
+                       _ -> let toks' = tok : toks 
+                            in toks' `seq` loop toks'
+  loop []
+simple1 :: (String -> Token) -> AlexInput -> Int -> Alex Token
+simple1 t (_, _, _, str) len = return $ t (take len str)
+
+simple t input len = return t
+
+rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at " ++ (show line) ++ " line, " ++ (show column) ++ " column" ++ ". Following chars :" ++ (take 10 str)
+
+}
