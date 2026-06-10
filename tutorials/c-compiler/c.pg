@@ -1,0 +1,47 @@
+grammar 'C';
+
+# Stage 1 of Nora Sandler's "Writing a C Compiler"
+# (https://norasandler.com/2017/11/29/Write-a-Compiler.html):
+#
+#   <program>   ::= <function>
+#   <function>  ::= "int" <id> "(" ")" "{" <statement> "}"
+#   <statement> ::= "return" <exp> ";"
+#   <exp>       ::= <int>
+#
+# Deviation from the blog grammar: the function body is a statement LIST
+# (the blog switches to that in part 5 anyway). This also exercises RTK's
+# list anti-quotation: $stmts binds/splices a whole [Statement].
+#
+# Later stages will grow Exp into a precedence cascade. Use ,-lifted
+# pass-through alternatives for the cascade levels (as in
+# ../../test-grammars/grammar.pg), NOT bare alternatives as in java.pg:
+# lifted pass-throughs give the cascade a single anti-quote injection point
+# at the atom level, which is what keeps $-antiquotes conflict-free.
+
+Program = Function ;
+
+Function = 'int' Ident '(' ')' '{' StatementList '}' ;
+
+# NOTE: StatementList must be normalized BEFORE Statement: RTK allows one
+# anti-quote shape per AST type (scalar or list), and we want the list shape
+# ($stmts :: [Statement]) for type Statement.
+@shortcuts(stmts)
+StatementList = Statement* ;
+
+Statement = 'return' Exp ';' ;
+
+@shortcuts(e)
+Exp = intLit ;
+
+@shortcuts(name)
+Ident = id ;
+
+# ----------------------------------------------------------------------------
+# Lexical rules
+# ----------------------------------------------------------------------------
+
+id = [a-zA-Z_][a-zA-Z_0-9]* ;
+Int: intLit = [0-9]+ ;
+Ignore: ws = [ \t\n\r]+ ;
+Ignore: comment = '//' [^\n]* '\n' ;
+Ignore: blockComment = '/*' ([^*\n] | [\n]) ([\n] | [^*\n] | [*] [^/\n] | [*] [\n])* '*/' ;

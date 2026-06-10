@@ -241,6 +241,18 @@ make accept-golden     # or: RTK_ACCEPT=1 cabal test golden
 git diff test/golden/
 ```
 
+#### Quasi-Quotation Runtime Tests
+```bash
+make test-p                          # P grammar: QQ pattern matching + antiquote splicing
+make test-java-qq                    # Java grammar: QQ construction mode
+make -C tutorials/c-compiler test    # C tutorial: full QQ feature set + stage-1 compiler tests
+```
+
+`make test-p` and the C tutorial (tutorials/c-compiler, see its README) are
+the only tests that compile and RUN quasi-quotation in pattern/antiquote mode
+(the golden tests only diff the generated text). Keep them green when touching
+GenQ or Normalize.
+
 #### Golden Compile Gate
 ```bash
 make test-compile-goldens

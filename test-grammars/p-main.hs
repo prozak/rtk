@@ -1,33 +1,60 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-import System.IO(readFile, writeFile)
-import System.Environment(getArgs)
---import Control.Exception(bracket)
+-- End-to-end test of RTK quasi-quotation for the P grammar: pattern matching
+-- with antiquote binders, construction with antiquote splices, and equality
+-- against quasi-quoted expected values. Exits non-zero on any mismatch.
+-- (AST equality ignores source positions: RtkPos compares equal by design.)
+
+import Control.Monad (unless)
+import System.Exit (exitFailure)
+
 import PLexer
 import PParser
 import PQQ
-import Text.Show.Pretty
 
-subst :: Id -> E -> Int -> E
-subst id [e|(fold $e1 $e2 (lambda ( $id1 $id2 ) $e3))|] i =
-  let e1s = subst id e1 i
-      e2s = subst id e2 i
-      e3s = subst id e3 i
-    in [e|(fold $e1s $e2s (lambda ( $id1 $id2 ) $e3s))|]
-subst _ e _ = e
+-- Substitute value v for every free occurrence of variable x in an expression.
+-- Quasi-quotation patterns destructure the AST; antiquoted construction
+-- rebuilds it. Antiquote names must start with a rule shortcut (e for E,
+-- id for Id, op1/op2 for the operator sorts).
+subst :: Id -> E -> E -> E
+subst x v expr = case expr of
+  [e| $id1 |] -> if id1 == x then v else expr
+  [e| (if0 $e1 $e2 $e3) |] ->
+    let e1New = subst x v e1
+        e2New = subst x v e2
+        e3New = subst x v e3
+    in [e| (if0 $e1New $e2New $e3New) |]
+  [e| (fold $e1 $e2 (lambda ( $id1 $id2 ) $e3)) |] ->
+    let e1New = subst x v e1
+        e2New = subst x v e2
+        -- the fold lambda binds id1 and id2; do not substitute under shadowing
+        e3New = if x == id1 || x == id2 then e3 else subst x v e3
+    in [e| (fold $e1New $e2New (lambda ( $id1 $id2 ) $e3New)) |]
+  [e| ($op1a $e1) |] ->
+    let e1New = subst x v e1
+    in [e| ($op1a $e1New) |]
+  [e| ($op2a $e1 $e2) |] ->
+    let e1New = subst x v e1
+        e2New = subst x v e2
+    in [e| ($op2a $e1New $e2New) |]
+  _ -> expr -- literals 0 and 1
 
--- subst id [e|$id1|] i = if
-
-evalE :: E -> Int
-evalE _ = 0
-
-evalP :: P -> Int -> Int
-evalP [p|(lambda ($id) $e)|] i = evalE $ subst id e i
-
+main :: IO ()
 main = do
-    -- Prelude.id: PQQ also exports an 'id' quasi-quoter for the Id type
-    let _p = either errorWithoutStackTrace Prelude.id $
-               scanTokens "(lambda (x) (fold x 0 (lambda (y z) (or y z))))" >>= parseP
-    let [p|(lambda ($id) $e)|] = _p
-    putStrLn $ show $ subst (Ctr__Id__0 rtkNoPos "x") e 0x1122334455667788
-    return ()
+  let prog = either errorWithoutStackTrace Prelude.id $
+        scanTokens "(lambda (x) (fold x 0 (lambda (y z) (or y z))))" >>= parseP
+  -- destructure the program with a quasi-quotation pattern
+  [p| (lambda ($id1) $e1) |] <- return prog
+  let result = subst id1 [e| 1 |] e1
+      expected = [e| (fold 1 0 (lambda (y z) (or y z))) |]
+  putStrLn $ "input:       " ++ show e1
+  putStrLn $ "substituted: " ++ show result
+  unless (result == expected) $ do
+    putStrLn $ "EXPECTED:    " ++ show expected
+    exitFailure
+  -- shadowing: substituting y must not touch the fold lambda's body
+  let shadowed = subst (Ctr__Id__0 rtkNoPos "y") [e| 1 |] e1
+  unless (shadowed == e1) $ do
+    putStrLn $ "shadowing broken: " ++ show shadowed
+    exitFailure
+  putStrLn "P quasi-quotation tests: PASS"
