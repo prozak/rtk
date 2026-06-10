@@ -15,7 +15,7 @@ quasi-quoters - something the tutorial itself cannot do.
 |-------|-------------------|----------|-------|
 | 0 | - | `lc.pg` spike: QQ viability on a ladder grammar | done |
 | 1 | 3 (parsing), 4 (untyped LC) | `lc.pg` + `lc-main.hs` interpreter | done |
-| 2 | 5-6 (type systems, evaluation) | simply typed LC | planned |
+| 2 | 5-6 (type systems, evaluation) | `stlc.pg` + `stlc-main.hs` | done |
 | 3 | 7 (Hindley-Milner) | Poly with `let rec`, inference, REPL | planned |
 | 4 | 8-12 (ProtoHaskell) | stretch goal; needs a layout decision | open |
 
@@ -40,6 +40,32 @@ REPL.
 ```
 make test-lc    # build the generated pipeline and run the test suite
 make repl-lc    # interactive REPL: lc> (\s -> \z -> s (s z)) (\n -> n + 1) 0
+```
+
+## The stlc language (chapters 5-6)
+
+`test-grammars/stlc.pg` extends the same expression ladder with typed
+binders and a second QQ-capable nonterminal family for types. Annotated
+binders use the classic dot form `\x : Int . e`: with an arrow instead,
+`Int -> e` would parse as a function type under LALR. The type arrow is
+right-recursive (`Int -> Int -> Bool` associates right), and `TyAtom`
+plays the lift-free anti-token role for the `Ty` family that `Atom`
+plays for `Expr`.
+
+`test-grammars/stlc-main.hs` implements chapter 5's typechecker with
+quasi-quotes over both families - result types are built by splicing
+(`[ty| $t1 -> $t2 |]`) and application destructures arrows with a
+`[ty| ... |]` pattern - plus chapter 6's evaluation-strategy comparison:
+one closure evaluator parameterized by strategy, where call-by-value
+forces arguments with `seq` and call-by-name inherits thunking from the
+host language. The tests pin the classic result: the strategies disagree
+exactly on an ill-typed term (`(\x : Int . 2) (1 + true)` - CBV gets
+stuck, CBN returns 2), and the typechecker rejects that term.
+
+```
+make test-stlc    # typechecker + evaluator test suite
+make repl-stlc    # stlc> (\f : Int -> Int . f (f 0)) (\n : Int . n + 1)
+                  #       2 : Int
 ```
 
 ## Grammar design rules for quasi-quotation
