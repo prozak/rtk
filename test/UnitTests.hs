@@ -237,6 +237,8 @@ normalizationTests = TestList
     [ TestLabel "string literals become shared ignored keyword tokens" testStringLiterals
     , TestLabel "list rules get an element proxy with QQ splicing support" testListProxy
     , TestLabel "QQ anti machinery is created once per shared type" testAntiRuleSharing
+    , TestLabel "a precedence chain gets one splice alternative, at its bottom" testChainAttachment
+    , TestLabel "splice attachment falls back to eligible rules when nothing covers" testAttachFallbackNoCover
     , TestLabel "shortcuts are recorded against the rule's type" testShortcuts
     , TestLabel "optional clauses desugar to an empty alternative" testOptionalDesugars
     , TestLabel "lexical rule type and conversion defaults" testLexicalRuleDefaults
@@ -315,6 +317,50 @@ testAntiRuleSharing = TestCase $ do
                                 , alt@(STSeq "Anti_Expr" _) <- alts ]
     assertEqual "Add accepts $Expr: splices" [STSeq "Anti_Expr" [SSId "qq_Expr"]] (antiAltsOf "Add")
     assertEqual "Mul accepts $Expr: splices" [STSeq "Anti_Expr" [SSId "qq_Expr"]] (antiAltsOf "Mul")
+
+-- | In a shared-type group whose rules form a unit-production chain
+-- (java.pg's Expression hierarchy in miniature), only the bottom rule of
+-- the chain receives the splice alternative; a splice climbs the unit
+-- productions to whatever level its position demands. One alternative
+-- means one reduce item for the splice token, so the parser has no
+-- reduce/reduce conflict to resolve arbitrarily.
+testChainAttachment :: Test
+testChainAttachment = TestCase $ do
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'Chain';"
+                , "Top = Expr ';' ;"
+                , "Expr : Expr = Add ;"
+                , "Expr : Add = Mul | Add '+' Mul ;"
+                , "Expr : Mul = aa | Mul '*' aa ;"
+                , "aa = [a]+ ;"
+                ]
+        antiAltsOf name = [ alt | SyntaxRule rn (STAltOfSeq alts) <- allRules g, rn == name
+                                , alt@(STSeq "Anti_Expr" _) <- alts ]
+    assertEqual "Mul (the chain bottom) accepts $Expr: splices"
+        [STSeq "Anti_Expr" [SSId "qq_Expr"]] (antiAltsOf "Mul")
+    assertEqual "Add has no splice alternative of its own" [] (antiAltsOf "Add")
+    assertEqual "Expr has no splice alternative of its own" [] (antiAltsOf "Expr")
+
+-- | When no attach point can cover a demanded rule (here T is all-lifted,
+-- so it cannot carry the alternative, and no unit production reaches it),
+-- attachment falls back to every eligible rule of the group -- and, just as
+-- important, normalization terminates instead of retrying a candidate that
+-- covers nothing.
+testAttachFallbackNoCover :: Test
+testAttachFallbackNoCover = TestCase $ do
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'X';"
+                , "S = T ;"
+                , "T : T = ,Q ;"
+                , "T : U = uu ;"
+                , "Q = qq ;"
+                , "uu = [u]+ ;"
+                , "qq = [q]+ ;"
+                ]
+        antiAltsOf name = [ alt | SyntaxRule rn (STAltOfSeq alts) <- allRules g, rn == name
+                                , alt@(STSeq "Anti_T" _) <- alts ]
+    assertEqual "U accepts $T: splices" [STSeq "Anti_T" [SSId "qq_T"]] (antiAltsOf "U")
+    assertEqual "the lifted rule carries no splice alternative" [] (antiAltsOf "T")
 
 testShortcuts :: Test
 testShortcuts = TestCase $ do

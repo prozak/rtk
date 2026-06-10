@@ -23,6 +23,8 @@ main = do
     putStrLn ""
     testDollarEscape
     putStrLn ""
+    testSubExpressionSplices
+    putStrLn ""
 
     putStrLn "=========================================================="
     putStrLn "All tests completed successfully!"
@@ -239,6 +241,66 @@ testDollarEscape = do
     putStrLn ""
     putStrLn "Dollar-escape tests: ALL PASSED ✅"
 
+-- ========== PART 5: Sub-expression splice positions ==========
+-- The splice alternative sits only on PrimaryNoPostfix, the bottom of the
+-- expression precedence chain; a spliced expression climbs the chain's unit
+-- productions up to whatever level its position demands. Each build here is
+-- round-tripped through the equivalent pattern splice: the pattern anchors
+-- at the same chain position, so it must hand back exactly the values that
+-- were spliced in. Mismatches are fatal (they fail `make test-java-qq`).
+testSubExpressionSplices :: IO ()
+testSubExpressionSplices = do
+    putStrLn "========== PART 5: Sub-expression splice positions =========="
+    putStrLn ""
+    let x   = [J.expression| x |]
+        one = [J.expression| 1 |]
+        two = [J.expression| 2 |]
+
+    putStrLn "--- Test: operands of '+' ---"
+    case [J.expression| $Expression:x + $Expression:one |] of
+        [J.expression| $Expression:l + $Expression:r |]
+            | l == x && r == one -> putStrLn "✅ splices as '+' operands round-trip"
+        other -> error $ "FAILED: '+' operand splices did not round-trip:\n" ++ ppShow other
+
+    putStrLn "--- Test: operand of a prefix operator ---"
+    case [J.expression| - $Expression:x |] of
+        [J.expression| - $Expression:e |]
+            | e == x -> putStrLn "✅ splice as a prefix-operator operand round-trips"
+        other -> error $ "FAILED: prefix operand splice did not round-trip:\n" ++ ppShow other
+
+    putStrLn "--- Test: operand of a cast ---"
+    case [J.expression| (int) $Expression:x |] of
+        [J.expression| (int) $Expression:e |]
+            | e == x -> putStrLn "✅ splice as a cast operand round-trips"
+        other -> error $ "FAILED: cast operand splice did not round-trip:\n" ++ ppShow other
+
+    putStrLn "--- Test: array base and index ---"
+    case [J.expression| $Expression:x[$Expression:one] |] of
+        [J.expression| $Expression:arr[$Expression:idx] |]
+            | arr == x && idx == one -> putStrLn "✅ splices as array base and index round-trip"
+        other -> error $ "FAILED: indexing splices did not round-trip:\n" ++ ppShow other
+
+    putStrLn "--- Test: all three ternary positions ---"
+    case [J.expression| $Expression:x ? $Expression:one : $Expression:two |] of
+        [J.expression| $Expression:c ? $Expression:t : $Expression:e |]
+            | c == x && t == one && e == two -> putStrLn "✅ splices in ternary positions round-trip"
+        other -> error $ "FAILED: ternary splices did not round-trip:\n" ++ ppShow other
+
+    putStrLn "--- Test: method call arguments ---"
+    case [J.expression| f($Expression:x, $Expression:two) |] of
+        [J.expression| f($Expression:a, $Expression:b) |]
+            | a == x && b == two -> putStrLn "✅ splices as call arguments round-trip"
+        other -> error $ "FAILED: call argument splices did not round-trip:\n" ++ ppShow other
+
+    putStrLn "--- Test: several precedence levels at once ---"
+    case [J.expression| $Expression:x * $Expression:two + $Expression:one |] of
+        [J.expression| $Expression:a * $Expression:b + $Expression:c |]
+            | a == x && b == two && c == one -> putStrLn "✅ splices across precedence levels round-trip"
+        other -> error $ "FAILED: mixed-level splices did not round-trip:\n" ++ ppShow other
+
+    putStrLn ""
+    putStrLn "Sub-expression splice tests: ALL PASSED ✅"
+
 -- Unlike the informational checks above, a wrong AST here must fail the
 -- test binary (and with it `make test-java-qq`), so mismatches are fatal.
 expectInAST :: String -> String -> String -> IO ()
@@ -259,13 +321,15 @@ TEST SUMMARY:
    - 26+ different test cases covering expressions, statements, blocks, etc.
 
 ✅ Shared Types: Working
-   - Grammar uses shared Expression type for all 17 expression rules
+   - Grammar uses shared Expression type for all 18 expression rules
    - GenAST deduplicates constructors when combining shared-type rules
-   - Anti-alternatives added to ALL rules for complete splicing support
+   - The anti-alternative is attached at PrimaryNoPostfix, the bottom of the
+     precedence chain; splices reach every other rule of the group by
+     climbing the chain's unit productions (see Normalize.computeQQAttachPoints)
 
 ✅ Splicing: Fully working
-   - Anti-alternatives in all grammar rule contexts
-   - Constructor deduplication in GenAST prevents duplicate declarations
+   - One anti-alternative per shared-type group keeps the parser free of
+     splice-induced reduce/reduce conflicts
    - Syntax: $TypeName:variable
    - Tests: addition, multiplication, complex expressions, nested
 
@@ -274,9 +338,12 @@ TEST SUMMARY:
    - Same syntax as splicing
    - Tests: pattern matching, negative matches, extraction
 
+✅ Sub-expression positions: Fully working
+   - Splices parse as operands of binary/prefix/cast/ternary/call/indexing
+     constructs and round-trip through the equivalent pattern splices
+
 IMPACT:
 This test suite demonstrates the COMPLETE solution to the "hierarchical QQ
 problem"! Construction, splicing, and pattern matching ALL work with shared
-types in hierarchical grammars. The key insight: GenAST deduplicates
-constructors while Normalize adds anti-alternatives to all rule contexts.
+types in hierarchical grammars, in any sub-expression position.
 -}

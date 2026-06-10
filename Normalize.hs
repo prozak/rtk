@@ -37,6 +37,9 @@ data NormalizationState = NormalizationState {
                                               _qqLexRuleCache :: M.Map ID ID,
                                               _antiRuleCache :: M.Map ID ID,
                                               _ruleToTypeName :: M.Map ID ID,
+                                              -- type name -> rules that receive the $Type:var
+                                              -- splice alternative (see computeQQAttachPoints)
+                                              _qqAttachPoints :: M.Map ID (S.Set ID),
                                               _currentRule :: Maybe IRule
                                              }
 
@@ -149,11 +152,21 @@ addRuleWithQQ tdName ruleName clause = do
                 addRule tdName ruleName $ STMany opType (SSId newRule) mcl
     _ -> addRule tdName ruleName clause
   where qqAdd altseqs = do
+          -- The QQ machinery (lexical rule, anti rule) is created at the first
+          -- eligible rule of the type, as before; but the splice alternative
+          -- itself is only attached at the group's attach points (a minimal
+          -- set of rules from which every rule of a shared-type group is
+          -- reachable via unit productions, see computeQQAttachPoints).
+          -- Attaching it to every rule instead would add one reduce item per
+          -- rule for the same splice token, flooding the parser with
+          -- reduce/reduce conflicts.
           qqLexRule <- addQQLexRuleCached tdName     -- Use cached version
           constr <- addAntiRuleCached tdName False   -- Use cached version
-          -- For shared types, add anti-alternative to ALL rules (GenAST deduplicates constructors)
-          -- This ensures splicing works in all grammar contexts, not just the first rule
-          addRule tdName ruleName $ STAltOfSeq (STSeq constr [SSId qqLexRule] : altseqs)
+          attachMap <- use qqAttachPoints
+          let attachHere = S.member ruleName $ M.findWithDefault S.empty tdName attachMap
+          if attachHere
+            then addRule tdName ruleName $ STAltOfSeq (STSeq constr [SSId qqLexRule] : altseqs)
+            else addRule tdName ruleName clause
 
 addListProxyRule :: ID -> ID -> ID -> Normalization ID
 addListProxyRule tdName elemRuleName listName = do
@@ -324,6 +337,182 @@ checkDuplicateRuleNames = go M.empty
       Just pos -> " (first definition at " ++ showSourcePos pos ++ ")"
       Nothing  -> ""
 
+-- Decide, for every data type, which of its rules receive the $Type:var
+-- splice alternative ("attach points"). A type declared by a single rule
+-- keeps today's behavior: the rule itself is the attach point.
+--
+-- For a shared type (several rules declaring the same type, e.g. java.pg's
+-- 18-rule Expression precedence chain) attaching the alternative to every
+-- rule would make the splice token reducible to all of them at once: the
+-- parser gets one reduce item per rule in the same states and cannot know
+-- which rule to reduce the token to (in java.pg this used to cause 806 of
+-- the 883 reduce/reduce conflicts). Instead the alternative is attached to
+-- a minimal set of rules from which the rest of the group is reachable via
+-- unit productions:
+--
+--   * Build the intra-group "lift graph": an edge A -> B when rule B has an
+--     alternative consisting of exactly the single nonterminal A once
+--     nullable clauses are dropped (i.e. an A on the stack reduces to B by a
+--     unit production, possibly surrounded by empty reductions). For java.pg
+--     this is the chain PrimaryNoPostfix -> PostfixExpression -> ... ->
+--     Expression.
+--   * Collect the rules of the group some grammar position actually demands:
+--     every reference from any rule's alternatives counts, except the
+--     reference that forms a lift edge inside the group itself (a splice
+--     never needs to stop at that position: reducing further is the only
+--     thing the parser can do with it). The rule named after the type is
+--     always demanded, because the synthesized start rule references it.
+--   * Greedily pick attach points whose unit-closure covers all demanded
+--     rules. A precedence chain needs exactly one (its bottom rule). A group
+--     that genuinely needs several attach points gets several; if their
+--     closures overlap, the overlap reintroduces reduce/reduce conflicts
+--     between the splice reductions -- that is inherent to such a grammar,
+--     not to this placement (there is no warning channel in normalization,
+--     so such groups are not reported).
+--
+-- Only rules that addRuleWithQQ would accept the alternative for are attach
+-- point candidates (rules whose clause normalizes to plain alternatives with
+-- no leading lifted (,) clause). Two conservative fallbacks keep splicing at
+-- least as available as before: when no rule is named after the type, every
+-- rule of the group counts as demanded; and when the greedy cover cannot
+-- cover anything, every candidate becomes an attach point.
+computeQQAttachPoints :: InitialGrammar -> M.Map ID (S.Set ID)
+computeQQAttachPoints grammar = M.fromList $ map attachFor groups
+  where
+    synRules = [ r | r <- getIRules grammar, not (isLexicalRule (getIRuleName r)) ]
+    ruleTypeOf r = maybe (getIRuleName r) Prelude.id (getIDataTypeName r)
+    groupNames = L.nub $ map ruleTypeOf synRules
+    groups = [ (t, [ r | r <- synRules, ruleTypeOf r == t ]) | t <- groupNames ]
+    groupOfRule = M.fromList [ (getIRuleName r, ruleTypeOf r) | r <- synRules ]
+
+    -- Rule-level nullability, by fixpoint. Lexical rules (and unknown names)
+    -- never match the empty input.
+    clausesByName = M.fromListWith (flip (++)) [ (getIRuleName r, [getIClause r]) | r <- synRules ]
+    nullableRules = fixNullable S.empty
+    fixNullable env =
+      let env' = S.fromList [ n | (n, cls) <- M.toList clausesByName
+                                , any (clauseNullable env) cls ]
+      in if env' == env then env else fixNullable env'
+    clauseNullable env c = case c of
+      IId n        -> S.member n env
+      IStrLit _    -> False
+      IDot         -> False
+      IRegExpLit _ -> False
+      IStar _ _    -> True
+      IOpt _       -> True
+      IPlus c1 _   -> clauseNullable env c1
+      IAlt cs      -> any (clauseNullable env) cs
+      ISeq cs      -> all (clauseNullable env) cs
+      ILifted c1   -> clauseNullable env c1
+      IIgnore c1   -> clauseNullable env c1
+    isNullable = clauseNullable nullableRules
+
+    -- The alternatives a clause normalizes to, mirroring checkNormalClause:
+    -- singleton wrappers unwrap, a top-level option contributes an empty
+    -- alternative (removeOpts), everything else is a single alternative.
+    unwrapTop (IAlt [c]) = unwrapTop c
+    unwrapTop (ISeq [c]) = unwrapTop c
+    unwrapTop c          = c
+    topAlts c = case unwrapTop c of
+                  IAlt cs -> cs
+                  IOpt c1 -> [ISeq [], ISeq [c1]]
+                  c'      -> [c']
+
+    -- The non-nullable core of an alternative: Just n for a nonterminal
+    -- whose value passes through (a plain or lifted reference), Nothing for
+    -- anything opaque (tokens, ignored or repeated material, nested
+    -- alternatives, which normalize to proxy rules).
+    coreElems c
+      | isNullable c = []
+      | otherwise = case c of
+          ISeq cs    -> concatMap coreElems cs
+          IId n      -> [Just n]
+          ILifted c1 -> coreElems c1
+          _          -> [Nothing]
+    unitTarget alt = case coreElems alt of
+                       [Just n] -> Just n
+                       _        -> Nothing
+
+    -- Mirror of the addRuleWithQQ guard: would this clause get the splice
+    -- alternative at all? (STMany rules take the list-proxy path; a leading
+    -- lifted (,) clause suppresses the alternative.)
+    eligibleClause c = case unwrapTop c of
+      IStar{}   -> False
+      IPlus{}   -> False
+      ILifted _ -> False
+      c'        -> not $ any altLeadsLifted (topAlts c')
+    altLeadsLifted (ISeq (c:_)) = liftedIdHead c
+    altLeadsLifted c            = liftedIdHead c
+    liftedIdHead (ILifted (IId _)) = True
+    liftedIdHead _                 = False
+
+    allIdRefs :: IClause -> [ID]
+    allIdRefs = everything (++) ([] `mkQ` idRef)
+      where idRef (IId n) = [n]
+            idRef _       = []
+
+    attachFor (t, [r]) = (t, S.singleton (getIRuleName r))
+    attachFor (t, rs)  = (t, picked)
+      where
+        names = L.nub $ map getIRuleName rs   -- in declaration order
+        nameSet = S.fromList names
+
+        -- lift graph: source -> targets it reduces to by a unit production
+        edges = M.fromListWith S.union
+                  [ (src, S.singleton (getIRuleName r))
+                  | r <- rs
+                  , alt <- topAlts (getIClause r)
+                  , Just src <- [unitTarget alt]
+                  , src `S.member` nameSet ]
+        closureOf n0 = go (S.singleton n0) [n0]
+          where go seen [] = seen
+                go seen (x:xs) =
+                  let new = [ y | y <- S.toList (M.findWithDefault S.empty x edges)
+                                , not (S.member y seen) ]
+                  in go (foldr S.insert seen new) (new ++ xs)
+        closures = M.fromList [ (n, closureOf n) | n <- names ]
+
+        -- rules of this group demanded by some position of the grammar
+        demandRefs r alt =
+          let refs = filter (`S.member` nameSet) (allIdRefs alt)
+          in case unitTarget alt of
+               Just n | M.lookup (getIRuleName r) groupOfRule == Just t
+                      , n `S.member` nameSet -> L.delete n refs
+               _ -> refs
+        demanded
+          | t `S.member` nameSet = S.insert t demanded0
+          | otherwise            = nameSet   -- no rule carries the type name:
+                                             -- assume everything is demanded
+          where demanded0 = S.fromList [ ref | r <- synRules
+                                             , alt <- topAlts (getIClause r)
+                                             , ref <- demandRefs r alt ]
+
+        candidates = [ n | n <- names
+                         , any (eligibleClause . getIClause)
+                               [ r | r <- rs, getIRuleName r == n ] ]
+
+        greedy uncovered acc
+          | S.null uncovered = reverse acc
+          | otherwise = case best of
+              Just n  -> greedy (uncovered S.\\ (closures M.! n)) (n : acc)
+              Nothing -> reverse acc
+          where -- most newly covered demands first; among equals the rule
+                -- with the larger closure, i.e. the bottom-most rule of the
+                -- chain (a chain bottom and the rule just above it cover the
+                -- same demands when the bottom itself is never demanded, but
+                -- splices must enter the chain at the bottom to be able to
+                -- climb everywhere); declaration order breaks remaining ties
+                gain n = (S.size $ (closures M.! n) `S.intersection` uncovered,
+                          S.size $ closures M.! n)
+                best = fst $ L.foldl' pick (Nothing, (0, 0)) candidates
+                pick (b, g0) n = let g = gain n
+                                 in if fst g > 0 && g > g0 then (Just n, g) else (b, g0)
+
+        picked = case greedy demanded [] of
+                   [] -> S.fromList candidates  -- cover made no progress: keep
+                                                -- the old attach-everywhere
+                   ns -> S.fromList ns
+
 doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do
   let grammar0 = everywhereBut (False `mkQ` (isLexicalRule . getIRuleName)) (mkT removeOpts) grammar
@@ -398,8 +587,9 @@ normalizeTopLevelClauses grammar =
     (firstIRule:_) -> do
       let firstID = maybe (getIRuleName firstIRule) Prelude.id (getIDataTypeName firstIRule)
           ruleTypeMap = buildRuleToTypeMap grammar
-      (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _ _ _) <-
-        runStateT (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap Nothing)
+          attachPoints = computeQQAttachPoints grammar
+      (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _ _ _ _) <-
+        runStateT (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap attachPoints Nothing)
       firstRuleGroupRules <- case M.lookup firstID nrs of
         Just rs -> Right rs
         Nothing -> Left $ Diagnostic (getIRulePos firstIRule) Nothing $
