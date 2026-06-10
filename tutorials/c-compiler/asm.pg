@@ -1,0 +1,45 @@
+grammar 'Asm';
+
+# x86-64 assembly (AT&T syntax), the subset emitted for stage 1.
+# Grows stage by stage alongside c.pg.
+#
+# Design notes:
+# - Sort names deliberately avoid CParser's (Program, Function, Statement,
+#   StatementList, Exp, Ident): both generated parsers are imported into the
+#   same compiler modules.
+# - Newlines are plain whitespace: the instruction subset is unambiguous
+#   without line structure, so quasi-quotes can be laid out freely and the
+#   emitter adds the conventional formatting back.
+# - '$' immediates coexist with $-antiquotes: real immediates are always
+#   numeric ($2), antiquote names always start with a letter ($src), and the
+#   longest lexer match keeps them apart.
+
+Asm = AsmItems ;
+
+# AsmItems must be normalized BEFORE AsmItem: RTK allows one anti-quote shape
+# per AST type (scalar or list), and we want the list shape for AsmItem
+# ($items :: [AsmItem]).
+@shortcuts(items)
+AsmItems = AsmItem* ;
+
+AsmItem = '.globl' AsmId
+        | AsmId ':'
+        | 'movl' Operand ',' Operand
+        | 'ret' ;
+
+@shortcuts(src, dst)
+Operand = '$' num
+        | Reg ;
+
+Reg = '%eax' ;
+
+@shortcuts(sym)
+AsmId = asmid ;
+
+# ----------------------------------------------------------------------------
+# Lexical rules
+# ----------------------------------------------------------------------------
+
+asmid = [a-zA-Z_][a-zA-Z_0-9]* ;
+Int: num = [0-9]+ ;
+Ignore: ws = [ \t\n\r]+ ;

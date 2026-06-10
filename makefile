@@ -81,9 +81,9 @@ accept-golden:
 # result with GHC (-fno-code, no object code, seconds per grammar). The
 # golden suite compares text only; this target proves the snapshots are code
 # GHC accepts (the debug-test snapshot was uncompilable for a while with CI
-# green - issue #34). The QQ goldens import Text.Regex.Posix, which rtk's
-# environment deliberately does not provide.
-# TODO(task 8b): add the <Name>QQ.hs goldens once regex-posix is dropped.
+# green - issue #34). The <Name>QQ.hs goldens are gated too (task 8b): the
+# generated quasi-quoter needs only syb, containers and template-haskell,
+# all of which rtk's own environment provides.
 test-compile-goldens: build | test-out
 	@set -e; \
 	for dir in test/golden/*/; do \
@@ -100,8 +100,11 @@ test-compile-goldens: build | test-out
 		for y in "$$dir"*.y; do \
 			cabal exec -- ghc -fno-code -w -i"$$out" "$$out/$$(basename "$${y%.y}").hs"; \
 		done; \
+		for q in "$$dir"*QQ.hs; do \
+			cabal exec -- ghc -fno-code -w -i"$$out" -i"$$dir" "$$q"; \
+		done; \
 	done; \
-	echo "All golden Lexer/Parser snapshots compile."
+	echo "All golden Lexer/Parser/QQ snapshots compile."
 
 test-out:
 	$(MKDIR_P) test-out

@@ -261,12 +261,12 @@ make test-compile-goldens
 The golden suite compares text only; this target additionally proves every
 checked-in `test/golden/<grammar>/` snapshot is code the toolchain accepts:
 `alex -g` on each `<Name>Lexer.x`, `happy --ghc` on each `<Name>Parser.y`,
-then `ghc -fno-code` (typecheck only, fast) on the results. It exists
-because snapshots once sat green in CI while being uncompilable (issues
-#34/#28: debug-test's type-alias-vs-data clash, t1's separated duplicate
-start rule). The `<Name>QQ.hs` goldens are excluded until the `regex-posix`
-dependency is dropped (task 8b); add them to the gate after that. Wired
-into CI right after the cabal test suites.
+then `ghc -fno-code` (typecheck only, fast) on the results - including the
+`<Name>QQ.hs` goldens (task 8b), possible since generated quasi-quoters no
+longer use `regex-posix`. It exists because snapshots once sat green in CI
+while being uncompilable (issues #34/#28: debug-test's
+type-alias-vs-data clash, t1's separated duplicate start rule). Wired into
+CI right after the cabal test suites.
 
 #### Bootstrap Equivalence
 The golden and unit suites above double as the self-hosting equivalence

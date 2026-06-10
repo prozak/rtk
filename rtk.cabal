@@ -7,9 +7,9 @@ Description:         RTK (Rewrite ToolKit) generates Alex lexer and Happy parser
                      for embedding parsed syntax in Haskell code.
                      .
                      Projects that compile the generated modules need to depend on
-                     @array@ and @syb@ (lexer and parser), plus @containers@,
-                     @template-haskell@, @regex-posix@ and @regex-base@ for the
-                     generated quasi-quoter; see the README for details.
+                     @array@ and @syb@ (lexer and parser), plus @containers@ and
+                     @template-haskell@ for the generated quasi-quoter; see the
+                     README for details.
 License:             MIT
 License-File:        LICENSE
 Author:              prozak
@@ -43,7 +43,7 @@ Common warnings
 -- Compiling the snapshot directly means `make accept-golden` keeps the build
 -- input of the default front end in sync by construction.
 -- GrammarQQ deliberately stays out: compiling the generated quasi-quoter
--- would pull regex-posix and Template Haskell splices into the build.
+-- would pull Template Haskell into the bootstrap build path.
 -- Separate component because generated alex code trips -Wunused-matches
 -- (happy output carries its own -w; alex output does not suppress that one),
 -- and the snapshot must not be edited to placate the linter.
