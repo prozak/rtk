@@ -207,6 +207,15 @@ errorHandlingTests = TestList
             assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "lifted" `isInfixOf` diagMessage d && "*" `isInfixOf` diagMessage d
+    , TestLabel "duplicate rule definitions are rejected" $ TestCase $
+        -- the error points at the second definition and names the first
+        expectDiagnostic "a duplicate rule"
+            (normalizeGrammarSource "grammar 'Dup';\nFoo = 'a';\nFoo = 'b';\n") $ \d -> do
+            assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
+            assertEqual "position of the second definition" (Just (SourcePos 3 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "defined more than once" `isInfixOf` diagMessage d
+                && "line 2, column 1" `isInfixOf` diagMessage d
     , TestLabel "a reference to an unknown rule is rejected during generation" $ TestCase $
         expectDiagnostic "an unknown rule reference"
             (normalizeGrammarSource "grammar 'X';\nFoo = Nope;\n" >>= artifactsFor) $ \d -> do
@@ -399,13 +408,6 @@ invariantTestsFor pgFile = do
             "normalization failed for " ++ pgFile ++ ":\n" ++ show (err :: SomeException)
         Right g -> invariants (takeBaseName pgFile) g
 
--- | Rule names that a grammar deliberately defines more than once.
--- debug-test.pg defines IfStatement twice to exercise the debug options; it is
--- only used for rtk's own diagnostics and is never fed to happy.
-knownDuplicateRuleNames :: String -> [ID]
-knownDuplicateRuleNames "debug-test" = ["IfStatement"]
-knownDuplicateRuleNames _ = []
-
 -- | References to rules that a grammar is known to leave undefined.
 -- Currently empty: every grammar in test-grammars/ resolves all its
 -- references. Pin a grammar here only to keep the invariant active for the
@@ -419,8 +421,7 @@ invariants grammarKey g = TestList
         -- the synthesized start wrapper legitimately shares the start rule's name
         assertEqual "duplicate rule names" [] $
             duplicates (map getSRuleName (allRules g))
-                `removeAll` (maybeToList (getStartRuleName info)
-                             ++ knownDuplicateRuleNames grammarKey)
+                `removeAll` maybeToList (getStartRuleName info)
     , TestLabel "rule group types are unique" $ TestCase $
         assertEqual "duplicate group types" [] $
             duplicates (map getSDataTypeName (getSyntaxRuleGroups g))

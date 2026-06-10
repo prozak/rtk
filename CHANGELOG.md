@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Duplicate rule definitions are rejected: defining the same rule name twice
+  in a grammar is now a normalization error carrying both source positions
+  (e.g. `g.pg:3:1: error: in rule 'Foo': rule 'Foo' is defined more than
+  once (first definition at line 2, column 1)`), instead of the definitions
+  being silently merged into one rule group with extra alternatives
+  (closes #20). `test-grammars/debug-test.pg`, the one grammar that relied
+  on this, now defines `IfStatement` once with `|` alternatives
 - A `$$` escape in quasi-quote bodies: `$$name` now produces the literal
   text `$name` instead of being rewritten as a metavariable (or rejected).
   Previously the generated quasi-quoter rewrote `$ident` everywhere in a

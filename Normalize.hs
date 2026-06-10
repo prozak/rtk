@@ -3,7 +3,7 @@ module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
 import Parser
-import Diagnostics (Diagnostic(..))
+import Diagnostics (Diagnostic(..), showSourcePos)
 import Grammar (isNotIgnored)
 import Data.Generics
 import Data.Maybe
@@ -304,9 +304,30 @@ buildRuleToTypeMap grammar = M.fromList $ map ruleMapping $ getIRules grammar
   where
     ruleMapping r = (getIRuleName r, maybe (getIRuleName r) id (getIDataTypeName r))
 
+-- A rule name may be defined only once: addRule would otherwise silently
+-- merge the definitions into one rule group, turning an (almost certainly
+-- accidental) duplicate into extra alternatives (issue #20). Checked on the
+-- input rules, so the synthesized start wrapper added later by addStartGroup
+-- - which legitimately reuses the start rule's name - is exempt.
+checkDuplicateRuleNames :: [IRule] -> Normalization ()
+checkDuplicateRuleNames = go M.empty
+  where
+    go _ [] = return ()
+    go seen (r : rest) =
+      case M.lookup (getIRuleName r) seen of
+        Nothing -> go (M.insert (getIRuleName r) r seen) rest
+        Just firstDef -> do
+          currentRule .= Just r
+          normError $ "rule '" ++ getIRuleName r ++ "' is defined more than once"
+                      ++ firstDefinedAt firstDef
+    firstDefinedAt r = case getIRulePos r of
+      Just pos -> " (first definition at " ++ showSourcePos pos ++ ")"
+      Nothing  -> ""
+
 doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do
   let grammar0 = everywhereBut (False `mkQ` (isLexicalRule . getIRuleName)) (mkT removeOpts) grammar
+  checkDuplicateRuleNames $ getIRules grammar0
   mapM_ (\r -> do currentRule .= Just r
                   normalizeRule r)
         $ getIRules grammar0

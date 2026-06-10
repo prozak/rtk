@@ -85,10 +85,8 @@ Factor : qq_Factor { Anti_Factor $1 } |
          tok__lparen__6 Expression tok__rparen__7 { Ctr__Factor__2 $2 }
 
 IfStatement : qq_IfStatement { Anti_IfStatement $1 } |
-              tok_if_8 tok__lparen__6 Expression tok__rparen__7 Statement tok_else_9 Statement { Ctr__IfStatement__0 $3 $5 $7 }
-
-IfStatement : qq_IfStatement { Anti_IfStatement $1 } |
-              tok_if_8 tok__lparen__6 Expression tok__rparen__7 Statement { Ctr__IfStatement__1 $3 $5 }
+              tok_if_8 tok__lparen__6 Expression tok__rparen__7 Statement { Ctr__IfStatement__0 $3 $5 } |
+              tok_if_8 tok__lparen__6 Expression tok__rparen__7 Statement tok_else_9 Statement { Ctr__IfStatement__1 $3 $5 $7 }
 
 Rule_1 : {- empty -} { [] } |
          Rule_1 Rule_2 { $2 : $1 }
@@ -209,8 +207,8 @@ data Factor = Anti_Factor String |
               Ctr__Factor__2 Expression
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 data IfStatement = Anti_IfStatement String |
-                   Ctr__IfStatement__0 Expression Statement Statement |
-                   Ctr__IfStatement__1 Expression Statement
+                   Ctr__IfStatement__0 Expression Statement |
+                   Ctr__IfStatement__1 Expression Statement Statement
                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 type Rule_1 = [Rule_2]
 data Rule_2 = Ctr__Rule_2__0 Rule_3 Term
