@@ -74,29 +74,6 @@ test_option_file() {
     fi
 }
 
-# Function to test option that is expected to exit with error
-test_option_with_error() {
-    local test_name="$1"
-    local option="$2"
-    local expected_pattern="$3"
-
-    echo -n "Testing $test_name... "
-
-    # Run rtk with the option and capture output (expecting failure)
-    output=$($RTK_EXEC "$GRAMMAR" "$OUT_DIR" $option 2>&1 || true)
-
-    # Check if expected pattern is in output
-    if echo "$output" | grep -q "$expected_pattern"; then
-        echo -e "${GREEN}PASS${NC}"
-        ((passed++))
-        return 0
-    else
-        echo -e "${RED}FAIL${NC} - Expected pattern '$expected_pattern' not found in output"
-        ((failed++))
-        return 1
-    fi
-}
-
 echo "======================================"
 echo "RTK Debug Options Test Suite"
 echo "======================================"
@@ -136,8 +113,9 @@ test_option "--suggest-shortcuts" "--suggest-shortcuts" "SHORTCUT SUGGESTIONS"
 echo ""
 
 echo "=== Selective Debug ==="
-test_option_with_error "--debug-stage=lex" "--debug-stage=lex" "Stopped after requested debug stage"
-test_option_with_error "--debug-stage=parse" "--debug-stage=parse" "Stopped after requested debug stage"
+# --debug-stage stops the pipeline early and must exit successfully
+test_option "--debug-stage=lex" "--debug-stage=lex" "Stopped after requested debug stage"
+test_option "--debug-stage=parse" "--debug-stage=parse" "Stopped after requested debug stage"
 echo ""
 
 echo "=== Output Format ==="

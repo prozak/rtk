@@ -56,18 +56,19 @@ make test-bootstrap
 **Goal:** Add infrastructure to switch between parsers
 
 **Changes:**
-- Add `--use-generated` flag to DebugOptions.hs ✅
-- Add check in main.hs for the flag ✅
-- Informative error message when flag is used ✅
-- Infrastructure ready for Prototype 2 ✅
+- Add `--use-generated` flag to DebugOptions.hs
+- Add check in main.hs for the flag
+- Dispatch to the generated parser modules
 
 **Testing:**
 ```bash
 ./rtk test-grammars/java.pg test-out                # hand-written mode (works)
-./rtk --use-generated test-grammars/java.pg test-out  # generated mode (shows message)
+./rtk --use-generated test-grammars/java.pg test-out  # generated mode
 ```
 
-**Status:** ✅ Complete - Infrastructure ready, implementation in Prototype 2
+**Status:** Not started. An earlier stub `--use-generated` flag that only
+printed an error message was removed from the CLI; the flag should be
+reintroduced together with the actual dual-mode implementation.
 
 ---
 

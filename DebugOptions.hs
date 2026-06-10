@@ -11,8 +11,6 @@ import Options.Applicative
 -- | Output format for debug information
 data DebugFormat = FormatPretty
                  | FormatCompact
-                 | FormatJSON
-                 | FormatTree
                  deriving (Eq, Show)
 
 -- | Compilation stages for selective debugging
@@ -49,11 +47,9 @@ data DebugOptions = DebugOptions
     , listRules :: Bool
 
     -- Selective debug
-    , debugRule :: Maybe String
     , debugStage :: Maybe DebugStage
 
-    -- Comparison and validation
-    , compareStages :: Bool
+    -- Validation
     , validateGrammar :: Bool
     , showUnusedRules :: Bool
     , checkLeftRecursion :: Bool
@@ -66,15 +62,6 @@ data DebugOptions = DebugOptions
 
     -- Performance profiling
     , profileStages :: Bool
-    , memoryStats :: Bool
-
-    -- Export and logging
-    , debugOutputDir :: Maybe FilePath
-    , debugLog :: Maybe FilePath
-
-    -- Special modes
-    , interactive :: Bool
-    , useGenerated :: Bool  -- Use generated parsers instead of hand-written
     } deriving (Eq, Show)
 
 -- | Default debug options (all disabled)
@@ -94,9 +81,7 @@ defaultDebugOptions file dir = DebugOptions
     , analyzeConflicts = False
     , showRuleGraph = False
     , listRules = False
-    , debugRule = Nothing
     , debugStage = Nothing
-    , compareStages = False
     , validateGrammar = False
     , showUnusedRules = False
     , checkLeftRecursion = False
@@ -105,11 +90,6 @@ defaultDebugOptions file dir = DebugOptions
     , debugFormat = FormatPretty
     , debugColor = True
     , profileStages = False
-    , memoryStats = False
-    , debugOutputDir = Nothing
-    , debugLog = Nothing
-    , interactive = False
-    , useGenerated = False  -- Default to hand-written parsers
     }
 
 -- | Parse debug stage from string
@@ -126,8 +106,6 @@ parseStage _ = Nothing
 parseFormat :: String -> Maybe DebugFormat
 parseFormat "pretty" = Just FormatPretty
 parseFormat "compact" = Just FormatCompact
-parseFormat "json" = Just FormatJSON
-parseFormat "tree" = Just FormatTree
 parseFormat _ = Nothing
 
 -- | Command-line parser for debug options
@@ -187,19 +165,12 @@ debugOptionsParser = DebugOptions
        <> help "List all rule names by category" )
 
     -- Selective debug
-    <*> optional (strOption
-        ( long "debug-rule"
-       <> metavar "RULENAME"
-       <> help "Debug a specific rule through all stages" ))
     <*> optional (option (maybeReader parseStage)
         ( long "debug-stage"
        <> metavar "STAGE"
        <> help "Stop after a specific stage (lex|parse|string-norm|clause-norm|fill-names|gen)" ))
 
-    -- Comparison and validation
-    <*> switch
-        ( long "compare-stages"
-       <> help "Show differences between consecutive transformation stages" )
+    -- Validation
     <*> switch
         ( long "validate-grammar"
        <> help "Run validation checks without generating output" )
@@ -222,7 +193,7 @@ debugOptionsParser = DebugOptions
         ( long "debug-format"
        <> metavar "FORMAT"
        <> value FormatPretty
-       <> help "Output format (pretty|compact|json|tree)" )
+       <> help "Output format (pretty|compact)" )
     <*> switch
         ( long "debug-color"
        <> help "Enable colored output (default: enabled)" )
@@ -231,28 +202,6 @@ debugOptionsParser = DebugOptions
     <*> switch
         ( long "profile-stages"
        <> help "Show timing for each compilation stage" )
-    <*> switch
-        ( long "memory-stats"
-       <> help "Show memory usage per stage" )
-
-    -- Export and logging
-    <*> optional (strOption
-        ( long "debug-output-dir"
-       <> metavar "DIR"
-       <> help "Write all debug outputs to directory" ))
-    <*> optional (strOption
-        ( long "debug-log"
-       <> metavar "FILE"
-       <> help "Write detailed debug log with timestamps" ))
-
-    -- Special modes
-    <*> switch
-        ( long "interactive"
-       <> short 'i'
-       <> help "Step through compilation stages interactively" )
-    <*> switch
-        ( long "use-generated"
-       <> help "Use generated parsers (experimental, for bootstrap testing)" )
 
 -- | Parse command-line options
 parseOptions :: IO DebugOptions
