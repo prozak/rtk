@@ -6,6 +6,7 @@ import Text.PrettyPrint
 import Grammar
 import qualified Data.Map as Map
 import qualified Data.List as List
+import Data.Maybe (mapMaybe)
 
 normalRulesNamed :: [SyntaxRuleGroup] -> [(ID, SyntaxTopClause)]
 normalRulesNamed groups = map (\g -> (getSDataTypeName g, combineClauses $ map getSClause $ getSRules g))
@@ -26,8 +27,14 @@ type RulesMap = Map.Map ID ID
 rulesMap :: NormalGrammar -> RulesMap
 rulesMap NormalGrammar{ getSyntaxRuleGroups = groups, getLexicalRules = lrules } = 
     Map.fromList $ concat 
-            (map (\ lr -> (getLRuleName lr, getLRuleDataType lr)) (removeSymmacros lrules) : 
+            (mapMaybe lexRuleEntry lrules :
              map (\ g -> map (\r -> (getSRuleName r, getSDataTypeName g)) $ getSRules g) groups)
+
+-- Macro rules are inlined into the lexer spec and carry no data type, so
+-- they contribute nothing to the rules map.
+lexRuleEntry :: LexicalRule -> Maybe (ID, ID)
+lexRuleEntry LexicalRule{ getLRuleName = name, getLRuleDataType = dt } = Just (name, dt)
+lexRuleEntry MacroRule{} = Nothing
 
 genAST :: NormalGrammar -> String
 genAST grammar = render $ vcat (map (genRule rules_map) (normalRulesNamed $ getSyntaxRuleGroups grammar))

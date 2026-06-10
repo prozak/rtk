@@ -129,7 +129,9 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                           _ -> ("", ""))
                                       (case rules of
                                          (firstRule:_) -> case getSRules firstRule of
-                                           (firstSRule:_) -> getAltOfSeq $ getSClause firstSRule
+                                           (firstSRule:_) -> case getSClause firstSRule of
+                                                               STAltOfSeq alts -> alts
+                                                               _ -> []
                                            [] -> []
                                          [] -> [])
           rulesWithoutProxies = filterProxyRules proxyRules rules
