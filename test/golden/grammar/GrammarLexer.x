@@ -13,6 +13,7 @@ import qualified Data.Map as M
 
 $dq = "
 $ndq = [^\"]
+$backslash = [\\]
 
 tokens :- "tok_Clause_dummy_14" { simple Tk__tok_Clause_dummy_14 }
           "tok_Grammar_dummy_15" { simple Tk__tok_Grammar_dummy_15 }
@@ -47,7 +48,7 @@ tokens :- "tok_Clause_dummy_14" { simple Tk__tok_Clause_dummy_14 }
           ([\ \t\n]+) ;
           ("["  ([^\]]| "\]")*  "]") { simple1 $  Tk__regexplit . (id) }
           ($dq  $dq  $dq  ($ndq| $dq  $ndq| $dq  $dq  $ndq| [\n])*  $dq  $dq  $dq) { simple1 $  Tk__bigstr . (id) }
-          ("'"  ([^']| "\'")*  "'") { simple1 $  Tk__str . (id) }
+          ("'"  ([^\\']| $backslash  .)*  "'") { simple1 $  Tk__str . (id) }
           ([a-zA-Z]  [A-Za-z0-9_]*) { simple1 $  Tk__id . (id) }
           ("$"  "Name"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Name . ((tail . dropWhile (/= ':'))) }
           ("$"  "StrLit"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_StrLit . ((tail . dropWhile (/= ':'))) }

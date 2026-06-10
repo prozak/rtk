@@ -10,13 +10,11 @@ grammar 'Lc';
 #  - Atom is the only Expr rule without a lift-headed alternative, so the
 #    Anti_Expr quasi-quotation alternative lands there, making $e metavars
 #    parseable at every precedence level (this is what java.pg gets wrong).
-#  - Lambda is spelled 'fn' for now: a literal '\\' keyword currently emits
-#    an unescaped backslash into the Alex spec (GenX.backquoteStr).
 
 Lc = Expr ;
 
 @shortcuts(e)
-Expr = 'fn' Id '->' Expr
+Expr = '\\' Id '->' Expr
      | 'let' Id '=' Expr 'in' Expr
      | 'if' Expr 'then' Expr 'else' Expr
      | ,Eq ;

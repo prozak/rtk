@@ -61,7 +61,7 @@ eval [expr| if $e1 then $e2 else $e3 |] =
     if eval e1 == [expr| true |] then eval e2 else eval e3
 eval [expr| let $x1 = $e1 in $e2 |] = eval (subst x1 (eval e1) e2)
 eval [expr| $e1 $e2 |] = case eval e1 of
-    [expr| fn $x1 -> $e3 |] -> eval (subst x1 (eval e2) e3)
+    [expr| \ $x1 -> $e3 |] -> eval (subst x1 (eval e2) e3)
     other                   -> error $ "stuck application on: " ++ show other
 eval e = e  -- literals, booleans, lambdas and free variables are values
 
@@ -73,7 +73,7 @@ arith op e1 e2 = case (eval e1, eval e2) of
 -- Pattern-quote classification across all ladder levels; the binary
 -- operator cases are exactly what fails for the Java grammar.
 describe :: Expr -> String
-describe [expr| fn $x1 -> $e1 |]            = "lam"
+describe [expr| \ $x1 -> $e1 |]            = "lam"
 describe [expr| let $x1 = $e1 in $e2 |]     = "let"
 describe [expr| if $e1 then $e2 else $e3 |] = "if"
 describe [expr| $e1 == $e2 |]               = "eq"
@@ -114,13 +114,13 @@ main = do
 
     putStrLn "== construction: quotes agree with runtime parses =="
     check "lambda quote = parsed lambda"
-        [expr| fn x -> x + 1 |] (parseExpr "fn x -> x + 1")
+        [expr| \ x -> x + 1 |] (parseExpr "\\x -> x + 1")
     check "let/if quote = parsed let/if"
         [expr| let y = 1 in if y == 1 then true else false |]
         (parseExpr "let y = 1 in if y == 1 then true else false")
 
     putStrLn "== pattern quotes at every precedence level =="
-    check "describe lam" (describe (parseExpr "fn x -> x")) "lam"
+    check "describe lam" (describe (parseExpr "\\x -> x")) "lam"
     check "describe let" (describe (parseExpr "let x = 1 in x")) "let"
     check "describe if"  (describe (parseExpr "if true then 1 else 2")) "if"
     check "describe eq"  (describe (parseExpr "f x == 1")) "eq"
@@ -140,31 +140,31 @@ main = do
         [expr| $e2 $e1 |] (parseExpr "x 1")
     let x1 = IdN "z"
     check "binder metavar in construction"
-        [expr| fn $x1 -> $x1 + 1 |] (parseExpr "fn z -> z + 1")
+        [expr| \ $x1 -> $x1 + 1 |] (parseExpr "\\z -> z + 1")
 
     putStrLn "== pattern + splice round trip =="
     let getBody e = case e of
-            [expr| fn $x1 -> $e1 |] -> e1
+            [expr| \ $x1 -> $e1 |] -> e1
             _                       -> error "not a lambda"
     check "destructure a lambda binder and body"
-        (getBody (parseExpr "fn v -> v * v")) (parseExpr "v * v")
+        (getBody (parseExpr "\\v -> v * v")) (parseExpr "v * v")
 
     putStrLn "== SYB substitution with QQ patterns =="
     check "subst replaces free occurrences"
         (subst (IdN "v") (LitI 9) (parseExpr "v + w")) (parseExpr "9 + w")
     check "subst leaves binders alone"
-        (subst (IdN "v") (LitI 9) (parseExpr "fn v -> v"))
-        (parseExpr "fn v -> 9")  -- capture-naive by design: documents behavior
+        (subst (IdN "v") (LitI 9) (parseExpr "\\v -> v"))
+        (parseExpr "\\v -> 9")  -- capture-naive by design: documents behavior
 
     putStrLn "== call-by-value evaluation =="
     check "arithmetic and comparison"
         (eval (parseExpr "if 2 + 3 == 5 then 42 else 0")) (LitI 42)
     check "beta reduction"
-        (eval (parseExpr "(fn y -> y * y) (3 + 1)")) (LitI 16)
+        (eval (parseExpr "(\\y -> y * y) (3 + 1)")) (LitI 16)
     check "let and higher-order functions"
         (eval (parseExpr
-            "let compose = fn f -> fn g -> fn v -> f (g v) in \
-            \let addone = fn y -> y + 1 in compose addone addone 5"))
+            "let compose = \\f -> \\g -> \\v -> f (g v) in \
+            \let addone = \\y -> y + 1 in compose addone addone 5"))
         (LitI 7)
 
     n <- readIORef failures
