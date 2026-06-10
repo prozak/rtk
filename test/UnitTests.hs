@@ -404,8 +404,8 @@ invariants grammarKey g = TestList
     -- tokens that may be referenced from syntax rules: macro rules are inlined
     -- into the lexer spec and Ignore tokens are dropped from the token stream,
     -- so neither may appear in a parser rule
-    usableTokens = S.fromList [ getLRuleName lr | lr@LexicalRule{} <- getLexicalRules g
-                              , getLRuleDataType lr /= "Ignore" ]
+    usableTokens = S.fromList [ name | LexicalRule{getLRuleName = name, getLRuleDataType = dt} <- getLexicalRules g
+                              , dt /= "Ignore" ]
 
 --------------------------------------------------------------------------------
 -- Small helpers over the normalized grammar
@@ -450,7 +450,7 @@ ambiguousConstructors g =
         , not (isClauseSeqLifted cs) ]
     fieldTypes cs = [ M.findWithDefault ("?" ++ i) i typeOf | SSId i <- cs ]
     typeOf = M.fromList $
-        [ (getLRuleName lr, getLRuleDataType lr) | lr@LexicalRule{} <- getLexicalRules g ]
+        [ (name, dt) | LexicalRule{getLRuleName = name, getLRuleDataType = dt} <- getLexicalRules g ]
         ++ [ (getSRuleName r, getSDataTypeName grp)
            | grp <- getSyntaxRuleGroups g, r <- getSRules grp ]
 
