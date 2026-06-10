@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Generated parsers, lexers and quasi-quoters report errors with `Either`
+  instead of throwing (the deferred "Stage G" of the diagnostics
+  migration): generated parsers use `%monad { Either String }`, so
+  `parse<Name> :: [PosToken] -> Either String <AST>` mirrors the shape of
+  the hand-written grammar parser; generated lexers expose
+  `scanTokens :: String -> Either String [PosToken]` (`alexScanTokens`
+  stays as a throwing compatibility wrapper); and the generated
+  quasi-quoters route lexer, parser and unknown-metavariable failures
+  through `fail` in `TH.Q`, so a bad quasi-quote is now a positioned GHC
+  compile error at the splice site instead of a runtime crash during
+  Template Haskell expansion. Generated code stays dependency-free
 - Duplicate rule definitions are rejected: defining the same rule name twice
   in a grammar is now a normalization error carrying both source positions
   (e.g. `g.pg:3:1: error: in rule 'Foo': rule 'Foo' is defined more than

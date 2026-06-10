@@ -18,7 +18,7 @@ getGrammarFileName = do
 main = do
     file <- getGrammarFileName
     content <- readFile file
-    let grm = parseGrammar . alexScanTokens $ content
+    let grm = either errorWithoutStackTrace id $ scanTokens content >>= parseGrammar
     let [grammar|grammar $StrLit:str ; $importsOpt|] = [grammar|grammar 'test' ;|]
     let [rule|Rule = $cl1 | $clause2 | $clause3 | $clause4 ;|] = [rule| Rule = id '=' Clause ';' 
                                                                       | id ':' id '=' Clause ';'

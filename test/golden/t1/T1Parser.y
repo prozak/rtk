@@ -7,6 +7,7 @@ import qualified T1Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTo
 
 %name parseT1
 %tokentype { L.PosToken }
+%monad { Either String }
 %error { parseError }
 
 %token
@@ -118,10 +119,10 @@ Rule_8 : D E { Ctr__Rule_8__0 $1 $2 }
 
 
 {
-parseError :: [L.PosToken] -> a
-parseError [] = errorWithoutStackTrace "Parse error: unexpected end of input"
+parseError :: [L.PosToken] -> Either String a
+parseError [] = Left "Parse error: unexpected end of input"
 parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
-    errorWithoutStackTrace $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+    Left $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
 
 -- Render a token the way it appears in the source, for error messages
 showRtkToken :: L.Token -> String

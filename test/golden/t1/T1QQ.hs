@@ -25,42 +25,47 @@ qqShortcuts :: M.Map String String
 -- metavariable stands for one literal '$' (so $$$x is a literal '$'
 -- followed by the metavariable $x). A '$' not followed by an identifier is
 -- never rewritten and needs no escape.
-replaceAllPatterns1 :: String -> String
+replaceAllPatterns1 :: String -> Either String String
 replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, String, String)
                           in if match == ""
-                              then pre
+                              then Right pre
                               else let varName = init $ tail match
                                        addSym = last match
                                        escCount = length $ takeWhile (== '$') $ reverse pre
                                        keptPre = take (length pre - escCount) pre ++ replicate (div escCount 2) '$'
                                        ruleVariants = catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts) $ reverse $ inits varName
-                                       rule = case ruleVariants of
-                                                [] -> error $ unlines
-                                                        [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
-                                                        , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
-                                                        , "  " ++ intercalate ", " (M.keys qqShortcuts)
-                                                        , "To include the literal text $" ++ varName ++ " in the quoted code"
-                                                        , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
-                                                (rule : _) -> rule
                                    in if odd escCount
-                                       then keptPre ++ ('$' : varName) ++ (replaceAllPatterns1 $ addSym : post)
-                                       else keptPre ++ ('$' : rule ++ ":") ++ varName ++ (replaceAllPatterns1 $ addSym : post)
+                                       then (\rest -> keptPre ++ ('$' : varName) ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
+                                       else case ruleVariants of
+                                              [] -> Left $ unlines
+                                                      [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
+                                                      , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
+                                                      , "  " ++ intercalate ", " (M.keys qqShortcuts)
+                                                      , "To include the literal text $" ++ varName ++ " in the quoted code"
+                                                      , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
+                                              (rule : _) -> (\rest -> keptPre ++ ('$' : rule ++ ":") ++ varName ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
 
 -- Add ' ' at the end, so regex can match variable in the end of the string
-replaceAllPatterns :: String -> String
-replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
+replaceAllPatterns :: String -> Either String String
+replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 qqShortcuts = M.fromList [ ("a","A"),("b","B"),("c","C"),("d","D"),("e","E"),("f1","F1"),("f2","F2"),("f3","F3"),("f4","F4"),("f5","F5"),("g","G")]
 
 quoteT1Exp :: Data.Data a => String -> (A -> a) -> String -> TH.ExpQ
 quoteT1Exp dummy func s = do
-  let s1 = replaceAllPatterns s
-      expr = func $ parseT1 $ alexScanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy)
+  s1 <- either fail return (replaceAllPatterns s)
+  ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseT1 of
+           Left err -> fail err
+           Right a -> return a
+  let expr = func ast
   dataToExpQ (const Nothing `Generics.extQ` antiAExp `Generics.extQ` antiBExp `Generics.extQ` antiDExp `Generics.extQ` antiEExp `Generics.extQ` antiF4Exp `Generics.extQ` antiGExp) expr
 quoteT1Pat :: Data.Data a => String -> (A -> a) -> String -> TH.PatQ
 quoteT1Pat dummy func s = do
-  let s1 = replaceAllPatterns s
-      expr = func $ parseT1 $ alexScanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy)
+  s1 <- either fail return (replaceAllPatterns s)
+  ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseT1 of
+           Left err -> fail err
+           Right a -> return a
+  let expr = func ast
   dataToPatQ (const Nothing `Generics.extQ` antiAPat `Generics.extQ` antiBPat `Generics.extQ` antiDPat `Generics.extQ` antiEPat `Generics.extQ` antiF4Pat `Generics.extQ` antiGPat) expr
 
 antiGExp :: G -> Maybe (TH.Q TH.Exp )

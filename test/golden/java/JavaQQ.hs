@@ -25,42 +25,47 @@ qqShortcuts :: M.Map String String
 -- metavariable stands for one literal '$' (so $$$x is a literal '$'
 -- followed by the metavariable $x). A '$' not followed by an identifier is
 -- never rewritten and needs no escape.
-replaceAllPatterns1 :: String -> String
+replaceAllPatterns1 :: String -> Either String String
 replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, String, String)
                           in if match == ""
-                              then pre
+                              then Right pre
                               else let varName = init $ tail match
                                        addSym = last match
                                        escCount = length $ takeWhile (== '$') $ reverse pre
                                        keptPre = take (length pre - escCount) pre ++ replicate (div escCount 2) '$'
                                        ruleVariants = catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts) $ reverse $ inits varName
-                                       rule = case ruleVariants of
-                                                [] -> error $ unlines
-                                                        [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
-                                                        , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
-                                                        , "  " ++ intercalate ", " (M.keys qqShortcuts)
-                                                        , "To include the literal text $" ++ varName ++ " in the quoted code"
-                                                        , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
-                                                (rule : _) -> rule
                                    in if odd escCount
-                                       then keptPre ++ ('$' : varName) ++ (replaceAllPatterns1 $ addSym : post)
-                                       else keptPre ++ ('$' : rule ++ ":") ++ varName ++ (replaceAllPatterns1 $ addSym : post)
+                                       then (\rest -> keptPre ++ ('$' : varName) ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
+                                       else case ruleVariants of
+                                              [] -> Left $ unlines
+                                                      [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
+                                                      , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
+                                                      , "  " ++ intercalate ", " (M.keys qqShortcuts)
+                                                      , "To include the literal text $" ++ varName ++ " in the quoted code"
+                                                      , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
+                                              (rule : _) -> (\rest -> keptPre ++ ('$' : rule ++ ":") ++ varName ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
 
 -- Add ' ' at the end, so regex can match variable in the end of the string
-replaceAllPatterns :: String -> String
-replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
+replaceAllPatterns :: String -> Either String String
+replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 qqShortcuts = M.fromList [ ("java","Java"),("additiveOp","AdditiveOp"),("annotation","Annotation"),("annotationArguments","AnnotationArguments"),("annotationDeclaration","AnnotationDeclaration"),("annotationElement","AnnotationElement"),("annotationList","AnnotationList"),("annotationTypeElement","AnnotationTypeElement"),("annotationTypeElementList","AnnotationTypeElementList"),("arglist","Arglist"),("assignmentOp","AssignmentOp"),("catchList","CatchList"),("classDeclaration","ClassDeclaration"),("compilationUnit","CompilationUnit"),("compoundName","CompoundName"),("creationExpression","CreationExpression"),("doStatement","DoStatement"),("docComment","DocComment"),("enumConstant","EnumConstant"),("enumConstantList","EnumConstantList"),("enumDeclaration","EnumDeclaration"),("equalityOp","EqualityOp"),("expression","Expression"),("extendsList","ExtendsList"),("fieldDeclaration","FieldDeclaration"),("fieldDeclarationList","FieldDeclarationList"),("forStatement","ForStatement"),("ifStatement","IfStatement"),("implementsList","ImplementsList"),("importList","ImportList"),("importStatement","ImportStatement"),("interfaceDeclaration","InterfaceDeclaration"),("literal","Literal"),("memberAfterFirstId","MemberAfterFirstId"),("memberDeclaration","MemberDeclaration"),("memberRest","MemberRest"),("modifier","Modifier"),("modifierList","ModifierList"),("moreTypeSpecifier","MoreTypeSpecifier"),("moreVariableDeclarators","MoreVariableDeclarators"),("multiplicativeOp","MultiplicativeOp"),("nestedTypeDeclaration","NestedTypeDeclaration"),("optDocComment","OptDocComment"),("optElsePart","OptElsePart"),("optExpression","OptExpression"),("optFinally","OptFinally"),("optId","OptId"),("optVariableInitializer","OptVariableInitializer"),("package","Package"),("parameter","Parameter"),("parameterList","ParameterList"),("postfixOp","PostfixOp"),("prefixOp","PrefixOp"),("primitiveTypeKeyword","PrimitiveTypeKeyword"),("relationalOp","RelationalOp"),("shiftOp","ShiftOp"),("squareBracketsList","SquareBracketsList"),("statement","Statement"),("statementBlock","StatementBlock"),("statementList","StatementList"),("statementWithoutIf","StatementWithoutIf"),("staticInitializer","StaticInitializer"),("switchCaseList","SwitchCaseList"),("switchStatement","SwitchStatement"),("tryStatement","TryStatement"),("type","Type"),("typeArgument","TypeArgument"),("typeArguments","TypeArguments"),("typeDeclaration","TypeDeclaration"),("typeParameter","TypeParameter"),("typeParameters","TypeParameters"),("typeSpecifier","TypeSpecifier"),("variableDeclaration","VariableDeclaration"),("variableDeclarator","VariableDeclarator"),("variableDeclaratorList","VariableDeclaratorList"),("variableInitializer","VariableInitializer"),("variableInitializerList","VariableInitializerList"),("whileStatement","WhileStatement"),("wildcardType","WildcardType")]
 
 quoteJavaExp :: Data.Data a => String -> (Java -> a) -> String -> TH.ExpQ
 quoteJavaExp dummy func s = do
-  let s1 = replaceAllPatterns s
-      expr = func $ parseJava $ alexScanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy)
+  s1 <- either fail return (replaceAllPatterns s)
+  ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseJava of
+           Left err -> fail err
+           Right a -> return a
+  let expr = func ast
   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) expr
 quoteJavaPat :: Data.Data a => String -> (Java -> a) -> String -> TH.PatQ
 quoteJavaPat dummy func s = do
-  let s1 = replaceAllPatterns s
-      expr = func $ parseJava $ alexScanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy)
+  s1 <- either fail return (replaceAllPatterns s)
+  ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseJava of
+           Left err -> fail err
+           Right a -> return a
+  let expr = func ast
   dataToPatQ (const Nothing `Generics.extQ` antiJavaPat `Generics.extQ` antiOptDocCommentPat `Generics.extQ` antiTypeDeclarationPat `Generics.extQ` antiRule_2Pat `Generics.extQ` antiCompilationUnitPat `Generics.extQ` antiPackagePat `Generics.extQ` antiImportStatementPat `Generics.extQ` antiDocCommentPat `Generics.extQ` antiAnnotationPat `Generics.extQ` antiAnnotationArgumentsPat `Generics.extQ` antiAnnotationElementPat `Generics.extQ` antiRule_18Pat `Generics.extQ` antiExtendsListPat `Generics.extQ` antiImplementsListPat `Generics.extQ` antiFieldDeclarationPat `Generics.extQ` antiClassDeclarationPat `Generics.extQ` antiInterfaceDeclarationPat `Generics.extQ` antiAnnotationDeclarationPat `Generics.extQ` antiAnnotationTypeElementPat `Generics.extQ` antiEnumConstantPat `Generics.extQ` antiEnumConstantListPat `Generics.extQ` antiEnumDeclarationPat `Generics.extQ` antiNestedTypeDeclarationPat `Generics.extQ` antiRule_44Pat `Generics.extQ` antiMemberDeclarationPat `Generics.extQ` antiPrimitiveTypeKeywordPat `Generics.extQ` antiMemberAfterFirstIdPat `Generics.extQ` antiMoreTypeSpecifierPat `Generics.extQ` antiMemberRestPat `Generics.extQ` antiRule_49Pat `Generics.extQ` antiStatementBlockPat `Generics.extQ` antiVariableDeclaratorListPat `Generics.extQ` antiVariableDeclarationPat `Generics.extQ` antiOptVariableInitializerPat `Generics.extQ` antiVariableDeclaratorPat `Generics.extQ` antiVariableInitializerListPat `Generics.extQ` antiVariableInitializerPat `Generics.extQ` antiStaticInitializerPat `Generics.extQ` antiParameterListPat `Generics.extQ` antiParameterPat `Generics.extQ` antiStatementPat `Generics.extQ` antiOptExpressionPat `Generics.extQ` antiOptIdPat `Generics.extQ` antiStatementWithoutIfPat `Generics.extQ` antiOptElsePartPat `Generics.extQ` antiIfStatementPat `Generics.extQ` antiDoStatementPat `Generics.extQ` antiWhileStatementPat `Generics.extQ` antiForStatementPat `Generics.extQ` antiRule_65Pat `Generics.extQ` antiOptFinallyPat `Generics.extQ` antiTryStatementPat `Generics.extQ` antiRule_68Pat `Generics.extQ` antiSwitchStatementPat `Generics.extQ` antiExpressionPat `Generics.extQ` antiAssignmentOpPat `Generics.extQ` antiEqualityOpPat `Generics.extQ` antiRelationalOpPat `Generics.extQ` antiShiftOpPat `Generics.extQ` antiAdditiveOpPat `Generics.extQ` antiMultiplicativeOpPat `Generics.extQ` antiPrefixOpPat `Generics.extQ` antiPostfixOpPat `Generics.extQ` antiCreationExpressionPat `Generics.extQ` antiLiteralPat `Generics.extQ` antiArglistPat `Generics.extQ` antiTypeArgumentsPat `Generics.extQ` antiTypeArgumentPat `Generics.extQ` antiWildcardTypePat `Generics.extQ` antiTypeParametersPat `Generics.extQ` antiTypeParameterPat `Generics.extQ` antiTypePat `Generics.extQ` antiTypeSpecifierPat `Generics.extQ` antiModifierPat `Generics.extQ` antiCompoundNamePat) expr
 
 antiCompoundNameExp :: CompoundName -> Maybe (TH.Q TH.Exp )
