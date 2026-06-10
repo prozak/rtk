@@ -50,7 +50,7 @@ tokens:-
 getStateCommentDepth = Alex $ \s@AlexState{alex_ust=ust} -> Right (s, getCommentDepth ust)
 setStateCommentDepth i = Alex $ \s@AlexState{alex_ust=ust} -> Right (s{alex_ust=ust{getCommentDepth = i}}, ()) 
 
-beginMultiLineComment :: AlexInput -> Int -> Alex Token
+beginMultiLineComment :: AlexInput -> Int -> Alex PosToken
 beginMultiLineComment alexInput i =
   do
     commentDepth <- getStateCommentDepth
@@ -58,7 +58,7 @@ beginMultiLineComment alexInput i =
     alexSetStartCode mlcomment
     skip alexInput i
 
-tryEndMultiLineComment :: AlexInput -> Int -> Alex Token    
+tryEndMultiLineComment :: AlexInput -> Int -> Alex PosToken
 tryEndMultiLineComment alexInput i =
   do
     commentDepth <- getStateCommentDepth
@@ -100,27 +100,37 @@ data Token = Grammar
     | EndOfFile
       deriving (Eq, Show)
 
-alexScanTokens :: String -> [Token]
-alexScanTokens str = 
+-- A token together with the source position where it starts
+data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }
+                deriving (Eq, Show)
+
+-- The returned list always ends with an EndOfFile token that carries the
+-- position of the end of input, so parse errors at end of input can be
+-- reported with a position too
+alexScanTokens :: String -> [PosToken]
+alexScanTokens str =
                case alexScanTokens1 str of
                   Right toks -> toks
-                  Left err -> error err
+                  Left err -> errorWithoutStackTrace err
 
 alexScanTokens1 str = runAlex str $ do
   let loop toks = do tok <- alexMonadScan
                      case tok of
-                       EndOfFile -> return $ reverse toks
+                       PosToken _ EndOfFile -> return $ reverse (tok : toks)
                        _ -> let toks' = tok : toks
                             in toks' `seq` loop toks'
   loop []
 
-alexEOF = return EndOfFile
+alexEOF = do
+  (pos, _, _, _) <- alexGetInput
+  return $ PosToken pos EndOfFile
 
-rtkError ((AlexPn _ line column), _, _, str) _ = alexError $ "lexical error at " ++ (show line) ++ " line, " ++ (show column) ++ " column" ++ ". Following chars :" ++ (take 10 str)
+rtkError ((AlexPn _ line column), _, _, str) _ = alexError $ "lexical error at line " ++ (show line) ++ ", column " ++ (show column) ++ ". Following chars: " ++ (take 10 str)
 
-simple1 :: (String -> Token) -> AlexInput -> Int -> Alex Token
-simple1 t (_, _, _, str) len = return $ t (take len str)
+simple1 :: (String -> Token) -> AlexInput -> Int -> Alex PosToken
+simple1 t (pos, _, _, str) len = return $ PosToken pos (t (take len str))
 
-simple t _ _ = return t
+simple :: Token -> AlexInput -> Int -> Alex PosToken
+simple t (pos, _, _, _) _ = return $ PosToken pos t
 
 }

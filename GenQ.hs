@@ -107,7 +107,13 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                                     else listExpGen
                                              else nonListGen )
                                 antiRules
-          qqFunProtoGen typ = [str|?(qqFunName typ) :: Data.Data a => String -> (?(fromJust $ getStartRuleName info) -> a) -> String -> TH.?typ~Q|]
+          startRuleName = fromMaybe (error "Internal error (GenQ): start rule name is not set in grammar info")
+                                    (getStartRuleName info)
+          startTokenFor typeName = fromMaybe (error $ "Internal error (GenQ): no start token recorded for type '" ++ typeName ++ "'")
+                                             (M.lookup typeName $ getRuleToStartInfo info)
+          constructorFor typeName = fromMaybe (error $ "Internal error (GenQ): no start constructor found for type '" ++ typeName ++ "'")
+                                              (M.lookup typeName typeNameToConstructor)
+          qqFunProtoGen typ = [str|?(qqFunName typ) :: Data.Data a => String -> (?startRuleName -> a) -> String -> TH.?typ~Q|]
           dataToExpCall typ var = [str|  dataTo?typ~Q (?(antiExprsGen typ)) ?var|]
           qqFunImplGen typ = [str|?(qqFunName typ ) dummy func s = do
   let s1 = replaceAllPatterns s
@@ -132,9 +138,9 @@ replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
                                        case getSDataTypeName ruleGroup of
                                          typeName@(s : rest) ->
                                            let sortFunName = sortNameToHaskellName $ C.toLower s : rest
-                                               dummy = "\"" ++ (fromJust $ M.lookup typeName $ getRuleToStartInfo info) ++ "\""
+                                               dummy = "\"" ++ startTokenFor typeName ++ "\""
                                                getFun = "get" ++ typeName
-                                               dataConstructor = fromJust $ M.lookup typeName typeNameToConstructor
+                                               dataConstructor = constructorFor typeName
                                            in
                                              [str|?getFun ( ?dataConstructor s) = s
 

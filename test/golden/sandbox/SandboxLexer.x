@@ -1,5 +1,5 @@
 {
-module SandboxLexer(alexScanTokens, Token(..))
+module SandboxLexer(alexScanTokens, Token(..), PosToken(..), AlexPosn(..))
 where
 
  }
@@ -21,25 +21,37 @@ data Token = EndOfFile |
              Tk__qq_Sandbox String
              deriving (Show)
 
-alexEOF = return EndOfFile
-alexScanTokens :: String -> [Token]
-alexScanTokens str = 
+-- A token together with the source position where it starts
+data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }
+                deriving (Show)
+
+alexEOF = do
+  (pos, _, _, _) <- alexGetInput
+  return $ PosToken pos EndOfFile
+
+-- The returned list always ends with an EndOfFile token that carries the
+-- position of the end of input, so parse errors at end of input can be
+-- reported with a position too
+alexScanTokens :: String -> [PosToken]
+alexScanTokens str =
                case alexScanTokens1 str of
                   Right toks -> toks
-                  Left err -> error err
+                  Left err -> errorWithoutStackTrace err
 
 alexScanTokens1 str = runAlex str $ do
   let loop toks = do tok <- alexMonadScan
                      case tok of
-                       EndOfFile -> return $ reverse toks
-                       _ -> let toks' = tok : toks 
+                       PosToken _ EndOfFile -> return $ reverse (tok : toks)
+                       _ -> let toks' = tok : toks
                             in toks' `seq` loop toks'
   loop []
-simple1 :: (String -> Token) -> AlexInput -> Int -> Alex Token
-simple1 t (_, _, _, str) len = return $ t (take len str)
 
-simple t input len = return t
+simple1 :: (String -> Token) -> AlexInput -> Int -> Alex PosToken
+simple1 t (pos, _, _, str) len = return $ PosToken pos (t (take len str))
 
-rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at " ++ (show line) ++ " line, " ++ (show column) ++ " column" ++ ". Following chars :" ++ (take 10 str)
+simple :: Token -> AlexInput -> Int -> Alex PosToken
+simple t (pos, _, _, _) len = return $ PosToken pos t
+
+rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at line " ++ (show line) ++ ", column " ++ (show column) ++ ". Following chars: " ++ (take 10 str)
 
 }

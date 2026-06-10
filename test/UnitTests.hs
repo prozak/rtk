@@ -19,7 +19,7 @@ import System.FilePath (takeBaseName)
 import Test.HUnit
 
 import Grammar (isClauseSeqLifted)
-import Lexer (Token (..))
+import Lexer (AlexPosn (..), PosToken (..), Token (..))
 import Normalize (fillConstructorNames, normalizeTopLevelClauses)
 import Parser
 import StrQuote (str)
@@ -72,11 +72,20 @@ tokenProcessingTests = TestList
     , TestLabel "unBackQuote unescapes backslash itself" $ TestCase $
         assertEqual "" "\\" (unBackQuote "\\\\")
     , TestLabel "catBigstrs joins adjacent big strings" $ TestCase $
-        assertEqual "" [BigStr "a\nb", Id "x"] (catBigstrs [BigStr "a", BigStr "b", Id "x"])
+        assertEqual "" (map at [BigStr "a\nb", Id "x"])
+                       (catBigstrs (map at [BigStr "a", BigStr "b", Id "x"]))
+    , TestLabel "catBigstrs keeps the position of the first part" $ TestCase $
+        assertEqual "" [PosToken (AlexPn 0 1 1) (BigStr "a\nb")]
+                       (catBigstrs [ PosToken (AlexPn 0 1 1) (BigStr "a")
+                                   , PosToken (AlexPn 5 2 1) (BigStr "b") ])
     , TestLabel "processTokens combines both steps" $ TestCase $
-        assertEqual "" [StrLit "'", BigStr "a\nb"]
-                       (processTokens [StrLit "\\'", BigStr "a", BigStr "b"])
+        assertEqual "" (map at [StrLit "'", BigStr "a\nb"])
+                       (processTokens (map at [StrLit "\\'", BigStr "a", BigStr "b"]))
     ]
+
+-- | Wrap a token at a dummy position; token processing ignores positions.
+at :: Token -> PosToken
+at = PosToken (AlexPn 0 1 1)
 
 --------------------------------------------------------------------------------
 -- Pipeline error handling
@@ -107,6 +116,37 @@ errorHandlingTests = TestList
         case result of
             Left _ -> return ()
             Right msg -> assertFailure $ "valid grammar should normalize, got error: " ++ msg
+    , TestLabel "parse errors report the offending position" $ TestCase $ do
+        -- ';' missing after the grammar declaration: the parser should point
+        -- at the identifier 'Foo' on line 2
+        result <- expectErrorCall $ parseGrammarSource "grammar 'Test'\nFoo = bar;\n"
+        case result of
+            Left err -> assertFailure $ "expected a parse error, got: " ++ err
+            Right msg -> assertBool ("unexpected message: " ++ msg) $
+                "line 2, column 1" `isInfixOf` msg && "identifier 'Foo'" `isInfixOf` msg
+    , TestLabel "errors at end of input carry a position" $ TestCase $ do
+        result <- expectErrorCall $ parseGrammarSource "grammar 'Test';\nFoo =\n"
+        case result of
+            Left err -> assertFailure $ "expected a parse error, got: " ++ err
+            Right msg -> assertBool ("unexpected message: " ++ msg) $
+                "line 3, column 1" `isInfixOf` msg && "end of input" `isInfixOf` msg
+    , TestLabel "a lexical first rule is rejected with an explanation" $ TestCase $ do
+        result <- expectErrorCall $ forceGrammar $
+            normalizeGrammarSource "grammar 'Test';\nfoo = [a-z];\n"
+        case result of
+            Left err -> assertFailure $ "expected an error about the first rule, got: " ++ err
+            Right msg -> assertBool ("unexpected message: " ++ msg) $
+                "must be a syntax rule" `isInfixOf` msg && "foo" `isInfixOf` msg
+    , TestLabel "normalization errors name the offending rule and position" $ TestCase $ do
+        -- a lifted (,) clause mixed with other clauses is rejected; the error
+        -- should point at rule 'Foo' on line 2
+        result <- expectErrorCall $ forceGrammar $
+            normalizeGrammarSource "grammar 'Test';\nFoo = ,Bar Baz;\nBar = 'b';\nBaz = 'z';\n"
+        case result of
+            Left err -> assertFailure $ "expected an error about the lifted clause, got: " ++ err
+            Right msg -> assertBool ("unexpected message: " ++ msg) $
+                "in rule 'Foo'" `isInfixOf` msg && "line 2" `isInfixOf` msg
+                && "lifted" `isInfixOf` msg
     ]
 
 -- | Force the whole grammar value so lazy errors surface where we expect them.

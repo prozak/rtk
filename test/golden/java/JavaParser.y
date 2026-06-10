@@ -2,278 +2,281 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 module JavaParser where
 import qualified Data.Generics as Gen
-import qualified JavaLexer as L (Token(..), alexScanTokens)
+import qualified JavaLexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)
 }
 
 %name parseJava
-%tokentype { L.Token }
-%error { \ rest -> error $ "Parse error " ++ (show rest) }
+%tokentype { L.PosToken }
+%error { parseError }
 
 %token
 
-tok_AdditiveOp_dummy_171 { L.Tk__tok_AdditiveOp_dummy_171 }
-tok_Annotation_dummy_170 { L.Tk__tok_Annotation_dummy_170 }
-tok_AnnotationArguments_dummy_169 { L.Tk__tok_AnnotationArguments_dummy_169 }
-tok_AnnotationDeclaration_dummy_168 { L.Tk__tok_AnnotationDeclaration_dummy_168 }
-tok_AnnotationElement_dummy_167 { L.Tk__tok_AnnotationElement_dummy_167 }
-tok_AnnotationList_dummy_166 { L.Tk__tok_AnnotationList_dummy_166 }
-tok_AnnotationTypeElement_dummy_165 { L.Tk__tok_AnnotationTypeElement_dummy_165 }
-tok_AnnotationTypeElementList_dummy_164 { L.Tk__tok_AnnotationTypeElementList_dummy_164 }
-tok_Arglist_dummy_163 { L.Tk__tok_Arglist_dummy_163 }
-tok_AssignmentOp_dummy_162 { L.Tk__tok_AssignmentOp_dummy_162 }
-tok_CatchList_dummy_161 { L.Tk__tok_CatchList_dummy_161 }
-tok_ClassDeclaration_dummy_160 { L.Tk__tok_ClassDeclaration_dummy_160 }
-tok_CompilationUnit_dummy_159 { L.Tk__tok_CompilationUnit_dummy_159 }
-tok_CompoundName_dummy_158 { L.Tk__tok_CompoundName_dummy_158 }
-tok_CreationExpression_dummy_157 { L.Tk__tok_CreationExpression_dummy_157 }
-tok_DoStatement_dummy_156 { L.Tk__tok_DoStatement_dummy_156 }
-tok_DocComment_dummy_155 { L.Tk__tok_DocComment_dummy_155 }
-tok_EnumConstant_dummy_154 { L.Tk__tok_EnumConstant_dummy_154 }
-tok_EnumConstantList_dummy_153 { L.Tk__tok_EnumConstantList_dummy_153 }
-tok_EnumDeclaration_dummy_152 { L.Tk__tok_EnumDeclaration_dummy_152 }
-tok_EqualityOp_dummy_151 { L.Tk__tok_EqualityOp_dummy_151 }
-tok_Expression_dummy_150 { L.Tk__tok_Expression_dummy_150 }
-tok_ExtendsList_dummy_149 { L.Tk__tok_ExtendsList_dummy_149 }
-tok_FieldDeclaration_dummy_148 { L.Tk__tok_FieldDeclaration_dummy_148 }
-tok_FieldDeclarationList_dummy_147 { L.Tk__tok_FieldDeclarationList_dummy_147 }
-tok_ForStatement_dummy_146 { L.Tk__tok_ForStatement_dummy_146 }
-tok_IfStatement_dummy_145 { L.Tk__tok_IfStatement_dummy_145 }
-tok_ImplementsList_dummy_144 { L.Tk__tok_ImplementsList_dummy_144 }
-tok_ImportList_dummy_143 { L.Tk__tok_ImportList_dummy_143 }
-tok_ImportStatement_dummy_142 { L.Tk__tok_ImportStatement_dummy_142 }
-tok_InterfaceDeclaration_dummy_141 { L.Tk__tok_InterfaceDeclaration_dummy_141 }
-tok_Java_dummy_172 { L.Tk__tok_Java_dummy_172 }
-tok_Literal_dummy_140 { L.Tk__tok_Literal_dummy_140 }
-tok_MemberAfterFirstId_dummy_139 { L.Tk__tok_MemberAfterFirstId_dummy_139 }
-tok_MemberDeclaration_dummy_138 { L.Tk__tok_MemberDeclaration_dummy_138 }
-tok_MemberRest_dummy_137 { L.Tk__tok_MemberRest_dummy_137 }
-tok_Modifier_dummy_136 { L.Tk__tok_Modifier_dummy_136 }
-tok_ModifierList_dummy_135 { L.Tk__tok_ModifierList_dummy_135 }
-tok_MoreTypeSpecifier_dummy_134 { L.Tk__tok_MoreTypeSpecifier_dummy_134 }
-tok_MoreVariableDeclarators_dummy_133 { L.Tk__tok_MoreVariableDeclarators_dummy_133 }
-tok_MultiplicativeOp_dummy_132 { L.Tk__tok_MultiplicativeOp_dummy_132 }
-tok_NestedTypeDeclaration_dummy_131 { L.Tk__tok_NestedTypeDeclaration_dummy_131 }
-tok_OptDocComment_dummy_130 { L.Tk__tok_OptDocComment_dummy_130 }
-tok_OptElsePart_dummy_129 { L.Tk__tok_OptElsePart_dummy_129 }
-tok_OptExpression_dummy_128 { L.Tk__tok_OptExpression_dummy_128 }
-tok_OptFinally_dummy_127 { L.Tk__tok_OptFinally_dummy_127 }
-tok_OptId_dummy_126 { L.Tk__tok_OptId_dummy_126 }
-tok_OptVariableInitializer_dummy_125 { L.Tk__tok_OptVariableInitializer_dummy_125 }
-tok_Package_dummy_124 { L.Tk__tok_Package_dummy_124 }
-tok_Parameter_dummy_123 { L.Tk__tok_Parameter_dummy_123 }
-tok_ParameterList_dummy_122 { L.Tk__tok_ParameterList_dummy_122 }
-tok_PostfixOp_dummy_121 { L.Tk__tok_PostfixOp_dummy_121 }
-tok_PrefixOp_dummy_120 { L.Tk__tok_PrefixOp_dummy_120 }
-tok_PrimitiveTypeKeyword_dummy_119 { L.Tk__tok_PrimitiveTypeKeyword_dummy_119 }
-tok_RelationalOp_dummy_118 { L.Tk__tok_RelationalOp_dummy_118 }
-tok_ShiftOp_dummy_117 { L.Tk__tok_ShiftOp_dummy_117 }
-tok_SquareBracketsList_dummy_116 { L.Tk__tok_SquareBracketsList_dummy_116 }
-tok_Statement_dummy_115 { L.Tk__tok_Statement_dummy_115 }
-tok_StatementBlock_dummy_114 { L.Tk__tok_StatementBlock_dummy_114 }
-tok_StatementList_dummy_113 { L.Tk__tok_StatementList_dummy_113 }
-tok_StatementWithoutIf_dummy_112 { L.Tk__tok_StatementWithoutIf_dummy_112 }
-tok_StaticInitializer_dummy_111 { L.Tk__tok_StaticInitializer_dummy_111 }
-tok_SwitchCaseList_dummy_110 { L.Tk__tok_SwitchCaseList_dummy_110 }
-tok_SwitchStatement_dummy_109 { L.Tk__tok_SwitchStatement_dummy_109 }
-tok_TryStatement_dummy_108 { L.Tk__tok_TryStatement_dummy_108 }
-tok_Type_dummy_107 { L.Tk__tok_Type_dummy_107 }
-tok_TypeArgument_dummy_106 { L.Tk__tok_TypeArgument_dummy_106 }
-tok_TypeArguments_dummy_105 { L.Tk__tok_TypeArguments_dummy_105 }
-tok_TypeDeclaration_dummy_104 { L.Tk__tok_TypeDeclaration_dummy_104 }
-tok_TypeParameter_dummy_103 { L.Tk__tok_TypeParameter_dummy_103 }
-tok_TypeParameters_dummy_102 { L.Tk__tok_TypeParameters_dummy_102 }
-tok_TypeSpecifier_dummy_101 { L.Tk__tok_TypeSpecifier_dummy_101 }
-tok_VariableDeclaration_dummy_100 { L.Tk__tok_VariableDeclaration_dummy_100 }
-tok_VariableDeclarator_dummy_99 { L.Tk__tok_VariableDeclarator_dummy_99 }
-tok_VariableDeclaratorList_dummy_98 { L.Tk__tok_VariableDeclaratorList_dummy_98 }
-tok_VariableInitializer_dummy_97 { L.Tk__tok_VariableInitializer_dummy_97 }
-tok_VariableInitializerList_dummy_96 { L.Tk__tok_VariableInitializerList_dummy_96 }
-tok_WhileStatement_dummy_95 { L.Tk__tok_WhileStatement_dummy_95 }
-tok_WildcardType_dummy_94 { L.Tk__tok_WildcardType_dummy_94 }
-tok__tilde__78 { L.Tk__tok__tilde__78 }
-tok__symbol__14 { L.Tk__tok__symbol__14 }
-tok__pipe__pipe__57 { L.Tk__tok__pipe__pipe__57 }
-tok__pipe__eql__49 { L.Tk__tok__pipe__eql__49 }
-tok__pipe__59 { L.Tk__tok__pipe__59 }
-tok__symbol__13 { L.Tk__tok__symbol__13 }
-tok_while_38 { L.Tk__tok_while_38 }
-tok_void_28 { L.Tk__tok_void_28 }
-tok_try_42 { L.Tk__tok_try_42 }
-tok_true_83 { L.Tk__tok_true_83 }
-tok_transient_94 { L.Tk__tok_transient_94 }
-tok_throw_31 { L.Tk__tok_throw_31 }
-tok_threadsafe_93 { L.Tk__tok_threadsafe_93 }
-tok_this_80 { L.Tk__tok_this_80 }
-tok_synchronized_30 { L.Tk__tok_synchronized_30 }
-tok_switch_44 { L.Tk__tok_switch_44 }
-tok_super_81 { L.Tk__tok_super_81 }
-tok_static_89 { L.Tk__tok_static_89 }
-tok_short_23 { L.Tk__tok_short_23 }
-tok_return_29 { L.Tk__tok_return_29 }
-tok_public_86 { L.Tk__tok_public_86 }
-tok_protected_88 { L.Tk__tok_protected_88 }
-tok_private_87 { L.Tk__tok_private_87 }
-tok_package_0 { L.Tk__tok_package_0 }
-tok_null_85 { L.Tk__tok_null_85 }
-tok_new_82 { L.Tk__tok_new_82 }
-tok_native_91 { L.Tk__tok_native_91 }
-tok_long_26 { L.Tk__tok_long_26 }
-tok_interface_15 { L.Tk__tok_interface_15 }
-tok_int_24 { L.Tk__tok_int_24 }
-tok_instanceof_68 { L.Tk__tok_instanceof_68 }
-tok_import_2 { L.Tk__tok_import_2 }
-tok_implements_11 { L.Tk__tok_implements_11 }
-tok_if_36 { L.Tk__tok_if_36 }
-tok_for_39 { L.Tk__tok_for_39 }
-tok_float_25 { L.Tk__tok_float_25 }
-tok_finally_41 { L.Tk__tok_finally_41 }
-tok_final_90 { L.Tk__tok_final_90 }
-tok_false_84 { L.Tk__tok_false_84 }
-tok_extends_10 { L.Tk__tok_extends_10 }
-tok_enum_17 { L.Tk__tok_enum_17 }
-tok_else_35 { L.Tk__tok_else_35 }
-tok_double_27 { L.Tk__tok_double_27 }
-tok_do_37 { L.Tk__tok_do_37 }
-tok_default_16 { L.Tk__tok_default_16 }
-tok_continue_34 { L.Tk__tok_continue_34 }
-tok_class_12 { L.Tk__tok_class_12 }
-tok_char_22 { L.Tk__tok_char_22 }
-tok_catch_40 { L.Tk__tok_catch_40 }
-tok_case_43 { L.Tk__tok_case_43 }
-tok_byte_21 { L.Tk__tok_byte_21 }
-tok_break_33 { L.Tk__tok_break_33 }
-tok_boolean_20 { L.Tk__tok_boolean_20 }
-tok_abstract_92 { L.Tk__tok_abstract_92 }
-tok__symbol__eql__51 { L.Tk__tok__symbol__eql__51 }
-tok__symbol__60 { L.Tk__tok__symbol__60 }
-tok__sq_bkt_r__19 { L.Tk__tok__sq_bkt_r__19 }
-tok__sq_bkt_l__18 { L.Tk__tok__sq_bkt_l__18 }
-tok__symbol__5 { L.Tk__tok__symbol__5 }
-tok__symbol__56 { L.Tk__tok__symbol__56 }
-tok__symbol__symbol__symbol__eql__55 { L.Tk__tok__symbol__symbol__symbol__eql__55 }
-tok__symbol__symbol__symbol__71 { L.Tk__tok__symbol__symbol__symbol__71 }
-tok__symbol__symbol__eql__54 { L.Tk__tok__symbol__symbol__eql__54 }
-tok__symbol__symbol__69 { L.Tk__tok__symbol__symbol__69 }
-tok__symbol__eql__67 { L.Tk__tok__symbol__eql__67 }
-tok__symbol__65 { L.Tk__tok__symbol__65 }
-tok__eql__eql__62 { L.Tk__tok__eql__eql__62 }
-tok__eql__9 { L.Tk__tok__eql__9 }
-tok__symbol__eql__66 { L.Tk__tok__symbol__eql__66 }
-tok__symbol__symbol__eql__53 { L.Tk__tok__symbol__symbol__eql__53 }
-tok__symbol__symbol__70 { L.Tk__tok__symbol__symbol__70 }
-tok__symbol__64 { L.Tk__tok__symbol__64 }
-tok__semi__1 { L.Tk__tok__semi__1 }
-tok__colon__32 { L.Tk__tok__colon__32 }
-tok__symbol__eql__48 { L.Tk__tok__symbol__eql__48 }
-tok__symbol__74 { L.Tk__tok__symbol__74 }
-tok__dot__3 { L.Tk__tok__dot__3 }
-tok__minus__eql__46 { L.Tk__tok__minus__eql__46 }
-tok__minus__minus__77 { L.Tk__tok__minus__minus__77 }
-tok__minus__73 { L.Tk__tok__minus__73 }
-tok__coma__8 { L.Tk__tok__coma__8 }
-tok__plus__eql__45 { L.Tk__tok__plus__eql__45 }
-tok__plus__plus__76 { L.Tk__tok__plus__plus__76 }
-tok__plus__72 { L.Tk__tok__plus__72 }
-tok__star__eql__47 { L.Tk__tok__star__eql__47 }
-tok__star__4 { L.Tk__tok__star__4 }
-tok__rparen__7 { L.Tk__tok__rparen__7 }
-tok__lparen__6 { L.Tk__tok__lparen__6 }
-tok__symbol__eql__50 { L.Tk__tok__symbol__eql__50 }
-tok__symbol__symbol__58 { L.Tk__tok__symbol__symbol__58 }
-tok__symbol__61 { L.Tk__tok__symbol__61 }
-tok__symbol__eql__52 { L.Tk__tok__symbol__eql__52 }
-tok__symbol__75 { L.Tk__tok__symbol__75 }
-tok__exclamation__eql__63 { L.Tk__tok__exclamation__eql__63 }
-tok__exclamation__79 { L.Tk__tok__exclamation__79 }
-doccomment { L.Tk__doccomment $$ }
-id { L.Tk__id $$ }
-string { L.Tk__string $$ }
-char { L.Tk__char $$ }
-floatTypeSuffix { L.Tk__floatTypeSuffix $$ }
-exponentPart { L.Tk__exponentPart $$ }
-floatLiteral { L.Tk__floatLiteral $$ }
-integerLiteral { L.Tk__integerLiteral $$ }
-qq_CompoundName { L.Tk__qq_CompoundName $$ }
-qq_Modifier { L.Tk__qq_Modifier $$ }
-qq_TypeSpecifier { L.Tk__qq_TypeSpecifier $$ }
-qq_Type { L.Tk__qq_Type $$ }
-qq_TypeParameter { L.Tk__qq_TypeParameter $$ }
-qq_TypeParameters { L.Tk__qq_TypeParameters $$ }
-qq_WildcardType { L.Tk__qq_WildcardType $$ }
-qq_TypeArgument { L.Tk__qq_TypeArgument $$ }
-qq_TypeArguments { L.Tk__qq_TypeArguments $$ }
-qq_Arglist { L.Tk__qq_Arglist $$ }
-qq_Literal { L.Tk__qq_Literal $$ }
-qq_CreationExpression { L.Tk__qq_CreationExpression $$ }
-qq_PostfixOp { L.Tk__qq_PostfixOp $$ }
-qq_PrefixOp { L.Tk__qq_PrefixOp $$ }
-qq_MultiplicativeOp { L.Tk__qq_MultiplicativeOp $$ }
-qq_AdditiveOp { L.Tk__qq_AdditiveOp $$ }
-qq_ShiftOp { L.Tk__qq_ShiftOp $$ }
-qq_RelationalOp { L.Tk__qq_RelationalOp $$ }
-qq_EqualityOp { L.Tk__qq_EqualityOp $$ }
-qq_AssignmentOp { L.Tk__qq_AssignmentOp $$ }
-qq_Expression { L.Tk__qq_Expression $$ }
-qq_SwitchStatement { L.Tk__qq_SwitchStatement $$ }
-qq_SwitchCaseList { L.Tk__qq_SwitchCaseList $$ }
-qq_TryStatement { L.Tk__qq_TryStatement $$ }
-qq_OptFinally { L.Tk__qq_OptFinally $$ }
-qq_CatchList { L.Tk__qq_CatchList $$ }
-qq_ForStatement { L.Tk__qq_ForStatement $$ }
-qq_WhileStatement { L.Tk__qq_WhileStatement $$ }
-qq_DoStatement { L.Tk__qq_DoStatement $$ }
-qq_IfStatement { L.Tk__qq_IfStatement $$ }
-qq_OptElsePart { L.Tk__qq_OptElsePart $$ }
-qq_StatementWithoutIf { L.Tk__qq_StatementWithoutIf $$ }
-qq_Statement { L.Tk__qq_Statement $$ }
-qq_OptId { L.Tk__qq_OptId $$ }
-qq_OptExpression { L.Tk__qq_OptExpression $$ }
-qq_StatementList { L.Tk__qq_StatementList $$ }
-qq_Parameter { L.Tk__qq_Parameter $$ }
-qq_ParameterList { L.Tk__qq_ParameterList $$ }
-qq_StaticInitializer { L.Tk__qq_StaticInitializer $$ }
-qq_VariableInitializer { L.Tk__qq_VariableInitializer $$ }
-qq_VariableInitializerList { L.Tk__qq_VariableInitializerList $$ }
-qq_VariableDeclarator { L.Tk__qq_VariableDeclarator $$ }
-qq_OptVariableInitializer { L.Tk__qq_OptVariableInitializer $$ }
-qq_VariableDeclaration { L.Tk__qq_VariableDeclaration $$ }
-qq_VariableDeclaratorList { L.Tk__qq_VariableDeclaratorList $$ }
-qq_StatementBlock { L.Tk__qq_StatementBlock $$ }
-qq_MoreVariableDeclarators { L.Tk__qq_MoreVariableDeclarators $$ }
-qq_MemberRest { L.Tk__qq_MemberRest $$ }
-qq_MoreTypeSpecifier { L.Tk__qq_MoreTypeSpecifier $$ }
-qq_MemberAfterFirstId { L.Tk__qq_MemberAfterFirstId $$ }
-qq_PrimitiveTypeKeyword { L.Tk__qq_PrimitiveTypeKeyword $$ }
-qq_MemberDeclaration { L.Tk__qq_MemberDeclaration $$ }
-qq_SquareBracketsList { L.Tk__qq_SquareBracketsList $$ }
-qq_FieldDeclaration { L.Tk__qq_FieldDeclaration $$ }
-qq_NestedTypeDeclaration { L.Tk__qq_NestedTypeDeclaration $$ }
-qq_EnumDeclaration { L.Tk__qq_EnumDeclaration $$ }
-qq_EnumConstantList { L.Tk__qq_EnumConstantList $$ }
-qq_EnumConstant { L.Tk__qq_EnumConstant $$ }
-qq_AnnotationTypeElement { L.Tk__qq_AnnotationTypeElement $$ }
-qq_AnnotationTypeElementList { L.Tk__qq_AnnotationTypeElementList $$ }
-qq_AnnotationDeclaration { L.Tk__qq_AnnotationDeclaration $$ }
-qq_InterfaceDeclaration { L.Tk__qq_InterfaceDeclaration $$ }
-qq_ClassDeclaration { L.Tk__qq_ClassDeclaration $$ }
-qq_FieldDeclarationList { L.Tk__qq_FieldDeclarationList $$ }
-qq_ImplementsList { L.Tk__qq_ImplementsList $$ }
-qq_ExtendsList { L.Tk__qq_ExtendsList $$ }
-qq_ModifierList { L.Tk__qq_ModifierList $$ }
-qq_AnnotationList { L.Tk__qq_AnnotationList $$ }
-qq_AnnotationElement { L.Tk__qq_AnnotationElement $$ }
-qq_AnnotationArguments { L.Tk__qq_AnnotationArguments $$ }
-qq_Annotation { L.Tk__qq_Annotation $$ }
-qq_DocComment { L.Tk__qq_DocComment $$ }
-qq_ImportStatement { L.Tk__qq_ImportStatement $$ }
-qq_Package { L.Tk__qq_Package $$ }
-qq_CompilationUnit { L.Tk__qq_CompilationUnit $$ }
-qq_ImportList { L.Tk__qq_ImportList $$ }
-qq_TypeDeclaration { L.Tk__qq_TypeDeclaration $$ }
-qq_OptDocComment { L.Tk__qq_OptDocComment $$ }
-qq_Java { L.Tk__qq_Java $$ }
+rtk__eof { L.PosToken _ L.EndOfFile }
+tok_AdditiveOp_dummy_171 { L.PosToken _ L.Tk__tok_AdditiveOp_dummy_171 }
+tok_Annotation_dummy_170 { L.PosToken _ L.Tk__tok_Annotation_dummy_170 }
+tok_AnnotationArguments_dummy_169 { L.PosToken _ L.Tk__tok_AnnotationArguments_dummy_169 }
+tok_AnnotationDeclaration_dummy_168 { L.PosToken _ L.Tk__tok_AnnotationDeclaration_dummy_168 }
+tok_AnnotationElement_dummy_167 { L.PosToken _ L.Tk__tok_AnnotationElement_dummy_167 }
+tok_AnnotationList_dummy_166 { L.PosToken _ L.Tk__tok_AnnotationList_dummy_166 }
+tok_AnnotationTypeElement_dummy_165 { L.PosToken _ L.Tk__tok_AnnotationTypeElement_dummy_165 }
+tok_AnnotationTypeElementList_dummy_164 { L.PosToken _ L.Tk__tok_AnnotationTypeElementList_dummy_164 }
+tok_Arglist_dummy_163 { L.PosToken _ L.Tk__tok_Arglist_dummy_163 }
+tok_AssignmentOp_dummy_162 { L.PosToken _ L.Tk__tok_AssignmentOp_dummy_162 }
+tok_CatchList_dummy_161 { L.PosToken _ L.Tk__tok_CatchList_dummy_161 }
+tok_ClassDeclaration_dummy_160 { L.PosToken _ L.Tk__tok_ClassDeclaration_dummy_160 }
+tok_CompilationUnit_dummy_159 { L.PosToken _ L.Tk__tok_CompilationUnit_dummy_159 }
+tok_CompoundName_dummy_158 { L.PosToken _ L.Tk__tok_CompoundName_dummy_158 }
+tok_CreationExpression_dummy_157 { L.PosToken _ L.Tk__tok_CreationExpression_dummy_157 }
+tok_DoStatement_dummy_156 { L.PosToken _ L.Tk__tok_DoStatement_dummy_156 }
+tok_DocComment_dummy_155 { L.PosToken _ L.Tk__tok_DocComment_dummy_155 }
+tok_EnumConstant_dummy_154 { L.PosToken _ L.Tk__tok_EnumConstant_dummy_154 }
+tok_EnumConstantList_dummy_153 { L.PosToken _ L.Tk__tok_EnumConstantList_dummy_153 }
+tok_EnumDeclaration_dummy_152 { L.PosToken _ L.Tk__tok_EnumDeclaration_dummy_152 }
+tok_EqualityOp_dummy_151 { L.PosToken _ L.Tk__tok_EqualityOp_dummy_151 }
+tok_Expression_dummy_150 { L.PosToken _ L.Tk__tok_Expression_dummy_150 }
+tok_ExtendsList_dummy_149 { L.PosToken _ L.Tk__tok_ExtendsList_dummy_149 }
+tok_FieldDeclaration_dummy_148 { L.PosToken _ L.Tk__tok_FieldDeclaration_dummy_148 }
+tok_FieldDeclarationList_dummy_147 { L.PosToken _ L.Tk__tok_FieldDeclarationList_dummy_147 }
+tok_ForStatement_dummy_146 { L.PosToken _ L.Tk__tok_ForStatement_dummy_146 }
+tok_IfStatement_dummy_145 { L.PosToken _ L.Tk__tok_IfStatement_dummy_145 }
+tok_ImplementsList_dummy_144 { L.PosToken _ L.Tk__tok_ImplementsList_dummy_144 }
+tok_ImportList_dummy_143 { L.PosToken _ L.Tk__tok_ImportList_dummy_143 }
+tok_ImportStatement_dummy_142 { L.PosToken _ L.Tk__tok_ImportStatement_dummy_142 }
+tok_InterfaceDeclaration_dummy_141 { L.PosToken _ L.Tk__tok_InterfaceDeclaration_dummy_141 }
+tok_Java_dummy_172 { L.PosToken _ L.Tk__tok_Java_dummy_172 }
+tok_Literal_dummy_140 { L.PosToken _ L.Tk__tok_Literal_dummy_140 }
+tok_MemberAfterFirstId_dummy_139 { L.PosToken _ L.Tk__tok_MemberAfterFirstId_dummy_139 }
+tok_MemberDeclaration_dummy_138 { L.PosToken _ L.Tk__tok_MemberDeclaration_dummy_138 }
+tok_MemberRest_dummy_137 { L.PosToken _ L.Tk__tok_MemberRest_dummy_137 }
+tok_Modifier_dummy_136 { L.PosToken _ L.Tk__tok_Modifier_dummy_136 }
+tok_ModifierList_dummy_135 { L.PosToken _ L.Tk__tok_ModifierList_dummy_135 }
+tok_MoreTypeSpecifier_dummy_134 { L.PosToken _ L.Tk__tok_MoreTypeSpecifier_dummy_134 }
+tok_MoreVariableDeclarators_dummy_133 { L.PosToken _ L.Tk__tok_MoreVariableDeclarators_dummy_133 }
+tok_MultiplicativeOp_dummy_132 { L.PosToken _ L.Tk__tok_MultiplicativeOp_dummy_132 }
+tok_NestedTypeDeclaration_dummy_131 { L.PosToken _ L.Tk__tok_NestedTypeDeclaration_dummy_131 }
+tok_OptDocComment_dummy_130 { L.PosToken _ L.Tk__tok_OptDocComment_dummy_130 }
+tok_OptElsePart_dummy_129 { L.PosToken _ L.Tk__tok_OptElsePart_dummy_129 }
+tok_OptExpression_dummy_128 { L.PosToken _ L.Tk__tok_OptExpression_dummy_128 }
+tok_OptFinally_dummy_127 { L.PosToken _ L.Tk__tok_OptFinally_dummy_127 }
+tok_OptId_dummy_126 { L.PosToken _ L.Tk__tok_OptId_dummy_126 }
+tok_OptVariableInitializer_dummy_125 { L.PosToken _ L.Tk__tok_OptVariableInitializer_dummy_125 }
+tok_Package_dummy_124 { L.PosToken _ L.Tk__tok_Package_dummy_124 }
+tok_Parameter_dummy_123 { L.PosToken _ L.Tk__tok_Parameter_dummy_123 }
+tok_ParameterList_dummy_122 { L.PosToken _ L.Tk__tok_ParameterList_dummy_122 }
+tok_PostfixOp_dummy_121 { L.PosToken _ L.Tk__tok_PostfixOp_dummy_121 }
+tok_PrefixOp_dummy_120 { L.PosToken _ L.Tk__tok_PrefixOp_dummy_120 }
+tok_PrimitiveTypeKeyword_dummy_119 { L.PosToken _ L.Tk__tok_PrimitiveTypeKeyword_dummy_119 }
+tok_RelationalOp_dummy_118 { L.PosToken _ L.Tk__tok_RelationalOp_dummy_118 }
+tok_ShiftOp_dummy_117 { L.PosToken _ L.Tk__tok_ShiftOp_dummy_117 }
+tok_SquareBracketsList_dummy_116 { L.PosToken _ L.Tk__tok_SquareBracketsList_dummy_116 }
+tok_Statement_dummy_115 { L.PosToken _ L.Tk__tok_Statement_dummy_115 }
+tok_StatementBlock_dummy_114 { L.PosToken _ L.Tk__tok_StatementBlock_dummy_114 }
+tok_StatementList_dummy_113 { L.PosToken _ L.Tk__tok_StatementList_dummy_113 }
+tok_StatementWithoutIf_dummy_112 { L.PosToken _ L.Tk__tok_StatementWithoutIf_dummy_112 }
+tok_StaticInitializer_dummy_111 { L.PosToken _ L.Tk__tok_StaticInitializer_dummy_111 }
+tok_SwitchCaseList_dummy_110 { L.PosToken _ L.Tk__tok_SwitchCaseList_dummy_110 }
+tok_SwitchStatement_dummy_109 { L.PosToken _ L.Tk__tok_SwitchStatement_dummy_109 }
+tok_TryStatement_dummy_108 { L.PosToken _ L.Tk__tok_TryStatement_dummy_108 }
+tok_Type_dummy_107 { L.PosToken _ L.Tk__tok_Type_dummy_107 }
+tok_TypeArgument_dummy_106 { L.PosToken _ L.Tk__tok_TypeArgument_dummy_106 }
+tok_TypeArguments_dummy_105 { L.PosToken _ L.Tk__tok_TypeArguments_dummy_105 }
+tok_TypeDeclaration_dummy_104 { L.PosToken _ L.Tk__tok_TypeDeclaration_dummy_104 }
+tok_TypeParameter_dummy_103 { L.PosToken _ L.Tk__tok_TypeParameter_dummy_103 }
+tok_TypeParameters_dummy_102 { L.PosToken _ L.Tk__tok_TypeParameters_dummy_102 }
+tok_TypeSpecifier_dummy_101 { L.PosToken _ L.Tk__tok_TypeSpecifier_dummy_101 }
+tok_VariableDeclaration_dummy_100 { L.PosToken _ L.Tk__tok_VariableDeclaration_dummy_100 }
+tok_VariableDeclarator_dummy_99 { L.PosToken _ L.Tk__tok_VariableDeclarator_dummy_99 }
+tok_VariableDeclaratorList_dummy_98 { L.PosToken _ L.Tk__tok_VariableDeclaratorList_dummy_98 }
+tok_VariableInitializer_dummy_97 { L.PosToken _ L.Tk__tok_VariableInitializer_dummy_97 }
+tok_VariableInitializerList_dummy_96 { L.PosToken _ L.Tk__tok_VariableInitializerList_dummy_96 }
+tok_WhileStatement_dummy_95 { L.PosToken _ L.Tk__tok_WhileStatement_dummy_95 }
+tok_WildcardType_dummy_94 { L.PosToken _ L.Tk__tok_WildcardType_dummy_94 }
+tok__tilde__78 { L.PosToken _ L.Tk__tok__tilde__78 }
+tok__symbol__14 { L.PosToken _ L.Tk__tok__symbol__14 }
+tok__pipe__pipe__57 { L.PosToken _ L.Tk__tok__pipe__pipe__57 }
+tok__pipe__eql__49 { L.PosToken _ L.Tk__tok__pipe__eql__49 }
+tok__pipe__59 { L.PosToken _ L.Tk__tok__pipe__59 }
+tok__symbol__13 { L.PosToken _ L.Tk__tok__symbol__13 }
+tok_while_38 { L.PosToken _ L.Tk__tok_while_38 }
+tok_void_28 { L.PosToken _ L.Tk__tok_void_28 }
+tok_try_42 { L.PosToken _ L.Tk__tok_try_42 }
+tok_true_83 { L.PosToken _ L.Tk__tok_true_83 }
+tok_transient_94 { L.PosToken _ L.Tk__tok_transient_94 }
+tok_throw_31 { L.PosToken _ L.Tk__tok_throw_31 }
+tok_threadsafe_93 { L.PosToken _ L.Tk__tok_threadsafe_93 }
+tok_this_80 { L.PosToken _ L.Tk__tok_this_80 }
+tok_synchronized_30 { L.PosToken _ L.Tk__tok_synchronized_30 }
+tok_switch_44 { L.PosToken _ L.Tk__tok_switch_44 }
+tok_super_81 { L.PosToken _ L.Tk__tok_super_81 }
+tok_static_89 { L.PosToken _ L.Tk__tok_static_89 }
+tok_short_23 { L.PosToken _ L.Tk__tok_short_23 }
+tok_return_29 { L.PosToken _ L.Tk__tok_return_29 }
+tok_public_86 { L.PosToken _ L.Tk__tok_public_86 }
+tok_protected_88 { L.PosToken _ L.Tk__tok_protected_88 }
+tok_private_87 { L.PosToken _ L.Tk__tok_private_87 }
+tok_package_0 { L.PosToken _ L.Tk__tok_package_0 }
+tok_null_85 { L.PosToken _ L.Tk__tok_null_85 }
+tok_new_82 { L.PosToken _ L.Tk__tok_new_82 }
+tok_native_91 { L.PosToken _ L.Tk__tok_native_91 }
+tok_long_26 { L.PosToken _ L.Tk__tok_long_26 }
+tok_interface_15 { L.PosToken _ L.Tk__tok_interface_15 }
+tok_int_24 { L.PosToken _ L.Tk__tok_int_24 }
+tok_instanceof_68 { L.PosToken _ L.Tk__tok_instanceof_68 }
+tok_import_2 { L.PosToken _ L.Tk__tok_import_2 }
+tok_implements_11 { L.PosToken _ L.Tk__tok_implements_11 }
+tok_if_36 { L.PosToken _ L.Tk__tok_if_36 }
+tok_for_39 { L.PosToken _ L.Tk__tok_for_39 }
+tok_float_25 { L.PosToken _ L.Tk__tok_float_25 }
+tok_finally_41 { L.PosToken _ L.Tk__tok_finally_41 }
+tok_final_90 { L.PosToken _ L.Tk__tok_final_90 }
+tok_false_84 { L.PosToken _ L.Tk__tok_false_84 }
+tok_extends_10 { L.PosToken _ L.Tk__tok_extends_10 }
+tok_enum_17 { L.PosToken _ L.Tk__tok_enum_17 }
+tok_else_35 { L.PosToken _ L.Tk__tok_else_35 }
+tok_double_27 { L.PosToken _ L.Tk__tok_double_27 }
+tok_do_37 { L.PosToken _ L.Tk__tok_do_37 }
+tok_default_16 { L.PosToken _ L.Tk__tok_default_16 }
+tok_continue_34 { L.PosToken _ L.Tk__tok_continue_34 }
+tok_class_12 { L.PosToken _ L.Tk__tok_class_12 }
+tok_char_22 { L.PosToken _ L.Tk__tok_char_22 }
+tok_catch_40 { L.PosToken _ L.Tk__tok_catch_40 }
+tok_case_43 { L.PosToken _ L.Tk__tok_case_43 }
+tok_byte_21 { L.PosToken _ L.Tk__tok_byte_21 }
+tok_break_33 { L.PosToken _ L.Tk__tok_break_33 }
+tok_boolean_20 { L.PosToken _ L.Tk__tok_boolean_20 }
+tok_abstract_92 { L.PosToken _ L.Tk__tok_abstract_92 }
+tok__symbol__eql__51 { L.PosToken _ L.Tk__tok__symbol__eql__51 }
+tok__symbol__60 { L.PosToken _ L.Tk__tok__symbol__60 }
+tok__sq_bkt_r__19 { L.PosToken _ L.Tk__tok__sq_bkt_r__19 }
+tok__sq_bkt_l__18 { L.PosToken _ L.Tk__tok__sq_bkt_l__18 }
+tok__symbol__5 { L.PosToken _ L.Tk__tok__symbol__5 }
+tok__symbol__56 { L.PosToken _ L.Tk__tok__symbol__56 }
+tok__symbol__symbol__symbol__eql__55 { L.PosToken _ L.Tk__tok__symbol__symbol__symbol__eql__55 }
+tok__symbol__symbol__symbol__71 { L.PosToken _ L.Tk__tok__symbol__symbol__symbol__71 }
+tok__symbol__symbol__eql__54 { L.PosToken _ L.Tk__tok__symbol__symbol__eql__54 }
+tok__symbol__symbol__69 { L.PosToken _ L.Tk__tok__symbol__symbol__69 }
+tok__symbol__eql__67 { L.PosToken _ L.Tk__tok__symbol__eql__67 }
+tok__symbol__65 { L.PosToken _ L.Tk__tok__symbol__65 }
+tok__eql__eql__62 { L.PosToken _ L.Tk__tok__eql__eql__62 }
+tok__eql__9 { L.PosToken _ L.Tk__tok__eql__9 }
+tok__symbol__eql__66 { L.PosToken _ L.Tk__tok__symbol__eql__66 }
+tok__symbol__symbol__eql__53 { L.PosToken _ L.Tk__tok__symbol__symbol__eql__53 }
+tok__symbol__symbol__70 { L.PosToken _ L.Tk__tok__symbol__symbol__70 }
+tok__symbol__64 { L.PosToken _ L.Tk__tok__symbol__64 }
+tok__semi__1 { L.PosToken _ L.Tk__tok__semi__1 }
+tok__colon__32 { L.PosToken _ L.Tk__tok__colon__32 }
+tok__symbol__eql__48 { L.PosToken _ L.Tk__tok__symbol__eql__48 }
+tok__symbol__74 { L.PosToken _ L.Tk__tok__symbol__74 }
+tok__dot__3 { L.PosToken _ L.Tk__tok__dot__3 }
+tok__minus__eql__46 { L.PosToken _ L.Tk__tok__minus__eql__46 }
+tok__minus__minus__77 { L.PosToken _ L.Tk__tok__minus__minus__77 }
+tok__minus__73 { L.PosToken _ L.Tk__tok__minus__73 }
+tok__coma__8 { L.PosToken _ L.Tk__tok__coma__8 }
+tok__plus__eql__45 { L.PosToken _ L.Tk__tok__plus__eql__45 }
+tok__plus__plus__76 { L.PosToken _ L.Tk__tok__plus__plus__76 }
+tok__plus__72 { L.PosToken _ L.Tk__tok__plus__72 }
+tok__star__eql__47 { L.PosToken _ L.Tk__tok__star__eql__47 }
+tok__star__4 { L.PosToken _ L.Tk__tok__star__4 }
+tok__rparen__7 { L.PosToken _ L.Tk__tok__rparen__7 }
+tok__lparen__6 { L.PosToken _ L.Tk__tok__lparen__6 }
+tok__symbol__eql__50 { L.PosToken _ L.Tk__tok__symbol__eql__50 }
+tok__symbol__symbol__58 { L.PosToken _ L.Tk__tok__symbol__symbol__58 }
+tok__symbol__61 { L.PosToken _ L.Tk__tok__symbol__61 }
+tok__symbol__eql__52 { L.PosToken _ L.Tk__tok__symbol__eql__52 }
+tok__symbol__75 { L.PosToken _ L.Tk__tok__symbol__75 }
+tok__exclamation__eql__63 { L.PosToken _ L.Tk__tok__exclamation__eql__63 }
+tok__exclamation__79 { L.PosToken _ L.Tk__tok__exclamation__79 }
+doccomment { L.PosToken _ (L.Tk__doccomment $$) }
+id { L.PosToken _ (L.Tk__id $$) }
+string { L.PosToken _ (L.Tk__string $$) }
+char { L.PosToken _ (L.Tk__char $$) }
+floatTypeSuffix { L.PosToken _ (L.Tk__floatTypeSuffix $$) }
+exponentPart { L.PosToken _ (L.Tk__exponentPart $$) }
+floatLiteral { L.PosToken _ (L.Tk__floatLiteral $$) }
+integerLiteral { L.PosToken _ (L.Tk__integerLiteral $$) }
+qq_CompoundName { L.PosToken _ (L.Tk__qq_CompoundName $$) }
+qq_Modifier { L.PosToken _ (L.Tk__qq_Modifier $$) }
+qq_TypeSpecifier { L.PosToken _ (L.Tk__qq_TypeSpecifier $$) }
+qq_Type { L.PosToken _ (L.Tk__qq_Type $$) }
+qq_TypeParameter { L.PosToken _ (L.Tk__qq_TypeParameter $$) }
+qq_TypeParameters { L.PosToken _ (L.Tk__qq_TypeParameters $$) }
+qq_WildcardType { L.PosToken _ (L.Tk__qq_WildcardType $$) }
+qq_TypeArgument { L.PosToken _ (L.Tk__qq_TypeArgument $$) }
+qq_TypeArguments { L.PosToken _ (L.Tk__qq_TypeArguments $$) }
+qq_Arglist { L.PosToken _ (L.Tk__qq_Arglist $$) }
+qq_Literal { L.PosToken _ (L.Tk__qq_Literal $$) }
+qq_CreationExpression { L.PosToken _ (L.Tk__qq_CreationExpression $$) }
+qq_PostfixOp { L.PosToken _ (L.Tk__qq_PostfixOp $$) }
+qq_PrefixOp { L.PosToken _ (L.Tk__qq_PrefixOp $$) }
+qq_MultiplicativeOp { L.PosToken _ (L.Tk__qq_MultiplicativeOp $$) }
+qq_AdditiveOp { L.PosToken _ (L.Tk__qq_AdditiveOp $$) }
+qq_ShiftOp { L.PosToken _ (L.Tk__qq_ShiftOp $$) }
+qq_RelationalOp { L.PosToken _ (L.Tk__qq_RelationalOp $$) }
+qq_EqualityOp { L.PosToken _ (L.Tk__qq_EqualityOp $$) }
+qq_AssignmentOp { L.PosToken _ (L.Tk__qq_AssignmentOp $$) }
+qq_Expression { L.PosToken _ (L.Tk__qq_Expression $$) }
+qq_SwitchStatement { L.PosToken _ (L.Tk__qq_SwitchStatement $$) }
+qq_SwitchCaseList { L.PosToken _ (L.Tk__qq_SwitchCaseList $$) }
+qq_TryStatement { L.PosToken _ (L.Tk__qq_TryStatement $$) }
+qq_OptFinally { L.PosToken _ (L.Tk__qq_OptFinally $$) }
+qq_CatchList { L.PosToken _ (L.Tk__qq_CatchList $$) }
+qq_ForStatement { L.PosToken _ (L.Tk__qq_ForStatement $$) }
+qq_WhileStatement { L.PosToken _ (L.Tk__qq_WhileStatement $$) }
+qq_DoStatement { L.PosToken _ (L.Tk__qq_DoStatement $$) }
+qq_IfStatement { L.PosToken _ (L.Tk__qq_IfStatement $$) }
+qq_OptElsePart { L.PosToken _ (L.Tk__qq_OptElsePart $$) }
+qq_StatementWithoutIf { L.PosToken _ (L.Tk__qq_StatementWithoutIf $$) }
+qq_Statement { L.PosToken _ (L.Tk__qq_Statement $$) }
+qq_OptId { L.PosToken _ (L.Tk__qq_OptId $$) }
+qq_OptExpression { L.PosToken _ (L.Tk__qq_OptExpression $$) }
+qq_StatementList { L.PosToken _ (L.Tk__qq_StatementList $$) }
+qq_Parameter { L.PosToken _ (L.Tk__qq_Parameter $$) }
+qq_ParameterList { L.PosToken _ (L.Tk__qq_ParameterList $$) }
+qq_StaticInitializer { L.PosToken _ (L.Tk__qq_StaticInitializer $$) }
+qq_VariableInitializer { L.PosToken _ (L.Tk__qq_VariableInitializer $$) }
+qq_VariableInitializerList { L.PosToken _ (L.Tk__qq_VariableInitializerList $$) }
+qq_VariableDeclarator { L.PosToken _ (L.Tk__qq_VariableDeclarator $$) }
+qq_OptVariableInitializer { L.PosToken _ (L.Tk__qq_OptVariableInitializer $$) }
+qq_VariableDeclaration { L.PosToken _ (L.Tk__qq_VariableDeclaration $$) }
+qq_VariableDeclaratorList { L.PosToken _ (L.Tk__qq_VariableDeclaratorList $$) }
+qq_StatementBlock { L.PosToken _ (L.Tk__qq_StatementBlock $$) }
+qq_MoreVariableDeclarators { L.PosToken _ (L.Tk__qq_MoreVariableDeclarators $$) }
+qq_MemberRest { L.PosToken _ (L.Tk__qq_MemberRest $$) }
+qq_MoreTypeSpecifier { L.PosToken _ (L.Tk__qq_MoreTypeSpecifier $$) }
+qq_MemberAfterFirstId { L.PosToken _ (L.Tk__qq_MemberAfterFirstId $$) }
+qq_PrimitiveTypeKeyword { L.PosToken _ (L.Tk__qq_PrimitiveTypeKeyword $$) }
+qq_MemberDeclaration { L.PosToken _ (L.Tk__qq_MemberDeclaration $$) }
+qq_SquareBracketsList { L.PosToken _ (L.Tk__qq_SquareBracketsList $$) }
+qq_FieldDeclaration { L.PosToken _ (L.Tk__qq_FieldDeclaration $$) }
+qq_NestedTypeDeclaration { L.PosToken _ (L.Tk__qq_NestedTypeDeclaration $$) }
+qq_EnumDeclaration { L.PosToken _ (L.Tk__qq_EnumDeclaration $$) }
+qq_EnumConstantList { L.PosToken _ (L.Tk__qq_EnumConstantList $$) }
+qq_EnumConstant { L.PosToken _ (L.Tk__qq_EnumConstant $$) }
+qq_AnnotationTypeElement { L.PosToken _ (L.Tk__qq_AnnotationTypeElement $$) }
+qq_AnnotationTypeElementList { L.PosToken _ (L.Tk__qq_AnnotationTypeElementList $$) }
+qq_AnnotationDeclaration { L.PosToken _ (L.Tk__qq_AnnotationDeclaration $$) }
+qq_InterfaceDeclaration { L.PosToken _ (L.Tk__qq_InterfaceDeclaration $$) }
+qq_ClassDeclaration { L.PosToken _ (L.Tk__qq_ClassDeclaration $$) }
+qq_FieldDeclarationList { L.PosToken _ (L.Tk__qq_FieldDeclarationList $$) }
+qq_ImplementsList { L.PosToken _ (L.Tk__qq_ImplementsList $$) }
+qq_ExtendsList { L.PosToken _ (L.Tk__qq_ExtendsList $$) }
+qq_ModifierList { L.PosToken _ (L.Tk__qq_ModifierList $$) }
+qq_AnnotationList { L.PosToken _ (L.Tk__qq_AnnotationList $$) }
+qq_AnnotationElement { L.PosToken _ (L.Tk__qq_AnnotationElement $$) }
+qq_AnnotationArguments { L.PosToken _ (L.Tk__qq_AnnotationArguments $$) }
+qq_Annotation { L.PosToken _ (L.Tk__qq_Annotation $$) }
+qq_DocComment { L.PosToken _ (L.Tk__qq_DocComment $$) }
+qq_ImportStatement { L.PosToken _ (L.Tk__qq_ImportStatement $$) }
+qq_Package { L.PosToken _ (L.Tk__qq_Package $$) }
+qq_CompilationUnit { L.PosToken _ (L.Tk__qq_CompilationUnit $$) }
+qq_ImportList { L.PosToken _ (L.Tk__qq_ImportList $$) }
+qq_TypeDeclaration { L.PosToken _ (L.Tk__qq_TypeDeclaration $$) }
+qq_OptDocComment { L.PosToken _ (L.Tk__qq_OptDocComment $$) }
+qq_Java { L.PosToken _ (L.Tk__qq_Java $$) }
 
 %%
+
+Java__top : Java rtk__eof { $1 }
 
 Java : tok_Java_dummy_172 Java tok_Java_dummy_172 { Ctr__Java__0 $2 } |
        tok_AdditiveOp_dummy_171 AdditiveOp tok_AdditiveOp_dummy_171 { Ctr__Java__1 $2 } |
@@ -1011,6 +1014,276 @@ WildcardType : qq_WildcardType { Anti_WildcardType $1 } |
 
 
 {
+parseError :: [L.PosToken] -> a
+parseError [] = errorWithoutStackTrace "Parse error: unexpected end of input"
+parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
+    errorWithoutStackTrace $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+
+-- Render a token the way it appears in the source, for error messages
+showRtkToken :: L.Token -> String
+showRtkToken L.EndOfFile = "end of input"
+showRtkToken L.Tk__tok_AdditiveOp_dummy_171 = "'tok_AdditiveOp_dummy_171'"
+showRtkToken L.Tk__tok_Annotation_dummy_170 = "'tok_Annotation_dummy_170'"
+showRtkToken L.Tk__tok_AnnotationArguments_dummy_169 = "'tok_AnnotationArguments_dummy_169'"
+showRtkToken L.Tk__tok_AnnotationDeclaration_dummy_168 = "'tok_AnnotationDeclaration_dummy_168'"
+showRtkToken L.Tk__tok_AnnotationElement_dummy_167 = "'tok_AnnotationElement_dummy_167'"
+showRtkToken L.Tk__tok_AnnotationList_dummy_166 = "'tok_AnnotationList_dummy_166'"
+showRtkToken L.Tk__tok_AnnotationTypeElement_dummy_165 = "'tok_AnnotationTypeElement_dummy_165'"
+showRtkToken L.Tk__tok_AnnotationTypeElementList_dummy_164 = "'tok_AnnotationTypeElementList_dummy_164'"
+showRtkToken L.Tk__tok_Arglist_dummy_163 = "'tok_Arglist_dummy_163'"
+showRtkToken L.Tk__tok_AssignmentOp_dummy_162 = "'tok_AssignmentOp_dummy_162'"
+showRtkToken L.Tk__tok_CatchList_dummy_161 = "'tok_CatchList_dummy_161'"
+showRtkToken L.Tk__tok_ClassDeclaration_dummy_160 = "'tok_ClassDeclaration_dummy_160'"
+showRtkToken L.Tk__tok_CompilationUnit_dummy_159 = "'tok_CompilationUnit_dummy_159'"
+showRtkToken L.Tk__tok_CompoundName_dummy_158 = "'tok_CompoundName_dummy_158'"
+showRtkToken L.Tk__tok_CreationExpression_dummy_157 = "'tok_CreationExpression_dummy_157'"
+showRtkToken L.Tk__tok_DoStatement_dummy_156 = "'tok_DoStatement_dummy_156'"
+showRtkToken L.Tk__tok_DocComment_dummy_155 = "'tok_DocComment_dummy_155'"
+showRtkToken L.Tk__tok_EnumConstant_dummy_154 = "'tok_EnumConstant_dummy_154'"
+showRtkToken L.Tk__tok_EnumConstantList_dummy_153 = "'tok_EnumConstantList_dummy_153'"
+showRtkToken L.Tk__tok_EnumDeclaration_dummy_152 = "'tok_EnumDeclaration_dummy_152'"
+showRtkToken L.Tk__tok_EqualityOp_dummy_151 = "'tok_EqualityOp_dummy_151'"
+showRtkToken L.Tk__tok_Expression_dummy_150 = "'tok_Expression_dummy_150'"
+showRtkToken L.Tk__tok_ExtendsList_dummy_149 = "'tok_ExtendsList_dummy_149'"
+showRtkToken L.Tk__tok_FieldDeclaration_dummy_148 = "'tok_FieldDeclaration_dummy_148'"
+showRtkToken L.Tk__tok_FieldDeclarationList_dummy_147 = "'tok_FieldDeclarationList_dummy_147'"
+showRtkToken L.Tk__tok_ForStatement_dummy_146 = "'tok_ForStatement_dummy_146'"
+showRtkToken L.Tk__tok_IfStatement_dummy_145 = "'tok_IfStatement_dummy_145'"
+showRtkToken L.Tk__tok_ImplementsList_dummy_144 = "'tok_ImplementsList_dummy_144'"
+showRtkToken L.Tk__tok_ImportList_dummy_143 = "'tok_ImportList_dummy_143'"
+showRtkToken L.Tk__tok_ImportStatement_dummy_142 = "'tok_ImportStatement_dummy_142'"
+showRtkToken L.Tk__tok_InterfaceDeclaration_dummy_141 = "'tok_InterfaceDeclaration_dummy_141'"
+showRtkToken L.Tk__tok_Java_dummy_172 = "'tok_Java_dummy_172'"
+showRtkToken L.Tk__tok_Literal_dummy_140 = "'tok_Literal_dummy_140'"
+showRtkToken L.Tk__tok_MemberAfterFirstId_dummy_139 = "'tok_MemberAfterFirstId_dummy_139'"
+showRtkToken L.Tk__tok_MemberDeclaration_dummy_138 = "'tok_MemberDeclaration_dummy_138'"
+showRtkToken L.Tk__tok_MemberRest_dummy_137 = "'tok_MemberRest_dummy_137'"
+showRtkToken L.Tk__tok_Modifier_dummy_136 = "'tok_Modifier_dummy_136'"
+showRtkToken L.Tk__tok_ModifierList_dummy_135 = "'tok_ModifierList_dummy_135'"
+showRtkToken L.Tk__tok_MoreTypeSpecifier_dummy_134 = "'tok_MoreTypeSpecifier_dummy_134'"
+showRtkToken L.Tk__tok_MoreVariableDeclarators_dummy_133 = "'tok_MoreVariableDeclarators_dummy_133'"
+showRtkToken L.Tk__tok_MultiplicativeOp_dummy_132 = "'tok_MultiplicativeOp_dummy_132'"
+showRtkToken L.Tk__tok_NestedTypeDeclaration_dummy_131 = "'tok_NestedTypeDeclaration_dummy_131'"
+showRtkToken L.Tk__tok_OptDocComment_dummy_130 = "'tok_OptDocComment_dummy_130'"
+showRtkToken L.Tk__tok_OptElsePart_dummy_129 = "'tok_OptElsePart_dummy_129'"
+showRtkToken L.Tk__tok_OptExpression_dummy_128 = "'tok_OptExpression_dummy_128'"
+showRtkToken L.Tk__tok_OptFinally_dummy_127 = "'tok_OptFinally_dummy_127'"
+showRtkToken L.Tk__tok_OptId_dummy_126 = "'tok_OptId_dummy_126'"
+showRtkToken L.Tk__tok_OptVariableInitializer_dummy_125 = "'tok_OptVariableInitializer_dummy_125'"
+showRtkToken L.Tk__tok_Package_dummy_124 = "'tok_Package_dummy_124'"
+showRtkToken L.Tk__tok_Parameter_dummy_123 = "'tok_Parameter_dummy_123'"
+showRtkToken L.Tk__tok_ParameterList_dummy_122 = "'tok_ParameterList_dummy_122'"
+showRtkToken L.Tk__tok_PostfixOp_dummy_121 = "'tok_PostfixOp_dummy_121'"
+showRtkToken L.Tk__tok_PrefixOp_dummy_120 = "'tok_PrefixOp_dummy_120'"
+showRtkToken L.Tk__tok_PrimitiveTypeKeyword_dummy_119 = "'tok_PrimitiveTypeKeyword_dummy_119'"
+showRtkToken L.Tk__tok_RelationalOp_dummy_118 = "'tok_RelationalOp_dummy_118'"
+showRtkToken L.Tk__tok_ShiftOp_dummy_117 = "'tok_ShiftOp_dummy_117'"
+showRtkToken L.Tk__tok_SquareBracketsList_dummy_116 = "'tok_SquareBracketsList_dummy_116'"
+showRtkToken L.Tk__tok_Statement_dummy_115 = "'tok_Statement_dummy_115'"
+showRtkToken L.Tk__tok_StatementBlock_dummy_114 = "'tok_StatementBlock_dummy_114'"
+showRtkToken L.Tk__tok_StatementList_dummy_113 = "'tok_StatementList_dummy_113'"
+showRtkToken L.Tk__tok_StatementWithoutIf_dummy_112 = "'tok_StatementWithoutIf_dummy_112'"
+showRtkToken L.Tk__tok_StaticInitializer_dummy_111 = "'tok_StaticInitializer_dummy_111'"
+showRtkToken L.Tk__tok_SwitchCaseList_dummy_110 = "'tok_SwitchCaseList_dummy_110'"
+showRtkToken L.Tk__tok_SwitchStatement_dummy_109 = "'tok_SwitchStatement_dummy_109'"
+showRtkToken L.Tk__tok_TryStatement_dummy_108 = "'tok_TryStatement_dummy_108'"
+showRtkToken L.Tk__tok_Type_dummy_107 = "'tok_Type_dummy_107'"
+showRtkToken L.Tk__tok_TypeArgument_dummy_106 = "'tok_TypeArgument_dummy_106'"
+showRtkToken L.Tk__tok_TypeArguments_dummy_105 = "'tok_TypeArguments_dummy_105'"
+showRtkToken L.Tk__tok_TypeDeclaration_dummy_104 = "'tok_TypeDeclaration_dummy_104'"
+showRtkToken L.Tk__tok_TypeParameter_dummy_103 = "'tok_TypeParameter_dummy_103'"
+showRtkToken L.Tk__tok_TypeParameters_dummy_102 = "'tok_TypeParameters_dummy_102'"
+showRtkToken L.Tk__tok_TypeSpecifier_dummy_101 = "'tok_TypeSpecifier_dummy_101'"
+showRtkToken L.Tk__tok_VariableDeclaration_dummy_100 = "'tok_VariableDeclaration_dummy_100'"
+showRtkToken L.Tk__tok_VariableDeclarator_dummy_99 = "'tok_VariableDeclarator_dummy_99'"
+showRtkToken L.Tk__tok_VariableDeclaratorList_dummy_98 = "'tok_VariableDeclaratorList_dummy_98'"
+showRtkToken L.Tk__tok_VariableInitializer_dummy_97 = "'tok_VariableInitializer_dummy_97'"
+showRtkToken L.Tk__tok_VariableInitializerList_dummy_96 = "'tok_VariableInitializerList_dummy_96'"
+showRtkToken L.Tk__tok_WhileStatement_dummy_95 = "'tok_WhileStatement_dummy_95'"
+showRtkToken L.Tk__tok_WildcardType_dummy_94 = "'tok_WildcardType_dummy_94'"
+showRtkToken L.Tk__tok__tilde__78 = "'~'"
+showRtkToken L.Tk__tok__symbol__14 = "'}'"
+showRtkToken L.Tk__tok__pipe__pipe__57 = "'||'"
+showRtkToken L.Tk__tok__pipe__eql__49 = "'|='"
+showRtkToken L.Tk__tok__pipe__59 = "'|'"
+showRtkToken L.Tk__tok__symbol__13 = "'{'"
+showRtkToken L.Tk__tok_while_38 = "'while'"
+showRtkToken L.Tk__tok_void_28 = "'void'"
+showRtkToken L.Tk__tok_try_42 = "'try'"
+showRtkToken L.Tk__tok_true_83 = "'true'"
+showRtkToken L.Tk__tok_transient_94 = "'transient'"
+showRtkToken L.Tk__tok_throw_31 = "'throw'"
+showRtkToken L.Tk__tok_threadsafe_93 = "'threadsafe'"
+showRtkToken L.Tk__tok_this_80 = "'this'"
+showRtkToken L.Tk__tok_synchronized_30 = "'synchronized'"
+showRtkToken L.Tk__tok_switch_44 = "'switch'"
+showRtkToken L.Tk__tok_super_81 = "'super'"
+showRtkToken L.Tk__tok_static_89 = "'static'"
+showRtkToken L.Tk__tok_short_23 = "'short'"
+showRtkToken L.Tk__tok_return_29 = "'return'"
+showRtkToken L.Tk__tok_public_86 = "'public'"
+showRtkToken L.Tk__tok_protected_88 = "'protected'"
+showRtkToken L.Tk__tok_private_87 = "'private'"
+showRtkToken L.Tk__tok_package_0 = "'package'"
+showRtkToken L.Tk__tok_null_85 = "'null'"
+showRtkToken L.Tk__tok_new_82 = "'new'"
+showRtkToken L.Tk__tok_native_91 = "'native'"
+showRtkToken L.Tk__tok_long_26 = "'long'"
+showRtkToken L.Tk__tok_interface_15 = "'interface'"
+showRtkToken L.Tk__tok_int_24 = "'int'"
+showRtkToken L.Tk__tok_instanceof_68 = "'instanceof'"
+showRtkToken L.Tk__tok_import_2 = "'import'"
+showRtkToken L.Tk__tok_implements_11 = "'implements'"
+showRtkToken L.Tk__tok_if_36 = "'if'"
+showRtkToken L.Tk__tok_for_39 = "'for'"
+showRtkToken L.Tk__tok_float_25 = "'float'"
+showRtkToken L.Tk__tok_finally_41 = "'finally'"
+showRtkToken L.Tk__tok_final_90 = "'final'"
+showRtkToken L.Tk__tok_false_84 = "'false'"
+showRtkToken L.Tk__tok_extends_10 = "'extends'"
+showRtkToken L.Tk__tok_enum_17 = "'enum'"
+showRtkToken L.Tk__tok_else_35 = "'else'"
+showRtkToken L.Tk__tok_double_27 = "'double'"
+showRtkToken L.Tk__tok_do_37 = "'do'"
+showRtkToken L.Tk__tok_default_16 = "'default'"
+showRtkToken L.Tk__tok_continue_34 = "'continue'"
+showRtkToken L.Tk__tok_class_12 = "'class'"
+showRtkToken L.Tk__tok_char_22 = "'char'"
+showRtkToken L.Tk__tok_catch_40 = "'catch'"
+showRtkToken L.Tk__tok_case_43 = "'case'"
+showRtkToken L.Tk__tok_byte_21 = "'byte'"
+showRtkToken L.Tk__tok_break_33 = "'break'"
+showRtkToken L.Tk__tok_boolean_20 = "'boolean'"
+showRtkToken L.Tk__tok_abstract_92 = "'abstract'"
+showRtkToken L.Tk__tok__symbol__eql__51 = "'^='"
+showRtkToken L.Tk__tok__symbol__60 = "'^'"
+showRtkToken L.Tk__tok__sq_bkt_r__19 = "']'"
+showRtkToken L.Tk__tok__sq_bkt_l__18 = "'['"
+showRtkToken L.Tk__tok__symbol__5 = "'@'"
+showRtkToken L.Tk__tok__symbol__56 = "'?'"
+showRtkToken L.Tk__tok__symbol__symbol__symbol__eql__55 = "'>>>='"
+showRtkToken L.Tk__tok__symbol__symbol__symbol__71 = "'>>>'"
+showRtkToken L.Tk__tok__symbol__symbol__eql__54 = "'>>='"
+showRtkToken L.Tk__tok__symbol__symbol__69 = "'>>'"
+showRtkToken L.Tk__tok__symbol__eql__67 = "'>='"
+showRtkToken L.Tk__tok__symbol__65 = "'>'"
+showRtkToken L.Tk__tok__eql__eql__62 = "'=='"
+showRtkToken L.Tk__tok__eql__9 = "'='"
+showRtkToken L.Tk__tok__symbol__eql__66 = "'<='"
+showRtkToken L.Tk__tok__symbol__symbol__eql__53 = "'<<='"
+showRtkToken L.Tk__tok__symbol__symbol__70 = "'<<'"
+showRtkToken L.Tk__tok__symbol__64 = "'<'"
+showRtkToken L.Tk__tok__semi__1 = "';'"
+showRtkToken L.Tk__tok__colon__32 = "':'"
+showRtkToken L.Tk__tok__symbol__eql__48 = "'/='"
+showRtkToken L.Tk__tok__symbol__74 = "'/'"
+showRtkToken L.Tk__tok__dot__3 = "'.'"
+showRtkToken L.Tk__tok__minus__eql__46 = "'-='"
+showRtkToken L.Tk__tok__minus__minus__77 = "'--'"
+showRtkToken L.Tk__tok__minus__73 = "'-'"
+showRtkToken L.Tk__tok__coma__8 = "','"
+showRtkToken L.Tk__tok__plus__eql__45 = "'+='"
+showRtkToken L.Tk__tok__plus__plus__76 = "'++'"
+showRtkToken L.Tk__tok__plus__72 = "'+'"
+showRtkToken L.Tk__tok__star__eql__47 = "'*='"
+showRtkToken L.Tk__tok__star__4 = "'*'"
+showRtkToken L.Tk__tok__rparen__7 = "')'"
+showRtkToken L.Tk__tok__lparen__6 = "'('"
+showRtkToken L.Tk__tok__symbol__eql__50 = "'&='"
+showRtkToken L.Tk__tok__symbol__symbol__58 = "'&&'"
+showRtkToken L.Tk__tok__symbol__61 = "'&'"
+showRtkToken L.Tk__tok__symbol__eql__52 = "'%='"
+showRtkToken L.Tk__tok__symbol__75 = "'%'"
+showRtkToken L.Tk__tok__exclamation__eql__63 = "'!='"
+showRtkToken L.Tk__tok__exclamation__79 = "'!'"
+showRtkToken (L.Tk__doccomment v) = "doccomment " ++ show v
+showRtkToken (L.Tk__id v) = "id " ++ show v
+showRtkToken (L.Tk__string v) = "string " ++ show v
+showRtkToken (L.Tk__char v) = "char " ++ show v
+showRtkToken (L.Tk__floatTypeSuffix v) = "floatTypeSuffix " ++ show v
+showRtkToken (L.Tk__exponentPart v) = "exponentPart " ++ show v
+showRtkToken (L.Tk__floatLiteral v) = "floatLiteral " ++ show v
+showRtkToken (L.Tk__integerLiteral v) = "integerLiteral " ++ show v
+showRtkToken (L.Tk__qq_CompoundName v) = "qq_CompoundName " ++ show v
+showRtkToken (L.Tk__qq_Modifier v) = "qq_Modifier " ++ show v
+showRtkToken (L.Tk__qq_TypeSpecifier v) = "qq_TypeSpecifier " ++ show v
+showRtkToken (L.Tk__qq_Type v) = "qq_Type " ++ show v
+showRtkToken (L.Tk__qq_TypeParameter v) = "qq_TypeParameter " ++ show v
+showRtkToken (L.Tk__qq_TypeParameters v) = "qq_TypeParameters " ++ show v
+showRtkToken (L.Tk__qq_WildcardType v) = "qq_WildcardType " ++ show v
+showRtkToken (L.Tk__qq_TypeArgument v) = "qq_TypeArgument " ++ show v
+showRtkToken (L.Tk__qq_TypeArguments v) = "qq_TypeArguments " ++ show v
+showRtkToken (L.Tk__qq_Arglist v) = "qq_Arglist " ++ show v
+showRtkToken (L.Tk__qq_Literal v) = "qq_Literal " ++ show v
+showRtkToken (L.Tk__qq_CreationExpression v) = "qq_CreationExpression " ++ show v
+showRtkToken (L.Tk__qq_PostfixOp v) = "qq_PostfixOp " ++ show v
+showRtkToken (L.Tk__qq_PrefixOp v) = "qq_PrefixOp " ++ show v
+showRtkToken (L.Tk__qq_MultiplicativeOp v) = "qq_MultiplicativeOp " ++ show v
+showRtkToken (L.Tk__qq_AdditiveOp v) = "qq_AdditiveOp " ++ show v
+showRtkToken (L.Tk__qq_ShiftOp v) = "qq_ShiftOp " ++ show v
+showRtkToken (L.Tk__qq_RelationalOp v) = "qq_RelationalOp " ++ show v
+showRtkToken (L.Tk__qq_EqualityOp v) = "qq_EqualityOp " ++ show v
+showRtkToken (L.Tk__qq_AssignmentOp v) = "qq_AssignmentOp " ++ show v
+showRtkToken (L.Tk__qq_Expression v) = "qq_Expression " ++ show v
+showRtkToken (L.Tk__qq_SwitchStatement v) = "qq_SwitchStatement " ++ show v
+showRtkToken (L.Tk__qq_SwitchCaseList v) = "qq_SwitchCaseList " ++ show v
+showRtkToken (L.Tk__qq_TryStatement v) = "qq_TryStatement " ++ show v
+showRtkToken (L.Tk__qq_OptFinally v) = "qq_OptFinally " ++ show v
+showRtkToken (L.Tk__qq_CatchList v) = "qq_CatchList " ++ show v
+showRtkToken (L.Tk__qq_ForStatement v) = "qq_ForStatement " ++ show v
+showRtkToken (L.Tk__qq_WhileStatement v) = "qq_WhileStatement " ++ show v
+showRtkToken (L.Tk__qq_DoStatement v) = "qq_DoStatement " ++ show v
+showRtkToken (L.Tk__qq_IfStatement v) = "qq_IfStatement " ++ show v
+showRtkToken (L.Tk__qq_OptElsePart v) = "qq_OptElsePart " ++ show v
+showRtkToken (L.Tk__qq_StatementWithoutIf v) = "qq_StatementWithoutIf " ++ show v
+showRtkToken (L.Tk__qq_Statement v) = "qq_Statement " ++ show v
+showRtkToken (L.Tk__qq_OptId v) = "qq_OptId " ++ show v
+showRtkToken (L.Tk__qq_OptExpression v) = "qq_OptExpression " ++ show v
+showRtkToken (L.Tk__qq_StatementList v) = "qq_StatementList " ++ show v
+showRtkToken (L.Tk__qq_Parameter v) = "qq_Parameter " ++ show v
+showRtkToken (L.Tk__qq_ParameterList v) = "qq_ParameterList " ++ show v
+showRtkToken (L.Tk__qq_StaticInitializer v) = "qq_StaticInitializer " ++ show v
+showRtkToken (L.Tk__qq_VariableInitializer v) = "qq_VariableInitializer " ++ show v
+showRtkToken (L.Tk__qq_VariableInitializerList v) = "qq_VariableInitializerList " ++ show v
+showRtkToken (L.Tk__qq_VariableDeclarator v) = "qq_VariableDeclarator " ++ show v
+showRtkToken (L.Tk__qq_OptVariableInitializer v) = "qq_OptVariableInitializer " ++ show v
+showRtkToken (L.Tk__qq_VariableDeclaration v) = "qq_VariableDeclaration " ++ show v
+showRtkToken (L.Tk__qq_VariableDeclaratorList v) = "qq_VariableDeclaratorList " ++ show v
+showRtkToken (L.Tk__qq_StatementBlock v) = "qq_StatementBlock " ++ show v
+showRtkToken (L.Tk__qq_MoreVariableDeclarators v) = "qq_MoreVariableDeclarators " ++ show v
+showRtkToken (L.Tk__qq_MemberRest v) = "qq_MemberRest " ++ show v
+showRtkToken (L.Tk__qq_MoreTypeSpecifier v) = "qq_MoreTypeSpecifier " ++ show v
+showRtkToken (L.Tk__qq_MemberAfterFirstId v) = "qq_MemberAfterFirstId " ++ show v
+showRtkToken (L.Tk__qq_PrimitiveTypeKeyword v) = "qq_PrimitiveTypeKeyword " ++ show v
+showRtkToken (L.Tk__qq_MemberDeclaration v) = "qq_MemberDeclaration " ++ show v
+showRtkToken (L.Tk__qq_SquareBracketsList v) = "qq_SquareBracketsList " ++ show v
+showRtkToken (L.Tk__qq_FieldDeclaration v) = "qq_FieldDeclaration " ++ show v
+showRtkToken (L.Tk__qq_NestedTypeDeclaration v) = "qq_NestedTypeDeclaration " ++ show v
+showRtkToken (L.Tk__qq_EnumDeclaration v) = "qq_EnumDeclaration " ++ show v
+showRtkToken (L.Tk__qq_EnumConstantList v) = "qq_EnumConstantList " ++ show v
+showRtkToken (L.Tk__qq_EnumConstant v) = "qq_EnumConstant " ++ show v
+showRtkToken (L.Tk__qq_AnnotationTypeElement v) = "qq_AnnotationTypeElement " ++ show v
+showRtkToken (L.Tk__qq_AnnotationTypeElementList v) = "qq_AnnotationTypeElementList " ++ show v
+showRtkToken (L.Tk__qq_AnnotationDeclaration v) = "qq_AnnotationDeclaration " ++ show v
+showRtkToken (L.Tk__qq_InterfaceDeclaration v) = "qq_InterfaceDeclaration " ++ show v
+showRtkToken (L.Tk__qq_ClassDeclaration v) = "qq_ClassDeclaration " ++ show v
+showRtkToken (L.Tk__qq_FieldDeclarationList v) = "qq_FieldDeclarationList " ++ show v
+showRtkToken (L.Tk__qq_ImplementsList v) = "qq_ImplementsList " ++ show v
+showRtkToken (L.Tk__qq_ExtendsList v) = "qq_ExtendsList " ++ show v
+showRtkToken (L.Tk__qq_ModifierList v) = "qq_ModifierList " ++ show v
+showRtkToken (L.Tk__qq_AnnotationList v) = "qq_AnnotationList " ++ show v
+showRtkToken (L.Tk__qq_AnnotationElement v) = "qq_AnnotationElement " ++ show v
+showRtkToken (L.Tk__qq_AnnotationArguments v) = "qq_AnnotationArguments " ++ show v
+showRtkToken (L.Tk__qq_Annotation v) = "qq_Annotation " ++ show v
+showRtkToken (L.Tk__qq_DocComment v) = "qq_DocComment " ++ show v
+showRtkToken (L.Tk__qq_ImportStatement v) = "qq_ImportStatement " ++ show v
+showRtkToken (L.Tk__qq_Package v) = "qq_Package " ++ show v
+showRtkToken (L.Tk__qq_CompilationUnit v) = "qq_CompilationUnit " ++ show v
+showRtkToken (L.Tk__qq_ImportList v) = "qq_ImportList " ++ show v
+showRtkToken (L.Tk__qq_TypeDeclaration v) = "qq_TypeDeclaration " ++ show v
+showRtkToken (L.Tk__qq_OptDocComment v) = "qq_OptDocComment " ++ show v
+showRtkToken (L.Tk__qq_Java v) = "qq_Java " ++ show v
+
 data Java = Ctr__Java__0 Java |
             Ctr__Java__1 AdditiveOp |
             Ctr__Java__2 Annotation |
