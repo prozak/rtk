@@ -1,0 +1,5 @@
+gen/
+build/
+/lis
+*.hi
+*.o

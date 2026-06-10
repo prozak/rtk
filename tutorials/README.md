@@ -36,3 +36,10 @@ separate repository with minimal surgery.
   suite doubles as a miniature of the upcoming PL/0 → C code generator (QQ
   pattern matching, splices, and SYB rewrite rules over the generated AST).
   Currently at parts 1-3 (the series' parser/"validator" milestone).
+- [`lisp-interpreter/`](lisp-interpreter/) — Peter Norvig's
+  ["lis.py"](https://norvig.com/lispy.html) Scheme interpreter ported to
+  Haskell: the hand-written reader is replaced by a 15-line grammar
+  (`scheme.pg`), and the interpreter's special-form dispatch and macro
+  expansion (`let`, `when`, `unless`, `and`, `or`) are quasi-quotation
+  patterns over the generated AST. Its README is a section-by-section
+  walkthrough against Norvig's essay.

@@ -1,0 +1,44 @@
+grammar 'Scheme';
+
+# A Scheme subset -- the language of Peter Norvig's lis.py
+# ("(How to Write a (Lisp) Interpreter (in Python))", https://norvig.com/lispy.html).
+#
+# Everything is an expression: an atom or a list. Special forms such as
+# (if ...), (define ...) and (lambda ...) are ordinary lists here; they are
+# recognized by the evaluator (see scheme-main.hs), exactly as in lis.py.
+# This whole file replaces lis.py's tokenize/read_from_tokens/atom -- and,
+# unlike whitespace-splitting, it also handles strings and comments.
+#
+# The @shortcuts line declares antiquotation variable prefixes for the
+# quasi-quoter, so [expr| (if $c $t $e) |] resolves $c, $t, $e to Expr.
+
+@shortcuts(x, c, t, e, a, b, v, p, f, q)
+Expr = num
+     | flt
+     | str
+     | '#t'
+     | '#f'
+     | sym
+     | '(' Expr* ')' ;
+
+# Lexical rules. Note on ordering: generated Alex rules use longest match,
+# and on a tie the rule declared LATER in this file wins (rules are emitted
+# in reverse declaration order). 'num' is declared after 'sym' so that "-5"
+# lexes as a number while a lone "-" stays a symbol.
+
+# A string literal with backslash escapes ("\"", "\\", "\n", ...).
+# \x22 is '"', \x5C is '\', \x0A/\x0D are newline/CR.
+str = [\"] ([^\\x22\\x5C\\x0A\\x0D] | [\\x5C] .)* [\"] ;
+
+# Scheme symbols: identifiers plus the usual operator characters, so
+# +, -, *, /, <=, set!, null?, or-tmp are all symbols. The four characters
+# that are operators in Alex character sets (+ - < ?) are matched as
+# string-literal alternates instead of class members.
+sym = ([a-zA-Z_*/>=!] | '+' | '-' | '<' | '?')
+      ([a-zA-Z0-9_*/>=!] | '+' | '-' | '<' | '?')* ;
+
+Double:  flt = ('-')? [0-9]+ '.' [0-9]+ ;
+Integer: num = ('-')? [0-9]+ ;
+
+Ignore: ws = [ \t\n\r]+ ;
+Ignore: comment = ';' .* ;
