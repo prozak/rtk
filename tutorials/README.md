@@ -29,3 +29,10 @@ separate repository with minimal surgery.
   work on the generated AST through quasi-quotation patterns and splices.
   Currently at milestone 0 (the parts 2-4 expression language plus a
   QQ-pattern interpreter).
+- [`pl0-compiler/`](pl0-compiler/) — an implementation of Brian Callahan's
+  ["Let's write a compiler"](https://briancallahan.net/blog/20210814.html)
+  tutorial series (PL/0): the lexer and parser of the original — most of its
+  hand-written C — are generated from `pl0.pg`, and the quasi-quotation test
+  suite doubles as a miniature of the upcoming PL/0 → C code generator (QQ
+  pattern matching, splices, and SYB rewrite rules over the generated AST).
+  Currently at parts 1-3 (the series' parser/"validator" milestone).

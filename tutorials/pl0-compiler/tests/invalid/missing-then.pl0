@@ -1,0 +1,7 @@
+{ 'if' requires 'then' }
+
+var x;
+
+begin
+   if x = 1 x := 2
+end.

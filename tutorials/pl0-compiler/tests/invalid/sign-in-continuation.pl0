@@ -1,0 +1,9 @@
+{ Wirth's grammar allows a sign only at the start of an expression
+  (expression = [+|-] term ...), so a sign after a binary operator
+  is invalid PL/0 }
+
+var a, b, x;
+
+begin
+   x := -a + +b
+end.

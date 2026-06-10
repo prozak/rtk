@@ -1,0 +1,22 @@
+{ edge-cases.pl0 - grammar corner cases: comments, multiple const
+  definitions, unary signs, every relational operator, odd, nested
+  blocks, and the empty statement (trailing ';', 'begin end', bare
+  'then ;') }
+
+const a = 1, b = 2;
+var x, y;
+
+begin
+   x := -a + b * 2;
+   y := +a;
+   if odd x then x := x + 1;
+   if x = 2 then y := 1;
+   if x # 3 then y := 2;
+   if x < 10 then y := 3;
+   if x <= 10 then y := 4;
+   if x > 0 then y := 5;
+   if x >= 1 then y := 6;
+   while x > 0 do x := x - (y / 2 + 1);
+   begin end;
+   if x = 0 then ;
+end.

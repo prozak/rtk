@@ -1,0 +1,7 @@
+{ '?' is not a PL/0 token (a lexical error, not a parse error) }
+
+var x?;
+
+begin
+   x := 1
+end.

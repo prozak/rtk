@@ -1,0 +1,6 @@
+gen/
+build/
+/pl0
+/test-qq
+*.hi
+*.o
