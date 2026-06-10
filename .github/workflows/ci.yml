@@ -170,6 +170,7 @@ jobs:
         run_test "Write You a Haskell Tutorial" "make -C tutorials/write-you-a-haskell test"
         run_test "Lets Build a Compiler Tutorial" "make -C tutorials/lets-build-a-compiler test"
         run_test "PL/0 Compiler Tutorial" "make -C tutorials/pl0-compiler test"
+        run_test "Lisp Interpreter Tutorial" "make -C tutorials/lisp-interpreter test"
         run_test "Apache Commons Lexical Tests" "make test-lex-commons-lang-all"
         run_test "Apache Commons Parser Tests" "make test-parse-commons-lang-all"
         # test-debug and test-debug-all exercise the same debug flags but

@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   splicing, pattern matching with metavariables (a miniature PL/0 → C code
   generator) and SYB-based AST rewrite rules; wired into CI via
   `make -C tutorials/pl0-compiler test`
+- Lisp interpreter tutorial (`tutorials/lisp-interpreter/`): Peter
+  Norvig's lis.py ported to RTK — the reader is generated from a 15-line
+  grammar (`scheme.pg`), and the interpreter's special-form dispatch and
+  macro expansion (`let`, `when`, `unless`, `and`, `or`) are written as
+  quasi-quotation patterns; `make -C tutorials/lisp-interpreter test`
+  (wired into CI) runs Norvig's own test cases plus the examples, and the
+  tutorial's README is a section-by-section walkthrough against the
+  original essay
 
 ## [0.11] - 2026-06-12
 

@@ -93,6 +93,11 @@ The `test-grammars/` directory contains example grammars:
 - `grammar.pg` - Grammar for the grammar language itself (bootstrap)
 - `haskell.pg` - Haskell subset grammar
 
+The `tutorials/` directory contains self-contained projects built with RTK,
+including a C compiler and a port of Peter Norvig's lis.py Lisp interpreter
+(quasi-quotation for special-form dispatch and macro expansion); see
+[tutorials/README.md](tutorials/README.md).
+
 ## Building from Source
 
 Requirements:
