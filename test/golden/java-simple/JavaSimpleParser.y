@@ -2,43 +2,46 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 module JavaSimpleParser where
 import qualified Data.Generics as Gen
-import qualified JavaSimpleLexer as L (Token(..), alexScanTokens)
+import qualified JavaSimpleLexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)
 }
 
 %name parseJavaSimple
-%tokentype { L.Token }
-%error { \ rest -> error $ "Parse error " ++ (show rest) }
+%tokentype { L.PosToken }
+%error { parseError }
 
 %token
 
-tok_ClassDeclaration_dummy_10 { L.Tk__tok_ClassDeclaration_dummy_10 }
-tok_CompilationUnit_dummy_9 { L.Tk__tok_CompilationUnit_dummy_9 }
-tok_CompoundName_dummy_8 { L.Tk__tok_CompoundName_dummy_8 }
-tok_Field_dummy_7 { L.Tk__tok_Field_dummy_7 }
-tok_FieldList_dummy_6 { L.Tk__tok_FieldList_dummy_6 }
-tok_JavaSimple_dummy_11 { L.Tk__tok_JavaSimple_dummy_11 }
-tok_Package_dummy_5 { L.Tk__tok_Package_dummy_5 }
-tok_Type_dummy_4 { L.Tk__tok_Type_dummy_4 }
-tok__symbol__5 { L.Tk__tok__symbol__5 }
-tok__symbol__4 { L.Tk__tok__symbol__4 }
-tok_public_2 { L.Tk__tok_public_2 }
-tok_package_0 { L.Tk__tok_package_0 }
-tok_int_6 { L.Tk__tok_int_6 }
-tok_class_3 { L.Tk__tok_class_3 }
-tok_String_7 { L.Tk__tok_String_7 }
-tok__semi__1 { L.Tk__tok__semi__1 }
-tok__dot__8 { L.Tk__tok__dot__8 }
-id { L.Tk__id $$ }
-qq_CompoundName { L.Tk__qq_CompoundName $$ }
-qq_Type { L.Tk__qq_Type $$ }
-qq_Field { L.Tk__qq_Field $$ }
-qq_FieldList { L.Tk__qq_FieldList $$ }
-qq_ClassDeclaration { L.Tk__qq_ClassDeclaration $$ }
-qq_Package { L.Tk__qq_Package $$ }
-qq_CompilationUnit { L.Tk__qq_CompilationUnit $$ }
-qq_JavaSimple { L.Tk__qq_JavaSimple $$ }
+rtk__eof { L.PosToken _ L.EndOfFile }
+tok_ClassDeclaration_dummy_10 { L.PosToken _ L.Tk__tok_ClassDeclaration_dummy_10 }
+tok_CompilationUnit_dummy_9 { L.PosToken _ L.Tk__tok_CompilationUnit_dummy_9 }
+tok_CompoundName_dummy_8 { L.PosToken _ L.Tk__tok_CompoundName_dummy_8 }
+tok_Field_dummy_7 { L.PosToken _ L.Tk__tok_Field_dummy_7 }
+tok_FieldList_dummy_6 { L.PosToken _ L.Tk__tok_FieldList_dummy_6 }
+tok_JavaSimple_dummy_11 { L.PosToken _ L.Tk__tok_JavaSimple_dummy_11 }
+tok_Package_dummy_5 { L.PosToken _ L.Tk__tok_Package_dummy_5 }
+tok_Type_dummy_4 { L.PosToken _ L.Tk__tok_Type_dummy_4 }
+tok__symbol__5 { L.PosToken _ L.Tk__tok__symbol__5 }
+tok__symbol__4 { L.PosToken _ L.Tk__tok__symbol__4 }
+tok_public_2 { L.PosToken _ L.Tk__tok_public_2 }
+tok_package_0 { L.PosToken _ L.Tk__tok_package_0 }
+tok_int_6 { L.PosToken _ L.Tk__tok_int_6 }
+tok_class_3 { L.PosToken _ L.Tk__tok_class_3 }
+tok_String_7 { L.PosToken _ L.Tk__tok_String_7 }
+tok__semi__1 { L.PosToken _ L.Tk__tok__semi__1 }
+tok__dot__8 { L.PosToken _ L.Tk__tok__dot__8 }
+id { L.PosToken _ (L.Tk__id $$) }
+qq_CompoundName { L.PosToken _ (L.Tk__qq_CompoundName $$) }
+qq_Type { L.PosToken _ (L.Tk__qq_Type $$) }
+qq_Field { L.PosToken _ (L.Tk__qq_Field $$) }
+qq_FieldList { L.PosToken _ (L.Tk__qq_FieldList $$) }
+qq_ClassDeclaration { L.PosToken _ (L.Tk__qq_ClassDeclaration $$) }
+qq_Package { L.PosToken _ (L.Tk__qq_Package $$) }
+qq_CompilationUnit { L.PosToken _ (L.Tk__qq_CompilationUnit $$) }
+qq_JavaSimple { L.PosToken _ (L.Tk__qq_JavaSimple $$) }
 
 %%
+
+JavaSimple__top : JavaSimple rtk__eof { $1 }
 
 JavaSimple : tok_JavaSimple_dummy_11 JavaSimple tok_JavaSimple_dummy_11 { Ctr__JavaSimple__0 $2 } |
              tok_ClassDeclaration_dummy_10 ClassDeclaration tok_ClassDeclaration_dummy_10 { Ctr__JavaSimple__1 $2 } |
@@ -90,6 +93,41 @@ Type : qq_Type { Anti_Type $1 } |
 
 
 {
+parseError :: [L.PosToken] -> a
+parseError [] = errorWithoutStackTrace "Parse error: unexpected end of input"
+parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
+    errorWithoutStackTrace $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+
+-- Render a token the way it appears in the source, for error messages
+showRtkToken :: L.Token -> String
+showRtkToken L.EndOfFile = "end of input"
+showRtkToken L.Tk__tok_ClassDeclaration_dummy_10 = "'tok_ClassDeclaration_dummy_10'"
+showRtkToken L.Tk__tok_CompilationUnit_dummy_9 = "'tok_CompilationUnit_dummy_9'"
+showRtkToken L.Tk__tok_CompoundName_dummy_8 = "'tok_CompoundName_dummy_8'"
+showRtkToken L.Tk__tok_Field_dummy_7 = "'tok_Field_dummy_7'"
+showRtkToken L.Tk__tok_FieldList_dummy_6 = "'tok_FieldList_dummy_6'"
+showRtkToken L.Tk__tok_JavaSimple_dummy_11 = "'tok_JavaSimple_dummy_11'"
+showRtkToken L.Tk__tok_Package_dummy_5 = "'tok_Package_dummy_5'"
+showRtkToken L.Tk__tok_Type_dummy_4 = "'tok_Type_dummy_4'"
+showRtkToken L.Tk__tok__symbol__5 = "'}'"
+showRtkToken L.Tk__tok__symbol__4 = "'{'"
+showRtkToken L.Tk__tok_public_2 = "'public'"
+showRtkToken L.Tk__tok_package_0 = "'package'"
+showRtkToken L.Tk__tok_int_6 = "'int'"
+showRtkToken L.Tk__tok_class_3 = "'class'"
+showRtkToken L.Tk__tok_String_7 = "'String'"
+showRtkToken L.Tk__tok__semi__1 = "';'"
+showRtkToken L.Tk__tok__dot__8 = "'.'"
+showRtkToken (L.Tk__id v) = "id " ++ show v
+showRtkToken (L.Tk__qq_CompoundName v) = "qq_CompoundName " ++ show v
+showRtkToken (L.Tk__qq_Type v) = "qq_Type " ++ show v
+showRtkToken (L.Tk__qq_Field v) = "qq_Field " ++ show v
+showRtkToken (L.Tk__qq_FieldList v) = "qq_FieldList " ++ show v
+showRtkToken (L.Tk__qq_ClassDeclaration v) = "qq_ClassDeclaration " ++ show v
+showRtkToken (L.Tk__qq_Package v) = "qq_Package " ++ show v
+showRtkToken (L.Tk__qq_CompilationUnit v) = "qq_CompilationUnit " ++ show v
+showRtkToken (L.Tk__qq_JavaSimple v) = "qq_JavaSimple " ++ show v
+
 data JavaSimple = Ctr__JavaSimple__0 JavaSimple |
                   Ctr__JavaSimple__1 ClassDeclaration |
                   Ctr__JavaSimple__2 CompilationUnit |

@@ -8,13 +8,13 @@ import GenAST
 import Grammar
 
 genY :: NormalGrammar -> String
-genY g@(NormalGrammar name srules lex_rules _ _ _ _) = 
+genY g@(NormalGrammar name srules lex_rules _ _ _ _) =
     render $ vcat [
                    text header,
                    nl,
                    text "%name parse" <> text name,
-                   text "%tokentype { L.Token }",
-                   text "%error { \\ rest -> error $ \"Parse error \" ++ (show rest) }",
+                   text "%tokentype { L.PosToken }",
+                   text "%error { parseError }",
                    nl,
                    text "%token",
                    nl,
@@ -28,17 +28,33 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ _) =
                   ]
     where normal_rules = normalRules srules
           listRuleSet = makeListRuleSet normal_rules
-          rulesDoc = vcat (map (genRule listRuleSet) normal_rules)
-          lexDoc = vcat (map genToken $ removeSymmacros lex_rules)
+          -- The start rule is wrapped so that the parser consumes the
+          -- EndOfFile token emitted by the lexer; this way errors at end of
+          -- input are reported by parseError with a real source position
+          startWrapper = case normal_rules of
+                           (r : _) -> [(text (name ++ "__top") <+> text ":" <+> text (getSRuleName r)
+                                        <+> text "rtk__eof" <+> text "{ $1 }") <> text "\n"]
+                           []      -> []
+          rulesDoc = vcat (startWrapper ++ map (genRule listRuleSet) normal_rules)
+          lexDoc = vcat (combineAlt (text "rtk__eof") (text "L.PosToken _ L.EndOfFile")
+                         : map genToken (removeSymmacros lex_rules))
           nl = text ""
           header = "{\n\
                    \{-# LANGUAGE DeriveDataTypeable #-}\n\
                    \module " ++ name ++ "Parser where\n\
                    \import qualified Data.Generics as Gen\n\
-                   \import qualified " ++ name ++  "Lexer as L (Token(..), alexScanTokens)\n\
+                   \import qualified " ++ name ++  "Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)\n\
                    \}"
           ast = genAST g
-          footer = "{\n" ++ ast ++ "\n}"
+          parseErrorDefs = "parseError :: [L.PosToken] -> a\n\
+                           \parseError [] = errorWithoutStackTrace \"Parse error: unexpected end of input\"\n\
+                           \parseError (L.PosToken (L.AlexPn _ line col) tok : _) =\n\
+                           \    errorWithoutStackTrace $ \"Parse error at line \" ++ show line ++ \", column \" ++ show col ++ \": unexpected \" ++ showRtkToken tok\n"
+          showTokenDefs = render $ vcat (text "-- Render a token the way it appears in the source, for error messages"
+                                         : text "showRtkToken :: L.Token -> String"
+                                         : text "showRtkToken L.EndOfFile = \"end of input\""
+                                         : map genShowToken (removeSymmacros lex_rules))
+          footer = "{\n" ++ parseErrorDefs ++ "\n" ++ showTokenDefs ++ "\n\n" ++ ast ++ "\n}"
 
 type ListRuleSet = Set.Set ID
 
@@ -50,10 +66,20 @@ makeListRuleSet lst = Set.fromList $ map getSRuleName $ filter isMany lst
 genToken :: LexicalRule -> Doc
 genToken LexicalRule{ getLRuleName = name, getLRuleDataType = dtn } =
     case dtn of
-        "Keyword" -> combineAlt (text name) (text "L." <> text (tokenName name))
+        "Keyword" -> combineAlt (text name) (text "L.PosToken _ L." <> text (tokenName name))
         "Ignore"  -> empty
-        _         -> combineAlt (text name) ((text "L." <> text (tokenName name)) <+> text "$$")
+        _         -> combineAlt (text name) (text "L.PosToken _ (L." <> text (tokenName name) <> text " $$)")
 genToken (MacroRule _ _) = empty
+
+genShowToken :: LexicalRule -> Doc
+genShowToken LexicalRule{ getLRuleName = name, getLRuleDataType = dtn, getLClause = cl } =
+    case dtn of
+        "Ignore"  -> empty
+        "Keyword" -> (text "showRtkToken L." <> text (tokenName name)) <+> text "=" <+> text (show (keywordText cl))
+        _         -> (text "showRtkToken (L." <> text (tokenName name)) <+> text "v) =" <+> text (show (name ++ " ")) <+> text "++ show v"
+    where keywordText (IStrLit s) = "'" ++ s ++ "'"
+          keywordText _           = name
+genShowToken (MacroRule _ _) = empty
 
 genRule :: ListRuleSet -> SyntaxRule -> Doc
 -- <Rule>* with separator can only be expressed using two rules in LR grammar

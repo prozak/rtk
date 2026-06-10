@@ -107,7 +107,7 @@ formatContent FormatTree s = s -- Could be enhanced with tree drawing
 -------------------------------------------------------------------------------
 
 -- | Debug tokens output
-printTokens :: DebugOptions -> [L.Token] -> IO ()
+printTokens :: DebugOptions -> [L.PosToken] -> IO ()
 printTokens opts tokens = do
     debugSection opts "LEXER OUTPUT - TOKENS"
     putStrLn $ "Total tokens: " ++ show (length tokens)

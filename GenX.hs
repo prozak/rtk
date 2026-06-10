@@ -39,10 +39,10 @@ genMacroText sMacroIds macroIds tokens =
                     case lrule of
                       (LexicalRule {getLRuleName = name, getLClause = cl }) ->
                         if name `S.member` macroIds
-                          then (text "@" <> text name) <+> text "=" <+> translateClause sMacroIds cl : result
+                          then (text "@" <> text name) <+> text "=" <+> translateClause name sMacroIds cl : result
                           else result
                       (MacroRule {getLRuleName = name, getLClause = cl }) ->
-                          (text "$" <> text name) <+> text "=" <+> translateClauseForMacro cl : result)
+                          (text "$" <> text name) <+> text "=" <+> translateClauseForMacro name cl : result)
              [] tokens
 
 genX :: NormalGrammar -> String
@@ -61,29 +61,41 @@ genX (NormalGrammar { getNGrammarName = name, getLexicalRules = tokens, getNImpo
           tokensText = genTokens symMacroIds $ removeSymmacros tokens
           macroText = genMacroText symMacroIds macroIds tokens
           adt = genTokenADT $ removeSymmacros tokens
-          header = vcat [text "{", ((text "module" <+> text name) <> text "Lexer(alexScanTokens, Token(..))"), text "where", text imports, text " }", 
+          header = vcat [text "{", ((text "module" <+> text name) <> text "Lexer(alexScanTokens, Token(..), PosToken(..), AlexPosn(..))"), text "where", text imports, text " }",
                          text "%wrapper \"monad\""]
           funs_text = [str|
-alexEOF = return EndOfFile
-alexScanTokens :: String -> [Token]
-alexScanTokens str = 
+-- A token together with the source position where it starts
+data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }
+                deriving (Show)
+
+alexEOF = do
+  (pos, _, _, _) <- alexGetInput
+  return $ PosToken pos EndOfFile
+
+-- The returned list always ends with an EndOfFile token that carries the
+-- position of the end of input, so parse errors at end of input can be
+-- reported with a position too
+alexScanTokens :: String -> [PosToken]
+alexScanTokens str =
                case alexScanTokens1 str of
                   Right toks -> toks
-                  Left err -> error err
+                  Left err -> errorWithoutStackTrace err
 
 alexScanTokens1 str = runAlex str $ do
   let loop toks = do tok <- alexMonadScan
                      case tok of
-                       EndOfFile -> return $ reverse toks
-                       _ -> let toks' = tok : toks 
+                       PosToken _ EndOfFile -> return $ reverse (tok : toks)
+                       _ -> let toks' = tok : toks
                             in toks' `seq` loop toks'
   loop []
-simple1 :: (String -> Token) -> AlexInput -> Int -> Alex Token
-simple1 t (_, _, _, str) len = return $ t (take len str)
 
-simple t input len = return t
+simple1 :: (String -> Token) -> AlexInput -> Int -> Alex PosToken
+simple1 t (pos, _, _, str) len = return $ PosToken pos (t (take len str))
 
-rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at " ++ (show line) ++ " line, " ++ (show column) ++ " column" ++ ". Following chars :" ++ (take 10 str)
+simple :: Token -> AlexInput -> Int -> Alex PosToken
+simple t (pos, _, _, _) len = return $ PosToken pos t
+
+rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at line " ++ (show line) ++ ", column " ++ (show column) ++ ". Following chars: " ++ (take 10 str)
 |]
           funs = text funs_text             
           footer = vcat [text "{", adt, funs , text "}"]
@@ -103,7 +115,7 @@ genTokens :: S.Set String -> [LexicalRule] -> Doc
 genTokens smacroIds lexical_rules =
   text "tokens" <+> text ":-" <+> vcat (map makeToken lexical_rules ++ [text ". { rtkError }"])
     where makeToken LexicalRule { getLRuleDataType = data_type, getLRuleFunc = func, getLRuleName = name, getLClause = cl } =
-              translateClause smacroIds cl <+> makeProduction name data_type func
+              translateClause name smacroIds cl <+> makeProduction name data_type func
           makeToken (MacroRule _ _) = empty
           makeProduction name data_type func =
             let token_name = text $ tokenName name in
@@ -138,12 +150,12 @@ backquoteStrInBrackets s = concat (map (\chr -> if (case chr of
                                           else [chr] )
                                   s)
 
-translateClauseForMacro :: IClause -> Doc
-translateClauseForMacro (IStrLit s) = text s
-translateClauseForMacro (IRegExpLit re) = brackets $ text $ backquoteStrInBrackets re
-translateClauseForMacro (ISeq cls) = hsep $ punctuate (text " ") (map translateClauseForMacro cls)
-translateClauseForMacro (IAlt clauses) = hsep $ punctuate (text "|") (map translateClauseForMacro clauses)
-translateClauseForMacro cl = text $ "Cannot translate to macro def " ++ (show cl)
+translateClauseForMacro :: ID -> IClause -> Doc
+translateClauseForMacro _ (IStrLit s) = text s
+translateClauseForMacro _ (IRegExpLit re) = brackets $ text $ backquoteStrInBrackets re
+translateClauseForMacro rname (ISeq cls) = hsep $ punctuate (text " ") (map (translateClauseForMacro rname) cls)
+translateClauseForMacro rname (IAlt clauses) = hsep $ punctuate (text "|") (map (translateClauseForMacro rname) clauses)
+translateClauseForMacro rname cl = errorWithoutStackTrace $ "In lexical rule '" ++ rname ++ "': cannot translate clause to a lexer macro definition: " ++ showClause cl
 
 -- Detect Alex escape sequences that should be output as bare escapes, not quoted strings.
 -- In Alex: "\n" = literal backslash+n, but \n = newline character.
@@ -156,25 +168,25 @@ isAlexEscape "\\f" = True   -- form feed
 isAlexEscape "\\v" = True   -- vertical tab
 isAlexEscape _ = False
 
-translateClause :: S.Set ID -> IClause -> Doc
-translateClause sMacroIds (IId name) | name `S.member` sMacroIds =
+translateClause :: ID -> S.Set ID -> IClause -> Doc
+translateClause _ sMacroIds (IId name) | name `S.member` sMacroIds =
   text "$" <> text name
-translateClause _ (IId name) =
+translateClause _ _ (IId name) =
   text "@" <> text name
-translateClause _ (IStrLit s)
+translateClause _ _ (IStrLit s)
   | isAlexEscape s = text s   -- output bare escape: \n, \t, etc.
   | otherwise      = doubleQuotes $ text $ backquoteStr s
-translateClause _ (IDot)              = text "."
-translateClause _ (IRegExpLit re)     = brackets $ text $ backquoteStrInBrackets re
-translateClause sMacroIds (IStar cl Nothing)  = translateClause sMacroIds cl <> text "*"
+translateClause _ _ (IDot)              = text "."
+translateClause _ _ (IRegExpLit re)     = brackets $ text $ backquoteStrInBrackets re
+translateClause rname sMacroIds (IStar cl Nothing)  = translateClause rname sMacroIds cl <> text "*"
 -- a* ~x --> (a(x a)*)?
-translateClause _ (IStar _ (Just _)) = error $ "Star (*) clauses with delimiters are not supported in lexical rules"
-translateClause sMacroIds (IPlus cl Nothing)  = translateClause sMacroIds cl <> text "+"
-translateClause _ (IPlus _ (Just _)) = error $ "Plus (+) clauses with delimiters are not supported in lexical rules"
-translateClause sMacroIds (IAlt clauses)      = parens $ hsep $ punctuate (text "|") (map (translateClause sMacroIds) clauses)
-translateClause sMacroIds (ISeq clauses)    = hsep $ punctuate (text " ") (map (translateClause sMacroIds) clauses)
-translateClause sMacroIds (IOpt clause)       = translateClause sMacroIds clause <+> text "?"
-translateClause _ cl                 = error $ "Can't translate to lexer spec: " ++ (show cl)
+translateClause rname _ (IStar _ (Just _)) = errorWithoutStackTrace $ "In lexical rule '" ++ rname ++ "': star (*) clauses with delimiters (~) are not supported in lexical rules"
+translateClause rname sMacroIds (IPlus cl Nothing)  = translateClause rname sMacroIds cl <> text "+"
+translateClause rname _ (IPlus _ (Just _)) = errorWithoutStackTrace $ "In lexical rule '" ++ rname ++ "': plus (+) clauses with delimiters (~) are not supported in lexical rules"
+translateClause rname sMacroIds (IAlt clauses)      = parens $ hsep $ punctuate (text "|") (map (translateClause rname sMacroIds) clauses)
+translateClause rname sMacroIds (ISeq clauses)    = hsep $ punctuate (text " ") (map (translateClause rname sMacroIds) clauses)
+translateClause rname sMacroIds (IOpt clause)       = translateClause rname sMacroIds clause <+> text "?"
+translateClause rname _ cl                 = errorWithoutStackTrace $ "In lexical rule '" ++ rname ++ "': cannot translate clause to lexer spec: " ++ showClause cl
 
 joinAlts :: [Doc] -> Doc
 joinAlts alts = vcat $ punctuate (text " |") (filter (not.isEmpty) alts)

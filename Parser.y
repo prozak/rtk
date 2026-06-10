@@ -1,46 +1,48 @@
 {
 module Parser where
 
-import qualified Lexer as L (Token(..), alexScanTokens)
+import qualified Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)
 import Data.Generics
 import Data.Data
 import Data.Char
+import Data.List (intercalate)
 import qualified Data.Map as M
 import qualified Data.Set as S
 
 }
 
 %name parse
-%tokentype  { L.Token }
+%tokentype  { L.PosToken }
 %error      { parseError }
 
 %token
 
-grammar { L.Grammar }
-imports { L.Imports }
-'='    { L.Eq }
-'|'     { L.OrClause }
-':'     { L.Colon }
-';'     { L.RlEnd }
-'*'     { L.Star }
-'+'     { L.Plus }
-'?'     { L.Question }
-')'     { L.RParen }
-'('     { L.LParen }
-'.'     { L.Dot }
-'!'     { L.Excl }
-'~'     { L.Tilde }
-','     { L.Comma }
-'@shortcuts' { L.Shortcuts }
-'@symmacro' { L.Symmacro }
-id  { L.Id $$ }
-str       { L.StrLit $$ }
-rexplit       { L.RegExpLit $$ }
-bigstr     { L.BigStr $$ }
+grammar { L.PosToken _ L.Grammar }
+imports { L.PosToken _ L.Imports }
+'='    { L.PosToken _ L.Eq }
+'|'     { L.PosToken _ L.OrClause }
+':'     { L.PosToken _ L.Colon }
+';'     { L.PosToken _ L.RlEnd }
+'*'     { L.PosToken _ L.Star }
+'+'     { L.PosToken _ L.Plus }
+'?'     { L.PosToken _ L.Question }
+')'     { L.PosToken _ L.RParen }
+'('     { L.PosToken _ L.LParen }
+'.'     { L.PosToken _ L.Dot }
+'!'     { L.PosToken _ L.Excl }
+'~'     { L.PosToken _ L.Tilde }
+','     { L.PosToken _ L.Comma }
+'@shortcuts' { L.PosToken _ L.Shortcuts }
+'@symmacro' { L.PosToken _ L.Symmacro }
+id  { L.PosToken _ (L.Id _) }
+str       { L.PosToken _ (L.StrLit $$) }
+rexplit       { L.PosToken _ (L.RegExpLit $$) }
+bigstr     { L.PosToken _ (L.BigStr $$) }
+eof     { L.PosToken _ L.EndOfFile }
 
 %%
 
-Grammar : grammar str ';' ImportsOpt Rules { InitialGrammar $2 $4 (reverse $5) }
+Grammar : grammar str ';' ImportsOpt Rules eof { InitialGrammar $2 $4 (reverse $5) }
 
 ImportsOpt : imports bigstr    { $2 }
            | {- empty -}       { "" }
@@ -61,13 +63,13 @@ Option : '@shortcuts' '(' IdListOpt ')'     { OShortcuts (reverse $3)}
 IdListOpt : IdList                  { $1 }
           | {- empty -}             { [] } 
 
-IdList : IdList ',' id              { $3 : $1}
-       | id                         { [$1] }
+IdList : IdList ',' id              { idStr $3 : $1}
+       | id                         { [idStr $1] }
 
-Rule : id '=' ClauseAlt ';'         { IRule Nothing Nothing $1 $3 [] }
-     | id ':' id '=' ClauseAlt ';'  { IRule (Just $1) Nothing $3 $5 [] }
-     | id '.' id ':' id '=' ClauseAlt ';'  { IRule (Just $1) (Just $3) $5 $7 [] }
-     | '.' id ':' id '=' ClauseAlt ';'  { IRule Nothing (Just $2) $4 $6 [] }
+Rule : id '=' ClauseAlt ';'         { IRule Nothing Nothing (idStr $1) $3 [] (Just (idPos $1)) }
+     | id ':' id '=' ClauseAlt ';'  { IRule (Just (idStr $1)) Nothing (idStr $3) $5 [] (Just (idPos $1)) }
+     | id '.' id ':' id '=' ClauseAlt ';'  { IRule (Just (idStr $1)) (Just (idStr $3)) (idStr $5) $7 [] (Just (idPos $1)) }
+     | '.' id ':' id '=' ClauseAlt ';'  { IRule Nothing (Just (idStr $2)) (idStr $4) $6 [] (Just (idPos $2)) }
 
 ClauseAlt : ClauseAlt1              { IAlt (reverse $1) }
 
@@ -90,7 +92,7 @@ ClausePost : ClauseItem '*' OptDelim  { IStar $1 $3 }
 
 
 ClauseItem : '(' ClauseAlt ')'        { $2 }
-           | id                       { IId $1 } 
+           | id                       { IId (idStr $1) }
            | str                      { IStrLit $1 }
            | '.'                      { IDot }
            | rexplit                  { IRegExpLit $1 }
@@ -100,18 +102,66 @@ OptDelim : {- empty -}          { Nothing }
 
 {
 
-parseError :: [L.Token] -> a
-parseError [] = error "Parse error: unexpected end of input. Expected a grammar definition."
-parseError rest = error $ "Parse error near: " ++ (show (take 5 rest))
+parseError :: [L.PosToken] -> a
+parseError [] = errorWithoutStackTrace "Parse error: unexpected end of input. Expected a grammar definition."
+parseError (L.PosToken pos tok : rest) =
+    errorWithoutStackTrace $ "Parse error at " ++ showAlexPos pos ++ ": unexpected " ++ showToken tok ++ following
+  where following = case rest of
+                      [] -> ""
+                      _  -> ", followed by: " ++ intercalate ", " (map (showToken . L.ptToken) (take 4 rest))
+
+showAlexPos :: L.AlexPosn -> String
+showAlexPos (L.AlexPn _ line col) = "line " ++ show line ++ ", column " ++ show col
+
+-- Render a token the way it appears in the grammar source, for error messages
+showToken :: L.Token -> String
+showToken L.Grammar        = "keyword 'grammar'"
+showToken L.Imports        = "keyword 'imports'"
+showToken L.Eq             = "'='"
+showToken L.RlEnd          = "';'"
+showToken L.OrClause       = "'|'"
+showToken L.Dot            = "'.'"
+showToken (L.RegExpLit s)  = "regular expression [" ++ s ++ "]"
+showToken (L.StrLit s)     = "string literal '" ++ s ++ "'"
+showToken (L.BigStr _)     = "multi-line string"
+showToken (L.Id s)         = "identifier '" ++ s ++ "'"
+showToken L.Star           = "'*'"
+showToken L.Plus           = "'+'"
+showToken L.Excl           = "'!'"
+showToken L.Comma          = "','"
+showToken L.RParen         = "')'"
+showToken L.LParen         = "'('"
+showToken L.Dollar         = "'$'"
+showToken L.Question       = "'?'"
+showToken L.Colon          = "':'"
+showToken L.Tilde          = "'~'"
+showToken L.Shortcuts      = "'@shortcuts'"
+showToken L.Symmacro       = "'@symmacro'"
+showToken L.EndOfFile      = "end of input"
+
+idStr :: L.PosToken -> String
+idStr (L.PosToken _ (L.Id s)) = s
+idStr t = error $ "Internal error: identifier token expected, but got: " ++ show t
+
+idPos :: L.PosToken -> SourcePos
+idPos (L.PosToken (L.AlexPn _ line col) _) = SourcePos line col
+
+-- Position in the grammar source file (line and column, both 1-based)
+data SourcePos = SourcePos { srcLine :: Int, srcColumn :: Int }
+                 deriving (Eq, Ord, Show, Typeable, Data)
+
+showSourcePos :: SourcePos -> String
+showSourcePos (SourcePos line col) = "line " ++ show line ++ ", column " ++ show col
 
 data InitialGrammar = InitialGrammar { getIGrammarName :: String, getImports :: String, getIRules :: [IRule] }
                  deriving (Eq, Show, Typeable, Data)
 
-data IRule = IRule { getIDataTypeName :: (Maybe String), 
-                     getIDataFunc :: (Maybe String), 
-                     getIRuleName :: String, 
+data IRule = IRule { getIDataTypeName :: (Maybe String),
+                     getIDataFunc :: (Maybe String),
+                     getIRuleName :: String,
                      getIClause :: IClause,
-                     getIRuleOptions :: [IOption]}
+                     getIRuleOptions :: [IOption],
+                     getIRulePos :: (Maybe SourcePos)}
                   deriving (Eq, Show, Typeable, Data)
 
 data IOption = OShortcuts [ID] | OSymmacro
@@ -136,6 +186,23 @@ data IClause = IId { getIdStr :: ID }
              | ILifted IClause
              | IIgnore IClause
               deriving (Eq, Show, Typeable, Data)
+
+-- Render a clause the way it appears in the grammar source, for error messages
+showClause :: IClause -> String
+showClause (IId name)      = name
+showClause (IStrLit s)     = "'" ++ s ++ "'"
+showClause IDot            = "."
+showClause (IRegExpLit s)  = "[" ++ s ++ "]"
+showClause (IStar c md)    = showClause c ++ "*" ++ showDelim md
+showClause (IPlus c md)    = showClause c ++ "+" ++ showDelim md
+showClause (IAlt cs)       = "(" ++ intercalate " | " (map showClause cs) ++ ")"
+showClause (ISeq cs)       = unwords (map showClause cs)
+showClause (IOpt c)        = showClause c ++ "?"
+showClause (ILifted c)     = "," ++ showClause c
+showClause (IIgnore c)     = "!" ++ showClause c
+
+showDelim :: Maybe IClause -> String
+showDelim = maybe "" (\d -> " ~ " ++ showClause d)
 
 data GrammarInfo =
   GrammarInfo

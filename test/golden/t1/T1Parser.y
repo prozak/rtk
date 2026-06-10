@@ -2,42 +2,45 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 module T1Parser where
 import qualified Data.Generics as Gen
-import qualified T1Lexer as L (Token(..), alexScanTokens)
+import qualified T1Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)
 }
 
 %name parseT1
-%tokentype { L.Token }
-%error { \ rest -> error $ "Parse error " ++ (show rest) }
+%tokentype { L.PosToken }
+%error { parseError }
 
 %token
 
-tok_A_dummy_19 { L.Tk__tok_A_dummy_19 }
-tok_B_dummy_18 { L.Tk__tok_B_dummy_18 }
-tok_C_dummy_17 { L.Tk__tok_C_dummy_17 }
-tok_D_dummy_16 { L.Tk__tok_D_dummy_16 }
-tok_E_dummy_15 { L.Tk__tok_E_dummy_15 }
-tok_F1_dummy_14 { L.Tk__tok_F1_dummy_14 }
-tok_F2_dummy_13 { L.Tk__tok_F2_dummy_13 }
-tok_F3_dummy_12 { L.Tk__tok_F3_dummy_12 }
-tok_F4_dummy_11 { L.Tk__tok_F4_dummy_11 }
-tok_F5_dummy_10 { L.Tk__tok_F5_dummy_10 }
-tok_G_dummy_9 { L.Tk__tok_G_dummy_9 }
-tok_b_1 { L.Tk__tok_b_1 }
-tok_a_0 { L.Tk__tok_a_0 }
-tok__coma__2 { L.Tk__tok__coma__2 }
-qq_G { L.Tk__qq_G $$ }
-qq_F5 { L.Tk__qq_F5 $$ }
-qq_F4 { L.Tk__qq_F4 $$ }
-qq_F3 { L.Tk__qq_F3 $$ }
-qq_F2 { L.Tk__qq_F2 $$ }
-qq_F1 { L.Tk__qq_F1 $$ }
-qq_E { L.Tk__qq_E $$ }
-qq_D { L.Tk__qq_D $$ }
-qq_C { L.Tk__qq_C $$ }
-qq_B { L.Tk__qq_B $$ }
-qq_A { L.Tk__qq_A $$ }
+rtk__eof { L.PosToken _ L.EndOfFile }
+tok_A_dummy_19 { L.PosToken _ L.Tk__tok_A_dummy_19 }
+tok_B_dummy_18 { L.PosToken _ L.Tk__tok_B_dummy_18 }
+tok_C_dummy_17 { L.PosToken _ L.Tk__tok_C_dummy_17 }
+tok_D_dummy_16 { L.PosToken _ L.Tk__tok_D_dummy_16 }
+tok_E_dummy_15 { L.PosToken _ L.Tk__tok_E_dummy_15 }
+tok_F1_dummy_14 { L.PosToken _ L.Tk__tok_F1_dummy_14 }
+tok_F2_dummy_13 { L.PosToken _ L.Tk__tok_F2_dummy_13 }
+tok_F3_dummy_12 { L.PosToken _ L.Tk__tok_F3_dummy_12 }
+tok_F4_dummy_11 { L.PosToken _ L.Tk__tok_F4_dummy_11 }
+tok_F5_dummy_10 { L.PosToken _ L.Tk__tok_F5_dummy_10 }
+tok_G_dummy_9 { L.PosToken _ L.Tk__tok_G_dummy_9 }
+tok_b_1 { L.PosToken _ L.Tk__tok_b_1 }
+tok_a_0 { L.PosToken _ L.Tk__tok_a_0 }
+tok__coma__2 { L.PosToken _ L.Tk__tok__coma__2 }
+qq_G { L.PosToken _ (L.Tk__qq_G $$) }
+qq_F5 { L.PosToken _ (L.Tk__qq_F5 $$) }
+qq_F4 { L.PosToken _ (L.Tk__qq_F4 $$) }
+qq_F3 { L.PosToken _ (L.Tk__qq_F3 $$) }
+qq_F2 { L.PosToken _ (L.Tk__qq_F2 $$) }
+qq_F1 { L.PosToken _ (L.Tk__qq_F1 $$) }
+qq_E { L.PosToken _ (L.Tk__qq_E $$) }
+qq_D { L.PosToken _ (L.Tk__qq_D $$) }
+qq_C { L.PosToken _ (L.Tk__qq_C $$) }
+qq_B { L.PosToken _ (L.Tk__qq_B $$) }
+qq_A { L.PosToken _ (L.Tk__qq_A $$) }
 
 %%
+
+T1__top : A rtk__eof { $1 }
 
 A : tok_A_dummy_19 A tok_A_dummy_19 { Ctr__A__0 $2 } |
     tok_B_dummy_18 B tok_B_dummy_18 { Ctr__A__1 $2 } |
@@ -115,6 +118,40 @@ Rule_8 : D E { Ctr__Rule_8__0 $1 $2 }
 
 
 {
+parseError :: [L.PosToken] -> a
+parseError [] = errorWithoutStackTrace "Parse error: unexpected end of input"
+parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
+    errorWithoutStackTrace $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+
+-- Render a token the way it appears in the source, for error messages
+showRtkToken :: L.Token -> String
+showRtkToken L.EndOfFile = "end of input"
+showRtkToken L.Tk__tok_A_dummy_19 = "'tok_A_dummy_19'"
+showRtkToken L.Tk__tok_B_dummy_18 = "'tok_B_dummy_18'"
+showRtkToken L.Tk__tok_C_dummy_17 = "'tok_C_dummy_17'"
+showRtkToken L.Tk__tok_D_dummy_16 = "'tok_D_dummy_16'"
+showRtkToken L.Tk__tok_E_dummy_15 = "'tok_E_dummy_15'"
+showRtkToken L.Tk__tok_F1_dummy_14 = "'tok_F1_dummy_14'"
+showRtkToken L.Tk__tok_F2_dummy_13 = "'tok_F2_dummy_13'"
+showRtkToken L.Tk__tok_F3_dummy_12 = "'tok_F3_dummy_12'"
+showRtkToken L.Tk__tok_F4_dummy_11 = "'tok_F4_dummy_11'"
+showRtkToken L.Tk__tok_F5_dummy_10 = "'tok_F5_dummy_10'"
+showRtkToken L.Tk__tok_G_dummy_9 = "'tok_G_dummy_9'"
+showRtkToken L.Tk__tok_b_1 = "'b'"
+showRtkToken L.Tk__tok_a_0 = "'a'"
+showRtkToken L.Tk__tok__coma__2 = "','"
+showRtkToken (L.Tk__qq_G v) = "qq_G " ++ show v
+showRtkToken (L.Tk__qq_F5 v) = "qq_F5 " ++ show v
+showRtkToken (L.Tk__qq_F4 v) = "qq_F4 " ++ show v
+showRtkToken (L.Tk__qq_F3 v) = "qq_F3 " ++ show v
+showRtkToken (L.Tk__qq_F2 v) = "qq_F2 " ++ show v
+showRtkToken (L.Tk__qq_F1 v) = "qq_F1 " ++ show v
+showRtkToken (L.Tk__qq_E v) = "qq_E " ++ show v
+showRtkToken (L.Tk__qq_D v) = "qq_D " ++ show v
+showRtkToken (L.Tk__qq_C v) = "qq_C " ++ show v
+showRtkToken (L.Tk__qq_B v) = "qq_B " ++ show v
+showRtkToken (L.Tk__qq_A v) = "qq_A " ++ show v
+
 data A = Ctr__A__0 A |
          Ctr__A__1 B |
          Ctr__A__2 C |

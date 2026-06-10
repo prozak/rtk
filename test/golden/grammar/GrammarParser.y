@@ -2,60 +2,63 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 module GrammarParser where
 import qualified Data.Generics as Gen
-import qualified GrammarLexer as L (Token(..), alexScanTokens)
+import qualified GrammarLexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)
 }
 
 %name parseGrammar
-%tokentype { L.Token }
-%error { \ rest -> error $ "Parse error " ++ (show rest) }
+%tokentype { L.PosToken }
+%error { parseError }
 
 %token
 
-tok_Clause_dummy_14 { L.Tk__tok_Clause_dummy_14 }
-tok_Grammar_dummy_15 { L.Tk__tok_Grammar_dummy_15 }
-tok_IdList_dummy_13 { L.Tk__tok_IdList_dummy_13 }
-tok_ImportsOpt_dummy_12 { L.Tk__tok_ImportsOpt_dummy_12 }
-tok_Name_dummy_11 { L.Tk__tok_Name_dummy_11 }
-tok_OptDelim_dummy_10 { L.Tk__tok_OptDelim_dummy_10 }
-tok_Option_dummy_9 { L.Tk__tok_Option_dummy_9 }
-tok_OptionList_dummy_8 { L.Tk__tok_OptionList_dummy_8 }
-tok_Rule_dummy_7 { L.Tk__tok_Rule_dummy_7 }
-tok_RuleList_dummy_6 { L.Tk__tok_RuleList_dummy_6 }
-tok_StrLit_dummy_5 { L.Tk__tok_StrLit_dummy_5 }
-tok__tilde__16 { L.Tk__tok__tilde__16 }
-tok__pipe__11 { L.Tk__tok__pipe__11 }
-tok_imports_2 { L.Tk__tok_imports_2 }
-tok_grammar_0 { L.Tk__tok_grammar_0 }
-tok__symbol_symmacro_9 { L.Tk__tok__symbol_symmacro_9 }
-tok__symbol_shortcuts_6 { L.Tk__tok__symbol_shortcuts_6 }
-tok__symbol__15 { L.Tk__tok__symbol__15 }
-tok__eql__3 { L.Tk__tok__eql__3 }
-tok__semi__1 { L.Tk__tok__semi__1 }
-tok__colon__4 { L.Tk__tok__colon__4 }
-tok__dot__5 { L.Tk__tok__dot__5 }
-tok__coma__10 { L.Tk__tok__coma__10 }
-tok__plus__14 { L.Tk__tok__plus__14 }
-tok__star__13 { L.Tk__tok__star__13 }
-tok__rparen__8 { L.Tk__tok__rparen__8 }
-tok__lparen__7 { L.Tk__tok__lparen__7 }
-tok__exclamation__12 { L.Tk__tok__exclamation__12 }
-regexplit { L.Tk__regexplit $$ }
-bigstr { L.Tk__bigstr $$ }
-str { L.Tk__str $$ }
-id { L.Tk__id $$ }
-qq_Name { L.Tk__qq_Name $$ }
-qq_StrLit { L.Tk__qq_StrLit $$ }
-qq_OptDelim { L.Tk__qq_OptDelim $$ }
-qq_Clause { L.Tk__qq_Clause $$ }
-qq_IdList { L.Tk__qq_IdList $$ }
-qq_Option { L.Tk__qq_Option $$ }
-qq_OptionList { L.Tk__qq_OptionList $$ }
-qq_Rule { L.Tk__qq_Rule $$ }
-qq_RuleList { L.Tk__qq_RuleList $$ }
-qq_ImportsOpt { L.Tk__qq_ImportsOpt $$ }
-qq_Grammar { L.Tk__qq_Grammar $$ }
+rtk__eof { L.PosToken _ L.EndOfFile }
+tok_Clause_dummy_14 { L.PosToken _ L.Tk__tok_Clause_dummy_14 }
+tok_Grammar_dummy_15 { L.PosToken _ L.Tk__tok_Grammar_dummy_15 }
+tok_IdList_dummy_13 { L.PosToken _ L.Tk__tok_IdList_dummy_13 }
+tok_ImportsOpt_dummy_12 { L.PosToken _ L.Tk__tok_ImportsOpt_dummy_12 }
+tok_Name_dummy_11 { L.PosToken _ L.Tk__tok_Name_dummy_11 }
+tok_OptDelim_dummy_10 { L.PosToken _ L.Tk__tok_OptDelim_dummy_10 }
+tok_Option_dummy_9 { L.PosToken _ L.Tk__tok_Option_dummy_9 }
+tok_OptionList_dummy_8 { L.PosToken _ L.Tk__tok_OptionList_dummy_8 }
+tok_Rule_dummy_7 { L.PosToken _ L.Tk__tok_Rule_dummy_7 }
+tok_RuleList_dummy_6 { L.PosToken _ L.Tk__tok_RuleList_dummy_6 }
+tok_StrLit_dummy_5 { L.PosToken _ L.Tk__tok_StrLit_dummy_5 }
+tok__tilde__16 { L.PosToken _ L.Tk__tok__tilde__16 }
+tok__pipe__11 { L.PosToken _ L.Tk__tok__pipe__11 }
+tok_imports_2 { L.PosToken _ L.Tk__tok_imports_2 }
+tok_grammar_0 { L.PosToken _ L.Tk__tok_grammar_0 }
+tok__symbol_symmacro_9 { L.PosToken _ L.Tk__tok__symbol_symmacro_9 }
+tok__symbol_shortcuts_6 { L.PosToken _ L.Tk__tok__symbol_shortcuts_6 }
+tok__symbol__15 { L.PosToken _ L.Tk__tok__symbol__15 }
+tok__eql__3 { L.PosToken _ L.Tk__tok__eql__3 }
+tok__semi__1 { L.PosToken _ L.Tk__tok__semi__1 }
+tok__colon__4 { L.PosToken _ L.Tk__tok__colon__4 }
+tok__dot__5 { L.PosToken _ L.Tk__tok__dot__5 }
+tok__coma__10 { L.PosToken _ L.Tk__tok__coma__10 }
+tok__plus__14 { L.PosToken _ L.Tk__tok__plus__14 }
+tok__star__13 { L.PosToken _ L.Tk__tok__star__13 }
+tok__rparen__8 { L.PosToken _ L.Tk__tok__rparen__8 }
+tok__lparen__7 { L.PosToken _ L.Tk__tok__lparen__7 }
+tok__exclamation__12 { L.PosToken _ L.Tk__tok__exclamation__12 }
+regexplit { L.PosToken _ (L.Tk__regexplit $$) }
+bigstr { L.PosToken _ (L.Tk__bigstr $$) }
+str { L.PosToken _ (L.Tk__str $$) }
+id { L.PosToken _ (L.Tk__id $$) }
+qq_Name { L.PosToken _ (L.Tk__qq_Name $$) }
+qq_StrLit { L.PosToken _ (L.Tk__qq_StrLit $$) }
+qq_OptDelim { L.PosToken _ (L.Tk__qq_OptDelim $$) }
+qq_Clause { L.PosToken _ (L.Tk__qq_Clause $$) }
+qq_IdList { L.PosToken _ (L.Tk__qq_IdList $$) }
+qq_Option { L.PosToken _ (L.Tk__qq_Option $$) }
+qq_OptionList { L.PosToken _ (L.Tk__qq_OptionList $$) }
+qq_Rule { L.PosToken _ (L.Tk__qq_Rule $$) }
+qq_RuleList { L.PosToken _ (L.Tk__qq_RuleList $$) }
+qq_ImportsOpt { L.PosToken _ (L.Tk__qq_ImportsOpt $$) }
+qq_Grammar { L.PosToken _ (L.Tk__qq_Grammar $$) }
 
 %%
+
+Grammar__top : Grammar rtk__eof { $1 }
 
 Grammar : tok_Grammar_dummy_15 Grammar tok_Grammar_dummy_15 { Ctr__Grammar__0 $2 } |
           tok_Clause_dummy_14 Clause tok_Clause_dummy_14 { Ctr__Grammar__1 $2 } |
@@ -148,6 +151,58 @@ StrLit : qq_StrLit { Anti_StrLit $1 } |
 
 
 {
+parseError :: [L.PosToken] -> a
+parseError [] = errorWithoutStackTrace "Parse error: unexpected end of input"
+parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
+    errorWithoutStackTrace $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+
+-- Render a token the way it appears in the source, for error messages
+showRtkToken :: L.Token -> String
+showRtkToken L.EndOfFile = "end of input"
+showRtkToken L.Tk__tok_Clause_dummy_14 = "'tok_Clause_dummy_14'"
+showRtkToken L.Tk__tok_Grammar_dummy_15 = "'tok_Grammar_dummy_15'"
+showRtkToken L.Tk__tok_IdList_dummy_13 = "'tok_IdList_dummy_13'"
+showRtkToken L.Tk__tok_ImportsOpt_dummy_12 = "'tok_ImportsOpt_dummy_12'"
+showRtkToken L.Tk__tok_Name_dummy_11 = "'tok_Name_dummy_11'"
+showRtkToken L.Tk__tok_OptDelim_dummy_10 = "'tok_OptDelim_dummy_10'"
+showRtkToken L.Tk__tok_Option_dummy_9 = "'tok_Option_dummy_9'"
+showRtkToken L.Tk__tok_OptionList_dummy_8 = "'tok_OptionList_dummy_8'"
+showRtkToken L.Tk__tok_Rule_dummy_7 = "'tok_Rule_dummy_7'"
+showRtkToken L.Tk__tok_RuleList_dummy_6 = "'tok_RuleList_dummy_6'"
+showRtkToken L.Tk__tok_StrLit_dummy_5 = "'tok_StrLit_dummy_5'"
+showRtkToken L.Tk__tok__tilde__16 = "'~'"
+showRtkToken L.Tk__tok__pipe__11 = "'|'"
+showRtkToken L.Tk__tok_imports_2 = "'imports'"
+showRtkToken L.Tk__tok_grammar_0 = "'grammar'"
+showRtkToken L.Tk__tok__symbol_symmacro_9 = "'@symmacro'"
+showRtkToken L.Tk__tok__symbol_shortcuts_6 = "'@shortcuts'"
+showRtkToken L.Tk__tok__symbol__15 = "'?'"
+showRtkToken L.Tk__tok__eql__3 = "'='"
+showRtkToken L.Tk__tok__semi__1 = "';'"
+showRtkToken L.Tk__tok__colon__4 = "':'"
+showRtkToken L.Tk__tok__dot__5 = "'.'"
+showRtkToken L.Tk__tok__coma__10 = "','"
+showRtkToken L.Tk__tok__plus__14 = "'+'"
+showRtkToken L.Tk__tok__star__13 = "'*'"
+showRtkToken L.Tk__tok__rparen__8 = "')'"
+showRtkToken L.Tk__tok__lparen__7 = "'('"
+showRtkToken L.Tk__tok__exclamation__12 = "'!'"
+showRtkToken (L.Tk__regexplit v) = "regexplit " ++ show v
+showRtkToken (L.Tk__bigstr v) = "bigstr " ++ show v
+showRtkToken (L.Tk__str v) = "str " ++ show v
+showRtkToken (L.Tk__id v) = "id " ++ show v
+showRtkToken (L.Tk__qq_Name v) = "qq_Name " ++ show v
+showRtkToken (L.Tk__qq_StrLit v) = "qq_StrLit " ++ show v
+showRtkToken (L.Tk__qq_OptDelim v) = "qq_OptDelim " ++ show v
+showRtkToken (L.Tk__qq_Clause v) = "qq_Clause " ++ show v
+showRtkToken (L.Tk__qq_IdList v) = "qq_IdList " ++ show v
+showRtkToken (L.Tk__qq_Option v) = "qq_Option " ++ show v
+showRtkToken (L.Tk__qq_OptionList v) = "qq_OptionList " ++ show v
+showRtkToken (L.Tk__qq_Rule v) = "qq_Rule " ++ show v
+showRtkToken (L.Tk__qq_RuleList v) = "qq_RuleList " ++ show v
+showRtkToken (L.Tk__qq_ImportsOpt v) = "qq_ImportsOpt " ++ show v
+showRtkToken (L.Tk__qq_Grammar v) = "qq_Grammar " ++ show v
+
 data Grammar = Ctr__Grammar__0 Grammar |
                Ctr__Grammar__1 Clause |
                Ctr__Grammar__2 IdList |

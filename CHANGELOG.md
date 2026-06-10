@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Source positions on tokens: the lexer now returns `PosToken` values
+  (token plus line/column), both in the hand-written lexer and in all
+  generated lexers
+- Parse errors report line, column and a human-readable description of the
+  unexpected token (e.g. `Parse error at line 2, column 1: unexpected
+  identifier 'Foo'`); generated parsers report positions too instead of
+  dumping the remaining token list
+- Errors at end of input carry the position where the input ended, in both
+  the hand-written and generated parsers
+- Grammar normalization errors name the offending rule and its source
+  position (e.g. `Grammar error in rule 'Foo' (at line 2, column 1): ...`)
+- Lexer-generation errors name the lexical rule they occur in
+
+### Fixed
+- A grammar whose first rule is lexical (or has a data-type annotation
+  different from the rule name) no longer crashes with `fromJust: Nothing`;
+  it reports that the first rule must be a syntax rule, or resolves the
+  annotated type correctly
+- Internal `fromJust` calls in code generation replaced with descriptive
+  internal-error messages
+- Invalid clauses in lexical-rule macros now abort generation with an error
+  instead of writing the error text into the generated lexer
+- User-facing errors no longer print a GHC call stack
+
 ## [0.10] - 2025-12-03
 
 ### Added

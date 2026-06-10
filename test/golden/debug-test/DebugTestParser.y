@@ -2,55 +2,58 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 module DebugTestParser where
 import qualified Data.Generics as Gen
-import qualified DebugTestLexer as L (Token(..), alexScanTokens)
+import qualified DebugTestLexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)
 }
 
 %name parseDebugTest
-%tokentype { L.Token }
-%error { \ rest -> error $ "Parse error " ++ (show rest) }
+%tokentype { L.PosToken }
+%error { parseError }
 
 %token
 
-tok_Assignment_dummy_18 { L.Tk__tok_Assignment_dummy_18 }
-tok_Block_dummy_17 { L.Tk__tok_Block_dummy_17 }
-tok_Expression_dummy_16 { L.Tk__tok_Expression_dummy_16 }
-tok_Factor_dummy_15 { L.Tk__tok_Factor_dummy_15 }
-tok_IfStatement_dummy_14 { L.Tk__tok_IfStatement_dummy_14 }
-tok_Program_dummy_19 { L.Tk__tok_Program_dummy_19 }
-tok_Statement_dummy_13 { L.Tk__tok_Statement_dummy_13 }
-tok_Term_dummy_12 { L.Tk__tok_Term_dummy_12 }
-tok_UnusedRule1_dummy_11 { L.Tk__tok_UnusedRule1_dummy_11 }
-tok_UnusedRule2_dummy_10 { L.Tk__tok_UnusedRule2_dummy_10 }
-tok_WhileLoop_dummy_9 { L.Tk__tok_WhileLoop_dummy_9 }
-tok__symbol__12 { L.Tk__tok__symbol__12 }
-tok__symbol__11 { L.Tk__tok__symbol__11 }
-tok_while_10 { L.Tk__tok_while_10 }
-tok_unused_13 { L.Tk__tok_unused_13 }
-tok_if_8 { L.Tk__tok_if_8 }
-tok_else_9 { L.Tk__tok_else_9 }
-tok__eql__0 { L.Tk__tok__eql__0 }
-tok__semi__1 { L.Tk__tok__semi__1 }
-tok__symbol__5 { L.Tk__tok__symbol__5 }
-tok__minus__3 { L.Tk__tok__minus__3 }
-tok__plus__2 { L.Tk__tok__plus__2 }
-tok__star__4 { L.Tk__tok__star__4 }
-tok__rparen__7 { L.Tk__tok__rparen__7 }
-tok__lparen__6 { L.Tk__tok__lparen__6 }
-number { L.Tk__number $$ }
-identifier { L.Tk__identifier $$ }
-qq_UnusedRule2 { L.Tk__qq_UnusedRule2 $$ }
-qq_UnusedRule1 { L.Tk__qq_UnusedRule1 $$ }
-qq_Block { L.Tk__qq_Block $$ }
-qq_WhileLoop { L.Tk__qq_WhileLoop $$ }
-qq_IfStatement { L.Tk__qq_IfStatement $$ }
-qq_Factor { L.Tk__qq_Factor $$ }
-qq_Term { L.Tk__qq_Term $$ }
-qq_Expression { L.Tk__qq_Expression $$ }
-qq_Assignment { L.Tk__qq_Assignment $$ }
-qq_Statement { L.Tk__qq_Statement $$ }
-qq_Program { L.Tk__qq_Program $$ }
+rtk__eof { L.PosToken _ L.EndOfFile }
+tok_Assignment_dummy_18 { L.PosToken _ L.Tk__tok_Assignment_dummy_18 }
+tok_Block_dummy_17 { L.PosToken _ L.Tk__tok_Block_dummy_17 }
+tok_Expression_dummy_16 { L.PosToken _ L.Tk__tok_Expression_dummy_16 }
+tok_Factor_dummy_15 { L.PosToken _ L.Tk__tok_Factor_dummy_15 }
+tok_IfStatement_dummy_14 { L.PosToken _ L.Tk__tok_IfStatement_dummy_14 }
+tok_Program_dummy_19 { L.PosToken _ L.Tk__tok_Program_dummy_19 }
+tok_Statement_dummy_13 { L.PosToken _ L.Tk__tok_Statement_dummy_13 }
+tok_Term_dummy_12 { L.PosToken _ L.Tk__tok_Term_dummy_12 }
+tok_UnusedRule1_dummy_11 { L.PosToken _ L.Tk__tok_UnusedRule1_dummy_11 }
+tok_UnusedRule2_dummy_10 { L.PosToken _ L.Tk__tok_UnusedRule2_dummy_10 }
+tok_WhileLoop_dummy_9 { L.PosToken _ L.Tk__tok_WhileLoop_dummy_9 }
+tok__symbol__12 { L.PosToken _ L.Tk__tok__symbol__12 }
+tok__symbol__11 { L.PosToken _ L.Tk__tok__symbol__11 }
+tok_while_10 { L.PosToken _ L.Tk__tok_while_10 }
+tok_unused_13 { L.PosToken _ L.Tk__tok_unused_13 }
+tok_if_8 { L.PosToken _ L.Tk__tok_if_8 }
+tok_else_9 { L.PosToken _ L.Tk__tok_else_9 }
+tok__eql__0 { L.PosToken _ L.Tk__tok__eql__0 }
+tok__semi__1 { L.PosToken _ L.Tk__tok__semi__1 }
+tok__symbol__5 { L.PosToken _ L.Tk__tok__symbol__5 }
+tok__minus__3 { L.PosToken _ L.Tk__tok__minus__3 }
+tok__plus__2 { L.PosToken _ L.Tk__tok__plus__2 }
+tok__star__4 { L.PosToken _ L.Tk__tok__star__4 }
+tok__rparen__7 { L.PosToken _ L.Tk__tok__rparen__7 }
+tok__lparen__6 { L.PosToken _ L.Tk__tok__lparen__6 }
+number { L.PosToken _ (L.Tk__number $$) }
+identifier { L.PosToken _ (L.Tk__identifier $$) }
+qq_UnusedRule2 { L.PosToken _ (L.Tk__qq_UnusedRule2 $$) }
+qq_UnusedRule1 { L.PosToken _ (L.Tk__qq_UnusedRule1 $$) }
+qq_Block { L.PosToken _ (L.Tk__qq_Block $$) }
+qq_WhileLoop { L.PosToken _ (L.Tk__qq_WhileLoop $$) }
+qq_IfStatement { L.PosToken _ (L.Tk__qq_IfStatement $$) }
+qq_Factor { L.PosToken _ (L.Tk__qq_Factor $$) }
+qq_Term { L.PosToken _ (L.Tk__qq_Term $$) }
+qq_Expression { L.PosToken _ (L.Tk__qq_Expression $$) }
+qq_Assignment { L.PosToken _ (L.Tk__qq_Assignment $$) }
+qq_Statement { L.PosToken _ (L.Tk__qq_Statement $$) }
+qq_Program { L.PosToken _ (L.Tk__qq_Program $$) }
 
 %%
+
+DebugTest__top : Program rtk__eof { $1 }
 
 Program : tok_Program_dummy_19 Program tok_Program_dummy_19 { Ctr__Program__0 (reverse $2) } |
           tok_Assignment_dummy_18 Assignment tok_Assignment_dummy_18 { Ctr__Program__1 $2 } |
@@ -132,6 +135,53 @@ WhileLoop : qq_WhileLoop { Anti_WhileLoop $1 } |
 
 
 {
+parseError :: [L.PosToken] -> a
+parseError [] = errorWithoutStackTrace "Parse error: unexpected end of input"
+parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
+    errorWithoutStackTrace $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+
+-- Render a token the way it appears in the source, for error messages
+showRtkToken :: L.Token -> String
+showRtkToken L.EndOfFile = "end of input"
+showRtkToken L.Tk__tok_Assignment_dummy_18 = "'tok_Assignment_dummy_18'"
+showRtkToken L.Tk__tok_Block_dummy_17 = "'tok_Block_dummy_17'"
+showRtkToken L.Tk__tok_Expression_dummy_16 = "'tok_Expression_dummy_16'"
+showRtkToken L.Tk__tok_Factor_dummy_15 = "'tok_Factor_dummy_15'"
+showRtkToken L.Tk__tok_IfStatement_dummy_14 = "'tok_IfStatement_dummy_14'"
+showRtkToken L.Tk__tok_Program_dummy_19 = "'tok_Program_dummy_19'"
+showRtkToken L.Tk__tok_Statement_dummy_13 = "'tok_Statement_dummy_13'"
+showRtkToken L.Tk__tok_Term_dummy_12 = "'tok_Term_dummy_12'"
+showRtkToken L.Tk__tok_UnusedRule1_dummy_11 = "'tok_UnusedRule1_dummy_11'"
+showRtkToken L.Tk__tok_UnusedRule2_dummy_10 = "'tok_UnusedRule2_dummy_10'"
+showRtkToken L.Tk__tok_WhileLoop_dummy_9 = "'tok_WhileLoop_dummy_9'"
+showRtkToken L.Tk__tok__symbol__12 = "'}'"
+showRtkToken L.Tk__tok__symbol__11 = "'{'"
+showRtkToken L.Tk__tok_while_10 = "'while'"
+showRtkToken L.Tk__tok_unused_13 = "'unused'"
+showRtkToken L.Tk__tok_if_8 = "'if'"
+showRtkToken L.Tk__tok_else_9 = "'else'"
+showRtkToken L.Tk__tok__eql__0 = "'='"
+showRtkToken L.Tk__tok__semi__1 = "';'"
+showRtkToken L.Tk__tok__symbol__5 = "'/'"
+showRtkToken L.Tk__tok__minus__3 = "'-'"
+showRtkToken L.Tk__tok__plus__2 = "'+'"
+showRtkToken L.Tk__tok__star__4 = "'*'"
+showRtkToken L.Tk__tok__rparen__7 = "')'"
+showRtkToken L.Tk__tok__lparen__6 = "'('"
+showRtkToken (L.Tk__number v) = "number " ++ show v
+showRtkToken (L.Tk__identifier v) = "identifier " ++ show v
+showRtkToken (L.Tk__qq_UnusedRule2 v) = "qq_UnusedRule2 " ++ show v
+showRtkToken (L.Tk__qq_UnusedRule1 v) = "qq_UnusedRule1 " ++ show v
+showRtkToken (L.Tk__qq_Block v) = "qq_Block " ++ show v
+showRtkToken (L.Tk__qq_WhileLoop v) = "qq_WhileLoop " ++ show v
+showRtkToken (L.Tk__qq_IfStatement v) = "qq_IfStatement " ++ show v
+showRtkToken (L.Tk__qq_Factor v) = "qq_Factor " ++ show v
+showRtkToken (L.Tk__qq_Term v) = "qq_Term " ++ show v
+showRtkToken (L.Tk__qq_Expression v) = "qq_Expression " ++ show v
+showRtkToken (L.Tk__qq_Assignment v) = "qq_Assignment " ++ show v
+showRtkToken (L.Tk__qq_Statement v) = "qq_Statement " ++ show v
+showRtkToken (L.Tk__qq_Program v) = "qq_Program " ++ show v
+
 data Program = Ctr__Program__0 Program |
                Ctr__Program__1 Assignment |
                Ctr__Program__2 Block |

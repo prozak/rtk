@@ -3,6 +3,7 @@ module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
 import Parser
+import Grammar (isNotIgnored)
 import Data.Generics
 import Data.Maybe
 import qualified Data.Map as M
@@ -33,12 +34,25 @@ data NormalizationState = NormalizationState {
                                               _proxyRuleNames :: S.Set ID,
                                               _qqLexRuleCache :: M.Map ID ID,
                                               _antiRuleCache :: M.Map ID ID,
-                                              _ruleToTypeName :: M.Map ID ID
+                                              _ruleToTypeName :: M.Map ID ID,
+                                              _currentRule :: Maybe IRule
                                              }
 
 $(makeLenses ''NormalizationState)
 
 type Normalization a = State NormalizationState a
+
+-- Report a grammar error, attaching the rule (and its source position, when
+-- known) that was being normalized when the problem was found
+normError :: String -> Normalization a
+normError msg = do
+  ctx <- gets _currentRule
+  let loc = case ctx of
+              Just r -> "in rule '" ++ getIRuleName r ++ "'"
+                        ++ maybe "" (\p -> " (at " ++ showSourcePos p ++ ")") (getIRulePos r)
+                        ++ ": "
+              Nothing -> ""
+  errorWithoutStackTrace $ "Grammar error " ++ loc ++ msg
 
 newNamePrefixed :: String -> Normalization String
 newNamePrefixed prefix = do
@@ -184,7 +198,7 @@ checkSimpleClause (IIgnore c1) = do
   newC1 <- checkSimpleClause c1
   case newC1 of
     SSId idName -> return $ SSIgnore idName
-    _ -> error $ "Ignore cannot be applied to " ++ show c1
+    _ -> normError $ "ignore (!) cannot be applied to: " ++ showClause c1
 checkSimpleClause c = extractClause c >>= return . SSId
 
 checkNormalClause :: IClause -> Normalization SyntaxTopClause
@@ -213,23 +227,38 @@ checkNormalClause (ILifted c) = do
   c1 <- checkSimpleClause c
   case c1 of
     SSId idName -> return $ STAltOfSeq [STSeq "" [SSLifted idName]]
-    _ -> error $ "Lifted cannot be applied to " ++ show c1
+    _ -> normError $ "lifted (,) cannot be applied to: " ++ showClause c
 checkNormalClause (IIgnore c) = do
   c1 <- checkSimpleClause c
   case c1 of
     SSId idName -> return $ STAltOfSeq [STSeq "" [SSIgnore idName]]
-    _ -> error $ "Ignore cannot be applied to " ++ show c1
+    _ -> normError $ "ignore (!) cannot be applied to: " ++ showClause c
 checkNormalClause (IId idName) = do
   return $ STAltOfSeq [STSeq "" [SSId idName]]
-checkNormalClause c = error $ "Wrong clause " ++ show c
+checkNormalClause c = normError $ "this clause cannot be used in a syntax rule: " ++ showClause c
+                                  ++ " (regular expressions and '.' are only allowed in lexical rules)"
 
 checkNormalClauseSeq :: IClause -> Normalization STSeq
 checkNormalClauseSeq (ISeq cs) = do
   cs1 <- mapM checkSimpleClause cs
+  checkLiftedInSeq cs cs1
   return $ STSeq "" cs1
 checkNormalClauseSeq ic = do
   c1 <- checkSimpleClause ic
   return $ STSeq "" [c1]
+
+-- A lifted (,) clause must be the only non-ignored clause of its sequence.
+-- Check it here, where the offending rule is still known, instead of failing
+-- without context during code generation (see isClauseSeqLifted)
+checkLiftedInSeq :: [IClause] -> [SyntaxSimpleClause] -> Normalization ()
+checkLiftedInSeq orig cs =
+  case filter isNotIgnored cs of
+    [SSLifted _] -> return ()
+    cs1 | any isLifted cs1 -> normError $ "a lifted (,) clause cannot be mixed with other clauses in a sequence: "
+                                          ++ showClause (ISeq orig)
+    _ -> return ()
+  where isLifted SSLifted{} = True
+        isLifted _          = False
 
 normalizeRule :: IRule -> Normalization ()
 normalizeRule r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIClause=cl, getIDataFunc=_, getIRuleOptions=_} | not (isLexicalRule rn) = do
@@ -259,7 +288,10 @@ buildRuleToTypeMap grammar = M.fromList $ map ruleMapping $ getIRules grammar
 doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do
   let grammar0 = everywhereBut (False `mkQ` (isLexicalRule . getIRuleName)) (mkT removeOpts) grammar
-  mapM_ normalizeRule $ getIRules grammar0
+  mapM_ (\r -> do currentRule .= Just r
+                  normalizeRule r)
+        $ getIRules grammar0
+  currentRule .= Nothing
   postNormalizeGrammar
 
 postNormalizeGroup :: (ID, [SyntaxRule]) -> Normalization (ID, [SyntaxRule])
@@ -297,8 +329,10 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
                                      rules
       rulesClauses = map (\s ->
                            let typeName = getSDataTypeName s
-                               dummy = SSIgnore (fromJust (M.lookup typeName ruleToStartInfo))
-                           in 
+                               startTok = fromMaybe (error $ "Internal error: no start token generated for type '" ++ typeName ++ "'")
+                                                    (M.lookup typeName ruleToStartInfo)
+                               dummy = SSIgnore startTok
+                           in
                            STSeq "" [dummy,
                                      SSId typeName,
                                      dummy]) $ filterProxyRules proxyRules rules
@@ -306,7 +340,9 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
                                                    getLRuleFunc = "",
                                                    getLRuleName = name, getLClause = (IStrLit name)}) $ M.toList ruleToStartInfo
       
-      qqRule = SyntaxRule (fromJust (getStartRuleName info)) $ STAltOfSeq rulesClauses
+      qqRule = SyntaxRule (fromMaybe (error "Internal error: start rule name is not set in grammar info")
+                                     (getStartRuleName info))
+                          $ STAltOfSeq rulesClauses
     in case rules of
       (startRule:restRules) ->
         ng { getSyntaxRuleGroups = startRule { getSRules = qqRule : getSRules startRule }: restRules,
@@ -317,13 +353,16 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
 normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
 normalizeTopLevelClauses grammar =
   case getIRules grammar of
-    [] -> error $ "Grammar '" ++ (getIGrammarName grammar) ++ "' contains no rules"
+    [] -> errorWithoutStackTrace $ "Grammar '" ++ (getIGrammarName grammar) ++ "' contains no rules"
     (firstIRule:_) ->
-      let firstID = getIRuleName firstIRule
+      let firstID = maybe (getIRuleName firstIRule) Prelude.id (getIDataTypeName firstIRule)
           ruleTypeMap = buildRuleToTypeMap grammar
-          (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _ _) =
-            runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap)
-          firstRuleGroupRules = fromJust $ M.lookup firstID nrs
+          (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _ _ _) =
+            runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap Nothing)
+          firstRuleGroupRules = fromMaybe firstRuleError $ M.lookup firstID nrs
+          firstRuleError = errorWithoutStackTrace $ "Grammar error: the first rule ('" ++ getIRuleName firstIRule
+                                   ++ "') must be a syntax rule (its name must start with an uppercase letter),"
+                                   ++ " because it defines the start symbol of the grammar"
           nrs1 = M.delete firstID nrs
           firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
           otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
