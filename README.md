@@ -39,23 +39,29 @@ happy <Grammar>Parser.y -o <Grammar>Parser.hs
 
 ## Grammar Format
 
-Grammar files use a simple specification format:
+Grammar files use a simple specification format. Each file starts with a
+`grammar 'Name';` header. A rule is a syntax rule if its name begins with an
+uppercase letter and a lexical rule if it begins with a lowercase letter.
+A rule may carry an optional `Type:` data-type annotation before its name
+(as in `Int: num = …` below — the rule name is `num`; `Int` is the
+annotation). `'…'` matches a string literal, `[…]` a character class, and
+`* + ?` denote repetition. Constructors for the AST are generated
+automatically — there are no inline semantic actions.
 
 ```
-grammar MyLang;
+grammar 'Calc';
 
-// Token definitions
-INT = [0-9]+;
-PLUS = "+";
+# Syntax rules: name starts with an uppercase letter
+Expr = Term ('+' Term)* ;
+Term = num ;
 
-// Grammar rules
-Expr : Expr PLUS Term { Add $1 $3 }
-     | Term           { $1 }
-     ;
-
-Term : INT { Lit (read $1) }
-     ;
+# Lexical rules: name starts with a lowercase letter
+# ('Int:' and 'Ignore:' are data-type annotations, not rule names)
+Int:    num = [0-9]+ ;
+Ignore: ws  = [ \t\n]+ ;
 ```
+
+See `test-grammars/grammar.pg` for the grammar language described in itself.
 
 ## Example Grammars
 

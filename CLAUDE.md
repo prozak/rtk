@@ -402,6 +402,19 @@ Then run `cabal update`. This ensures reliable package downloads without HTTP mi
 
 ---
 
+## Quick Reference
+
+| Task | Command |
+|------|---------|
+| Build project | `make build` or `cabal build` |
+| Run executable | `cabal exec rtk -- <args>` |
+| Run tests | `make test` |
+| Clean build | `make clean` |
+| Update packages | `cabal update` |
+| Build specific grammar test | `make test-<grammar-name>` |
+
+---
+
 ## Documentation
 
 - `BOOTSTRAP.md` - Bootstrap self-hosting documentation

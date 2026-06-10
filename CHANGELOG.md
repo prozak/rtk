@@ -43,6 +43,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--profile-stages` timings now force each stage's result to normal form,
   so per-stage durations are no longer skewed by lazy evaluation
 
+### Documentation
+- Replaced the README "Grammar Format" example, which used Happy-style
+  semantic actions that RTK cannot parse, with a verified `.pg` example
+- Removed the stale `Claude.MD` (a case-colliding near-duplicate of
+  `CLAUDE.md`; its Quick Reference table was folded into `CLAUDE.md`) and the
+  stray root `test-simple-return.java` duplicate
+
 ## [0.10] - 2025-12-03
 
 ### Added
