@@ -28,12 +28,11 @@ goldenRoot :: FilePath
 goldenRoot = "test" </> "golden"
 
 -- | Grammars that are known not to generate, with a fragment of the expected
--- error. haskell.pg is an unfinished Haskell grammar that references the
--- never-written Pat and QOp rules, so generation aborts in GenAST. The test
--- pins that behavior: if the grammar is completed, this entry must be dropped
--- and golden files generated for it.
+-- error. Currently empty: every grammar in test-grammars/ generates. Pin a
+-- grammar here only while a known generation defect is being worked on; the
+-- test fails once the grammar generates again so the entry gets dropped.
 knownBrokenGrammars :: [(String, String)]
-knownBrokenGrammars = [("haskell", "Reference to unknown rule Pat")]
+knownBrokenGrammars = []
 
 regenerateHint :: String
 regenerateHint =
