@@ -215,6 +215,13 @@ test-all-java: test-java test-java-simple test-java-minimal test-java-field test
 test-t1: build | test-out
 	$(RTK_EXEC) test-grammars/t1.pg test-out
 
+# Lambda-calculus QQ spike (Write You a Haskell phase 0): exercises QQ
+# construction, pattern matching and splicing on an operator-ladder grammar
+test-lc: build test-out/LcLexer.hs test-out/LcParser.hs | test-out
+	$(CP) test-grammars/lc-main.hs test-out
+	cabal exec -- ghc --make -itest-out test-out/lc-main.hs -o test-out/lc-main
+	test-out/lc-main
+
 # Java quasi-quotation tests (separate from regular java-main parser driver)
 test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
 	$(CP) test-grammars/java-qq-test.hs test-out
