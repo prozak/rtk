@@ -34,7 +34,27 @@ Then compile with Alex and Happy:
 
 ```bash
 alex <Grammar>Lexer.x -o <Grammar>Lexer.hs
-happy <Grammar>Parser.y -o <Grammar>Parser.hs
+happy <Grammar>Parser.y --ghc -o <Grammar>Parser.hs
+```
+
+### Using the generated code
+
+The generated modules are compiled as part of *your* project, so your project
+must depend on the packages they use:
+
+- `array` — runtime support for the Alex lexer and the Happy parser tables
+- `syb` — the generated parser and quasi-quoter use `Data.Generics`
+- `containers` — the quasi-quoter keeps its shortcut table in a `Data.Map`
+- `template-haskell` — the quasi-quoter builds `Language.Haskell.TH` splices
+- `regex-posix` and `regex-base` — the quasi-quoter matches `$var` antiquotation
+  patterns with `Text.Regex.Posix`
+
+If you only use the lexer and parser (no quasi-quotation), `array` and `syb`
+are enough. A typical `build-depends` line for code that uses all three
+generated modules:
+
+```
+build-depends: base, array, syb, containers, template-haskell, regex-posix, regex-base
 ```
 
 ## Grammar Format
