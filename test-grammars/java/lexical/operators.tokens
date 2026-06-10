@@ -1,0 +1,142 @@
+Tk__tok_class_12
+Tk__id "Operators"
+Tk__tok__symbol__13
+Tk__tok_void_28
+Tk__id "m"
+Tk__tok__lparen__6
+Tk__tok__rparen__7
+Tk__tok__symbol__13
+Tk__tok_int_24
+Tk__id "a"
+Tk__tok__eql__9
+Tk__integerLiteral "1"
+Tk__tok__plus__72
+Tk__integerLiteral "2"
+Tk__tok__minus__73
+Tk__integerLiteral "3"
+Tk__tok__star__4
+Tk__integerLiteral "4"
+Tk__tok__symbol__74
+Tk__integerLiteral "5"
+Tk__tok__symbol__75
+Tk__integerLiteral "6"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__plus__eql__45
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__minus__eql__46
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__star__eql__47
+Tk__integerLiteral "2"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__symbol__eql__48
+Tk__integerLiteral "2"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__symbol__eql__52
+Tk__integerLiteral "2"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__symbol__symbol__eql__53
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__symbol__symbol__eql__54
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__symbol__symbol__symbol__eql__55
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__symbol__eql__50
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__pipe__eql__49
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__symbol__eql__51
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__tok_int_24
+Tk__id "b"
+Tk__tok__eql__9
+Tk__id "a"
+Tk__tok__symbol__symbol__70
+Tk__integerLiteral "1"
+Tk__tok__pipe__59
+Tk__id "a"
+Tk__tok__symbol__symbol__69
+Tk__integerLiteral "2"
+Tk__tok__symbol__61
+Tk__id "a"
+Tk__tok__symbol__symbol__symbol__71
+Tk__integerLiteral "3"
+Tk__tok__symbol__60
+Tk__tok__tilde__78
+Tk__id "a"
+Tk__tok__semi__1
+Tk__tok_boolean_20
+Tk__id "c"
+Tk__tok__eql__9
+Tk__id "a"
+Tk__tok__symbol__64
+Tk__id "b"
+Tk__tok__pipe__pipe__57
+Tk__id "a"
+Tk__tok__symbol__65
+Tk__id "b"
+Tk__tok__symbol__symbol__58
+Tk__id "a"
+Tk__tok__symbol__eql__66
+Tk__id "b"
+Tk__tok__pipe__59
+Tk__id "a"
+Tk__tok__symbol__eql__67
+Tk__id "b"
+Tk__tok__symbol__61
+Tk__id "a"
+Tk__tok__eql__eql__62
+Tk__id "b"
+Tk__tok__symbol__60
+Tk__id "a"
+Tk__tok__exclamation__eql__63
+Tk__id "b"
+Tk__tok__semi__1
+Tk__tok_boolean_20
+Tk__id "d"
+Tk__tok__eql__9
+Tk__tok__exclamation__79
+Tk__id "c"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__plus__plus__76
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__minus__minus__77
+Tk__tok__semi__1
+Tk__tok__plus__plus__76
+Tk__id "a"
+Tk__tok__semi__1
+Tk__tok__minus__minus__77
+Tk__id "a"
+Tk__tok__semi__1
+Tk__tok_int_24
+Tk__id "e"
+Tk__tok__eql__9
+Tk__id "c"
+Tk__tok__symbol__56
+Tk__id "a"
+Tk__tok__colon__32
+Tk__id "b"
+Tk__tok__semi__1
+Tk__tok__symbol__14
+Tk__tok__symbol__14
+EndOfFile

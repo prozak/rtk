@@ -395,28 +395,37 @@ Modifier =
 CompoundName =
 id ('.' id)*;
 
+# Integer literals (JLS 3.10.1): decimal/octal, hex (0x/0X), binary (0b/0B),
+# underscores between digits, and l/L suffix. The decimal branch also covers
+# octal since they are lexically identical.
 integerLiteral =
- (  (  [1-9]  [0-9]*  )
- |  ( '0' [0-7]* )
- |  (  '0'  'x'  [0-9a-fA-F]+   )  )
- [l]?  ;
+ (  (  [0-9]  ([0-9_]* [0-9])?  )
+ |  (  '0'  [xX]  [0-9a-fA-F]  ([0-9a-fA-F_]* [0-9a-fA-F])?  )
+ |  (  '0'  [bB]  [01]  ([01_]* [01])?  )  )
+ [lL]?  ;
 
+# Float literals (JLS 3.10.2): underscores between digits, e/E exponent,
+# f/F/d/D suffix. A bare exponent (1e5) or suffix (10f) also makes a float.
 floatLiteral  =
- [0-9]+ '.' ([0-9]+)? exponentPart? floatTypeSuffix?
- |  '.' [0-9]+ exponentPart? floatTypeSuffix?
- |  [0-9]+ floatTypeSuffix ;
+ [0-9] ([0-9_]* [0-9])? '.' ([0-9] ([0-9_]* [0-9])?)? exponentPart? floatTypeSuffix?
+ |  '.' [0-9] ([0-9_]* [0-9])? exponentPart? floatTypeSuffix?
+ |  [0-9] ([0-9_]* [0-9])? exponentPart floatTypeSuffix?
+ |  [0-9] ([0-9_]* [0-9])? floatTypeSuffix ;
 
 exponentPart  =
- 'e'  (  '+'  |  '-'  )? [0-9]+  ;
+ [eE]  (  '+'  |  '-'  )? [0-9] ([0-9_]* [0-9])?  ;
 
 floatTypeSuffix  =
- 'f'  |  'd'  ;
+ [fFdD]  ;
 
 # Character literal: handles simple chars and escape sequences
-# Simple char: 'a', single-char escapes: '\n', '\t', and Unicode: '\u0041'
+# Simple char: 'a', single-char escapes: '\n', '\t', multi-digit octal
+# escapes: '\12', '\101', '\377' (JLS 3.10.6), and Unicode: '\u0041'
 # Use [\\x5C] (hex for backslash) to avoid RTK lexer escaping issues
 char  = '\'' . '\''
       | '\'' [\\x5C] . '\''
+      | '\'' [\\x5C] [0-7] [0-7] '\''
+      | '\'' [\\x5C] [0-3] [0-7] [0-7] '\''
       | '\'' [\\x5C] 'u' [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] '\'' ;
 
 # String literal: handles escape sequences like \", \\, \n, etc.

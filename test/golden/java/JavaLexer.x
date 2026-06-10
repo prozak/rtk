@@ -5,8 +5,8 @@ where
  }
 %wrapper "monad"
 
-@exponentPart = ("e"  ("+"| "-") ?  [0-9]+)
-@floatTypeSuffix = ("f"| "d")
+@exponentPart = ([eE]  ("+"| "-") ?  [0-9]  ([0-9_]*  [0-9]) ?)
+@floatTypeSuffix = ([fFdD])
 
 tokens :- "tok_AdditiveOp_dummy_171" { simple Tk__tok_AdditiveOp_dummy_171 }
           "tok_Annotation_dummy_170" { simple Tk__tok_Annotation_dummy_170 }
@@ -188,11 +188,11 @@ tokens :- "tok_AdditiveOp_dummy_171" { simple Tk__tok_AdditiveOp_dummy_171 }
           ("/**"  ([\n]| [^\*\n]| [\*]  [^\/\n]| [\*]  [\n])*  "*/") { simple1 $  Tk__doccomment . (id) }
           ([a-zA-Z\$_]  [a-zA-Z\$_0-9]*) { simple1 $  Tk__id . (id) }
           ([\"]  ([^\x22\x5C\x0A\x0D]| [\x5C]  .)*  [\"]) { simple1 $  Tk__string . (id) }
-          ("'"  .  "'"| "'"  [\x5C]  .  "'"| "'"  [\x5C]  "u"  [0-9a-fA-F]  [0-9a-fA-F]  [0-9a-fA-F]  [0-9a-fA-F]  "'") { simple1 $  Tk__char . (id) }
-          ("f"| "d") { simple1 $  Tk__floatTypeSuffix . (id) }
-          ("e"  ("+"| "-") ?  [0-9]+) { simple1 $  Tk__exponentPart . (id) }
-          ([0-9]+  "."  ([0-9]+) ?  @exponentPart ?  @floatTypeSuffix ?| "."  [0-9]+  @exponentPart ?  @floatTypeSuffix ?| [0-9]+  @floatTypeSuffix) { simple1 $  Tk__floatLiteral . (id) }
-          ((([1-9]  [0-9]*)| ("0"  [0-7]*)| ("0"  "x"  [0-9a-fA-F]+))  [l] ?) { simple1 $  Tk__integerLiteral . (id) }
+          ("'"  .  "'"| "'"  [\x5C]  .  "'"| "'"  [\x5C]  [0-7]  [0-7]  "'"| "'"  [\x5C]  [0-3]  [0-7]  [0-7]  "'"| "'"  [\x5C]  "u"  [0-9a-fA-F]  [0-9a-fA-F]  [0-9a-fA-F]  [0-9a-fA-F]  "'") { simple1 $  Tk__char . (id) }
+          ([fFdD]) { simple1 $  Tk__floatTypeSuffix . (id) }
+          ([eE]  ("+"| "-") ?  [0-9]  ([0-9_]*  [0-9]) ?) { simple1 $  Tk__exponentPart . (id) }
+          ([0-9]  ([0-9_]*  [0-9]) ?  "."  ([0-9]  ([0-9_]*  [0-9]) ?) ?  @exponentPart ?  @floatTypeSuffix ?| "."  [0-9]  ([0-9_]*  [0-9]) ?  @exponentPart ?  @floatTypeSuffix ?| [0-9]  ([0-9_]*  [0-9]) ?  @exponentPart  @floatTypeSuffix ?| [0-9]  ([0-9_]*  [0-9]) ?  @floatTypeSuffix) { simple1 $  Tk__floatLiteral . (id) }
+          ((([0-9]  ([0-9_]*  [0-9]) ?)| ("0"  [xX]  [0-9a-fA-F]  ([0-9a-fA-F_]*  [0-9a-fA-F]) ?)| ("0"  [bB]  [01]  ([01_]*  [01]) ?))  [lL] ?) { simple1 $  Tk__integerLiteral . (id) }
           ("$"  "CompoundName"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_CompoundName . ((tail . dropWhile (/= ':'))) }
           ("$"  "Modifier"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Modifier . ((tail . dropWhile (/= ':'))) }
           ("$"  "TypeSpecifier"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_TypeSpecifier . ((tail . dropWhile (/= ':'))) }
