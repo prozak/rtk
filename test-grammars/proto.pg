@@ -1,0 +1,120 @@
+grammar 'Proto';
+
+# ProtoHaskell-lite: the chapter 8-12 stretch of "Write You a Haskell"
+# (see docs/write-you-a-haskell.md) with EXPLICIT block delimiters -
+# case alternatives are braced and ';'-separated instead of using the
+# offside rule. Layout-sensitive lexing for RTK is tracked separately
+# (github issue #95); with it, this grammar would accept indented
+# programs unchanged.
+#
+# Extends poly.pg with:
+#  - 'data' declarations: type parameters, '|'-separated constructor
+#    definitions (the first use of the '+ ~ sep' separated-list form)
+#  - constructor atoms in expressions (capitalized: new conid token)
+#  - 'case e of { Pat -> e ; ... }' with nested constructor patterns
+#
+# Wrapper-type idiom (see docs): every type used in both scalar and
+# list positions gets a single-constructor wrapper for the list side -
+# TyVar/Param wrap Id, Field wraps Ty, PArg wraps Pat - because a
+# type's anti rule is cached either scalar or list. List rules precede
+# their element rules so the list registration wins where intended.
+
+Proto = DeclList ;
+
+DeclList = Decl * ;
+
+@shortcuts(d)
+Decl = 'data' ConId TyVarList '=' ConDefList ';'
+     | 'let' 'rec' Id '=' Expr ';'
+     | 'let' 'rec' Id Params '=' Expr ';'
+     | 'let' Id '=' Expr ';'
+     | 'let' Id Params '=' Expr ';'
+     | Expr ';' ;
+
+TyVarList = TyVar * ;
+TyVar = Id ;
+
+ConDefList = ConDef + ~ '|' ;
+
+@shortcuts(cd)
+ConDef = ConId FieldList ;
+
+FieldList = Field * ;
+Field = TyAtom ;
+
+@shortcuts(t)
+Ty = TyApp '->' Ty
+   | ,TyApp ;
+
+Ty: TyApp = TyApp TyAtom
+          | ,TyAtom ;
+
+Ty: TyAtom = ConId
+           | Id
+           | '(' ,Ty ')' ;
+
+@shortcuts(e)
+Expr = '\\' Params '->' Expr
+     | 'let' 'rec' Id '=' Expr 'in' Expr
+     | 'let' Id '=' Expr 'in' Expr
+     | 'if' Expr 'then' Expr 'else' Expr
+     | 'fix' Expr
+     | 'case' Expr 'of' '{' AltList '}'
+     | ,Eq ;
+
+AltList = Alt + ~ ';' ;
+
+@shortcuts(a)
+Alt = Pat '->' Expr ;
+
+@shortcuts(q)
+Pat = ConId PArgs
+    | ,PatAtom ;
+
+Pat: PatAtom = num
+             | '_'
+             | 'true'
+             | 'false'
+             | Id
+             | ConId
+             | '(' ,Pat ')' ;
+
+PArgs = PArg + ;
+PArg = PatAtom ;
+
+Expr: Eq  = Eq '==' Add
+          | ,Add ;
+
+Expr: Add = Add '+' Mul
+          | Add '-' Mul
+          | ,Mul ;
+
+Expr: Mul = Mul '*' App
+          | ,App ;
+
+Expr: App = App Atom
+          | ,Atom ;
+
+Expr: Atom = num
+           | 'true'
+           | 'false'
+           | Id
+           | ConId
+           | '(' ,Expr ')' ;
+
+@shortcuts(p)
+Params = Param + ;
+
+Param = Id ;
+
+@shortcuts(c)
+ConId = conid ;
+
+@shortcuts(x)
+Id = id ;
+
+Int: num = [0-9]+ ;
+id = [a-z][a-zA-Z0-9_]* ;
+conid = [A-Z][a-zA-Z0-9_]* ;
+Ignore: ws = [ \t\n]+ ;
+Ignore: comment = '--' .* [\n] ;
