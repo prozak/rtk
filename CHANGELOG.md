@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- A `$$` escape in quasi-quote bodies: `$$name` now produces the literal
+  text `$name` instead of being rewritten as a metavariable (or rejected).
+  Previously the generated quasi-quoter rewrote `$ident` everywhere in a
+  quote body — including inside the quoted language's own string literals —
+  mangling programs. Each `$$` pair directly before a metavariable stands
+  for one literal `$` (so `$$$x` is a literal `$` followed by the
+  metavariable `$x`). The unknown-metavariable error now names the
+  offending `$name`, lists the known shortcuts and points at the `$$`
+  escape (see `docs/why-qq-limitations.md`)
 - Hackage packaging hygiene: PVP version bounds on all dependencies and on
   the `alex`/`happy` build tools, `Tested-With` now lists GHC 9.4.7 and
   9.6.4 (the versions actually exercised locally and in CI), and the

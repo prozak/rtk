@@ -45,7 +45,9 @@ From `GenQ.hs`:
          ruleVariants = catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts)
                                         $ reverse $ inits varName
          rule = case ruleVariants of
-                  [] -> error $ "Unknown shortcut for " ++ varName
+                  [] -> error ...  -- unknown metavariable: the error names it,
+                                   -- lists the known shortcuts and suggests the
+                                   -- $$ escape (see below)
                   (rule : _) -> rule
      in pre ++ ('$' : rule ++ ":") ++ varName ++ ...
    ```
@@ -62,6 +64,39 @@ The Java grammar's parser expects specific token sequences. When quasi-quotation
 - After substitution: `$Expression:expression1 + $Expression:expression2`
 - Tokens generated: `[..., Tk__tok__plus__72, Tk__qq_Expression188 "expression2", ...]`
 - Parser sees unexpected token sequence and fails
+
+## Literal `$` in Quoted Text: the `$$` Escape
+
+`replaceAllPatterns` is purely textual — it knows nothing about the quoted
+language's lexical structure. Every `$name` in the quote body is rewritten
+(or rejected with the unknown-metavariable error), **including occurrences
+inside the quoted language's own string literals**, and in languages where
+`$` is a legal identifier character (like Java) real identifiers can look
+like metavariables.
+
+To include the literal text `$name` in quoted code, escape it as `$$name`:
+
+```haskell
+-- the Java string contains a literal "$total"; no rewrite happens
+let e = [expression| "price: $$total" |]
+```
+
+The rules:
+
+- `$$name` produces the literal text `$name` (no metavariable rewrite).
+- Each `$$` pair directly before a metavariable stands for one literal `$`,
+  so `$$$x` is a literal `$` followed by the metavariable `$x`.
+- A `$` that is *not* followed by an identifier character is never rewritten
+  and needs no escape (`"cost: $"` is fine as-is).
+- A `$name` whose name has no known shortcut prefix aborts quote expansion
+  with an error that names the metavariable, lists the known shortcuts, and
+  points at the `$$` escape.
+
+Why not skip rewriting inside string literals automatically? String syntax
+is per-language: the preprocessor would need to know how each quoted
+grammar tokenizes strings (quoting style, escape rules, nesting), and any
+built-in heuristic would silently do the wrong thing for some grammars. The
+explicit `$$` escape is unambiguous in every grammar.
 
 ## Why It Works for P Language
 

@@ -18,17 +18,33 @@ qqPattern = "\\$[A-Za-z_][A-Za-z_0-9]*[^A-Za-z_0-9:]"
 
 qqShortcuts :: M.Map String String
 
+-- A $name metavariable is rewritten to $Type:name using the qqShortcuts
+-- table below. The rewrite is purely textual, so it would also fire inside
+-- the quoted language's own string literals: write $$name there to escape
+-- it and get the literal text $name. Each '$$' pair directly before a
+-- metavariable stands for one literal '$' (so $$$x is a literal '$'
+-- followed by the metavariable $x). A '$' not followed by an identifier is
+-- never rewritten and needs no escape.
 replaceAllPatterns1 :: String -> String
 replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, String, String)
                           in if match == ""
                               then pre
                               else let varName = init $ tail match
                                        addSym = last match
+                                       escCount = length $ takeWhile (== '$') $ reverse pre
+                                       keptPre = take (length pre - escCount) pre ++ replicate (div escCount 2) '$'
                                        ruleVariants = catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts) $ reverse $ inits varName
                                        rule = case ruleVariants of
-                                                [] -> error $ "Unknown shortcut for " ++ varName
+                                                [] -> error $ unlines
+                                                        [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
+                                                        , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
+                                                        , "  " ++ intercalate ", " (M.keys qqShortcuts)
+                                                        , "To include the literal text $" ++ varName ++ " in the quoted code"
+                                                        , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
                                                 (rule : _) -> rule
-                                   in pre ++ ('$' : rule ++ ":") ++ varName ++ (replaceAllPatterns1 $ addSym : post)
+                                   in if odd escCount
+                                       then keptPre ++ ('$' : varName) ++ (replaceAllPatterns1 $ addSym : post)
+                                       else keptPre ++ ('$' : rule ++ ":") ++ varName ++ (replaceAllPatterns1 $ addSym : post)
 
 -- Add ' ' at the end, so regex can match variable in the end of the string
 replaceAllPatterns :: String -> String
