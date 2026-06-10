@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens repl-lc test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -215,12 +215,17 @@ test-all-java: test-java test-java-simple test-java-minimal test-java-field test
 test-t1: build | test-out
 	$(RTK_EXEC) test-grammars/t1.pg test-out
 
-# Lambda-calculus QQ spike (Write You a Haskell phase 0): exercises QQ
-# construction, pattern matching and splicing on an operator-ladder grammar
-test-lc: build test-out/LcLexer.hs test-out/LcParser.hs | test-out
-	$(CP) test-grammars/lc-main.hs test-out
+# Untyped lambda calculus interpreter generated from lc.pg (Write You a
+# Haskell, chapters 3-4; see docs/write-you-a-haskell.md): QQ-driven
+# evaluator, substitution and pretty-printer, with a test suite and REPL
+test-out/lc-main: test-out/lc-main.hs test-out/LcLexer.hs test-out/LcParser.hs
 	cabal exec -- ghc --make -itest-out test-out/lc-main.hs -o test-out/lc-main
+
+test-lc: build test-out/lc-main | test-out
 	test-out/lc-main
+
+repl-lc: build test-out/lc-main | test-out
+	test-out/lc-main repl
 
 # Java quasi-quotation tests (separate from regular java-main parser driver)
 test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
