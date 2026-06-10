@@ -47,6 +47,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   printed an error
 
 ### Fixed
+- `'\f'` and `'\v'` escapes in grammar string and `[...]` regex literals now
+  reach the generated lexer as bare Alex escapes; previously token
+  post-processing (`unBackQuote`) stripped them to the literal letters
+  `f`/`v` even though `GenX.isAlexEscape` was ready to emit them, so the two
+  escape sets disagreed. The preserved set (`\n \t \r \f \v`) is now pinned
+  to `isAlexEscape` by a unit test
 - `test-grammars/haskell.pg` is self-consistent again: minimal `Pat` and
   `QOp` rules were added for the previously dangling references, so RTK
   generation no longer aborts on it (progress on issue #30; the grammar is

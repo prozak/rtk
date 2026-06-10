@@ -19,6 +19,7 @@ import System.FilePath (takeBaseName)
 import Test.HUnit
 
 import Diagnostics (Diagnostic (..), SourcePos (..), renderDiagnostic)
+import GenX (isAlexEscape)
 import Grammar (isClauseSeqLifted)
 import Lexer (AlexPosn (..), PosToken (..), Token (..))
 import Normalize (fillConstructorNames, normalizeTopLevelClauses)
@@ -78,8 +79,14 @@ tokenProcessingTests :: Test
 tokenProcessingTests = TestList
     [ TestLabel "unBackQuote strips escaping backslashes" $ TestCase $
         assertEqual "" "a'b" (unBackQuote "a\\'b")
-    , TestLabel "unBackQuote keeps \\n \\t \\r escapes" $ TestCase $
-        assertEqual "" "\\n\\t\\r" (unBackQuote "\\n\\t\\r")
+    , TestLabel "unBackQuote keeps \\n \\t \\r \\f \\v escapes" $ TestCase $
+        assertEqual "" "\\n\\t\\r\\f\\v" (unBackQuote "\\n\\t\\r\\f\\v")
+    , TestLabel "preserved escapes are exactly the ones GenX emits bare" $ TestCase $
+        mapM_ (\c -> do
+            let esc = ['\\', c]
+            assertEqual ("unBackQuote preserves " ++ esc) esc (unBackQuote esc)
+            assertBool ("GenX.isAlexEscape recognizes " ++ esc) (isAlexEscape esc))
+          "ntrfv"
     , TestLabel "unBackQuote unescapes backslash itself" $ TestCase $
         assertEqual "" "\\" (unBackQuote "\\\\")
     , TestLabel "catBigstrs joins adjacent big strings" $ TestCase $
@@ -92,7 +99,23 @@ tokenProcessingTests = TestList
     , TestLabel "processTokens combines both steps" $ TestCase $
         assertEqual "" (map at [StrLit "'", BigStr "a\nb"])
                        (processTokens (map at [StrLit "\\'", BigStr "a", BigStr "b"]))
+    , TestLabel "a '\\f' keyword survives to the generated lexer" testFormFeedReachesLexer
     ]
+
+-- | End-to-end: a '\f' keyword must reach the generated Alex spec as the bare
+-- \f escape (neither stripped to a literal 'f' nor quoted as "\f", which Alex
+-- would read as backslash + 'f').
+testFormFeedReachesLexer :: Test
+testFormFeedReachesLexer = TestCase $
+    case normalizeGrammarSource "grammar 'Esc';\nS = '\\f' ;\n" >>= artifactsFor of
+        Left d -> assertFailure $ "generation failed: " ++ show d
+        Right artifacts -> case lookup "EscLexer.x" artifacts of
+            Nothing -> assertFailure "no EscLexer.x artifact generated"
+            Just lexerSpec -> do
+                assertBool "lexer spec contains the bare \\f escape"
+                    ("\\f" `isInfixOf` lexerSpec)
+                assertBool "\\f is not emitted as a quoted string literal"
+                    (not ("\"\\f\"" `isInfixOf` lexerSpec))
 
 -- | Wrap a token at a dummy position; token processing ignores positions.
 at :: Token -> PosToken

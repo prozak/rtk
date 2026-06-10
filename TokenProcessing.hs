@@ -21,12 +21,15 @@ processEscapesTok (RegExpLit s) = RegExpLit (unBackQuote s)
 processEscapesTok tok = tok
 
 -- | Handle backslash escape sequences
--- Preserves \\n, \\t, \\r as-is (for grammar rules)
+-- Preserves \\n, \\t, \\r, \\f, \\v as-is (for grammar rules); this must stay
+-- exactly the set that GenX.isAlexEscape emits bare into the generated lexer
 -- Removes backslash from other escaped characters
 unBackQuote :: String -> String
 unBackQuote ('\\':'n':xs) = '\\':'n' : unBackQuote xs
 unBackQuote ('\\':'t':xs) = '\\':'t' : unBackQuote xs
 unBackQuote ('\\':'r':xs) = '\\':'r' : unBackQuote xs
+unBackQuote ('\\':'f':xs) = '\\':'f' : unBackQuote xs
+unBackQuote ('\\':'v':xs) = '\\':'v' : unBackQuote xs
 unBackQuote ('\\':c:xs) = c : unBackQuote xs
 unBackQuote (c:xs) = c : unBackQuote xs
 unBackQuote [] = []
