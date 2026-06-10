@@ -76,8 +76,12 @@ jobs:
     - name: Update Cabal package list
       run: cabal update
 
+    # Pin exact alex/happy versions so a new Hackage release can't change CI
+    # behavior without a repo change. Because the test-out cache key hashes
+    # this file, bumping these versions intentionally invalidates cached
+    # generated parsers and test binaries.
     - name: Install build tools (Alex and Happy)
-      run: cabal install alex happy --installdir=$HOME/.cabal/bin --overwrite-policy=always --install-method=copy
+      run: cabal install alex-3.5.4.2 happy-2.2 --installdir=$HOME/.cabal/bin --overwrite-policy=always --install-method=copy
 
     - name: Build project with linting (treat warnings as errors)
       run: |
