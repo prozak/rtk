@@ -3,8 +3,7 @@
 module I14QQ
 where
 
-import Text.Regex.Posix
-import Text.Regex.Base
+import qualified Data.Char as C
 import qualified Data.Map as M
 import Data.List
 import Data.Maybe
@@ -15,8 +14,6 @@ import Language.Haskell.TH.Quote
 import I14Lexer
 import I14Parser
 
-qqPattern = "\\$[A-Za-z_][A-Za-z_0-9]*[^A-Za-z_0-9:]"
-
 qqShortcuts :: M.Map String String
 
 -- A $name metavariable is rewritten to $Type:name using the qqShortcuts
@@ -25,30 +22,33 @@ qqShortcuts :: M.Map String String
 -- it and get the literal text $name. Each '$$' pair directly before a
 -- metavariable stands for one literal '$' (so $$$x is a literal '$'
 -- followed by the metavariable $x). A '$' not followed by an identifier is
--- never rewritten and needs no escape.
-replaceAllPatterns1 :: String -> Either String String
-replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, String, String)
-                          in if match == ""
-                              then Right pre
-                              else let varName = init $ tail match
-                                       addSym = last match
-                                       escCount = length $ takeWhile (== '$') $ reverse pre
-                                       keptPre = take (length pre - escCount) pre ++ replicate (div escCount 2) '$'
-                                       ruleVariants = catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts) $ reverse $ inits varName
-                                   in if odd escCount
-                                       then (\rest -> keptPre ++ ('$' : varName) ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
-                                       else case ruleVariants of
-                                              [] -> Left $ unlines
-                                                      [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
-                                                      , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
-                                                      , "  " ++ intercalate ", " (M.keys qqShortcuts)
-                                                      , "To include the literal text $" ++ varName ++ " in the quoted code"
-                                                      , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
-                                              (rule : _) -> (\rest -> keptPre ++ ('$' : rule ++ ":") ++ varName ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
-
--- Add ' ' at the end, so regex can match variable in the end of the string
+-- never rewritten and needs no escape, and an explicit $Type:name antiquote
+-- (the character after the name is ':') passes through untouched.
+-- A plain character scan rather than a regex: metavariables are recognized
+-- regardless of what follows the name - including a newline or the end of
+-- the quote, which the previous regex's terminator class missed.
 replaceAllPatterns :: String -> Either String String
-replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
+replaceAllPatterns [] = Right []
+replaceAllPatterns s@('$' : _) =
+  let (dollars, rest) = span (== '$') s
+  in case rest of
+       (c1 : _) | C.isAlpha c1 || c1 == '_' ->
+         let (varName, post) = span (\ ch -> C.isAlphaNum ch || ch == '_') rest
+             escCount = length dollars - 1
+             keptPre = replicate (div escCount 2) '$'
+         in case post of
+              (':' : _) -> ((dollars ++ varName) ++) <$> replaceAllPatterns post
+              _ | odd escCount -> ((keptPre ++ '$' : varName) ++) <$> replaceAllPatterns post
+              _ -> case catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts) $ reverse $ inits varName of
+                     [] -> Left $ unlines
+                             [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
+                             , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
+                             , "  " ++ intercalate ", " (M.keys qqShortcuts)
+                             , "To include the literal text $" ++ varName ++ " in the quoted code"
+                             , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
+                     (rule : _) -> ((keptPre ++ '$' : rule ++ ":" ++ varName) ++) <$> replaceAllPatterns post
+       _ -> (dollars ++) <$> replaceAllPatterns rest
+replaceAllPatterns (c : rest) = (c :) <$> replaceAllPatterns rest
 
 -- The generated lexer and parser encode error positions as "LINE:COL:message"
 -- so structured-diagnostic callers can split them; render them back

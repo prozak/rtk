@@ -14,9 +14,10 @@ grammar 'C';
 #
 # Later stages will grow Exp into a precedence cascade. Use ,-lifted
 # pass-through alternatives for the cascade levels (as in
-# ../../test-grammars/grammar.pg), NOT bare alternatives as in java.pg:
-# lifted pass-throughs give the cascade a single anti-quote injection point
-# at the atom level, which is what keeps $-antiquotes conflict-free.
+# ../../test-grammars/grammar.pg) so all levels share one Exp type without
+# per-level wrapper constructors -- that's what lets a QQ pattern match any
+# expression node directly. (Splice-token placement itself is handled by
+# RTK's unit-production cover analysis either way; see Normalize.hs.)
 
 Program = Function ;
 

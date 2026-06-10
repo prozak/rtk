@@ -49,15 +49,13 @@ must depend on the packages they use:
 - `syb` — the generated parser and quasi-quoter use `Data.Generics`
 - `containers` — the quasi-quoter keeps its shortcut table in a `Data.Map`
 - `template-haskell` — the quasi-quoter builds `Language.Haskell.TH` splices
-- `regex-posix` and `regex-base` — the quasi-quoter matches `$var` antiquotation
-  patterns with `Text.Regex.Posix`
 
 If you only use the lexer and parser (no quasi-quotation), `array` and `syb`
 are enough. A typical `build-depends` line for code that uses all three
 generated modules:
 
 ```
-build-depends: base, array, syb, containers, template-haskell, regex-posix, regex-base
+build-depends: base, array, syb, containers, template-haskell
 ```
 
 ## Grammar Format

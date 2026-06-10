@@ -7,7 +7,6 @@
 -- assembling and linking.
 module Main (main) where
 
-import Control.Exception (evaluate)
 import Control.Monad (when)
 import System.Directory (removeFile)
 import System.Environment (getArgs)
@@ -16,9 +15,10 @@ import System.FilePath (dropExtension, replaceExtension)
 import System.IO (hPutStrLn, stderr)
 import System.Process (rawSystem)
 
-import CLexer (alexScanTokens)
+import CLexer (scanTokens)
 import CParser (Program, parseC)
 import Codegen (codegen)
+import Emit (emit)
 
 main :: IO ()
 main = do
@@ -32,18 +32,16 @@ main = do
 compileFile :: FilePath -> IO ()
 compileFile path = do
   src <- readFile path
-  -- Force the full parse before any output file is created: lexically or
-  -- syntactically invalid programs must exit non-zero without leaving
-  -- artifacts behind (lexer/parser errors arrive lazily as calls to error).
-  ast <- evaluate (forceParse src)
+  -- Lexical and syntax errors arrive as Left, before any output file is
+  -- created: invalid programs exit non-zero and leave no artifacts behind.
+  ast <- case scanTokens src >>= parseC of
+    Left err -> do
+      hPutStrLn stderr $ path ++ ": " ++ err
+      exitFailure
+    Right ast -> return (ast :: Program)
   let asmPath = replaceExtension path "s"
       exePath = dropExtension path
-  writeFile asmPath (codegen ast)
+  writeFile asmPath (emit (codegen ast))
   rc <- rawSystem "gcc" [asmPath, "-o", exePath]
   removeFile asmPath
   when (rc /= ExitSuccess) exitFailure
-
-forceParse :: String -> Program
-forceParse src =
-  let ast = parseC (alexScanTokens src)
-  in length (show ast) `seq` ast
