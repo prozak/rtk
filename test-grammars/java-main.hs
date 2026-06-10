@@ -5,14 +5,15 @@ import JavaParser
 import Text.Show.Pretty
 import System.Exit(exitFailure, exitSuccess)
 
-data ParseMode = LexOnly | FullParse
+data ParseMode = LexOnly | DumpTokens | FullParse
     deriving (Eq, Show)
 
 parseArgs :: [String] -> Either String (ParseMode, String)
 parseArgs args = case args of
     ["--lex-only", file] -> Right (LexOnly, file)
+    ["--dump-tokens", file] -> Right (DumpTokens, file)
     [file] -> Right (FullParse, file)
-    _ -> Left "Usage: java-main [--lex-only] <java-file>"
+    _ -> Left "Usage: java-main [--lex-only|--dump-tokens] <java-file>"
 
 -- Simple Java file parser driver
 -- For quasi-quotation tests, see java-qq-test.hs
@@ -31,6 +32,14 @@ main = do
                     let tokens = alexScanTokens content
                     putStrLn "=== Lexical analysis successful! ==="
                     putStrLn $ "Token count: " ++ show (length tokens)
+                    exitSuccess
+
+                DumpTokens -> do
+                    -- Print one token per line so the exact token stream can
+                    -- be compared against a golden file (catches
+                    -- mis-tokenization that --lex-only cannot)
+                    let tokens = alexScanTokens content
+                    mapM_ (putStrLn . show . ptToken) tokens
                     exitSuccess
 
                 FullParse -> do

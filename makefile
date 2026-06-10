@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-lex-java accept-lex-java test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -22,6 +22,8 @@ help:
 	@echo "Use 'clean' target to clean binaries"
 	@echo "Use 'test' target to run the cabal test suites (unit + golden)"
 	@echo "Use 'accept-golden' target to refresh golden snapshots after generator changes"
+	@echo "Use 'test-lex-java' target to check exact Java token streams against goldens"
+	@echo "Use 'accept-lex-java' target to refresh the Java token goldens after a lexer change"
 	@echo "Use 'test-bootstrap' target to compare hand-written vs generated grammar files"
 	@echo "Available grammar tests: $(GRAMMAR_TARGETS)"
 
@@ -167,6 +169,17 @@ $(eval $(call make-shared-test-rule,java-javadoc-minimal-hash,java,Java,test-gra
 $(eval $(call make-shared-test-rule,java-javadoc-minimal-fail,java,Java,test-grammars/java/javadoc/test-minimal-fail.java))
 $(eval $(call make-shared-test-rule,java-javadoc-link-tag,java,Java,test-grammars/java/javadoc/test-link-tag.java))
 $(eval $(call make-shared-test-rule,java-javadoc-just-hash,java,Java,test-grammars/java/javadoc/test-just-hash.java))
+
+# Java lexer golden tests: exact token streams for the lexical corpus in
+# test-grammars/java/lexical/ are compared against the .tokens golden files.
+# Catches mis-tokenization that --lex-only cannot (wrong/split tokens).
+test-lex-java: test-out/java-main
+	./test-java-lexical.sh
+
+# Regenerate the .tokens golden files after an intentional lexer change,
+# then review the diff like any other code change.
+accept-lex-java: test-out/java-main
+	ACCEPT=1 ./test-java-lexical.sh
 
 # Run all Java tests
 test-all-java: test-java test-java-simple test-java-minimal test-java-field test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method test-java-simple-return test-java-return-field test-java-very-simple test-java-parameter-only test-java-field-this test-java-simple-assignment test-java-compound-assignment test-java-set-value test-java-javadoc-blank-link test-java-javadoc-minimal-hash test-java-javadoc-minimal-fail test-java-javadoc-link-tag test-java-javadoc-just-hash

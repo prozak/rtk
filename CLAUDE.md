@@ -237,6 +237,19 @@ make test-java-qq             # Java quasi-quotation tests
 make test-all-java            # All Java tests
 ```
 
+#### Java Lexer Golden Tests
+```bash
+make test-lex-java            # Compare exact token streams against goldens
+make accept-lex-java          # Refresh goldens after an intentional lexer change
+```
+
+Each `test-grammars/java/lexical/*.java` corpus file is lexed with
+`java-main --dump-tokens` and the token stream is compared against the
+sibling `.tokens` golden file. Unlike `--lex-only` (which only fails when a
+character matches no rule at all), this catches silent mis-tokenization,
+e.g. a literal splitting into several tokens. After `accept-lex-java`,
+review the `.tokens` diff to confirm every token is genuinely correct.
+
 ---
 
 ## Git Commit Practices

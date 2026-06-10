@@ -1,0 +1,11 @@
+Tk__doccomment "/** A doc comment with {@link Foo#bar()}.\n *\n * @param none\n */"
+Tk__tok_class_12
+Tk__id "Comments"
+Tk__tok__symbol__13
+Tk__tok_int_24
+Tk__id "x"
+Tk__tok__eql__9
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__tok__symbol__14
+EndOfFile
