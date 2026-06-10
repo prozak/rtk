@@ -3,6 +3,7 @@ module GenQ (genQ)
     where
 
 import Parser
+import Diagnostics (Diagnostic)
 import qualified Data.Char as C
 import qualified Data.Map as M
 import Data.Maybe
@@ -17,8 +18,10 @@ sortNameToHaskellName "class" = "__class"
 sortNameToHaskellName "deriving" = "__deriving"
 sortNameToHaskellName s = s
 
-genQ :: NormalGrammar -> String
-genQ (NormalGrammar name rules _ antiRules shortcuts _ info) = [str|{-# LANGUAGE TemplateHaskell #-}
+-- genQ has no user-reachable error paths today (its remaining guards are
+-- internal invariants); the Either signature keeps it uniform with genX/genY.
+genQ :: NormalGrammar -> Either Diagnostic String
+genQ (NormalGrammar name rules _ antiRules shortcuts _ info) = Right [str|{-# LANGUAGE TemplateHaskell #-}
 module ?name~QQ
 where
 

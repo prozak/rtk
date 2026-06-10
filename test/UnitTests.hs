@@ -8,7 +8,7 @@
 --   * normalization invariants checked against every grammar in test-grammars/
 module Main (main) where
 
-import Control.Exception (ErrorCall (..), SomeException, catch, evaluate, try)
+import Control.Exception (SomeException, evaluate, try)
 import Control.Monad (when)
 import Data.List (find, group, isInfixOf, isPrefixOf, nub, sort)
 import qualified Data.Map as M
@@ -18,6 +18,7 @@ import System.Exit (exitFailure)
 import System.FilePath (takeBaseName)
 import Test.HUnit
 
+import Diagnostics (Diagnostic (..), SourcePos (..), renderDiagnostic)
 import Grammar (isClauseSeqLifted)
 import Lexer (AlexPosn (..), PosToken (..), Token (..))
 import Normalize (fillConstructorNames, normalizeTopLevelClauses)
@@ -35,15 +36,25 @@ main = do
     results <- runTestTT $ TestList $
         [ TestLabel "StrQuote" strQuoteTests
         , TestLabel "TokenProcessing" tokenProcessingTests
+        , TestLabel "diagnostics" diagnosticsTests
         , TestLabel "pipeline error handling" errorHandlingTests
         , TestLabel "normalization behavior" normalizationTests
         ] ++ perGrammar
     when (errors results + failures results /= 0) exitFailure
 
--- | Normalize without constructor-name filling, for tests that inspect the
--- intermediate form.
+-- | Normalize without constructor-name filling, returning the diagnostic on
+-- failure. Used by the error-handling tests.
+normalizeNoFillE :: String -> Either Diagnostic NormalGrammar
+normalizeNoFillE src = parseGrammarSource src >>= (normalizeTopLevelClauses . normalizeStringLiterals)
+
+-- | Partial unwrapping for the behavior tests, which all use valid grammars:
+-- a diagnostic here means the test grammar itself is wrong.
 normalizeNoFill :: String -> NormalGrammar
-normalizeNoFill = normalizeTopLevelClauses . normalizeStringLiterals . parseGrammarSource
+normalizeNoFill = either (error . ("unexpected diagnostic: " ++) . show) id . normalizeNoFillE
+
+-- | Parse a valid grammar, failing loudly on a diagnostic.
+parseOrDie :: String -> InitialGrammar
+parseOrDie = either (error . ("unexpected diagnostic: " ++) . show) id . parseGrammarSource
 
 --------------------------------------------------------------------------------
 -- StrQuote
@@ -91,62 +102,94 @@ at = PosToken (AlexPn 0 1 1)
 -- Pipeline error handling
 --------------------------------------------------------------------------------
 
-expectErrorCall :: a -> IO (Either String String)
-expectErrorCall value =
-    catch (evaluate value >> return (Left "no error thrown"))
-          (\(ErrorCall msg) -> return (Right msg))
+-- | Assert that an Either is Left and hand the diagnostic to a checker.
+expectDiagnostic :: String -> Either Diagnostic a -> (Diagnostic -> Assertion) -> Assertion
+expectDiagnostic _    (Left d)  check = check d
+expectDiagnostic what (Right _) _     = assertFailure $ "expected a diagnostic for " ++ what
+
+--------------------------------------------------------------------------------
+-- Diagnostics rendering
+--------------------------------------------------------------------------------
+
+diagnosticsTests :: Test
+diagnosticsTests = TestList
+    [ TestLabel "renderDiagnostic with position and context" $ TestCase $
+        assertEqual ""
+            "g.pg:2:1: error: in rule 'Foo': bad thing"
+            (renderDiagnostic "g.pg"
+                (Diagnostic (Just (SourcePos 2 1)) (Just "in rule 'Foo'") "bad thing"))
+    , TestLabel "renderDiagnostic with position, no context" $ TestCase $
+        assertEqual ""
+            "g.pg:2:1: error: bad thing"
+            (renderDiagnostic "g.pg" (Diagnostic (Just (SourcePos 2 1)) Nothing "bad thing"))
+    , TestLabel "renderDiagnostic without position or context" $ TestCase $
+        assertEqual ""
+            "g.pg: error: bad thing"
+            (renderDiagnostic "g.pg" (Diagnostic Nothing Nothing "bad thing"))
+    ]
+
+--------------------------------------------------------------------------------
+-- Pipeline error handling
+--------------------------------------------------------------------------------
 
 errorHandlingTests :: Test
 errorHandlingTests = TestList
-    [ TestLabel "grammar without rules is rejected" $ TestCase $ do
-        result <- expectErrorCall $ normalizeNoFill "grammar 'Empty';"
-        case result of
-            Left err -> assertFailure $ "expected an error about the empty grammar, got: " ++ err
-            Right msg -> assertBool ("unexpected message: " ++ msg) $
-                "contains no rules" `isInfixOf` msg && "Empty" `isInfixOf` msg
-    , TestLabel "empty input is a parse error" $ TestCase $ do
-        result <- expectErrorCall $ parseGrammarSource ""
-        case result of
-            Left err -> assertFailure $ "expected a parse error for empty input, got: " ++ err
-            Right msg -> assertBool ("unexpected message: " ++ msg) $
-                "Parse error" `isInfixOf` msg
-    , TestLabel "minimal valid grammar normalizes" $ TestCase $ do
-        result <- expectErrorCall $ forceGrammar $
-            normalizeGrammarSource "grammar 'Valid';\nRule = 'test' ;"
-        case result of
-            Left _ -> return ()
-            Right msg -> assertFailure $ "valid grammar should normalize, got error: " ++ msg
-    , TestLabel "parse errors report the offending position" $ TestCase $ do
+    [ TestLabel "grammar without rules is rejected" $ TestCase $
+        expectDiagnostic "an empty grammar" (normalizeNoFillE "grammar 'Empty';") $ \d -> do
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "contains no rules" `isInfixOf` diagMessage d
+                && "Empty" `isInfixOf` diagMessage d
+            assertEqual "no position" Nothing (diagPos d)
+    , TestLabel "empty input is a parse error" $ TestCase $
+        expectDiagnostic "empty input" (parseGrammarSource "") $ \d -> do
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "end of input" `isInfixOf` diagMessage d
+            assertEqual "position of end of input" (Just (SourcePos 1 1)) (diagPos d)
+    , TestLabel "minimal valid grammar normalizes" $ TestCase $
+        case normalizeGrammarSource "grammar 'Valid';\nRule = 'test' ;" of
+            Right _ -> return ()
+            Left d  -> assertFailure $ "valid grammar should normalize, got: " ++ show d
+    , TestLabel "parse errors report the offending position" $ TestCase $
         -- ';' missing after the grammar declaration: the parser should point
         -- at the identifier 'Foo' on line 2
-        result <- expectErrorCall $ parseGrammarSource "grammar 'Test'\nFoo = bar;\n"
-        case result of
-            Left err -> assertFailure $ "expected a parse error, got: " ++ err
-            Right msg -> assertBool ("unexpected message: " ++ msg) $
-                "line 2, column 1" `isInfixOf` msg && "identifier 'Foo'" `isInfixOf` msg
-    , TestLabel "errors at end of input carry a position" $ TestCase $ do
-        result <- expectErrorCall $ parseGrammarSource "grammar 'Test';\nFoo =\n"
-        case result of
-            Left err -> assertFailure $ "expected a parse error, got: " ++ err
-            Right msg -> assertBool ("unexpected message: " ++ msg) $
-                "line 3, column 1" `isInfixOf` msg && "end of input" `isInfixOf` msg
-    , TestLabel "a lexical first rule is rejected with an explanation" $ TestCase $ do
-        result <- expectErrorCall $ forceGrammar $
-            normalizeGrammarSource "grammar 'Test';\nfoo = [a-z];\n"
-        case result of
-            Left err -> assertFailure $ "expected an error about the first rule, got: " ++ err
-            Right msg -> assertBool ("unexpected message: " ++ msg) $
-                "must be a syntax rule" `isInfixOf` msg && "foo" `isInfixOf` msg
-    , TestLabel "normalization errors name the offending rule and position" $ TestCase $ do
+        expectDiagnostic "a missing ';'" (parseGrammarSource "grammar 'Test'\nFoo = bar;\n") $ \d -> do
+            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "identifier 'Foo'" `isInfixOf` diagMessage d
+    , TestLabel "errors at end of input carry a position" $ TestCase $
+        expectDiagnostic "a truncated rule" (parseGrammarSource "grammar 'Test';\nFoo =\n") $ \d -> do
+            assertEqual "position of end of input" (Just (SourcePos 3 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "end of input" `isInfixOf` diagMessage d
+    , TestLabel "a lexical first rule is rejected with an explanation" $ TestCase $
+        expectDiagnostic "a lexical first rule"
+            (normalizeGrammarSource "grammar 'Test';\nfoo = [a-z];\n") $ \d -> do
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "must be a syntax rule" `isInfixOf` diagMessage d
+                && "foo" `isInfixOf` diagMessage d
+            assertEqual "position of 'foo'" (Just (SourcePos 2 1)) (diagPos d)
+    , TestLabel "normalization errors name the offending rule and position" $ TestCase $
         -- a lifted (,) clause mixed with other clauses is rejected; the error
         -- should point at rule 'Foo' on line 2
-        result <- expectErrorCall $ forceGrammar $
-            normalizeGrammarSource "grammar 'Test';\nFoo = ,Bar Baz;\nBar = 'b';\nBaz = 'z';\n"
-        case result of
-            Left err -> assertFailure $ "expected an error about the lifted clause, got: " ++ err
-            Right msg -> assertBool ("unexpected message: " ++ msg) $
-                "in rule 'Foo'" `isInfixOf` msg && "line 2" `isInfixOf` msg
-                && "lifted" `isInfixOf` msg
+        expectDiagnostic "a mixed lifted clause"
+            (normalizeGrammarSource "grammar 'Test';\nFoo = ,Bar Baz;\nBar = 'b';\nBaz = 'z';\n") $ \d -> do
+            assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
+            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "lifted" `isInfixOf` diagMessage d
+    , TestLabel "a lifted clause under * is rejected" $ TestCase $
+        expectDiagnostic "a lifted clause under *"
+            (normalizeGrammarSource "grammar 'X';\nFoo = ,Bar * ;\nBar = 'b';\n") $ \d -> do
+            assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
+            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "lifted" `isInfixOf` diagMessage d && "*" `isInfixOf` diagMessage d
+    , TestLabel "a reference to an unknown rule is rejected during generation" $ TestCase $
+        expectDiagnostic "an unknown rule reference"
+            (normalizeGrammarSource "grammar 'X';\nFoo = Nope;\n" >>= artifactsFor) $ \d -> do
+            assertEqual "context names the referencing type" (Just "in type 'Foo'") (diagContext d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "unknown rule" `isInfixOf` diagMessage d && "Nope" `isInfixOf` diagMessage d
     ]
 
 -- | Force the whole grammar value so lazy errors surface where we expect them.
@@ -171,7 +214,7 @@ normalizationTests = TestList
 
 testStringLiterals :: Test
 testStringLiterals = TestCase $ do
-    let g = normalizeStringLiterals $ parseGrammarSource $ unlines
+    let g = normalizeStringLiterals $ parseOrDie $ unlines
                 [ "grammar 'Lit';"
                 , "A = 'x' bb ;"
                 , "B = 'x' A ;"

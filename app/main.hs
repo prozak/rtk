@@ -1,5 +1,6 @@
 import Lexer
 import Parser
+import Diagnostics (Diagnostic, renderDiagnostic)
 import TokenProcessing
 import StringLiterals
 import Normalize
@@ -12,7 +13,8 @@ import Control.Monad (when)
 import Data.Data (Data)
 import Data.Maybe (catMaybes)
 import Control.Exception (evaluate)
-import System.Exit (exitSuccess)
+import System.IO (hPutStrLn, stderr)
+import System.Exit (exitSuccess, exitWith, ExitCode (ExitFailure))
 
 main :: IO ()
 main = do
@@ -23,7 +25,8 @@ main = do
     content <- readFile (grammarFile opts)
 
     -- Stage 1: Lexical Analysis
-    (rawTokens, maybeT1) <- runStage opts "Lexical Analysis" $ alexScanTokens content
+    (eRawTokens, maybeT1) <- runStage opts "Lexical Analysis" $ scanTokens content
+    rawTokens <- orDie opts eRawTokens
 
     -- Stage 1.5: Token Post-Processing
     -- Process escape sequences and concatenate multi-line strings
@@ -36,7 +39,8 @@ main = do
         exitAfterDebug
 
     -- Stage 2: Parsing
-    (grammar, maybeT2) <- runStage opts "Parsing" $ parse tokens
+    (eGrammar, maybeT2) <- runStage opts "Parsing" $ parse tokens
+    grammar <- orDie opts eGrammar
 
     when (debugParse opts) $
         D.printInitialGrammar opts grammar
@@ -54,7 +58,8 @@ main = do
         exitAfterDebug
 
     -- Stage 4: Clause Normalization
-    (grammar1, maybeT4) <- runStage opts "Clause Normalization" $ normalizeTopLevelClauses grammar0
+    (eGrammar1, maybeT4) <- runStage opts "Clause Normalization" $ normalizeTopLevelClauses grammar0
+    grammar1 <- orDie opts eGrammar1
 
     when (debugClauseNorm opts) $
         D.printNormalGrammar opts "CLAUSE NORMALIZATION OUTPUT" grammar1
@@ -107,11 +112,14 @@ main = do
     -- Stage 6: Code Generation
     let grammar_name = getNGrammarName grammar2
 
-    (y_content, maybeT6) <- runStage opts "Parser (Y) Generation" $ genY grammar2
+    (eY, maybeT6) <- runStage opts "Parser (Y) Generation" $ genY grammar2
+    y_content <- orDie opts eY
 
-    (x_content, maybeT7) <- runStage opts "Lexer (X) Generation" $ genX grammar2
+    (eX, maybeT7) <- runStage opts "Lexer (X) Generation" $ genX grammar2
+    x_content <- orDie opts eX
 
-    (q_content, maybeT8) <- runStage opts "QuasiQuoter (Q) Generation" $ genQ grammar2
+    (eQ, maybeT8) <- runStage opts "QuasiQuoter (Q) Generation" $ genQ grammar2
+    q_content <- orDie opts eQ
 
     -- Debug generated specs if requested
     when (debugParserSpec opts) $ do
@@ -126,8 +134,10 @@ main = do
         D.debugSection opts "GENERATED QUASIQUOTER CODE"
         putStrLn q_content
 
-    -- Write output files (unless we're only validating)
-    when (not (validateGrammar opts) || not (validateGrammar opts && not (any id [debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts]))) $ do
+    -- Write output files (unless we're only validating). A spec dump still
+    -- writes the files; validation alone suppresses them.
+    let specDumpRequested = any id [debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts]
+    when (not (validateGrammar opts) || specDumpRequested) $ do
         let dir = outputDir opts
         writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
         writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
@@ -145,6 +155,14 @@ main = do
                         debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts,
                         showStats opts, validateGrammar opts]) $ do
         putStrLn $ "Successfully generated files for " ++ grammar_name
+
+-- | Either surface a pipeline diagnostic on stderr and exit 1, or return the
+-- value. The grammar file name gives the diagnostic its GNU-style prefix.
+orDie :: DebugOptions -> Either Diagnostic a -> IO a
+orDie opts (Left d)  = do
+    hPutStrLn stderr (renderDiagnostic (grammarFile opts) d)
+    exitWith (ExitFailure 1)
+orDie _    (Right a) = return a
 
 -- | Run one pure pipeline stage. Under --profile-stages the result is forced
 -- to normal form inside the timed window, so the timing reflects the stage

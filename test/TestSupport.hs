@@ -17,31 +17,38 @@ import System.Directory (listDirectory)
 import System.FilePath ((</>), takeExtension)
 import System.IO
 
+import Diagnostics (Diagnostic)
 import GenQ (genQ)
 import GenX (genX)
 import GenY (genY)
-import Lexer (alexScanTokens)
+import Lexer (scanTokens)
 import Normalize (fillConstructorNames, normalizeTopLevelClauses)
 import Parser
 import StringLiterals (normalizeStringLiterals)
 import TokenProcessing (processTokens)
 
 -- | Lexing, token post-processing and parsing of a grammar specification.
-parseGrammarSource :: String -> InitialGrammar
-parseGrammarSource = parse . processTokens . alexScanTokens
+parseGrammarSource :: String -> Either Diagnostic InitialGrammar
+parseGrammarSource src = scanTokens src >>= (parse . processTokens)
 
 -- | The full front-end pipeline, producing the normalized grammar that the
 -- code generators consume.
-normalizeGrammarSource :: String -> NormalGrammar
-normalizeGrammarSource =
-    fillConstructorNames . normalizeTopLevelClauses . normalizeStringLiterals . parseGrammarSource
+normalizeGrammarSource :: String -> Either Diagnostic NormalGrammar
+normalizeGrammarSource src = do
+    ig <- parseGrammarSource src
+    ng <- normalizeTopLevelClauses (normalizeStringLiterals ig)
+    return (fillConstructorNames ng)
 
 -- | The three files rtk writes for a grammar, as (file name, content) pairs.
-artifactsFor :: NormalGrammar -> [(FilePath, String)]
-artifactsFor g = [ (name ++ "Lexer.x",  genX g)
-                 , (name ++ "Parser.y", genY g)
-                 , (name ++ "QQ.hs",    genQ g)
-                 ]
+artifactsFor :: NormalGrammar -> Either Diagnostic [(FilePath, String)]
+artifactsFor g = do
+    x <- genX g
+    y <- genY g
+    q <- genQ g
+    return [ (name ++ "Lexer.x",  x)
+           , (name ++ "Parser.y", y)
+           , (name ++ "QQ.hs",    q)
+           ]
     where name = getNGrammarName g
 
 grammarsDir :: FilePath

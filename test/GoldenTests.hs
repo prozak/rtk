@@ -22,6 +22,7 @@ import System.Exit (exitFailure)
 import System.FilePath ((</>), takeBaseName)
 import Test.HUnit
 
+import Diagnostics (renderDiagnostic)
 import TestSupport
 
 goldenRoot :: FilePath
@@ -45,13 +46,15 @@ regenerateHint =
 generateArtifacts :: FilePath -> IO (Either String [(FilePath, String)])
 generateArtifacts pgFile = do
     source <- readFileUtf8 pgFile
-    result <- try $ do
-        let artifacts = artifactsFor (normalizeGrammarSource source)
-        mapM_ (\(_, content) -> evaluate (length content)) artifacts
-        return artifacts
+    result <- try $
+        case normalizeGrammarSource source >>= artifactsFor of
+            Left d          -> return (Left (renderDiagnostic pgFile d))
+            Right artifacts -> do
+                mapM_ (\(_, content) -> evaluate (length content)) artifacts
+                return (Right artifacts)
     return $ case result of
-        Left e          -> Left (show (e :: SomeException))
-        Right artifacts -> Right artifacts
+        Left e      -> Left (show (e :: SomeException))
+        Right inner -> inner
 
 -- | A short, readable summary of where two artifacts diverge.
 diffSummary :: String -> String -> String
