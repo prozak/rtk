@@ -64,6 +64,10 @@ Fixity = 'infixl' | 'infixr' | 'infix' ;
 
 FunLhs = Var ;
 
+# TODO: incomplete (issue #30) -- only constructor patterns over plain
+# variables; the variable-only case is already covered by FunLhs
+Pat = Con (Var)* ;
+
 OptWhere = ('where' Decls) ;
 
 DeclList = Decl * ';' ;
@@ -137,6 +141,10 @@ TyCon = conid ;
 ModId = conid ;
 TyCls = conid ;
 Op = varid | conid ;
+
+# TODO: incomplete (issue #30) -- symbolic and backtick-quoted operators are
+# not covered; an optionally qualified Op, mirroring QVarId
+QOp = ModIdList Op ;
 
 decimal = [0-9]+ ;
 octal = [0-7]+ ;

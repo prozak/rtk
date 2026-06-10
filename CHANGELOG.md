@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   printed an error
 
 ### Fixed
+- `test-grammars/haskell.pg` is self-consistent again: minimal `Pat` and
+  `QOp` rules were added for the previously dangling references, so RTK
+  generation no longer aborts on it (progress on issue #30; the grammar is
+  still far from full Haskell). The haskell special cases in the test suites
+  were dropped and golden snapshots added
 - A grammar whose first rule is lexical (or has a data-type annotation
   different from the rule name) no longer crashes with `fromJust: Nothing`;
   it reports that the first rule must be a syntax rule, or resolves the

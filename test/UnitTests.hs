@@ -341,12 +341,10 @@ knownDuplicateRuleNames "debug-test" = ["IfStatement"]
 knownDuplicateRuleNames _ = []
 
 -- | References to rules that a grammar is known to leave undefined.
--- haskell.pg is an unfinished Haskell grammar: Pat and QOp were never written,
--- so its generated parser cannot be compiled by happy. Pinning the defect here
--- keeps the invariant active for every other grammar (and fails if the list
--- grows, or once the grammar is completed and the entry can be dropped).
+-- Currently empty: every grammar in test-grammars/ resolves all its
+-- references. Pin a grammar here only to keep the invariant active for the
+-- others while a known defect is being worked on.
 knownUnresolvedReferences :: String -> [ID]
-knownUnresolvedReferences "haskell" = ["Pat", "QOp"]
 knownUnresolvedReferences _ = []
 
 invariants :: String -> NormalGrammar -> Test
