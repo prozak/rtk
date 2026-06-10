@@ -43,8 +43,9 @@ main = do
                     exitSuccess
 
                 FullParse -> do
-                    -- Perform full parse
-                    let ast = parseJava . alexScanTokens $ content
+                    -- Perform full parse; lexer and parser report errors as Left
+                    let ast = either errorWithoutStackTrace id $
+                                scanTokens content >>= parseJava
                     putStrLn "=== Parsed Java AST ==="
                     putStrLn $ ppShow ast
                     putStrLn "\n=== Parse successful! ==="

@@ -25,42 +25,47 @@ qqShortcuts :: M.Map String String
 -- metavariable stands for one literal '$' (so $$$x is a literal '$'
 -- followed by the metavariable $x). A '$' not followed by an identifier is
 -- never rewritten and needs no escape.
-replaceAllPatterns1 :: String -> String
+replaceAllPatterns1 :: String -> Either String String
 replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, String, String)
                           in if match == ""
-                              then pre
+                              then Right pre
                               else let varName = init $ tail match
                                        addSym = last match
                                        escCount = length $ takeWhile (== '$') $ reverse pre
                                        keptPre = take (length pre - escCount) pre ++ replicate (div escCount 2) '$'
                                        ruleVariants = catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts) $ reverse $ inits varName
-                                       rule = case ruleVariants of
-                                                [] -> error $ unlines
-                                                        [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
-                                                        , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
-                                                        , "  " ++ intercalate ", " (M.keys qqShortcuts)
-                                                        , "To include the literal text $" ++ varName ++ " in the quoted code"
-                                                        , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
-                                                (rule : _) -> rule
                                    in if odd escCount
-                                       then keptPre ++ ('$' : varName) ++ (replaceAllPatterns1 $ addSym : post)
-                                       else keptPre ++ ('$' : rule ++ ":") ++ varName ++ (replaceAllPatterns1 $ addSym : post)
+                                       then (\rest -> keptPre ++ ('$' : varName) ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
+                                       else case ruleVariants of
+                                              [] -> Left $ unlines
+                                                      [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
+                                                      , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
+                                                      , "  " ++ intercalate ", " (M.keys qqShortcuts)
+                                                      , "To include the literal text $" ++ varName ++ " in the quoted code"
+                                                      , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
+                                              (rule : _) -> (\rest -> keptPre ++ ('$' : rule ++ ":") ++ varName ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
 
 -- Add ' ' at the end, so regex can match variable in the end of the string
-replaceAllPatterns :: String -> String
-replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
+replaceAllPatterns :: String -> Either String String
+replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 qqShortcuts = M.fromList [ ("haskell","Haskell"),("aType","AType"),("aTypeList","ATypeList"),("bType","BType"),("body","Body"),("cName","CName"),("cNameList","CNameList"),("class","Class"),("classList","ClassList"),("con","Con"),("constr","Constr"),("constrs","Constrs"),("context","Context"),("dClass","DClass"),("dClassList","DClassList"),("decl","Decl"),("declList","DeclList"),("decls","Decls"),("deriving","Deriving"),("exp","Exp"),("expI","ExpI"),("export","Export"),("exportsList","ExportsList"),("exportsOpt","ExportsOpt"),("fieldDecl","FieldDecl"),("fieldDeclList","FieldDeclList"),("fixity","Fixity"),("funLhs","FunLhs"),("gTyCon","GTyCon"),("gd","Gd"),("gdRhs","GdRhs"),("genDecl","GenDecl"),("impDecl","ImpDecl"),("impDeclList","ImpDeclList"),("import","Import"),("importList","ImportList"),("modId","ModId"),("modIdList","ModIdList"),("module","Module"),("op","Op"),("ops","Ops"),("optContext","OptContext"),("optDeriving","OptDeriving"),("optExpTypeSignature","OptExpTypeSignature"),("optGdRhs","OptGdRhs"),("optImpSpec","OptImpSpec"),("optInteger","OptInteger"),("optQualified","OptQualified"),("optQualifiedAs","OptQualifiedAs"),("optWhere","OptWhere"),("pat","Pat"),("qOp","QOp"),("qTyCls","QTyCls"),("qTyCon","QTyCon"),("qVar","QVar"),("qVarId","QVarId"),("qVarList","QVarList"),("rhs","Rhs"),("simpleType","SimpleType"),("topDecl","TopDecl"),("topDecls","TopDecls"),("tyCls","TyCls"),("tyCon","TyCon"),("tyVar","TyVar"),("tyVars","TyVars"),("type","Type"),("typeList","TypeList"),("var","Var"),("vars","Vars")]
 
 quoteHaskellExp :: Data.Data a => String -> (Haskell -> a) -> String -> TH.ExpQ
 quoteHaskellExp dummy func s = do
-  let s1 = replaceAllPatterns s
-      expr = func $ parseHaskell $ alexScanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy)
+  s1 <- either fail return (replaceAllPatterns s)
+  ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseHaskell of
+           Left err -> fail err
+           Right a -> return a
+  let expr = func ast
   dataToExpQ (const Nothing `Generics.extQ` antiHaskellExp `Generics.extQ` antiModuleExp `Generics.extQ` antiExportsOptExp `Generics.extQ` antiExportsListExp `Generics.extQ` antiExportExp `Generics.extQ` antiBodyExp `Generics.extQ` antiImpDeclListExp `Generics.extQ` antiImportListExp `Generics.extQ` antiVarExp `Generics.extQ` antiConExp `Generics.extQ` antiRule_13Exp `Generics.extQ` antiQVarIdExp `Generics.extQ` antiQVarExp `Generics.extQ` antiQTyClsExp `Generics.extQ` antiQTyConExp `Generics.extQ` antiCNameExp `Generics.extQ` antiCNameListExp `Generics.extQ` antiQVarListExp `Generics.extQ` antiImportExp `Generics.extQ` antiOptQualifiedExp `Generics.extQ` antiOptQualifiedAsExp `Generics.extQ` antiOptImpSpecExp `Generics.extQ` antiImpDeclExp `Generics.extQ` antiTopDeclsExp `Generics.extQ` antiTopDeclExp `Generics.extQ` antiDeclExp `Generics.extQ` antiOptContextExp `Generics.extQ` antiGenDeclExp `Generics.extQ` antiOptIntegerExp `Generics.extQ` antiOpsExp `Generics.extQ` antiFixityExp `Generics.extQ` antiFunLhsExp `Generics.extQ` antiPatExp `Generics.extQ` antiOptWhereExp `Generics.extQ` antiDeclListExp `Generics.extQ` antiDeclsExp `Generics.extQ` antiRhsExp `Generics.extQ` antiOptGdRhsExp `Generics.extQ` antiGdExp `Generics.extQ` antiOptExpTypeSignatureExp `Generics.extQ` antiExpExp `Generics.extQ` antiExpIExp `Generics.extQ` antiGdRhsExp `Generics.extQ` antiConstrsExp `Generics.extQ` antiConstrExp `Generics.extQ` antiFieldDeclListExp `Generics.extQ` antiFieldDeclExp `Generics.extQ` antiVarsExp `Generics.extQ` antiOptDerivingExp `Generics.extQ` antiDerivingExp `Generics.extQ` antiDClassListExp `Generics.extQ` antiDClassExp `Generics.extQ` antiContextExp `Generics.extQ` antiClassListExp `Generics.extQ` antiClassExp `Generics.extQ` antiTypeExp `Generics.extQ` antiBTypeExp `Generics.extQ` antiATypeExp `Generics.extQ` antiGTyConExp `Generics.extQ` antiTypeListExp `Generics.extQ` antiSimpleTypeExp `Generics.extQ` antiTyVarExp `Generics.extQ` antiTyConExp `Generics.extQ` antiModIdExp `Generics.extQ` antiTyClsExp `Generics.extQ` antiOpExp `Generics.extQ` antiQOpExp) expr
 quoteHaskellPat :: Data.Data a => String -> (Haskell -> a) -> String -> TH.PatQ
 quoteHaskellPat dummy func s = do
-  let s1 = replaceAllPatterns s
-      expr = func $ parseHaskell $ alexScanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy)
+  s1 <- either fail return (replaceAllPatterns s)
+  ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseHaskell of
+           Left err -> fail err
+           Right a -> return a
+  let expr = func ast
   dataToPatQ (const Nothing `Generics.extQ` antiHaskellPat `Generics.extQ` antiModulePat `Generics.extQ` antiExportsOptPat `Generics.extQ` antiExportsListPat `Generics.extQ` antiExportPat `Generics.extQ` antiBodyPat `Generics.extQ` antiImpDeclListPat `Generics.extQ` antiImportListPat `Generics.extQ` antiVarPat `Generics.extQ` antiConPat `Generics.extQ` antiRule_13Pat `Generics.extQ` antiQVarIdPat `Generics.extQ` antiQVarPat `Generics.extQ` antiQTyClsPat `Generics.extQ` antiQTyConPat `Generics.extQ` antiCNamePat `Generics.extQ` antiCNameListPat `Generics.extQ` antiQVarListPat `Generics.extQ` antiImportPat `Generics.extQ` antiOptQualifiedPat `Generics.extQ` antiOptQualifiedAsPat `Generics.extQ` antiOptImpSpecPat `Generics.extQ` antiImpDeclPat `Generics.extQ` antiTopDeclsPat `Generics.extQ` antiTopDeclPat `Generics.extQ` antiDeclPat `Generics.extQ` antiOptContextPat `Generics.extQ` antiGenDeclPat `Generics.extQ` antiOptIntegerPat `Generics.extQ` antiOpsPat `Generics.extQ` antiFixityPat `Generics.extQ` antiFunLhsPat `Generics.extQ` antiPatPat `Generics.extQ` antiOptWherePat `Generics.extQ` antiDeclListPat `Generics.extQ` antiDeclsPat `Generics.extQ` antiRhsPat `Generics.extQ` antiOptGdRhsPat `Generics.extQ` antiGdPat `Generics.extQ` antiOptExpTypeSignaturePat `Generics.extQ` antiExpPat `Generics.extQ` antiExpIPat `Generics.extQ` antiGdRhsPat `Generics.extQ` antiConstrsPat `Generics.extQ` antiConstrPat `Generics.extQ` antiFieldDeclListPat `Generics.extQ` antiFieldDeclPat `Generics.extQ` antiVarsPat `Generics.extQ` antiOptDerivingPat `Generics.extQ` antiDerivingPat `Generics.extQ` antiDClassListPat `Generics.extQ` antiDClassPat `Generics.extQ` antiContextPat `Generics.extQ` antiClassListPat `Generics.extQ` antiClassPat `Generics.extQ` antiTypePat `Generics.extQ` antiBTypePat `Generics.extQ` antiATypePat `Generics.extQ` antiGTyConPat `Generics.extQ` antiTypeListPat `Generics.extQ` antiSimpleTypePat `Generics.extQ` antiTyVarPat `Generics.extQ` antiTyConPat `Generics.extQ` antiModIdPat `Generics.extQ` antiTyClsPat `Generics.extQ` antiOpPat `Generics.extQ` antiQOpPat) expr
 
 antiQOpExp :: QOp -> Maybe (TH.Q TH.Exp )

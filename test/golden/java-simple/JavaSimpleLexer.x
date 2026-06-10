@@ -1,5 +1,5 @@
 {
-module JavaSimpleLexer(alexScanTokens, Token(..), PosToken(..), AlexPosn(..))
+module JavaSimpleLexer(scanTokens, alexScanTokens, Token(..), PosToken(..), AlexPosn(..))
 where
 
  }
@@ -73,22 +73,26 @@ alexEOF = do
   (pos, _, _, _) <- alexGetInput
   return $ PosToken pos EndOfFile
 
--- The returned list always ends with an EndOfFile token that carries the
--- position of the end of input, so parse errors at end of input can be
--- reported with a position too
-alexScanTokens :: String -> [PosToken]
-alexScanTokens str =
-               case alexScanTokens1 str of
-                  Right toks -> toks
-                  Left err -> errorWithoutStackTrace err
-
-alexScanTokens1 str = runAlex str $ do
+-- Lex the input into a token stream, returning the positioned error message
+-- on a lexical error. The returned list always ends with an EndOfFile token
+-- that carries the position of the end of input, so parse errors at end of
+-- input can be reported with a position too
+scanTokens :: String -> Either String [PosToken]
+scanTokens str = runAlex str $ do
   let loop toks = do tok <- alexMonadScan
                      case tok of
                        PosToken _ EndOfFile -> return $ reverse (tok : toks)
                        _ -> let toks' = tok : toks
                             in toks' `seq` loop toks'
   loop []
+
+-- Thin compatibility wrapper: callers that have not switched to 'scanTokens'
+-- get the error message thrown instead
+alexScanTokens :: String -> [PosToken]
+alexScanTokens str =
+               case scanTokens str of
+                  Right toks -> toks
+                  Left err -> errorWithoutStackTrace err
 
 simple1 :: (String -> Token) -> AlexInput -> Int -> Alex PosToken
 simple1 t (pos, _, _, str) len = return $ PosToken pos (t (take len str))

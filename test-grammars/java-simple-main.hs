@@ -21,7 +21,7 @@ main = do
     putStrLn $ "First 10 tokens: " ++ show (take 10 tokens)
     
     putStrLn "\n=== Parsing ==="
-    let ast = parseJavaSimple tokens
+    let ast = either errorWithoutStackTrace id $ parseJavaSimple tokens
     putStrLn $ "AST: " ++ ppShow ast
     
     putStrLn "\n=== Java QuasiQuoter Demo ==="

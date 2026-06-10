@@ -7,6 +7,7 @@ import qualified DebugTestLexer as L (Token(..), PosToken(..), AlexPosn(..), ale
 
 %name parseDebugTest
 %tokentype { L.PosToken }
+%monad { Either String }
 %error { parseError }
 
 %token
@@ -133,10 +134,10 @@ WhileLoop : qq_WhileLoop { Anti_WhileLoop $1 } |
 
 
 {
-parseError :: [L.PosToken] -> a
-parseError [] = errorWithoutStackTrace "Parse error: unexpected end of input"
+parseError :: [L.PosToken] -> Either String a
+parseError [] = Left "Parse error: unexpected end of input"
 parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
-    errorWithoutStackTrace $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+    Left $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
 
 -- Render a token the way it appears in the source, for error messages
 showRtkToken :: L.Token -> String

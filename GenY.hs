@@ -16,6 +16,7 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ _) = do
                    nl,
                    text "%name parse" <> text name,
                    text "%tokentype { L.PosToken }",
+                   text "%monad { Either String }",
                    text "%error { parseError }",
                    nl,
                    text "%token",
@@ -47,10 +48,10 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ _) = do
                    \import qualified Data.Generics as Gen\n\
                    \import qualified " ++ name ++  "Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)\n\
                    \}"
-          parseErrorDefs = "parseError :: [L.PosToken] -> a\n\
-                           \parseError [] = errorWithoutStackTrace \"Parse error: unexpected end of input\"\n\
+          parseErrorDefs = "parseError :: [L.PosToken] -> Either String a\n\
+                           \parseError [] = Left \"Parse error: unexpected end of input\"\n\
                            \parseError (L.PosToken (L.AlexPn _ line col) tok : _) =\n\
-                           \    errorWithoutStackTrace $ \"Parse error at line \" ++ show line ++ \", column \" ++ show col ++ \": unexpected \" ++ showRtkToken tok\n"
+                           \    Left $ \"Parse error at line \" ++ show line ++ \", column \" ++ show col ++ \": unexpected \" ++ showRtkToken tok\n"
           showTokenDefs = render $ vcat (text "-- Render a token the way it appears in the source, for error messages"
                                          : text "showRtkToken :: L.Token -> String"
                                          : text "showRtkToken L.EndOfFile = \"end of input\""

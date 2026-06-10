@@ -19,7 +19,7 @@ main = do
     file <- getGrammarFileName
     content <- readFile file
     let lexems = alexScanTokens content
-    let prg = parseHaskell . alexScanTokens $ content
+    let prg = either errorWithoutStackTrace id $ scanTokens content >>= parseHaskell
     putStrLn $ show lexems
     --putStrLn $ show prg
     return 0
