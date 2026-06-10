@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   position (e.g. `Grammar error in rule 'Foo' (at line 2, column 1): ...`)
 - Lexer-generation errors name the lexical rule they occur in
 
+### Removed
+- Unimplemented CLI options that were advertised in `--help` but had no
+  effect: `--debug-rule`, `--compare-stages`, `--memory-stats`,
+  `--debug-output-dir`, `--debug-log`, `--interactive`, the placeholder
+  `json`/`tree` debug formats, and the `--use-generated` stub that only
+  printed an error
+
 ### Fixed
 - A grammar whose first rule is lexical (or has a data-type annotation
   different from the rule name) no longer crashes with `fromJust: Nothing`;
@@ -31,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Invalid clauses in lexical-rule macros now abort generation with an error
   instead of writing the error text into the generated lexer
 - User-facing errors no longer print a GHC call stack
+- `--debug-stage` now exits with a success status after stopping at the
+  requested stage instead of reporting failure via `error`
+- `--profile-stages` timings now force each stage's result to normal form,
+  so per-stage durations are no longer skewed by lazy evaluation
 
 ## [0.10] - 2025-12-03
 

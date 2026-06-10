@@ -144,16 +144,6 @@ rtk test-grammars/java.rtk test-out --list-rules
 
 ## Selective Debug Options
 
-### `--debug-rule=RULENAME`
-Debug a specific rule through all transformation stages.
-
-**Example:**
-```bash
-rtk test-grammars/java.rtk test-out --debug-rule=compilationUnit
-```
-
-**Use case:** Deep-dive debugging of problematic rules.
-
 ### `--debug-stage=STAGE`
 Stop after a specific stage and dump state.
 
@@ -166,17 +156,7 @@ rtk test-grammars/java.rtk test-out --debug-stage=clause-norm
 
 **Use case:** Incremental debugging of transformation pipeline.
 
-## Comparison and Validation Options
-
-### `--compare-stages`
-Show diff between consecutive transformation stages.
-
-**Example:**
-```bash
-rtk test-grammars/java.rtk test-out --compare-stages
-```
-
-**Use case:** Understand what each normalization step changes.
+## Validation Options
 
 ### `--validate-grammar`
 Run validation checks without generating output files.
@@ -238,8 +218,6 @@ Set output format for debug information.
 **Formats:**
 - `pretty` - Multi-line pretty-printed (default)
 - `compact` - Single-line compact format
-- `json` - JSON output for tool integration
-- `tree` - ASCII tree visualization
 
 **Example:**
 ```bash
@@ -276,49 +254,9 @@ Stage Timings:
   Total:              284ms
 ```
 
-### `--memory-stats`
-Show memory usage per stage (placeholder for future implementation).
-
-**Example:**
-```bash
-rtk test-grammars/java.rtk test-out --memory-stats
-```
-
-## Export and Logging Options
-
-### `--debug-output-dir=DIR`
-Write all debug outputs to directory instead of stdout.
-
-**Example:**
-```bash
-rtk test-grammars/java.rtk test-out --debug-output-dir=debug-output
-```
-
-**Use case:** Preserve debug info for later analysis.
-
-### `--debug-log=FILE`
-Write detailed debug log with timestamps.
-
-**Example:**
-```bash
-rtk test-grammars/java.rtk test-out --debug-log=debug.log
-```
-
-## Interactive Debug Mode
-
-### `--interactive` / `-i`
-Step through compilation stages interactively (placeholder for future implementation).
-
-**Example:**
-```bash
-rtk test-grammars/java.rtk test-out --interactive
-```
-
-**Features:**
-- Pause after each stage
-- Inspect intermediate results
-- Skip to specific stage
-- Compare transformations
+Each stage result is forced to normal form while being timed, so the
+reported durations reflect the work of that stage rather than work
+deferred by lazy evaluation.
 
 ## Common Workflows
 
@@ -334,7 +272,7 @@ rtk grammar.rtk out --analyze-conflicts --debug-parser-spec
 
 ### Performance Optimization
 ```bash
-rtk grammar.rtk out --profile-stages --memory-stats
+rtk grammar.rtk out --profile-stages
 ```
 
 ### Complete Grammar Analysis
@@ -344,7 +282,7 @@ rtk grammar.rtk out --stats --list-rules --show-rule-graph --unused-rules --chec
 
 ### Deep Debugging a Specific Rule
 ```bash
-rtk grammar.rtk out --debug-rule=myRule --expand-rule=myRule
+rtk grammar.rtk out --expand-rule=myRule
 ```
 
 ## Tips
@@ -357,20 +295,11 @@ rtk grammar.rtk out --debug-rule=myRule --expand-rule=myRule
 
 ## Implementation Status
 
-✅ Fully implemented:
-- All pipeline stage inspection options
-- Output stage inspection options
-- Statistics and analysis options
-- Validation options
-- Output format options (pretty/compact)
-- Performance profiling (timing)
-
-🚧 Partial implementation:
-- JSON and tree output formats (placeholders)
-- Memory statistics (placeholder)
-- Interactive mode (placeholder)
-- Debug output directory export (placeholder)
-- Debug logging (placeholder)
+All options documented above are fully implemented. Earlier placeholder
+options that were advertised but never implemented (`--debug-rule`,
+`--compare-stages`, `--memory-stats`, `--debug-output-dir`, `--debug-log`,
+`--interactive`, and the `json`/`tree` debug formats) have been removed
+from the CLI; they can be reintroduced together with real implementations.
 
 ## See Also
 

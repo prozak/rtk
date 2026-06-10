@@ -25,6 +25,7 @@ module Debug
 
     -- * Performance profiling
     , timed
+    , deepForce
     , TimingInfo(..)
     , showTimingInfo
 
@@ -37,6 +38,7 @@ import qualified Lexer as L
 import Parser
 import DebugOptions
 import Text.Show.Pretty (ppShow)
+import Data.Data (Data, gmapQ)
 import Data.Time.Clock (getCurrentTime, diffUTCTime, UTCTime)
 import Data.List (intercalate, nub, (\\))
 import qualified Data.Map as M
@@ -99,8 +101,6 @@ debugSubSection opts title = do
 formatContent :: DebugFormat -> String -> String
 formatContent FormatPretty s = s
 formatContent FormatCompact s = filter (/= '\n') s
-formatContent FormatJSON _ = "{}" -- Placeholder for JSON formatting
-formatContent FormatTree s = s -- Could be enhanced with tree drawing
 
 -------------------------------------------------------------------------------
 -- Pipeline stage debugging
@@ -115,7 +115,6 @@ printTokens opts tokens = do
     case debugFormat opts of
         FormatPretty -> putStrLn $ ppShow tokens
         FormatCompact -> putStrLn $ show tokens
-        _ -> putStrLn $ ppShow tokens
 
 -- | Debug initial grammar (after parsing)
 printInitialGrammar :: DebugOptions -> InitialGrammar -> IO ()
@@ -127,7 +126,6 @@ printInitialGrammar opts grammar = do
     case debugFormat opts of
         FormatPretty -> putStrLn $ ppShow grammar
         FormatCompact -> putStrLn $ show grammar
-        _ -> putStrLn $ ppShow grammar
 
 -- | Debug normalized grammar
 printNormalGrammar :: DebugOptions -> String -> NormalGrammar -> IO ()
@@ -141,7 +139,6 @@ printNormalGrammar opts title grammar = do
     case debugFormat opts of
         FormatPretty -> putStrLn $ ppShow grammar
         FormatCompact -> putStrLn $ show grammar
-        _ -> putStrLn $ ppShow grammar
 
 -- | Debug comparison between two values
 printComparison :: (Show a, Eq a) => DebugOptions -> String -> a -> String -> a -> IO ()
@@ -533,6 +530,15 @@ timed name action = do
     _ <- evaluate result  -- Force evaluation
     end <- getCurrentTime
     return (result, TimingInfo name start end)
+
+-- | Force a value to normal form, using its 'Data' instance to reach every
+-- subterm. WHNF alone is not enough for stage timings: laziness would defer
+-- most of a stage's work into whichever later stage happens to demand it.
+deepForce :: Data a => a -> a
+deepForce x = go x `seq` x
+  where
+    go :: Data b => b -> ()
+    go y = foldr seq () (gmapQ go y)
 
 -- | Show timing information
 showTimingInfo :: DebugOptions -> [TimingInfo] -> IO ()

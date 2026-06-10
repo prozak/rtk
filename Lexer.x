@@ -1,5 +1,7 @@
 {
 module Lexer where
+
+import Data.Data (Data, Typeable)
 }
 
 %wrapper "monadUserState"
@@ -98,11 +100,16 @@ data Token = Grammar
     | Shortcuts
     | Symmacro
     | EndOfFile
-      deriving (Eq, Show)
+      deriving (Eq, Show, Typeable, Data)
+
+-- AlexPosn is defined by the alex wrapper, so a Data instance can only be
+-- attached via standalone deriving; profiling deep-forces token lists
+-- through it (see Debug.deepForce)
+deriving instance Data AlexPosn
 
 -- A token together with the source position where it starts
 data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }
-                deriving (Eq, Show)
+                deriving (Eq, Show, Typeable, Data)
 
 -- The returned list always ends with an EndOfFile token that carries the
 -- position of the end of input, so parse errors at end of input can be

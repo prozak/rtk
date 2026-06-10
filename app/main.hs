@@ -9,110 +9,66 @@ import GenQ
 import DebugOptions
 import qualified Debug as D
 import Control.Monad (when)
-import Data.Maybe (isJust, fromJust, catMaybes)
+import Data.Data (Data)
+import Data.Maybe (catMaybes)
 import Control.Exception (evaluate)
+import System.Exit (exitSuccess)
 
 main :: IO ()
 main = do
     -- Parse command-line options
     opts <- parseOptions
 
-    -- Check for experimental generated parser mode
-    when (useGenerated opts) $ do
-        putStrLn "=========================================="
-        putStrLn "EXPERIMENTAL: Using Generated Parsers"
-        putStrLn "=========================================="
-        putStrLn ""
-        putStrLn "This mode uses parsers generated from test-grammars/grammar.pg"
-        putStrLn "instead of the hand-written Lexer.x and Parser.y."
-        putStrLn ""
-        putStrLn "Status: NOT YET IMPLEMENTED"
-        putStrLn ""
-        putStrLn "To implement:"
-        putStrLn "  1. Run: make test-grammar"
-        putStrLn "  2. This generates: test-out/GrammarLexer.x, GrammarParser.y, GrammarQQ.hs"
-        putStrLn "  3. Compile these to create generated parser modules"
-        putStrLn "  4. Integrate into main.hs dual-mode logic"
-        putStrLn ""
-        putStrLn "This is Prototype 1 of the self-hosting roadmap."
-        putStrLn "See docs/self-hosting-strategy.md for details."
-        putStrLn "=========================================="
-        error "Generated parser mode not yet available"
-
     -- Load grammar file
     content <- readFile (grammarFile opts)
 
     -- Stage 1: Lexical Analysis
-    (rawTokens, maybeT1) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Lexical Analysis" $ evaluate $ alexScanTokens content
-            return (result, Just timing)
-        else return (alexScanTokens content, Nothing)
+    (rawTokens, maybeT1) <- runStage opts "Lexical Analysis" $ alexScanTokens content
 
     -- Stage 1.5: Token Post-Processing
     -- Process escape sequences and concatenate multi-line strings
-    (tokens, maybeT1_5) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Token Post-Processing" $ evaluate $ processTokens rawTokens
-            return (result, Just timing)
-        else return (processTokens rawTokens, Nothing)
+    (tokens, maybeT1_5) <- runStage opts "Token Post-Processing" $ processTokens rawTokens
 
     when (debugTokens opts) $
         D.printTokens opts tokens
 
-    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageLex) $
+    when (debugStage opts == Just StageLex)
         exitAfterDebug
 
     -- Stage 2: Parsing
-    (grammar, maybeT2) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Parsing" $ evaluate $ parse tokens
-            return (result, Just timing)
-        else return (parse tokens, Nothing)
+    (grammar, maybeT2) <- runStage opts "Parsing" $ parse tokens
 
     when (debugParse opts) $
         D.printInitialGrammar opts grammar
 
-    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageParse) $
+    when (debugStage opts == Just StageParse)
         exitAfterDebug
 
     -- Stage 3: String Literal Normalization
-    (grammar0, maybeT3) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "String Normalization" $ evaluate $ normalizeStringLiterals grammar
-            return (result, Just timing)
-        else return (normalizeStringLiterals grammar, Nothing)
+    (grammar0, maybeT3) <- runStage opts "String Normalization" $ normalizeStringLiterals grammar
 
     when (debugStringNorm opts) $
         D.printComparison opts "Before String Normalization" grammar "After String Normalization" grammar0
 
-    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageStringNorm) $
+    when (debugStage opts == Just StageStringNorm)
         exitAfterDebug
 
     -- Stage 4: Clause Normalization
-    (grammar1, maybeT4) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Clause Normalization" $ evaluate $ normalizeTopLevelClauses grammar0
-            return (result, Just timing)
-        else return (normalizeTopLevelClauses grammar0, Nothing)
+    (grammar1, maybeT4) <- runStage opts "Clause Normalization" $ normalizeTopLevelClauses grammar0
 
     when (debugClauseNorm opts) $
         D.printNormalGrammar opts "CLAUSE NORMALIZATION OUTPUT" grammar1
 
-    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageClauseNorm) $
+    when (debugStage opts == Just StageClauseNorm)
         exitAfterDebug
 
     -- Stage 5: Constructor Name Filling
-    (grammar2, maybeT5) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Constructor Name Filling" $ evaluate $ fillConstructorNames grammar1
-            return (result, Just timing)
-        else return (fillConstructorNames grammar1, Nothing)
+    (grammar2, maybeT5) <- runStage opts "Constructor Name Filling" $ fillConstructorNames grammar1
 
     when (debugConstructors opts) $
         D.printNormalGrammar opts "FINAL GRAMMAR (with Constructor Names)" grammar2
 
-    when (isJust (debugStage opts) && fromJust (debugStage opts) == StageFillNames) $
+    when (debugStage opts == Just StageFillNames)
         exitAfterDebug
 
     -- Statistics and Analysis (before code generation)
@@ -151,23 +107,11 @@ main = do
     -- Stage 6: Code Generation
     let grammar_name = getNGrammarName grammar2
 
-    (y_content, maybeT6) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Parser (Y) Generation" $ evaluate $ genY grammar2
-            return (result, Just timing)
-        else return (genY grammar2, Nothing)
+    (y_content, maybeT6) <- runStage opts "Parser (Y) Generation" $ genY grammar2
 
-    (x_content, maybeT7) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "Lexer (X) Generation" $ evaluate $ genX grammar2
-            return (result, Just timing)
-        else return (genX grammar2, Nothing)
+    (x_content, maybeT7) <- runStage opts "Lexer (X) Generation" $ genX grammar2
 
-    (q_content, maybeT8) <- if profileStages opts
-        then do
-            (result, timing) <- D.timed "QuasiQuoter (Q) Generation" $ evaluate $ genQ grammar2
-            return (result, Just timing)
-        else return (genQ grammar2, Nothing)
+    (q_content, maybeT8) <- runStage opts "QuasiQuoter (Q) Generation" $ genQ grammar2
 
     -- Debug generated specs if requested
     when (debugParserSpec opts) $ do
@@ -202,9 +146,19 @@ main = do
                         showStats opts, validateGrammar opts]) $ do
         putStrLn $ "Successfully generated files for " ++ grammar_name
 
+-- | Run one pure pipeline stage. Under --profile-stages the result is forced
+-- to normal form inside the timed window, so the timing reflects the stage
+-- that produced the value rather than the stage that first consumed it.
+runStage :: Data a => DebugOptions -> String -> a -> IO (a, Maybe D.TimingInfo)
+runStage opts name value
+    | profileStages opts = do
+        (result, timing) <- D.timed name $ evaluate $ D.deepForce value
+        return (result, Just timing)
+    | otherwise = return (value, Nothing)
+
 -- Helper function
 exitAfterDebug :: IO ()
 exitAfterDebug = do
     putStrLn ""
     putStrLn "Stopped after requested debug stage."
-    error "Debug stage exit"
+    exitSuccess

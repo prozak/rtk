@@ -50,7 +50,7 @@ Library
                      Debug
   Build-Depends:     base >= 4.7 && < 5, array, syb, template-haskell, containers, mtl, pretty, pretty-show, MissingH, haskell-src-exts, haskell-src-meta, lens, optparse-applicative, time, ansi-terminal
   Build-Tool-Depends: happy:happy, alex:alex
-  Default-Extensions:  DeriveDataTypeable
+  Default-Extensions:  DeriveDataTypeable, StandaloneDeriving
 
 Executable rtk
   Import:            warnings
