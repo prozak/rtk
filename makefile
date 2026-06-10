@@ -114,7 +114,7 @@ $(foreach grammar,$(GRAMMARS),$(eval $(call make-grammar-rule,$(grammar))))
 # ============================================================================
 
 # Generic rule to copy main files
-test-out/%-main.hs: test-grammars/%-main.hs
+test-out/%-main.hs: test-grammars/%-main.hs | test-out
 	$(CP) test-grammars/$*-main.hs test-out
 
 # Generic test rule - requires main file and test data to be defined
@@ -162,6 +162,7 @@ $(eval $(call make-shared-test-rule,java-field-this,java,Java,test-grammars/java
 $(eval $(call make-shared-test-rule,java-simple-assignment,java,Java,test-grammars/java/test-simple-assignment.java))
 $(eval $(call make-shared-test-rule,java-compound-assignment,java,Java,test-grammars/java/test-compound-assignment.java))
 $(eval $(call make-shared-test-rule,java-set-value,java,Java,test-grammars/java/test-set-value.java))
+$(eval $(call make-shared-test-rule,java-implements,java,Java,test-grammars/java/test-implements.java))
 
 # JavaDoc comment tests (blank line + {@link Class#method()} regression tests)
 $(eval $(call make-shared-test-rule,java-javadoc-blank-link,java,Java,test-grammars/java/javadoc/test-blank-then-link.java))
@@ -182,7 +183,7 @@ accept-lex-java: test-out/java-main
 	ACCEPT=1 ./test-java-lexical.sh
 
 # Run all Java tests
-test-all-java: test-java test-java-simple test-java-minimal test-java-field test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method test-java-simple-return test-java-return-field test-java-very-simple test-java-parameter-only test-java-field-this test-java-simple-assignment test-java-compound-assignment test-java-set-value test-java-javadoc-blank-link test-java-javadoc-minimal-hash test-java-javadoc-minimal-fail test-java-javadoc-link-tag test-java-javadoc-just-hash
+test-all-java: test-java test-java-simple test-java-minimal test-java-field test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method test-java-simple-return test-java-return-field test-java-very-simple test-java-parameter-only test-java-field-this test-java-simple-assignment test-java-compound-assignment test-java-set-value test-java-implements test-java-javadoc-blank-link test-java-javadoc-minimal-hash test-java-javadoc-minimal-fail test-java-javadoc-link-tag test-java-javadoc-just-hash
 	@echo ""
 	@echo "=== All Java tests completed successfully! ==="
 
