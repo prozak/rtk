@@ -17,8 +17,8 @@ Expression = Term (('+' | '-') Term)*;
 Term = Factor (('*' | '/') Factor)*;
 Factor = identifier | number | '(' Expression ')';
 
-IfStatement = 'if' '(' Expression ')' Statement;
-IfStatement = 'if' '(' Expression ')' Statement 'else' Statement;
+IfStatement = 'if' '(' Expression ')' Statement
+            | 'if' '(' Expression ')' Statement 'else' Statement;
 
 WhileLoop = 'while' '(' Expression ')' Statement;
 
