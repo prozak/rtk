@@ -1,26 +1,36 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE PatternSynonyms #-}
 
--- Phase-0 spike for "Write You a Haskell" on RTK.
+-- "Write You a Haskell" on RTK, chapters 3-4: an interpreter for the
+-- untyped lambda calculus (with the literals, conditionals and operator
+-- ladder of the tutorial's later Poly language) whose frontend is fully
+-- generated from lc.pg.
 --
--- Exercises every quasi-quotation mode on the lc.pg grammar (operator
--- ladder + juxtaposition application, the shape of the tutorial's Poly
--- language): construction, pattern matching, splicing, binder metavars,
--- and a miniature call-by-value evaluator written only with QQ patterns.
+-- Everything that inspects or builds syntax is written with quasi-quotes
+-- against concrete syntax: the call-by-value evaluator, free variables,
+-- capture-avoiding substitution and the pretty-printer. The only raw
+-- generated constructors used are integer literals (Int fields cannot be
+-- antiquoted) and identifiers, wrapped in pattern synonyms below.
+--
+-- Run modes:
+--   lc-main         run the test suite (make test-lc)
+--   lc-main repl    interactive read-eval-print loop (make repl-lc)
 
-import Data.Generics (everywhere, mkT)
+import Control.Exception (SomeException, evaluate, try)
+import Data.Generics (gmapQ, gmapT, mkQ, mkT)
 import Data.IORef
+import qualified Data.Map.Strict as M
+import qualified Data.Set as S
+import System.Environment (getArgs)
 import System.Exit (exitFailure)
+import System.IO (hFlush, isEOF, stdout)
 
 import LcLexer
 import LcParser
 import LcQQ
 
--- The only raw generated constructors the spike touches: integer literals
--- (Int cannot be antiquoted) and identifier construction. Phase 1 promotes
--- these to a full pattern-synonym module. The synonyms are explicitly
--- bidirectional: matching ignores the constructors' RtkPos field,
--- construction supplies rtkNoPos.
+-- Explicitly bidirectional: matching ignores the constructors' RtkPos
+-- field, construction supplies rtkNoPos.
 pattern LitI :: Int -> Expr
 pattern LitI n <- Ctr__Expr__0 _ n
   where LitI n = Ctr__Expr__0 rtkNoPos n
@@ -28,6 +38,14 @@ pattern LitI n <- Ctr__Expr__0 _ n
 pattern IdN :: String -> Id
 pattern IdN s <- Ctr__Id__0 _ s
   where IdN s = Ctr__Id__0 rtkNoPos s
+
+unId :: Id -> String
+unId (IdN s)     = s
+unId (Anti_Id s) = '$' : s
+unId other       = show other
+
+mkVar :: Id -> Expr
+mkVar x1 = [expr| $x1 |]
 
 -- Unwrapping the start symbol is itself a QQ pattern on the start rule.
 unLc :: Lc -> Expr
@@ -40,40 +58,138 @@ parseExpr src =
     unLc $ either errorWithoutStackTrace Prelude.id (scanTokens src >>= parseLc)
 
 -- --------------------------------------------------------------------
--- A chapter-4-style interpreter, written against concrete syntax.
+-- Values and call-by-value evaluation in an environment (the design of
+-- the tutorial's chapter-4 Eval.hs: lambdas evaluate to closures).
 -- --------------------------------------------------------------------
 
--- Substitution via SYB: Var occurrences are matched with a QQ pattern,
--- binder Ids are untouched because the traversal only rewrites Exprs.
--- (Capture-naive, which is fine for the spike's closed test terms.)
+type Env = M.Map Id Value
+
+data Value = VInt Int
+           | VBool Bool
+           | VClosure Id Expr Env
+           deriving Eq
+
+instance Show Value where
+    show (VInt n)          = show n
+    show (VBool True)      = "true"
+    show (VBool False)     = "false"
+    show (VClosure x e _)  = "<<closure>> \\" ++ unId x ++ " -> " ++ ppr 0 e
+
+eval :: Env -> Expr -> Value
+eval env [expr| \ $x1 -> $e1 |] = VClosure x1 e1 env
+eval env [expr| let $x1 = $e1 in $e2 |] =
+    eval (M.insert x1 (eval env e1) env) e2
+eval env [expr| if $e1 then $e2 else $e3 |] =
+    case eval env e1 of
+        VBool True  -> eval env e2
+        VBool False -> eval env e3
+        v           -> error $ "if condition is not a boolean: " ++ show v
+eval env [expr| $e1 == $e2 |] =
+    case (eval env e1, eval env e2) of
+        (VInt a,  VInt b)  -> VBool (a == b)
+        (VBool a, VBool b) -> VBool (a == b)
+        (v1, v2) -> error $ "cannot compare " ++ show v1 ++ " == " ++ show v2
+eval env [expr| $e1 + $e2 |] = vArith "+" (+) (eval env e1) (eval env e2)
+eval env [expr| $e1 - $e2 |] = vArith "-" (-) (eval env e1) (eval env e2)
+eval env [expr| $e1 * $e2 |] = vArith "*" (*) (eval env e1) (eval env e2)
+eval env [expr| $e1 $e2 |] =
+    case eval env e1 of
+        VClosure x body cenv -> eval (M.insert x (eval env e2) cenv) body
+        v -> error $ "cannot apply non-function: " ++ show v
+eval env [expr| $x1 |] =
+    case M.lookup x1 env of
+        Just v  -> v
+        Nothing -> error $ "unbound variable: " ++ unId x1
+eval _ [expr| true |]  = VBool True
+eval _ [expr| false |] = VBool False
+eval _ (LitI n)        = VInt n
+eval _ e               = error $ "cannot evaluate: " ++ show e
+
+vArith :: String -> (Int -> Int -> Int) -> Value -> Value -> Value
+vArith _  op (VInt a) (VInt b) = VInt (a `op` b)
+vArith nm _  v1       v2       =
+    error $ "cannot compute " ++ show v1 ++ " " ++ nm ++ " " ++ show v2
+
+-- --------------------------------------------------------------------
+-- Free variables and capture-avoiding substitution. Binder cases are
+-- QQ patterns; non-binding nodes recurse generically with SYB, so the
+-- functions need no case per operator.
+-- --------------------------------------------------------------------
+
+freeVars :: Expr -> S.Set Id
+freeVars [expr| \ $x1 -> $e1 |]          = S.delete x1 (freeVars e1)
+freeVars [expr| let $x1 = $e1 in $e2 |]  =
+    freeVars e1 `S.union` S.delete x1 (freeVars e2)
+freeVars [expr| $x1 |]                   = S.singleton x1
+freeVars e = S.unions (gmapQ (mkQ S.empty freeVars) e)
+
+freshFor :: S.Set Id -> Id -> Id
+freshFor taken x0 =
+    head [ x | k <- [0 :: Int ..]
+             , let x = IdN (unId x0 ++ show k)
+             , not (x `S.member` taken) ]
+
+-- subst x v e: replace free occurrences of x by v in e, renaming binders
+-- that would capture free variables of v.
 subst :: Id -> Expr -> Expr -> Expr
-subst x v = everywhere (mkT step)
-  where step e@[expr| $x1 |] | x1 == x = v
-        step e                         = e
+subst x v e0 = case e0 of
+    [expr| $x1 |]
+        | x1 == x   -> v
+        | otherwise -> e0
+    [expr| \ $x1 -> $e1 |]
+        | x1 == x   -> e0
+        | x1 `S.member` fvV ->
+            let x2 = freshFor (S.unions [fvV, freeVars e1, S.singleton x]) x1
+                e2 = subst x v (subst x1 (mkVar x2) e1)
+            in [expr| \ $x2 -> $e2 |]
+        | otherwise -> let e2 = subst x v e1 in [expr| \ $x1 -> $e2 |]
+    [expr| let $x1 = $e1 in $e2 |] ->
+        let e3 = subst x v e1 in
+        if x1 == x
+          then [expr| let $x1 = $e3 in $e2 |]
+          else if x1 `S.member` fvV
+            then let x2 = freshFor (S.unions [fvV, freeVars e2, S.singleton x]) x1
+                     e4 = subst x v (subst x1 (mkVar x2) e2)
+                 in [expr| let $x2 = $e3 in $e4 |]
+            else let e4 = subst x v e2 in [expr| let $x1 = $e3 in $e4 |]
+    _ -> gmapT (mkT (subst x v)) e0
+  where fvV = freeVars v
 
-eval :: Expr -> Expr
-eval [expr| $e1 + $e2 |]  = arith (+) e1 e2
-eval [expr| $e1 - $e2 |]  = arith (-) e1 e2
-eval [expr| $e1 * $e2 |]  = arith (*) e1 e2
-eval [expr| $e1 == $e2 |] =
-    if eval e1 == eval e2 then [expr| true |] else [expr| false |]
-eval [expr| if $e1 then $e2 else $e3 |] =
-    if eval e1 == [expr| true |] then eval e2 else eval e3
-eval [expr| let $x1 = $e1 in $e2 |] = eval (subst x1 (eval e1) e2)
-eval [expr| $e1 $e2 |] = case eval e1 of
-    [expr| \ $x1 -> $e3 |] -> eval (subst x1 (eval e2) e3)
-    other                   -> error $ "stuck application on: " ++ show other
-eval e = e  -- literals, booleans, lambdas and free variables are values
+-- --------------------------------------------------------------------
+-- Pretty-printer with minimal parentheses, mirroring the grammar's
+-- precedence ladder (0 = lam/let/if, 1 = ==, 2 = + -, 3 = *, 4 = app).
+-- --------------------------------------------------------------------
 
-arith :: (Int -> Int -> Int) -> Expr -> Expr -> Expr
-arith op e1 e2 = case (eval e1, eval e2) of
-    (LitI a, LitI b) -> LitI (a `op` b)
-    (v1, v2)         -> error $ "stuck arithmetic on: " ++ show (v1, v2)
+ppr :: Int -> Expr -> String
+ppr d e0 = case e0 of
+    [expr| \ $x1 -> $e1 |] ->
+        paren (d > 0) $ "\\" ++ unId x1 ++ " -> " ++ ppr 0 e1
+    [expr| let $x1 = $e1 in $e2 |] ->
+        paren (d > 0) $ "let " ++ unId x1 ++ " = " ++ ppr 0 e1
+                          ++ " in " ++ ppr 0 e2
+    [expr| if $e1 then $e2 else $e3 |] ->
+        paren (d > 0) $ "if " ++ ppr 0 e1 ++ " then " ++ ppr 0 e2
+                          ++ " else " ++ ppr 0 e3
+    [expr| $e1 == $e2 |] -> paren (d > 1) $ ppr 1 e1 ++ " == " ++ ppr 2 e2
+    [expr| $e1 + $e2 |]  -> paren (d > 2) $ ppr 2 e1 ++ " + "  ++ ppr 3 e2
+    [expr| $e1 - $e2 |]  -> paren (d > 2) $ ppr 2 e1 ++ " - "  ++ ppr 3 e2
+    [expr| $e1 * $e2 |]  -> paren (d > 3) $ ppr 3 e1 ++ " * "  ++ ppr 4 e2
+    [expr| $e1 $e2 |]    -> paren (d > 4) $ ppr 4 e1 ++ " "    ++ ppr 5 e2
+    [expr| true |]       -> "true"
+    [expr| false |]      -> "false"
+    [expr| $x1 |]        -> unId x1
+    LitI n               -> show n
+    other                -> show other  -- Anti_ nodes (never built at runtime)
+  where paren True  s = "(" ++ s ++ ")"
+        paren False s = s
 
--- Pattern-quote classification across all ladder levels; the binary
+-- --------------------------------------------------------------------
+-- QQ pattern classification across all ladder levels; the binary
 -- operator cases are exactly what fails for the Java grammar.
+-- --------------------------------------------------------------------
+
 describe :: Expr -> String
-describe [expr| \ $x1 -> $e1 |]            = "lam"
+describe [expr| \ $x1 -> $e1 |]             = "lam"
 describe [expr| let $x1 = $e1 in $e2 |]     = "let"
 describe [expr| if $e1 then $e2 else $e3 |] = "if"
 describe [expr| $e1 == $e2 |]               = "eq"
@@ -85,11 +201,40 @@ describe [expr| $x1 |]                      = "var"
 describe _                                  = "lit"
 
 -- --------------------------------------------------------------------
--- Test harness
+-- REPL
 -- --------------------------------------------------------------------
 
-main :: IO ()
-main = do
+repl :: IO ()
+repl = do
+    putStrLn "lc - untyped lambda calculus on RTK (:q to quit)"
+    loop
+  where
+    loop = do
+        putStr "lc> "
+        hFlush stdout
+        end <- isEOF
+        if end then putStrLn "" else do
+            line <- getLine
+            case words line of
+                []     -> loop
+                [":q"] -> return ()
+                _      -> do
+                    result <- try (evaluate (forceShow line))
+                    case result of
+                        Left e    -> putStrLn $ takeWhile (/= '\n') $
+                                       show (e :: SomeException)
+                        Right out -> putStrLn out
+                    loop
+    forceShow line =
+        let out = show (eval M.empty (parseExpr line))
+        in length out `seq` out
+
+-- --------------------------------------------------------------------
+-- Test suite
+-- --------------------------------------------------------------------
+
+runTests :: IO ()
+runTests = do
     failures <- newIORef (0 :: Int)
     let check :: (Eq a, Show a) => String -> a -> a -> IO ()
         check label actual expected
@@ -99,6 +244,7 @@ main = do
                 putStrLn $ "      expected: " ++ show expected
                 putStrLn $ "      actual:   " ++ show actual
                 modifyIORef failures (+ 1)
+        evalStr = eval M.empty . parseExpr
 
     putStrLn "== construction: precedence and associativity =="
     check "* binds tighter than +"
@@ -145,31 +291,78 @@ main = do
     putStrLn "== pattern + splice round trip =="
     let getBody e = case e of
             [expr| \ $x1 -> $e1 |] -> e1
-            _                       -> error "not a lambda"
+            _                      -> error "not a lambda"
     check "destructure a lambda binder and body"
         (getBody (parseExpr "\\v -> v * v")) (parseExpr "v * v")
 
-    putStrLn "== SYB substitution with QQ patterns =="
+    putStrLn "== free variables =="
+    check "freeVars of open term"
+        (freeVars (parseExpr "\\x -> x + y * z"))
+        (S.fromList [IdN "y", IdN "z"])
+    check "let binds only its body"
+        (freeVars (parseExpr "let x = x + 1 in x"))
+        (S.fromList [IdN "x"])
+
+    putStrLn "== capture-avoiding substitution =="
     check "subst replaces free occurrences"
         (subst (IdN "v") (LitI 9) (parseExpr "v + w")) (parseExpr "9 + w")
-    check "subst leaves binders alone"
+    check "subst stops at shadowing binders"
         (subst (IdN "v") (LitI 9) (parseExpr "\\v -> v"))
-        (parseExpr "\\v -> 9")  -- capture-naive by design: documents behavior
+        (parseExpr "\\v -> v")
+    check "subst renames a capturing lambda binder"
+        (subst (IdN "y") (parseExpr "x") (parseExpr "\\x -> y"))
+        (parseExpr "\\x0 -> x")
+    check "subst renames a capturing let binder"
+        (subst (IdN "y") (parseExpr "x") (parseExpr "let x = 1 in y + x"))
+        (parseExpr "let x0 = 1 in x + x0")
 
-    putStrLn "== call-by-value evaluation =="
+    putStrLn "== pretty-printing with minimal parentheses =="
+    check "ppr drops redundant parens"
+        (ppr 0 (parseExpr "1 + (2 * 3)")) "1 + 2 * 3"
+    check "ppr keeps necessary parens"
+        (ppr 0 (parseExpr "(1 + 2) * 3")) "(1 + 2) * 3"
+    check "ppr of lambda application"
+        (ppr 0 (parseExpr "(\\x -> x) (f 1)")) "(\\x -> x) (f 1)"
+    let roundtrip s = parseExpr (ppr 0 (parseExpr s)) == parseExpr s
+    check "ppr/parse round trip"
+        (all roundtrip
+            [ "\\x -> x + 1"
+            , "f x y == g (h 1) * 2 - 3"
+            , "let f = \\y -> y in if f 1 == 1 then f 2 else 0"
+            , "1 - (2 - 3) * 4"
+            ])
+        True
+
+    putStrLn "== call-by-value evaluation with closures =="
     check "arithmetic and comparison"
-        (eval (parseExpr "if 2 + 3 == 5 then 42 else 0")) (LitI 42)
+        (evalStr "if 2 + 3 == 5 then 42 else 0") (VInt 42)
     check "beta reduction"
-        (eval (parseExpr "(\\y -> y * y) (3 + 1)")) (LitI 16)
-    check "let and higher-order functions"
-        (eval (parseExpr
-            "let compose = \\f -> \\g -> \\v -> f (g v) in \
-            \let addone = \\y -> y + 1 in compose addone addone 5"))
-        (LitI 7)
+        (evalStr "(\\y -> y * y) (3 + 1)") (VInt 16)
+    check "higher-order functions"
+        (evalStr "let compose = \\f -> \\g -> \\v -> f (g v) in \
+                 \let addone = \\y -> y + 1 in compose addone addone 5")
+        (VInt 7)
+    check "church numeral two"
+        (evalStr "(\\s -> \\z -> s (s z)) (\\n -> n + 1) 0") (VInt 2)
+    check "let shadowing"
+        (evalStr "let x = 1 in let x = 2 in x") (VInt 2)
+    check "closures capture statically"
+        (evalStr "let n = 1 in let f = \\m -> n + m in let n = 100 in f 1")
+        (VInt 2)
+    check "closure value printing"
+        (show (evalStr "let n = 3 in \\m -> n + m"))
+        "<<closure>> \\m -> n + m"
 
     n <- readIORef failures
     if n == 0
-        then putStrLn "\nAll lc spike tests passed."
+        then putStrLn "\nAll lc tests passed."
         else do
-            putStrLn $ "\n" ++ show n ++ " lc spike test(s) FAILED."
+            putStrLn $ "\n" ++ show n ++ " lc test(s) FAILED."
             exitFailure
+
+main :: IO ()
+main = do
+    args <- getArgs
+    case args of
+        ["repl"] -> repl
+        _        -> runTests
