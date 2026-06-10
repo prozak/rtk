@@ -1,0 +1,69 @@
+grammar 'Poly';
+
+# Poly: the ML-flavored language of "Write You a Haskell" chapter 7
+# (see docs/write-you-a-haskell.md). Hindley-Milner types are inferred,
+# so binders are bare; programs are lists of ';'-terminated declarations.
+#
+# Layout notes beyond lc.pg:
+#  - Top-level 'let f = e;' and the expression 'let f = e in e' share a
+#    prefix, which LALR resolves by shifting - but only because the
+#    declaration's parameter list cannot be empty (separate alternatives
+#    with and without Params). 'let f x = ...' commits to a declaration.
+#  - Lambda parameters are a list of a dedicated wrapper type Param
+#    rather than Id: a type's anti rule is cached either scalar or list
+#    (Normalize.addAntiRuleCached), and Id must stay scalar for binders
+#    like 'let $x1 = ...'. Param appears only inside Params, so it can
+#    carry the list splice.
+#  - List rules (DeclList, Params) precede their element rules so the
+#    list anti registration happens first.
+
+Poly = DeclList ;
+
+DeclList = Decl * ;
+
+@shortcuts(d)
+Decl = 'let' 'rec' Id '=' Expr ';'
+     | 'let' 'rec' Id Params '=' Expr ';'
+     | 'let' Id '=' Expr ';'
+     | 'let' Id Params '=' Expr ';'
+     | Expr ';' ;
+
+@shortcuts(e)
+Expr = '\\' Params '->' Expr
+     | 'let' 'rec' Id '=' Expr 'in' Expr
+     | 'let' Id '=' Expr 'in' Expr
+     | 'if' Expr 'then' Expr 'else' Expr
+     | 'fix' Expr
+     | ,Eq ;
+
+Expr: Eq  = Eq '==' Add
+          | ,Add ;
+
+Expr: Add = Add '+' Mul
+          | Add '-' Mul
+          | ,Mul ;
+
+Expr: Mul = Mul '*' App
+          | ,App ;
+
+Expr: App = App Atom
+          | ,Atom ;
+
+Expr: Atom = num
+           | 'true'
+           | 'false'
+           | Id
+           | '(' ,Expr ')' ;
+
+@shortcuts(p)
+Params = Param + ;
+
+Param = Id ;
+
+@shortcuts(x)
+Id = id ;
+
+Int: num = [0-9]+ ;
+id = [a-z][a-zA-Z0-9_]* ;
+Ignore: ws = [ \t\n]+ ;
+Ignore: comment = '--' .* [\n] ;

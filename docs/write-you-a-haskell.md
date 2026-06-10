@@ -16,7 +16,7 @@ quasi-quoters - something the tutorial itself cannot do.
 | 0 | - | `lc.pg` spike: QQ viability on a ladder grammar | done |
 | 1 | 3 (parsing), 4 (untyped LC) | `lc.pg` + `lc-main.hs` interpreter | done |
 | 2 | 5-6 (type systems, evaluation) | `stlc.pg` + `stlc-main.hs` | done |
-| 3 | 7 (Hindley-Milner) | Poly with `let rec`, inference, REPL | planned |
+| 3 | 7 (Hindley-Milner) | `poly.pg` + `poly-main.hs` | done |
 | 4 | 8-12 (ProtoHaskell) | stretch goal; needs a layout decision | open |
 
 Chapter 3's content (writing a parser combinator library) is replaced by
@@ -66,6 +66,39 @@ stuck, CBN returns 2), and the typechecker rejects that term.
 make test-stlc    # typechecker + evaluator test suite
 make repl-stlc    # stlc> (\f : Int -> Int . f (f 0)) (\n : Int . n + 1)
                   #       2 : Int
+```
+
+## The poly language (chapter 7)
+
+`test-grammars/poly.pg` is the tutorial's ML-flavored Poly: programs are
+lists of `;`-terminated declarations (`let f x y = e;`, `let rec`, bare
+expressions), with multi-parameter lambdas, `let`/`let rec .. in`, `fix`
+and bare binders - types are inferred, so the grammar has no type
+syntax at all. Grammar notes: top-level `let x = e;` and the expression
+`let x = e in e` share a prefix that LALR resolves by shifting, but only
+because the declaration's parameter list cannot be empty; and lambda
+parameters are a list of a dedicated wrapper type `Param`, because a
+type's anti rule is cached either scalar or list and `Id` must stay
+scalar for `let $x1 = ...` patterns. The only happy conflict is one
+benign shift/reduce inside the generated QQ start-wrapper rule (an empty
+program makes the start symbol nullable); it is unreachable from real
+input.
+
+`test-grammars/poly-main.hs` implements the tutorial pipeline:
+desugaring as quasi-quote rewrites (currying multi-parameter lambdas,
+`let rec f = e` to `let f = fix (\f -> e)`), algorithm W - unification,
+occurs check, instantiate/generalize, let-polymorphism - over the
+generated AST with QQ patterns, call-by-value evaluation where `fix`
+ties a lazy knot through the closure environment, and a stateful REPL.
+
+```
+make test-poly    # desugaring + inference + program tests (fib 10 => 55 : Int)
+make repl-poly    # poly> let rec fib n = if n == 0 then 0 else
+                  #         if n == 1 then 1 else fib (n - 1) + fib (n - 2);
+                  # poly> fib 10
+                  #       55 : Int
+                  # poly> \f g x -> f (g x)
+                  #       <<closure>> ... : (a -> b) -> (c -> a) -> c -> b
 ```
 
 ## Grammar design rules for quasi-quotation
