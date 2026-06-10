@@ -2,6 +2,7 @@
 module Parser where
 
 import qualified Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)
+import Diagnostics (Diagnostic(..), SourcePos(..))
 import Data.Generics
 import Data.Data
 import Data.Char
@@ -13,6 +14,7 @@ import qualified Data.Set as S
 
 %name parse
 %tokentype  { L.PosToken }
+%monad      { Either Diagnostic }
 %error      { parseError }
 
 %token
@@ -102,16 +104,17 @@ OptDelim : {- empty -}          { Nothing }
 
 {
 
-parseError :: [L.PosToken] -> a
-parseError [] = errorWithoutStackTrace "Parse error: unexpected end of input. Expected a grammar definition."
+parseError :: [L.PosToken] -> Either Diagnostic a
+parseError [] = Left $ Diagnostic Nothing Nothing "unexpected end of input; expected a grammar definition"
 parseError (L.PosToken pos tok : rest) =
-    errorWithoutStackTrace $ "Parse error at " ++ showAlexPos pos ++ ": unexpected " ++ showToken tok ++ following
+    Left $ Diagnostic (Just (alexPosToSourcePos pos)) Nothing
+                      ("unexpected " ++ showToken tok ++ following)
   where following = case rest of
                       [] -> ""
                       _  -> ", followed by: " ++ intercalate ", " (map (showToken . L.ptToken) (take 4 rest))
 
-showAlexPos :: L.AlexPosn -> String
-showAlexPos (L.AlexPn _ line col) = "line " ++ show line ++ ", column " ++ show col
+alexPosToSourcePos :: L.AlexPosn -> SourcePos
+alexPosToSourcePos (L.AlexPn _ line col) = SourcePos line col
 
 -- Render a token the way it appears in the grammar source, for error messages
 showToken :: L.Token -> String
@@ -145,13 +148,6 @@ idStr t = error $ "Internal error: identifier token expected, but got: " ++ show
 
 idPos :: L.PosToken -> SourcePos
 idPos (L.PosToken (L.AlexPn _ line col) _) = SourcePos line col
-
--- Position in the grammar source file (line and column, both 1-based)
-data SourcePos = SourcePos { srcLine :: Int, srcColumn :: Int }
-                 deriving (Eq, Ord, Show, Typeable, Data)
-
-showSourcePos :: SourcePos -> String
-showSourcePos (SourcePos line col) = "line " ++ show line ++ ", column " ++ show col
 
 data InitialGrammar = InitialGrammar { getIGrammarName :: String, getImports :: String, getIRules :: [IRule] }
                  deriving (Eq, Show, Typeable, Data)

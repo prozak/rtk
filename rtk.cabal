@@ -39,6 +39,7 @@ Common warnings
 Library
   Import:            warnings
   Exposed-Modules:
+                     Diagnostics,
                      Lexer,
                      Parser,
                      TokenProcessing,

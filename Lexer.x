@@ -2,6 +2,7 @@
 module Lexer where
 
 import Data.Data (Data, Typeable)
+import Diagnostics (Diagnostic(..), SourcePos(..), renderDiagnostic)
 }
 
 %wrapper "monadUserState"
@@ -111,14 +112,34 @@ deriving instance Data AlexPosn
 data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }
                 deriving (Eq, Show, Typeable, Data)
 
--- The returned list always ends with an EndOfFile token that carries the
--- position of the end of input, so parse errors at end of input can be
--- reported with a position too
-alexScanTokens :: String -> [PosToken]
-alexScanTokens str =
+-- Lex the input into a token stream, returning a structured diagnostic on a
+-- lexical error. The returned list always ends with an EndOfFile token that
+-- carries the position of the end of input, so parse errors at end of input
+-- can be reported with a position too.
+scanTokens :: String -> Either Diagnostic [PosToken]
+scanTokens str =
                case alexScanTokens1 str of
-                  Right toks -> toks
-                  Left err -> errorWithoutStackTrace err
+                  Right toks -> Right toks
+                  Left err   -> Left (lexDiagnostic err)
+
+-- rtkError encodes the error position as "LINE:COL:message"; recover it here so
+-- the diagnostic carries a real SourcePos. Fall back to a position-less
+-- diagnostic if the encoding is absent (e.g. an internal alex error).
+lexDiagnostic :: String -> Diagnostic
+lexDiagnostic err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- reads l ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- reads c ->
+                    Diagnostic (Just (SourcePos line col)) Nothing msg
+                _ -> noPos
+        _ -> noPos
+  where noPos = Diagnostic Nothing Nothing err
+
+-- Thin wrapper kept during the migration to structured diagnostics: callers
+-- that have not yet switched to 'scanTokens' get the rendered message thrown.
+alexScanTokens :: String -> [PosToken]
+alexScanTokens str = either (errorWithoutStackTrace . renderDiagnostic "<input>") id (scanTokens str)
 
 alexScanTokens1 str = runAlex str $ do
   let loop toks = do tok <- alexMonadScan
@@ -132,7 +153,9 @@ alexEOF = do
   (pos, _, _, _) <- alexGetInput
   return $ PosToken pos EndOfFile
 
-rtkError ((AlexPn _ line column), _, _, str) _ = alexError $ "lexical error at line " ++ (show line) ++ ", column " ++ (show column) ++ ". Following chars: " ++ (take 10 str)
+-- Encode the position as "LINE:COL:message" so scanTokens can split it back
+-- out into a SourcePos for the diagnostic.
+rtkError ((AlexPn _ line column), _, _, str) _ = alexError $ (show line) ++ ":" ++ (show column) ++ ":lexical error. Following chars: " ++ (take 10 str)
 
 simple1 :: (String -> Token) -> AlexInput -> Int -> Alex PosToken
 simple1 t (pos, _, _, str) len = return $ PosToken pos (t (take len str))

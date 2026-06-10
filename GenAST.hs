@@ -2,6 +2,7 @@ module GenAST (genAST)
     where
 
 import Parser
+import Diagnostics (Diagnostic(..))
 import Text.PrettyPrint
 import Grammar
 import qualified Data.Map as Map
@@ -36,45 +37,56 @@ lexRuleEntry :: LexicalRule -> Maybe (ID, ID)
 lexRuleEntry LexicalRule{ getLRuleName = name, getLRuleDataType = dt } = Just (name, dt)
 lexRuleEntry MacroRule{} = Nothing
 
-genAST :: NormalGrammar -> String
-genAST grammar = render $ vcat (map (genRule rules_map) (normalRulesNamed $ getSyntaxRuleGroups grammar))
-    where rules_map = rulesMap grammar
+genAST :: NormalGrammar -> Either Diagnostic String
+genAST grammar = do
+    docs <- mapM (genRule rules_map) (normalRulesNamed $ getSyntaxRuleGroups grammar)
+    return $ render $ vcat docs
+  where rules_map = rulesMap grammar
 
-genRule :: RulesMap -> (ID, SyntaxTopClause) -> Doc
+genRule :: RulesMap -> (ID, SyntaxTopClause) -> Either Diagnostic Doc
 genRule rmap (type_name, clause) =
     case clause of
          s@(STMany _ _ _) -> genType rmap type_name [s]
          s@(STOpt _)      -> genType rmap type_name [s]
          (STAltOfSeq sequences)        -> genData rmap type_name sequences
 
-genType :: RulesMap -> String -> [SyntaxTopClause] -> Doc
-genType rmap name clauses = text "type" <+> text name <+> text "=" <+> (hsep $ map (genItem rmap) clauses)
+genType :: RulesMap -> String -> [SyntaxTopClause] -> Either Diagnostic Doc
+genType rmap name clauses = do
+    items <- mapM (genItem rmap name) clauses
+    return $ text "type" <+> text name <+> text "=" <+> hsep items
 
 needGenereateAlt :: STSeq -> Bool
 needGenereateAlt (STSeq _ seqs) = not $ isClauseSeqLifted seqs
 
-genData :: RulesMap -> String -> [STSeq] -> Doc
-genData rmap name sequences = text "data" <+> text name <+> text "=" <+> (joinAlts (map (genConstructor rmap) sequences') 
-                                                                          $$ text "deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)")
+genData :: RulesMap -> String -> [STSeq] -> Either Diagnostic Doc
+genData rmap name sequences = do
+    ctors <- mapM (genConstructor rmap name) sequences'
+    return $ text "data" <+> text name <+> text "=" <+> (joinAlts ctors
+                                                         $$ text "deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)")
     where sequences' = filter needGenereateAlt sequences
 
-genConstructor :: RulesMap -> STSeq -> Doc
-genConstructor rmap (STSeq constructor clauses) = text constructor <+> (hsep $ map (genSimpleItem rmap) clauses)
+genConstructor :: RulesMap -> String -> STSeq -> Either Diagnostic Doc
+genConstructor rmap refType (STSeq constructor clauses) = do
+    items <- mapM (genSimpleItem rmap refType) clauses
+    return $ text constructor <+> hsep items
 
-genItem :: RulesMap -> SyntaxTopClause -> Doc
-genItem rmap (STMany _ cl _) = brackets $ genSimpleItem rmap cl
-genItem rmap (STOpt cl) = parens $ text "Maybe" <+> genSimpleItem rmap cl
-genItem _ (STAltOfSeq _) = error "STAltOfSeq not supported in genItem"
+genItem :: RulesMap -> String -> SyntaxTopClause -> Either Diagnostic Doc
+genItem rmap refType (STMany _ cl _) = brackets <$> genSimpleItem rmap refType cl
+genItem rmap refType (STOpt cl) = (\d -> parens (text "Maybe" <+> d)) <$> genSimpleItem rmap refType cl
+genItem _ _ (STAltOfSeq _) = error "STAltOfSeq not supported in genItem"
 
-genSimpleItem :: RulesMap -> SyntaxSimpleClause -> Doc
-genSimpleItem rmap (SSId idName) = text $ findRuleDataTypeName rmap idName
-genSimpleItem _    (SSIgnore _) = empty
-genSimpleItem _    (SSLifted _) = error "lifted rules are not yet implemented"
+genSimpleItem :: RulesMap -> String -> SyntaxSimpleClause -> Either Diagnostic Doc
+genSimpleItem rmap refType (SSId idName) = text <$> findRuleDataTypeName rmap refType idName
+genSimpleItem _    _       (SSIgnore _) = Right empty
+genSimpleItem _    _       (SSLifted _) = error "lifted rules are not yet implemented"
 
-findRuleDataTypeName :: RulesMap -> ID -> ID
-findRuleDataTypeName rmap idName = case Map.lookup idName rmap of
-                                 Just r -> r
-                                 _      -> error $ "Reference to unknown rule " ++ idName
+-- A reference to an unknown rule is a user error (a typo'd rule name); name
+-- both the unknown rule and the type that references it.
+findRuleDataTypeName :: RulesMap -> String -> ID -> Either Diagnostic ID
+findRuleDataTypeName rmap refType idName = case Map.lookup idName rmap of
+                                 Just r -> Right r
+                                 _      -> Left $ Diagnostic Nothing (Just ("in type '" ++ refType ++ "'"))
+                                                  ("reference to unknown rule '" ++ idName ++ "'")
 
 joinAlts :: [Doc] -> Doc
 joinAlts alts = vcat $ punctuate (text " |") alts

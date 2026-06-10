@@ -2,14 +2,16 @@ module GenY (genY)
     where
 
 import Parser
+import Diagnostics (Diagnostic)
 import Text.PrettyPrint hiding ((<>))
 import qualified Data.Set as Set
 import GenAST
 import Grammar
 
-genY :: NormalGrammar -> String
-genY g@(NormalGrammar name srules lex_rules _ _ _ _) =
-    render $ vcat [
+genY :: NormalGrammar -> Either Diagnostic String
+genY g@(NormalGrammar name srules lex_rules _ _ _ _) = do
+    ast <- genAST g
+    return $ render $ vcat [
                    text header,
                    nl,
                    text "%name parse" <> text name,
@@ -24,7 +26,7 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ _) =
                    nl,
                    rulesDoc,
                    nl,
-                   text footer
+                   text (footer ast)
                   ]
     where normal_rules = normalRules srules
           listRuleSet = makeListRuleSet normal_rules
@@ -45,7 +47,6 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ _) =
                    \import qualified Data.Generics as Gen\n\
                    \import qualified " ++ name ++  "Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)\n\
                    \}"
-          ast = genAST g
           parseErrorDefs = "parseError :: [L.PosToken] -> a\n\
                            \parseError [] = errorWithoutStackTrace \"Parse error: unexpected end of input\"\n\
                            \parseError (L.PosToken (L.AlexPn _ line col) tok : _) =\n\
@@ -54,7 +55,7 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ _) =
                                          : text "showRtkToken :: L.Token -> String"
                                          : text "showRtkToken L.EndOfFile = \"end of input\""
                                          : map genShowToken (removeSymmacros lex_rules))
-          footer = "{\n" ++ parseErrorDefs ++ "\n" ++ showTokenDefs ++ "\n\n" ++ ast ++ "\n}"
+          footer ast = "{\n" ++ parseErrorDefs ++ "\n" ++ showTokenDefs ++ "\n\n" ++ ast ++ "\n}"
 
 type ListRuleSet = Set.Set ID
 

@@ -13,6 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   9.6.4 (the versions actually exercised locally and in CI), and the
   packages required by RTK-generated code are documented in the README and
   the cabal description
+- Structured diagnostics: grammar errors are now `Diagnostic` values
+  (message plus optional source position and context) threaded through
+  `Either`, instead of being thrown with `error`. The grammar-processing
+  pipeline functions (`scanTokens`, `parse`, `normalizeTopLevelClauses`,
+  `genX`/`genY`/`genAST`/`genQ`) are total for user-caused failures
+- One-line GNU-style error reporting: `rtk` prints `FILE:LINE:COL: error:
+  MESSAGE` to stderr and exits 1 for a bad grammar, with no Haskell exception
+  or call stack (closes #23 and #31)
+- A lifted (`,`) clause under `*`/`+`/`?` (e.g. `Foo = ,Bar* ;`) is now
+  rejected with a clear error during normalization, instead of silently
+  generating broken code
+- A reference to an unknown rule now names both the unknown rule and the type
+  that references it
 - Source positions on tokens: the lexer now returns `PosToken` values
   (token plus line/column), both in the hand-written lexer and in all
   generated lexers

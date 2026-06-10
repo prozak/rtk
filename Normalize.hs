@@ -3,6 +3,7 @@ module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
 import Parser
+import Diagnostics (Diagnostic(..))
 import Grammar (isNotIgnored)
 import Data.Generics
 import Data.Maybe
@@ -12,6 +13,7 @@ import qualified Data.Set as S
 import Control.Lens
 
 import Control.Monad.State.Strict hiding (lift)
+import Control.Monad.State.Strict (lift)
 
 -- In the normal form top level clause of the non-lexical rule can be the following:
 -- 1. simple_clause *
@@ -40,19 +42,20 @@ data NormalizationState = NormalizationState {
 
 $(makeLenses ''NormalizationState)
 
-type Normalization a = State NormalizationState a
+-- Normalization can fail with a structured Diagnostic, carried in the Either
+-- under the state transformer.
+type Normalization a = StateT NormalizationState (Either Diagnostic) a
 
--- Report a grammar error, attaching the rule (and its source position, when
--- known) that was being normalized when the problem was found
+-- Report a grammar error as a Diagnostic, attaching the rule being normalized
+-- (its name as context and its source position, when known) when the problem
+-- was found.
 normError :: String -> Normalization a
 normError msg = do
   ctx <- gets _currentRule
-  let loc = case ctx of
-              Just r -> "in rule '" ++ getIRuleName r ++ "'"
-                        ++ maybe "" (\p -> " (at " ++ showSourcePos p ++ ")") (getIRulePos r)
-                        ++ ": "
-              Nothing -> ""
-  errorWithoutStackTrace $ "Grammar error " ++ loc ++ msg
+  let diag = case ctx of
+               Just r  -> Diagnostic (getIRulePos r) (Just ("in rule '" ++ getIRuleName r ++ "'")) msg
+               Nothing -> Diagnostic Nothing Nothing msg
+  lift (Left diag)
 
 newNamePrefixed :: String -> Normalization String
 newNamePrefixed prefix = do
@@ -201,6 +204,13 @@ checkSimpleClause (IIgnore c1) = do
     _ -> normError $ "ignore (!) cannot be applied to: " ++ showClause c1
 checkSimpleClause c = extractClause c >>= return . SSId
 
+-- A repetition/option clause: cannot be the body of a lifted (,) clause.
+isRepetition :: IClause -> Bool
+isRepetition IStar{} = True
+isRepetition IPlus{} = True
+isRepetition IOpt{}  = True
+isRepetition _       = False
+
 checkNormalClause :: IClause -> Normalization SyntaxTopClause
 checkNormalClause (IStar c mc) = do
   c1 <- checkSimpleClause c
@@ -223,11 +233,20 @@ checkNormalClause (ISeq [c]) = do
 checkNormalClause tc@(ISeq _) = do
   c1 <- checkNormalClauseSeq tc
   return $ STAltOfSeq [c1]
-checkNormalClause (ILifted c) = do
-  c1 <- checkSimpleClause c
-  case c1 of
-    SSId idName -> return $ STAltOfSeq [STSeq "" [SSLifted idName]]
-    _ -> normError $ "lifted (,) cannot be applied to: " ++ showClause c
+-- A lifted (,) clause names the single rule whose value becomes this rule's
+-- value, so it must reference one rule, not a repetition. Lifting a list/plus
+-- (e.g. "Foo = ,Bar* ;") is not implemented: it would otherwise slip through to
+-- GenAST.genSimpleItem and die there ("lifted rules are not yet implemented").
+-- (IOpt is desugared by removeOpts before normalization, so only * and + reach
+-- here as repetitions.)
+checkNormalClause (ILifted c)
+  | isRepetition c =
+      normError "a lifted (,) clause is not supported under *, + or ?"
+  | otherwise = do
+      c1 <- checkSimpleClause c
+      case c1 of
+        SSId idName -> return $ STAltOfSeq [STSeq "" [SSLifted idName]]
+        _ -> normError $ "lifted (,) cannot be applied to: " ++ showClause c
 checkNormalClause (IIgnore c) = do
   c1 <- checkSimpleClause c
   case c1 of
@@ -350,24 +369,27 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
              getGrammarInfo = info { getNameCounter = counter, getRuleToStartInfo = ruleToStartInfo }}
       [] -> error "Grammar must have at least one rule group"
 
-normalizeTopLevelClauses :: InitialGrammar -> NormalGrammar
+normalizeTopLevelClauses :: InitialGrammar -> Either Diagnostic NormalGrammar
 normalizeTopLevelClauses grammar =
   case getIRules grammar of
-    [] -> errorWithoutStackTrace $ "Grammar '" ++ (getIGrammarName grammar) ++ "' contains no rules"
-    (firstIRule:_) ->
+    [] -> Left $ Diagnostic Nothing Nothing $
+                   "grammar '" ++ getIGrammarName grammar ++ "' contains no rules"
+    (firstIRule:_) -> do
       let firstID = maybe (getIRuleName firstIRule) Prelude.id (getIDataTypeName firstIRule)
           ruleTypeMap = buildRuleToTypeMap grammar
-          (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _ _ _) =
-            runState (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap Nothing)
-          firstRuleGroupRules = fromMaybe firstRuleError $ M.lookup firstID nrs
-          firstRuleError = errorWithoutStackTrace $ "Grammar error: the first rule ('" ++ getIRuleName firstIRule
-                                   ++ "') must be a syntax rule (its name must start with an uppercase letter),"
-                                   ++ " because it defines the start symbol of the grammar"
-          nrs1 = M.delete firstID nrs
+      (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _ _ _) <-
+        runStateT (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap Nothing)
+      firstRuleGroupRules <- case M.lookup firstID nrs of
+        Just rs -> Right rs
+        Nothing -> Left $ Diagnostic (getIRulePos firstIRule) Nothing $
+                            "the first rule ('" ++ getIRuleName firstIRule
+                            ++ "') must be a syntax rule (its name must start with an uppercase letter),"
+                            ++ " because it defines the start symbol of the grammar"
+      let nrs1 = M.delete firstID nrs
           firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
           otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
           groups = firstGroup : otherGroups
-        in addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (getImports grammar) (GrammarInfo (Just firstID) M.empty counter proxyRules)
+      return $ addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (getImports grammar) (GrammarInfo (Just firstID) M.empty counter proxyRules)
 
 data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String }
 type FillName a = State FillNameState a
