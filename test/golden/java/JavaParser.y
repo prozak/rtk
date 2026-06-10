@@ -454,76 +454,59 @@ PrimaryNoPostfix : qq_Expression { Anti_Expression $1 } |
                    CompoundName Rule_74 { Ctr__Expression__4 $1 $2 } |
                    tok_super_81 tok__dot__3 id Rule_76 { Ctr__Expression__5 $3 $4 }
 
-PostfixExpression : qq_Expression { Anti_Expression $1 } |
-                    PrimaryNoPostfix { Ctr__Expression__6 $1 } |
+PostfixExpression : PrimaryNoPostfix { Ctr__Expression__6 $1 } |
                     PostfixExpression PostfixOp { Ctr__Expression__7 $1 $2 } |
                     PostfixExpression tok__dot__3 id { Ctr__Expression__8 $1 $3 } |
                     PostfixExpression tok__dot__3 id tok__lparen__6 Arglist tok__rparen__7 { Ctr__Expression__9 $1 $3 $5 } |
                     PostfixExpression tok__sq_bkt_l__18 Expression tok__sq_bkt_r__19 { Ctr__Expression__10 $1 $3 }
 
-UnaryExpressionNotPlusMinus : qq_Expression { Anti_Expression $1 } |
-                              PostfixExpression { Ctr__Expression__11 $1 } |
+UnaryExpressionNotPlusMinus : PostfixExpression { Ctr__Expression__11 $1 } |
                               tok__tilde__78 UnaryExpression { Ctr__Expression__12 $2 } |
                               tok__exclamation__79 UnaryExpression { Ctr__Expression__13 $2 } |
                               CastExpression { Ctr__Expression__14 $1 }
 
-UnaryExpression : qq_Expression { Anti_Expression $1 } |
-                  PrefixOp UnaryExpression { Ctr__Expression__15 $1 $2 } |
+UnaryExpression : PrefixOp UnaryExpression { Ctr__Expression__15 $1 $2 } |
                   UnaryExpressionNotPlusMinus { Ctr__Expression__16 $1 }
 
-CastExpression : qq_Expression { Anti_Expression $1 } |
-                 tok__lparen__6 Type tok__rparen__7 UnaryExpression { Ctr__Expression__17 $2 $4 }
+CastExpression : tok__lparen__6 Type tok__rparen__7 UnaryExpression { Ctr__Expression__17 $2 $4 }
 
-MultiplicativeExpression : qq_Expression { Anti_Expression $1 } |
-                           UnaryExpression { Ctr__Expression__18 $1 } |
+MultiplicativeExpression : UnaryExpression { Ctr__Expression__18 $1 } |
                            MultiplicativeExpression MultiplicativeOp UnaryExpression { Ctr__Expression__19 $1 $2 $3 }
 
-AdditiveExpression : qq_Expression { Anti_Expression $1 } |
-                     MultiplicativeExpression { Ctr__Expression__20 $1 } |
+AdditiveExpression : MultiplicativeExpression { Ctr__Expression__20 $1 } |
                      AdditiveExpression AdditiveOp MultiplicativeExpression { Ctr__Expression__21 $1 $2 $3 }
 
-ShiftExpression : qq_Expression { Anti_Expression $1 } |
-                  AdditiveExpression { Ctr__Expression__22 $1 } |
+ShiftExpression : AdditiveExpression { Ctr__Expression__22 $1 } |
                   ShiftExpression ShiftOp AdditiveExpression { Ctr__Expression__23 $1 $2 $3 }
 
-RelationalExpression : qq_Expression { Anti_Expression $1 } |
-                       ShiftExpression { Ctr__Expression__24 $1 } |
+RelationalExpression : ShiftExpression { Ctr__Expression__24 $1 } |
                        RelationalExpression RelationalOp ShiftExpression { Ctr__Expression__25 $1 $2 $3 } |
                        RelationalExpression tok_instanceof_68 Type { Ctr__Expression__26 $1 $3 }
 
-EqualityExpression : qq_Expression { Anti_Expression $1 } |
-                     RelationalExpression { Ctr__Expression__27 $1 } |
+EqualityExpression : RelationalExpression { Ctr__Expression__27 $1 } |
                      EqualityExpression EqualityOp RelationalExpression { Ctr__Expression__28 $1 $2 $3 }
 
-AndExpression : qq_Expression { Anti_Expression $1 } |
-                EqualityExpression { Ctr__Expression__29 $1 } |
+AndExpression : EqualityExpression { Ctr__Expression__29 $1 } |
                 AndExpression tok__symbol__61 EqualityExpression { Ctr__Expression__30 $1 $3 }
 
-ExclusiveOrExpression : qq_Expression { Anti_Expression $1 } |
-                        AndExpression { Ctr__Expression__31 $1 } |
+ExclusiveOrExpression : AndExpression { Ctr__Expression__31 $1 } |
                         ExclusiveOrExpression tok__symbol__60 AndExpression { Ctr__Expression__32 $1 $3 }
 
-InclusiveOrEpression : qq_Expression { Anti_Expression $1 } |
-                       ExclusiveOrExpression { Ctr__Expression__33 $1 } |
+InclusiveOrEpression : ExclusiveOrExpression { Ctr__Expression__33 $1 } |
                        InclusiveOrEpression tok__pipe__59 ExclusiveOrExpression { Ctr__Expression__34 $1 $3 }
 
-ConditionalAndExpression : qq_Expression { Anti_Expression $1 } |
-                           InclusiveOrEpression { Ctr__Expression__35 $1 } |
+ConditionalAndExpression : InclusiveOrEpression { Ctr__Expression__35 $1 } |
                            ConditionalAndExpression tok__symbol__symbol__58 InclusiveOrEpression { Ctr__Expression__36 $1 $3 }
 
-ConditionalOrExpression : qq_Expression { Anti_Expression $1 } |
-                          ConditionalAndExpression { Ctr__Expression__37 $1 } |
+ConditionalOrExpression : ConditionalAndExpression { Ctr__Expression__37 $1 } |
                           ConditionalOrExpression tok__pipe__pipe__57 ConditionalAndExpression { Ctr__Expression__38 $1 $3 }
 
-ConditionalExpression : qq_Expression { Anti_Expression $1 } |
-                        ConditionalOrExpression { Ctr__Expression__39 $1 } |
+ConditionalExpression : ConditionalOrExpression { Ctr__Expression__39 $1 } |
                         ConditionalOrExpression tok__symbol__56 Expression tok__colon__32 ConditionalExpression { Ctr__Expression__40 $1 $3 $5 }
 
-AssignmentExpression : qq_Expression { Anti_Expression $1 } |
-                       ConditionalExpression Rule_72 { Ctr__Expression__41 $1 $2 }
+AssignmentExpression : ConditionalExpression Rule_72 { Ctr__Expression__41 $1 $2 }
 
-Expression : qq_Expression { Anti_Expression $1 } |
-             AssignmentExpression { Ctr__Expression__42 $1 }
+Expression : AssignmentExpression { Ctr__Expression__42 $1 }
 
 ExtendsList : qq_ExtendsList { Anti_ExtendsList $1 } |
               { Ctr__ExtendsList__0 } |

@@ -66,6 +66,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   position (e.g. `Grammar error in rule 'Foo' (at line 2, column 1): ...`)
 - Lexer-generation errors name the lexical rule they occur in
 
+### Changed
+- The `$Type:var` splice alternative is now attached to a minimal set of
+  rules of a shared-type group instead of to every rule. The normalizer
+  builds the group's lift graph (rule A → rule B when B has an alternative
+  that is exactly the single nonterminal A, ignoring nullable clauses) and
+  greedily picks attach points whose unit-closure covers every rule the
+  grammar demands from some position; a splice token reduces at an attach
+  point and climbs the chain to the level its position requires. For
+  java.pg's 18-rule Expression chain the single attach point is
+  `PrimaryNoPostfix`, which removes the 806 reduce/reduce conflicts
+  (of 883) the per-rule alternatives used to cause, along with the three
+  "rule ... is unused" happy warnings, and makes the parse of a splice
+  independent of conflict-resolution accidents. Types declared by a
+  single rule are unaffected. A
+  group whose demanded rules cannot be covered from one attach point gets
+  several; if their closures overlap, the overlap can reintroduce
+  reduce/reduce conflicts between the splice reductions (inherent to such
+  grammars; normalization has no warning channel to report them)
+
 ### Removed
 - Unimplemented CLI options that were advertised in `--help` but had no
   effect: `--debug-rule`, `--compare-stages`, `--memory-stats`,
