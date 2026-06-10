@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens repl-lc repl-stlc test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens repl-lc repl-stlc repl-poly test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -238,6 +238,18 @@ test-stlc: build test-out/stlc-main | test-out
 
 repl-stlc: build test-out/stlc-main | test-out
 	test-out/stlc-main repl
+
+# Poly generated from poly.pg (Write You a Haskell, chapter 7):
+# desugaring as QQ rewrites, Hindley-Milner inference (algorithm W),
+# call-by-value evaluation with fix, and a stateful REPL
+test-out/poly-main: test-out/poly-main.hs test-out/PolyLexer.hs test-out/PolyParser.hs
+	cabal exec -- ghc --make -itest-out test-out/poly-main.hs -o test-out/poly-main
+
+test-poly: build test-out/poly-main | test-out
+	test-out/poly-main
+
+repl-poly: build test-out/poly-main | test-out
+	test-out/poly-main repl
 
 # Java quasi-quotation tests (separate from regular java-main parser driver)
 test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
