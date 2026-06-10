@@ -17,7 +17,11 @@ quasi-quoters - something the tutorial itself cannot do.
 | 1 | 3 (parsing), 4 (untyped LC) | `lc.pg` + `lc-main.hs` interpreter | done |
 | 2 | 5-6 (type systems, evaluation) | `stlc.pg` + `stlc-main.hs` | done |
 | 3 | 7 (Hindley-Milner) | `poly.pg` + `poly-main.hs` | done |
-| 4 | 8-12 (ProtoHaskell) | stretch goal; needs a layout decision | open |
+| 4 | 8-12 (ProtoHaskell-lite) | `proto.pg` + `proto-main.hs`, explicit `{ ; }` | done |
+
+Phase 4 uses explicit block delimiters; making RTK able to lex layout
+(the offside rule) so the same grammar accepts indented programs is
+tracked independently in [issue #95](https://github.com/prozak/rtk/issues/95).
 
 Chapter 3's content (writing a parser combinator library) is replaced by
 RTK itself; its calculator example is subsumed by `lc.pg`. Chapters 13+
@@ -99,6 +103,37 @@ make repl-poly    # poly> let rec fib n = if n == 0 then 0 else
                   #       55 : Int
                   # poly> \f g x -> f (g x)
                   #       <<closure>> ... : (a -> b) -> (c -> a) -> c -> b
+```
+
+## The proto language (chapters 8-12, lite)
+
+`test-grammars/proto.pg` extends Poly with algebraic data types and
+case expressions, using explicit `{ ; }` blocks where Haskell would use
+layout: `data List a = Nil | Cons a (List a);` (the constructor list is
+the first use of the `+ ~ sep` separated-list form) and
+`case e of { Nil -> 0 ; Cons x xs -> 1 + len xs }`. Capitalized
+constructors get their own token class, and the wrapper-type idiom from
+poly.pg is applied throughout (`TyVar`/`Param` wrap `Id`, `Field` wraps
+`Ty`, `PArg` wraps `Pat`).
+
+`test-grammars/proto-main.hs` runs each declaration through the
+tutorial's passes: data declarations become constructor schemes
+(chapter 10), a renamer checks scope, constructor arity in patterns and
+duplicate pattern variables before inference (chapter 11), desugaring
+stays pure QQ rewriting, inference extends algorithm W with
+parameterized `TData` types and case/pattern inference, and evaluation
+treats constructors as curried values with direct nested-pattern
+matching (chapter 12 lite - compilation of nested patterns to simple
+case trees is left out). `map` over a user-defined list infers
+`(a -> b) -> List a -> List b`.
+
+```
+make test-proto   # ADTs, renamer, case inference, nested patterns
+make repl-proto   # proto> data List a = Nil | Cons a (List a);
+                  # proto> let rec map0 f l = case l of { Nil -> Nil ;
+                  #          Cons x xs -> Cons (f x) (map0 f xs) };
+                  # proto> map0 (\n -> n * n) (Cons 1 (Cons 2 Nil))
+                  #        Cons 1 (Cons 4 Nil) : List Int
 ```
 
 ## Grammar design rules for quasi-quotation

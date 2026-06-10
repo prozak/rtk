@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens repl-lc repl-stlc repl-poly test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens repl-lc repl-stlc repl-poly repl-proto test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -250,6 +250,19 @@ test-poly: build test-out/poly-main | test-out
 
 repl-poly: build test-out/poly-main | test-out
 	test-out/poly-main repl
+
+# ProtoHaskell-lite generated from proto.pg (Write You a Haskell,
+# chapters 8-12): algebraic data types, case with nested patterns,
+# renamer, inference and evaluation; explicit { ; } blocks (layout
+# support for RTK is tracked in github issue #95)
+test-out/proto-main: test-out/proto-main.hs test-out/ProtoLexer.hs test-out/ProtoParser.hs
+	cabal exec -- ghc --make -itest-out test-out/proto-main.hs -o test-out/proto-main
+
+test-proto: build test-out/proto-main | test-out
+	test-out/proto-main
+
+repl-proto: build test-out/proto-main | test-out
+	test-out/proto-main repl
 
 # Java quasi-quotation tests (separate from regular java-main parser driver)
 test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
