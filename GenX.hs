@@ -1,5 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
-module GenX (genX)
+module GenX (genX, isAlexEscape)
     where
 
 import Parser
@@ -176,6 +176,8 @@ translateClauseForMacro rname cl = lexErr rname $ "cannot translate clause to a 
 -- Detect Alex escape sequences that should be output as bare escapes, not quoted strings.
 -- In Alex: "\n" = literal backslash+n, but \n = newline character.
 -- When grammar has '\n', we want to generate \n (the escape), not "\n" (literal).
+-- This set must stay identical to the escapes TokenProcessing.unBackQuote
+-- preserves, or escapes get silently stripped before they reach this point.
 isAlexEscape :: String -> Bool
 isAlexEscape "\\n" = True   -- newline
 isAlexEscape "\\t" = True   -- tab
