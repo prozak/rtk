@@ -1,0 +1,49 @@
+grammar 'Lc';
+
+# Phase-0 spike for implementing "Write You a Haskell" with RTK:
+# an untyped lambda calculus with the Poly-style surface syntax of chapter 7
+# (juxtaposition application, infix operator ladder, let/if/lambda).
+#
+# Layout notes:
+#  - All Eq/Add/Mul/App/Atom rules share the single AST type Expr, with ','
+#    lifts so precedence leaves no wrapper constructors in the tree.
+#  - Atom is the only Expr rule without a lift-headed alternative, so the
+#    Anti_Expr quasi-quotation alternative lands there, making $e metavars
+#    parseable at every precedence level (this is what java.pg gets wrong).
+#  - Lambda is spelled 'fn' for now: a literal '\\' keyword currently emits
+#    an unescaped backslash into the Alex spec (GenX.backquoteStr).
+
+Lc = Expr ;
+
+@shortcuts(e)
+Expr = 'fn' Id '->' Expr
+     | 'let' Id '=' Expr 'in' Expr
+     | 'if' Expr 'then' Expr 'else' Expr
+     | ,Eq ;
+
+Expr: Eq  = Eq '==' Add
+          | ,Add ;
+
+Expr: Add = Add '+' Mul
+          | Add '-' Mul
+          | ,Mul ;
+
+Expr: Mul = Mul '*' App
+          | ,App ;
+
+Expr: App = App Atom
+          | ,Atom ;
+
+Expr: Atom = num
+           | 'true'
+           | 'false'
+           | Id
+           | '(' ,Expr ')' ;
+
+@shortcuts(x)
+Id = id ;
+
+Int: num = [0-9]+ ;
+id = [a-z][a-zA-Z0-9_]* ;
+Ignore: ws = [ \t\n]+ ;
+Ignore: comment = '--' .* [\n] ;
