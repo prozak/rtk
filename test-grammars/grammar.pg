@@ -68,11 +68,23 @@ Lexical rules section. These rules are started with regular letter
 */
 
 id = [a-zA-Z][A-Za-z0-9_]* ;
-str = '\'' ([^'] | '\\\'')* '\'' ;
+# String literals consume escape pairs atomically (backslash + any char),
+# so a literal ending in a backslash ('\\') lexes correctly instead of the
+# trailing backslash absorbing the closing quote under maximal munch.
+# The backslash class lives in the shared 'backslash' macro below (the same
+# convention as java.pg): inline, a class ending in a backslash trips the
+# regexplit rule's own escaped-']' alternative and overruns; and the negated
+# class is spelled [^\\'] so it does not end in a backslash either. This
+# grammar's own front end lexes all of this before the fix takes effect (the
+# bootstrap stage: accept the regenerated snapshot, rebuild, and only then
+# do '\\' string literals lex in other grammars).
+str = '\'' ([^\\'] | backslash .)* '\'' ;
 @symmacro
 dq = '"' ; # production would not be generated for symmacro
 @symmacro
 ndq = [^"] ;
+@symmacro
+backslash = [\\] ;
 bigstr = dq dq dq (ndq|dq ndq| dq dq ndq |[\n])* dq dq dq;
 regexplit = '[' ([^\]] | '\\]')* ']' ;
 Ignore: ws = [ \t\n]+ ;

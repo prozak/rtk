@@ -40,7 +40,7 @@ tokens:-
     "$"                 { simple  Dollar }
     ")"                 { simple  RParen }
     "("                 { simple  LParen }
-    $squote ($notsq | "\'")* $squote   { simple1 $ StrLit . (reverse.drop 1.reverse.drop 1) }
+    $squote ([^'\\] | \\ .)* $squote   { simple1 $ StrLit . (reverse.drop 1.reverse.drop 1) }
     "[" ([^\]]|"\]")* "]"      { simple1 $ RegExpLit . (reverse.drop 1.reverse.drop 1) }
     "*"                 { simple Star }
     "+"                 { simple Plus }

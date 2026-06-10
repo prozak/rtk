@@ -149,6 +149,11 @@ genTokens smacroIds lexical_rules = do
                    "Ignore"  -> text ";"
                    _         -> text "{ simple1 $ " <+> token_name <+> text "." <+> (parens $ text func) <+> text "}"
 
+-- Alex quoted strings are literal: backslash is not an escape character
+-- inside "..." (e.g. "\" matches a single backslash, "\'" matches a
+-- backslash followed by a quote), so only the string terminator '"' needs
+-- rewriting. Do not "fix" this to escape backslashes: doubling them
+-- changes what the token matches.
 backquoteStr :: String -> String
 backquoteStr s = concat (map (\chr -> if (case chr of
                                                  '"'  -> True
