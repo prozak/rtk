@@ -1,0 +1,72 @@
+grammar 'Pl0';
+
+# PL/0 grammar (Niklaus Wirth), as used in Brian Callahan's tutorial series
+# "Let's write a compiler" (https://briancallahan.net/blog/20210814.html),
+# parts 1-3: the baseline language, before the I/O / array / string
+# extensions of the later parts.
+#
+# The expression hierarchy follows the same idiom as grammar.pg's Clause
+# rules: Term and Factor share the Expression data type, and their
+# pass-through alternatives are lifted (,), so the AST has no wrapper
+# noise and parenthesized expressions are transparent.
+
+Program = Block '.' ;
+
+Block = ConstDecl? VarDecl? Procedure* StatementOpt ;
+
+ConstDecl = 'const' ConstDef+ ~ ',' ';' ;
+
+ConstDef = Ident '=' Number ;
+
+VarDecl = 'var' Ident+ ~ ',' ';' ;
+
+Procedure = 'procedure' Ident ';' Block ';' ;
+
+# Wirth's grammar makes every statement position optional
+# (statement = [ ... ]); StatementOpt is that bracketed statement, so
+# programs like 'begin end.', a trailing ';' before 'end' and the
+# minimal program '.' are all valid.
+@shortcuts(so)
+StatementOpt = Statement? ;
+
+@shortcuts(s)
+Statement = Ident ':=' Expression
+          | 'call' Ident
+          | 'begin' StatementOpt+ ~ ';' 'end'
+          | 'if' Condition 'then' StatementOpt
+          | 'while' Condition 'do' StatementOpt ;
+
+@shortcuts(c)
+Condition = 'odd' Expression
+          | Expression '=' Expression
+          | Expression '#' Expression
+          | Expression '<' Expression
+          | Expression '<=' Expression
+          | Expression '>' Expression
+          | Expression '>=' Expression ;
+
+@shortcuts(e)
+Expression = Expression '+' Term
+           | Expression '-' Term
+           | '-' Term
+           | '+' Term
+           | ,Term ;
+
+Expression: Term = Term '*' Factor
+                 | Term '/' Factor
+                 | ,Factor ;
+
+Expression: Factor = Ident
+                   | Number
+                   | '(' ,Expression ')' ;
+
+@shortcuts(id)
+Ident = ident ;
+
+@shortcuts(n)
+Number = number ;
+
+ident = [A-Za-z_][A-Za-z0-9_]* ;
+Integer: number = [0-9]+ ;
+Ignore: ws = [ \t\r\n]+ ;
+Ignore: comment = '{' ([^}]|[\n])* '}' ;

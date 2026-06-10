@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- PL/0 compiler tutorial (`tutorials/pl0-compiler/`): the language of Brian
+  Callahan's "Let's write a compiler" tutorial series, at the series'
+  parts 1-3 ("validator") milestone. Baseline Wirth PL/0 — empty statements
+  via `StatementOpt`, unary signs, `{ ... }` comments — generated from
+  `pl0.pg` into a conflict-free Happy parser that is byte-identical under
+  both front ends. Ships a validator driver (`Main.hs`), a valid/invalid
+  test corpus with positioned-diagnostic checks (`run_tests.sh`), and a
+  quasi-quotation test suite (`TestQQ.hs`) exercising construction,
+  splicing, pattern matching with metavariables (a miniature PL/0 → C code
+  generator) and SYB-based AST rewrite rules; wired into CI via
+  `make -C tutorials/pl0-compiler test`
+
 ## [0.11] - 2026-06-12
 
 Highlights: RTK is now self-hosting by default — grammar files are parsed

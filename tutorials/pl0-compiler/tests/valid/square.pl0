@@ -1,0 +1,18 @@
+{ square.pl0 - squares of 1..10, after Wirth's classic PL/0 example
+  (without I/O, which the baseline language does not have) }
+
+var x, squ;
+
+procedure square;
+begin
+   squ := x * x
+end;
+
+begin
+   x := 1;
+   while x <= 10 do
+   begin
+      call square;
+      x := x + 1
+   end
+end.

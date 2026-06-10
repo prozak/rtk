@@ -1,0 +1,32 @@
+{ primes.pl0 - count the primes up to max by trial division }
+
+const max = 100;
+var arg, ret, count;
+
+procedure isprime;
+{ arg: the number to test; ret: 1 if it is prime, 0 otherwise }
+var n;
+begin
+   ret := 1;
+   n := 2;
+   while n * n <= arg do
+   begin
+      if arg / n * n = arg then
+      begin
+         ret := 0;
+         n := arg
+      end;
+      n := n + 1
+   end
+end;
+
+begin
+   count := 0;
+   arg := 2;
+   while arg <= max do
+   begin
+      call isprime;
+      if ret = 1 then count := count + 1;
+      arg := arg + 1
+   end
+end.
