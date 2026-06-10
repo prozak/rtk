@@ -37,7 +37,7 @@ AnnotationList = Annotation* ;
 ModifierList = (Modifier | Annotation)* ;
 
 ExtendsList = ('extends' CompoundName (',' CompoundName)*)? ;
-ImplementsList = 'implements' CompoundName + ',';
+ImplementsList = 'implements' CompoundName + ~',';
 FieldDeclarationList = FieldDeclaration *;
 
 ClassDeclaration  =

@@ -545,7 +545,7 @@ IfStatement : qq_IfStatement { Anti_IfStatement $1 } |
               tok_if_36 tok__lparen__6 Expression tok__rparen__7 StatementWithoutIf OptElsePart { Ctr__IfStatement__0 $3 $5 $6 }
 
 ImplementsList : qq_ImplementsList { Anti_ImplementsList $1 } |
-                 tok_implements_11 Rule_23 tok__coma__8 { Ctr__ImplementsList__0 (reverse $2) }
+                 tok_implements_11 Rule_23 { Ctr__ImplementsList__0 (reverse $2) }
 
 ImportList : {- empty -} { [] } |
              ImportList ListElem_ImportList3 { $2 : $1 }
@@ -717,7 +717,7 @@ Rule_21 : {- empty -} { [] } |
 Rule_22 : tok__coma__8 CompoundName { Ctr__Rule_22__0 $2 }
 
 Rule_23 : CompoundName { [$1] } |
-          Rule_23 CompoundName { $2 : $1 }
+          Rule_23 tok__coma__8 CompoundName { $3 : $1 }
 
 Rule_25 : { Ctr__Rule_25__0 } |
           ExtendsList { Ctr__Rule_25__1 $1 }
