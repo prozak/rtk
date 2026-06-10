@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Hackage packaging hygiene: PVP version bounds on all dependencies and on
+  the `alex`/`happy` build tools, `Tested-With` now lists GHC 9.4.7 and
+  9.6.4 (the versions actually exercised locally and in CI), and the
+  packages required by RTK-generated code are documented in the README and
+  the cabal description
 - Source positions on tokens: the lexer now returns `PosToken` values
   (token plus line/column), both in the hand-written lexer and in all
   generated lexers
