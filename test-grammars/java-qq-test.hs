@@ -5,6 +5,7 @@
 
 import qualified JavaQQ as J
 import qualified JavaParser as JP
+import Data.List (isInfixOf)
 import Text.Show.Pretty (ppShow)
 
 main :: IO ()
@@ -19,6 +20,8 @@ main = do
     testSplicing
     putStrLn ""
     testPatternMatching
+    putStrLn ""
+    testDollarEscape
     putStrLn ""
 
     putStrLn "=========================================================="
@@ -211,6 +214,42 @@ testPatternMatching = do
     putStrLn ""
 
     putStrLn "Pattern matching tests: ALL PASSED ✅"
+
+-- ========== PART 4: Literal '$' ($$ escape) Tests ==========
+testDollarEscape :: IO ()
+testDollarEscape = do
+    putStrLn "========== PART 4: Literal '$' ($$ escape) Tests =========="
+    putStrLn ""
+    putStrLn "$$name in a quote body escapes metavariable rewriting and"
+    putStrLn "produces the literal text $name - needed for '$' inside the"
+    putStrLn "quoted language's string literals."
+    putStrLn ""
+
+    putStrLn "--- Test: $$ inside a quoted Java string literal ---"
+    let priceExpr = [J.expression| "price: $$total" |]
+    expectInAST "string literal round-trips with a literal $total"
+                "price: $total" (ppShow priceExpr)
+
+    putStrLn "--- Test: $$ escape next to a real splice ---"
+    let x = [J.expression| x |]
+    let mixed = [J.expression| $Expression:x + "cost: $$amount" |]
+    expectInAST "string keeps the literal $amount while $Expression:x splices"
+                "cost: $amount" (ppShow mixed)
+
+    putStrLn ""
+    putStrLn "Dollar-escape tests: ALL PASSED ✅"
+
+-- Unlike the informational checks above, a wrong AST here must fail the
+-- test binary (and with it `make test-java-qq`), so mismatches are fatal.
+expectInAST :: String -> String -> String -> IO ()
+expectInAST what needle shown
+    | not (needle `isInfixOf` shown) =
+        error $ "FAILED: " ++ what ++ ": expected " ++ show needle
+              ++ " in the AST:\n" ++ shown
+    | "$$" `isInfixOf` shown =
+        error $ "FAILED: " ++ what ++ ": the $$ escape was not collapsed"
+              ++ " to a single $ in the AST:\n" ++ shown
+    | otherwise = putStrLn $ "✅ " ++ what
 
 {-
 TEST SUMMARY:
