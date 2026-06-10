@@ -1,4 +1,4 @@
-.PHONY: clean help test test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -20,6 +20,8 @@ default: help
 help:
 	@echo "Use 'build' target to launch build"
 	@echo "Use 'clean' target to clean binaries"
+	@echo "Use 'test' target to run the cabal test suites (unit + golden)"
+	@echo "Use 'accept-golden' target to refresh golden snapshots after generator changes"
 	@echo "Use 'test-bootstrap' target to compare hand-written vs generated grammar files"
 	@echo "Available grammar tests: $(GRAMMAR_TARGETS)"
 
@@ -48,7 +50,7 @@ endif
 # Build targets
 # ============================================================================
 
-SOURCES=$(wildcard *.hs *.x *.y)
+SOURCES=$(wildcard *.hs *.x *.y app/*.hs)
 build:
 	cabal build
 
@@ -64,11 +66,21 @@ clean:
 	cabal clean
 	cabal configure
 
-test: build | test-out
-	cabal exec ghc -- --make StrQuote_Test.hs -o test-out/strquote-test
-	./test-out/strquote-test
-	cabal exec ghc -- --make EmptyGrammar_Test.hs -o test-out/emptygrammar-test
-	./test-out/emptygrammar-test
+# Fast in-process test suites (no alex/happy/GHC compile cycle):
+#   unit   - HUnit tests incl. normalization invariants for every test grammar
+#   golden - generated .x/.y/QQ.hs output compared against test/golden/ snapshots
+test: test-unit test-golden
+
+test-unit:
+	cabal test unit --test-show-details=direct
+
+test-golden:
+	cabal test golden --test-show-details=direct
+
+# Regenerate the golden snapshots after an intentional generator change,
+# then review the diff of test/golden/ like any other code change.
+accept-golden:
+	RTK_ACCEPT=1 cabal test golden --test-show-details=direct
 
 test-out:
 	$(MKDIR_P) test-out

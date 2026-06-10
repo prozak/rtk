@@ -119,7 +119,7 @@ This removes:
 rtk/
 ├── rtk.cabal           # Cabal build configuration
 ├── makefile            # Make build targets
-├── main.hs             # Main executable entry point
+├── app/main.hs         # Main executable entry point
 ├── Lexer.x             # Alex lexer specification
 ├── Parser.y            # Happy parser specification
 ├── Grammar.hs          # Grammar data structures
@@ -128,6 +128,7 @@ rtk/
 ├── GenX.hs             # Lexer code generation
 ├── GenY.hs             # Parser code generation
 ├── GenQ.hs             # Query code generation
+├── test/               # Cabal test suites (unit + golden) and snapshots
 └── test-grammars/      # Test grammar files
 ```
 

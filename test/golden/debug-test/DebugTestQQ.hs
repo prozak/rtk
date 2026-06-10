@@ -1,0 +1,202 @@
+{-# LANGUAGE TemplateHaskell #-}
+module DebugTestQQ
+where
+
+import Text.Regex.Posix
+import Text.Regex.Base
+import qualified Data.Map as M
+import Data.List
+import Data.Maybe
+import qualified Data.Generics as Generics
+import qualified Data.Data as Data
+import qualified Language.Haskell.TH as TH
+import Language.Haskell.TH.Quote
+import DebugTestLexer
+import DebugTestParser
+
+qqPattern = "\\$[A-Za-z_][A-Za-z_0-9]*[^A-Za-z_0-9:]"
+
+qqShortcuts :: M.Map String String
+
+replaceAllPatterns1 :: String -> String
+replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, String, String)
+                          in if match == ""
+                              then pre
+                              else let varName = init $ tail match
+                                       addSym = last match
+                                       ruleVariants = catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts) $ reverse $ inits varName
+                                       rule = case ruleVariants of
+                                                [] -> error $ "Unknown shortcut for " ++ varName
+                                                (rule : _) -> rule
+                                   in pre ++ ('$' : rule ++ ":") ++ varName ++ (replaceAllPatterns1 $ addSym : post)
+
+-- Add ' ' at the end, so regex can match variable in the end of the string
+replaceAllPatterns :: String -> String
+replaceAllPatterns str = init $ replaceAllPatterns1 (str ++ " ")
+
+qqShortcuts = M.fromList [ ("program","Program"),("assignment","Assignment"),("block","Block"),("expression","Expression"),("factor","Factor"),("ifStatement","IfStatement"),("statement","Statement"),("term","Term"),("unusedRule1","UnusedRule1"),("unusedRule2","UnusedRule2"),("whileLoop","WhileLoop")]
+
+quoteDebugTestExp :: Data.Data a => String -> (Program -> a) -> String -> TH.ExpQ
+quoteDebugTestExp dummy func s = do
+  let s1 = replaceAllPatterns s
+      expr = func $ parseDebugTest $ alexScanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy)
+  dataToExpQ (const Nothing `Generics.extQ` antiStatementExp `Generics.extQ` antiAssignmentExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiTermExp `Generics.extQ` antiFactorExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiWhileLoopExp `Generics.extQ` antiBlockExp `Generics.extQ` antiUnusedRule1Exp) expr
+quoteDebugTestPat :: Data.Data a => String -> (Program -> a) -> String -> TH.PatQ
+quoteDebugTestPat dummy func s = do
+  let s1 = replaceAllPatterns s
+      expr = func $ parseDebugTest $ alexScanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy)
+  dataToPatQ (const Nothing `Generics.extQ` antiStatementPat `Generics.extQ` antiAssignmentPat `Generics.extQ` antiExpressionPat `Generics.extQ` antiTermPat `Generics.extQ` antiFactorPat `Generics.extQ` antiIfStatementPat `Generics.extQ` antiWhileLoopPat `Generics.extQ` antiBlockPat `Generics.extQ` antiUnusedRule1Pat) expr
+
+antiUnusedRule1Exp :: UnusedRule1 -> Maybe (TH.Q TH.Exp )
+antiUnusedRule1Exp ( Anti_UnusedRule1 v) = Just $ TH.varE (TH.mkName v)
+antiUnusedRule1Exp _ = Nothing
+
+
+antiBlockExp :: Block -> Maybe (TH.Q TH.Exp )
+antiBlockExp ( Anti_Block v) = Just $ TH.varE (TH.mkName v)
+antiBlockExp _ = Nothing
+
+
+antiWhileLoopExp :: WhileLoop -> Maybe (TH.Q TH.Exp )
+antiWhileLoopExp ( Anti_WhileLoop v) = Just $ TH.varE (TH.mkName v)
+antiWhileLoopExp _ = Nothing
+
+
+antiIfStatementExp :: IfStatement -> Maybe (TH.Q TH.Exp )
+antiIfStatementExp ( Anti_IfStatement v) = Just $ TH.varE (TH.mkName v)
+antiIfStatementExp _ = Nothing
+
+
+antiFactorExp :: Factor -> Maybe (TH.Q TH.Exp )
+antiFactorExp ( Anti_Factor v) = Just $ TH.varE (TH.mkName v)
+antiFactorExp _ = Nothing
+
+
+antiTermExp :: Term -> Maybe (TH.Q TH.Exp )
+antiTermExp ( Anti_Term v) = Just $ TH.varE (TH.mkName v)
+antiTermExp _ = Nothing
+
+
+antiExpressionExp :: Expression -> Maybe (TH.Q TH.Exp )
+antiExpressionExp ( Anti_Expression v) = Just $ TH.varE (TH.mkName v)
+antiExpressionExp _ = Nothing
+
+
+antiAssignmentExp :: Assignment -> Maybe (TH.Q TH.Exp )
+antiAssignmentExp ( Anti_Assignment v) = Just $ TH.varE (TH.mkName v)
+antiAssignmentExp _ = Nothing
+
+
+antiStatementExp :: [ Statement ] -> Maybe (TH.Q TH.Exp)
+antiStatementExp ((Anti_Statement v):rest) =
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiStatementExp `Generics.extQ` antiAssignmentExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiTermExp `Generics.extQ` antiFactorExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiWhileLoopExp `Generics.extQ` antiBlockExp `Generics.extQ` antiUnusedRule1Exp) rest
+     lvar = TH.varE $ TH.mkName v
+   in Just [| $lvar ++ $restExp |]
+antiStatementExp _ = Nothing
+
+
+
+antiUnusedRule1Pat :: UnusedRule1 -> Maybe (TH.Q TH.Pat )
+antiUnusedRule1Pat ( Anti_UnusedRule1 v) = Just $ TH.varP (TH.mkName v)
+antiUnusedRule1Pat _ = Nothing
+
+
+antiBlockPat :: Block -> Maybe (TH.Q TH.Pat )
+antiBlockPat ( Anti_Block v) = Just $ TH.varP (TH.mkName v)
+antiBlockPat _ = Nothing
+
+
+antiWhileLoopPat :: WhileLoop -> Maybe (TH.Q TH.Pat )
+antiWhileLoopPat ( Anti_WhileLoop v) = Just $ TH.varP (TH.mkName v)
+antiWhileLoopPat _ = Nothing
+
+
+antiIfStatementPat :: IfStatement -> Maybe (TH.Q TH.Pat )
+antiIfStatementPat ( Anti_IfStatement v) = Just $ TH.varP (TH.mkName v)
+antiIfStatementPat _ = Nothing
+
+
+antiFactorPat :: Factor -> Maybe (TH.Q TH.Pat )
+antiFactorPat ( Anti_Factor v) = Just $ TH.varP (TH.mkName v)
+antiFactorPat _ = Nothing
+
+
+antiTermPat :: Term -> Maybe (TH.Q TH.Pat )
+antiTermPat ( Anti_Term v) = Just $ TH.varP (TH.mkName v)
+antiTermPat _ = Nothing
+
+
+antiExpressionPat :: Expression -> Maybe (TH.Q TH.Pat )
+antiExpressionPat ( Anti_Expression v) = Just $ TH.varP (TH.mkName v)
+antiExpressionPat _ = Nothing
+
+
+antiAssignmentPat :: Assignment -> Maybe (TH.Q TH.Pat )
+antiAssignmentPat ( Anti_Assignment v) = Just $ TH.varP (TH.mkName v)
+antiAssignmentPat _ = Nothing
+
+
+antiStatementPat :: [ Statement ] -> Maybe (TH.Q TH.Pat)
+antiStatementPat [Anti_Statement v] = Just $ TH.varP (TH.mkName v)
+antiStatementPat _ = Nothing
+
+
+
+quoteDebugTestType s = return TH.ListT
+quoteDebugTestDecs s = return []
+
+getProgram ( Ctr__Program__0 s) = s
+
+program :: QuasiQuoter
+program = QuasiQuoter (quoteDebugTestExp "tok_Program_dummy_19" getProgram ) (quoteDebugTestPat "tok_Program_dummy_19" getProgram ) quoteDebugTestType quoteDebugTestDecs
+
+getAssignment ( Ctr__Program__1 s) = s
+
+assignment :: QuasiQuoter
+assignment = QuasiQuoter (quoteDebugTestExp "tok_Assignment_dummy_18" getAssignment ) (quoteDebugTestPat "tok_Assignment_dummy_18" getAssignment ) quoteDebugTestType quoteDebugTestDecs
+
+getBlock ( Ctr__Program__2 s) = s
+
+block :: QuasiQuoter
+block = QuasiQuoter (quoteDebugTestExp "tok_Block_dummy_17" getBlock ) (quoteDebugTestPat "tok_Block_dummy_17" getBlock ) quoteDebugTestType quoteDebugTestDecs
+
+getExpression ( Ctr__Program__3 s) = s
+
+expression :: QuasiQuoter
+expression = QuasiQuoter (quoteDebugTestExp "tok_Expression_dummy_16" getExpression ) (quoteDebugTestPat "tok_Expression_dummy_16" getExpression ) quoteDebugTestType quoteDebugTestDecs
+
+getFactor ( Ctr__Program__4 s) = s
+
+factor :: QuasiQuoter
+factor = QuasiQuoter (quoteDebugTestExp "tok_Factor_dummy_15" getFactor ) (quoteDebugTestPat "tok_Factor_dummy_15" getFactor ) quoteDebugTestType quoteDebugTestDecs
+
+getIfStatement ( Ctr__Program__5 s) = s
+
+ifStatement :: QuasiQuoter
+ifStatement = QuasiQuoter (quoteDebugTestExp "tok_IfStatement_dummy_14" getIfStatement ) (quoteDebugTestPat "tok_IfStatement_dummy_14" getIfStatement ) quoteDebugTestType quoteDebugTestDecs
+
+getStatement ( Ctr__Program__6 s) = s
+
+statement :: QuasiQuoter
+statement = QuasiQuoter (quoteDebugTestExp "tok_Statement_dummy_13" getStatement ) (quoteDebugTestPat "tok_Statement_dummy_13" getStatement ) quoteDebugTestType quoteDebugTestDecs
+
+getTerm ( Ctr__Program__7 s) = s
+
+term :: QuasiQuoter
+term = QuasiQuoter (quoteDebugTestExp "tok_Term_dummy_12" getTerm ) (quoteDebugTestPat "tok_Term_dummy_12" getTerm ) quoteDebugTestType quoteDebugTestDecs
+
+getUnusedRule1 ( Ctr__Program__8 s) = s
+
+unusedRule1 :: QuasiQuoter
+unusedRule1 = QuasiQuoter (quoteDebugTestExp "tok_UnusedRule1_dummy_11" getUnusedRule1 ) (quoteDebugTestPat "tok_UnusedRule1_dummy_11" getUnusedRule1 ) quoteDebugTestType quoteDebugTestDecs
+
+getUnusedRule2 ( Ctr__Program__9 s) = s
+
+unusedRule2 :: QuasiQuoter
+unusedRule2 = QuasiQuoter (quoteDebugTestExp "tok_UnusedRule2_dummy_10" getUnusedRule2 ) (quoteDebugTestPat "tok_UnusedRule2_dummy_10" getUnusedRule2 ) quoteDebugTestType quoteDebugTestDecs
+
+getWhileLoop ( Ctr__Program__10 s) = s
+
+whileLoop :: QuasiQuoter
+whileLoop = QuasiQuoter (quoteDebugTestExp "tok_WhileLoop_dummy_9" getWhileLoop ) (quoteDebugTestPat "tok_WhileLoop_dummy_9" getWhileLoop ) quoteDebugTestType quoteDebugTestDecs
+

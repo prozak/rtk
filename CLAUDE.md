@@ -200,14 +200,28 @@ The project has comprehensive tests:
 
 All tests pass successfully as of 2025-11-01.
 
-#### Basic Unit Tests
+#### Cabal Test Suites (fast, no alex/happy needed)
 ```bash
-make test
+make test          # or: cabal test
 ```
 
-Runs:
-- StrQuote_Test (string quotation handling)
-- EmptyGrammar_Test (grammar parsing edge cases)
+Runs the two cabal test suites defined in rtk.cabal:
+- `unit` (test/UnitTests.hs) - HUnit tests for StrQuote, token post-processing,
+  pipeline error handling, normalization behavior on small inline grammars, and
+  normalization invariants checked against every grammar in test-grammars/
+- `golden` (test/GoldenTests.hs) - golden/snapshot tests: the generated
+  `<Name>Lexer.x`, `<Name>Parser.y` and `<Name>QQ.hs` for every grammar in
+  test-grammars/ are compared against the snapshots in test/golden/
+
+Both suites run the generation pipeline in-process, so they need no alex,
+happy, or GHC compile cycle and catch generator regressions instantly.
+
+After an **intentional** generator change, refresh the snapshots and review the
+diff like any other code change:
+```bash
+make accept-golden     # or: RTK_ACCEPT=1 cabal test golden
+git diff test/golden/
+```
 
 #### Bootstrap Comparison Test
 ```bash
@@ -355,6 +369,20 @@ export LC_ALL=C.UTF-8
 ```bash
 export PATH="/root/.cabal/bin:$PATH"
 ```
+
+### Issue: build fails with missing-home-modules for Lexer/Parser
+**Problem**: After the executable was reduced to app/main.hs (all modules now
+live in the library), a dist-newstyle from the old layout still contains
+preprocessed Lexer.hs/Parser.hs inside the executable's build directory. GHC
+picks them up as unlisted home modules that shadow the library's copies:
+```
+warning: [-Wmissing-home-modules]
+    These modules are needed for compilation but not listed in your .cabal
+    file's other-modules for 'main' : Lexer Parser
+```
+(fatal under -Werror, e.g. in CI's lint build).
+**Solution**: One-time `cabal clean` after pulling the layout change. CI
+avoids this by never restoring dist-newstyle caches across .cabal changes.
 
 ### Issue: Package update fails with HTTP mirror warnings
 **Problem**: Using HTTP instead of HTTPS causes connection failures and delays:
