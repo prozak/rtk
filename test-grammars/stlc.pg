@@ -1,0 +1,55 @@
+grammar 'Stlc';
+
+# Simply typed lambda calculus ("Write You a Haskell" chapters 5-6, see
+# docs/write-you-a-haskell.md). Same expression ladder as lc.pg plus a
+# second QQ-capable nonterminal family for types.
+#
+# Annotated binders use the classic dot form '\x : Int . e': with an
+# arrow instead, 'Int -> e' would parse as a function type under LALR.
+# The type arrow is right-recursive, so 'Int -> Int -> Bool' associates
+# to the right; TyAtom is the lift-free rule of the Ty family, putting
+# the Anti_Ty alternative in operand position (same design rule as Atom
+# in the Expr family).
+
+Stlc = Expr ;
+
+@shortcuts(e)
+Expr = '\\' Id ':' Ty '.' Expr
+     | 'let' Id '=' Expr 'in' Expr
+     | 'if' Expr 'then' Expr 'else' Expr
+     | ,Eq ;
+
+Expr: Eq  = Eq '==' Add
+          | ,Add ;
+
+Expr: Add = Add '+' Mul
+          | Add '-' Mul
+          | ,Mul ;
+
+Expr: Mul = Mul '*' App
+          | ,App ;
+
+Expr: App = App Atom
+          | ,Atom ;
+
+Expr: Atom = num
+           | 'true'
+           | 'false'
+           | Id
+           | '(' ,Expr ')' ;
+
+@shortcuts(t)
+Ty = TyAtom '->' Ty
+   | ,TyAtom ;
+
+Ty: TyAtom = 'Int'
+           | 'Bool'
+           | '(' ,Ty ')' ;
+
+@shortcuts(x)
+Id = id ;
+
+Int: num = [0-9]+ ;
+id = [a-z][a-zA-Z0-9_]* ;
+Ignore: ws = [ \t\n]+ ;
+Ignore: comment = '--' .* [\n] ;

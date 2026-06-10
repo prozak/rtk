@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens repl-lc test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens repl-lc repl-stlc test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -226,6 +226,18 @@ test-lc: build test-out/lc-main | test-out
 
 repl-lc: build test-out/lc-main | test-out
 	test-out/lc-main repl
+
+# Simply typed lambda calculus generated from stlc.pg (Write You a Haskell,
+# chapters 5-6): QQ-driven typechecker plus a strategy-parameterized
+# evaluator, with a test suite and a typecheck-then-eval REPL
+test-out/stlc-main: test-out/stlc-main.hs test-out/StlcLexer.hs test-out/StlcParser.hs
+	cabal exec -- ghc --make -itest-out test-out/stlc-main.hs -o test-out/stlc-main
+
+test-stlc: build test-out/stlc-main | test-out
+	test-out/stlc-main
+
+repl-stlc: build test-out/stlc-main | test-out
+	test-out/stlc-main repl
 
 # Java quasi-quotation tests (separate from regular java-main parser driver)
 test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
