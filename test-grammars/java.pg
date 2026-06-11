@@ -1,11 +1,90 @@
 grammar 'Java';
 
+# ============================================================================
+# LALR conflict inventory (happy: 18 shift/reduce, 0 reduce/reduce)
+# ============================================================================
+# Every remaining conflict is a shift/reduce whose default resolution (shift)
+# is the correct Java reading. They fall into seven families; the items
+# identify the automaton state (happy -i state numbers move with every
+# grammar change, the items do not):
+#
+# 1. Dangling else - 1 state, 2 conflicts: 'else' and its splice token
+#    qq_OptElsePart, against reduce OptElsePart -> empty. Item:
+#        IfStatement -> 'if' '(' Expression ')' Statement . OptElsePart
+#    Shift binds the else part to the NEAREST 'if'; the reduce would close
+#    this if and hand the 'else' to an enclosing one. Shifting is the JLS
+#    14.5 rule. See IfStatement.
+#
+# 2. catch/finally attach to the nearest try - 1 state, 4 conflicts:
+#    'catch', 'finally' and their splice tokens qq_CatchList, qq_OptFinally,
+#    against reduce OptFinally -> empty. Items:
+#        TryStatement -> 'try' Statement CatchList . OptFinally
+#        CatchList -> CatchList . ('catch' '(' Parameter ')' Statement)
+#    In 'try try { } catch (E e) { } finally { }' each clause could extend
+#    the inner try (shift) or close it and attach to the outer one (reduce).
+#    Java attaches both to the nearest try.
+#
+# 3. Member id vs empty TypeParameters - 2 states (a type body after
+#    ModifierList, and the MemberDeclaration QQ entry), 1 conflict each on
+#    id, against reduce TypeParameters -> empty. Items:
+#        MemberDeclaration -> . id MemberAfterFirstId
+#        TypeParameters -> .
+#    In 'Foo bar(...)' the id either starts the non-generic alternative
+#    (shift) or follows an empty TypeParameters inside the generic one
+#    (reduce). No input is lost: id MemberAfterFirstId derives everything
+#    the empty-TypeParameters generic alternative would.
+#
+# 4. Greedy CompoundName '.' - 1 state, 1 conflict on '.', against reduce
+#    CompoundName -> id ('.' id)* . Item:
+#        ('.' id)* -> ('.' id)* . ('.' id)
+#    'a.b.c' extends the unreduced name instead of reducing 'a' early and
+#    parsing '.' as a field access; PostfixExpression '.' id still handles
+#    non-name bases ('f().x', 'this.x'), so no input is lost.
+#
+# 5. Bracket-list shifts on '[' - 5 states, 1 conflict each:
+#      - after CompoundName in an expression, at statement start, and in a
+#        cast head (reduce: the call-parens option ('(' Arglist ')')? ->
+#        empty, i.e. commit to the bare name as a complete primary). Items:
+#            PrimaryNoPostfix -> CompoundName . '[' Expression ']'
+#            Type             -> CompoundName . NonEmptyDims      (and the
+#            CastExpression heads in the cast state)
+#      - after DimExprs and after NonEmptyDims in array creation (reduce:
+#        stop the dims list). Items:
+#            DimExprs     -> DimExprs . ('[' Expression ']')
+#            NonEmptyDims -> NonEmptyDims . ('[' ']')
+#    Shifting '[' defers the type-vs-access decision by exactly one token
+#    (']' means a type's empty pair, an expression start means array
+#    access/sizing) or greedily extends the dims list; no input is lost.
+#    See the NOTEs at Dims and PrimaryNoPostfix.
+#
+# 6. '<' commits to type arguments - 3 states, 1 conflict each on '<':
+#    after CompoundName at statement start and in a cast head (reduce: bare-
+#    name primary, as in family 5), and in a pure type position (reduce:
+#    Type -> CompoundName, whose only following '<' would be
+#    'x instanceof T < y'). Standard for LALR Java parsers; see the NOTE at
+#    TypeArguments. Only the cast-head state loses real input ('(a < b)' as
+#    a parenthesized primary, see KNOWN LIMITATION at CastExpression); the
+#    other two reject only semantically invalid Java ('a < b;' as a bare
+#    statement-expression, 'x instanceof T < y').
+#
+# 7. QQ bootstrap dummy bracket - 1 state, 1 conflict. The quasi-quoter
+#    wraps a quote body in a per-rule dummy-token pair, and the whole-file
+#    entry 'Java -> DUMMY . Java DUMMY' lets a second opening DUMMY (shift)
+#    compete with deriving an empty CompilationUnit ((Package)? -> empty)
+#    right before the closing DUMMY (reduce). Only a completely empty
+#    [java| |] quote is affected (it fails to parse); any non-empty quote
+#    has a real token after the opening DUMMY.
+#
+# The cast-vs-paren decision one token AFTER ')' is conflict-free; see
+# CastExpression.
+# ============================================================================
+
 Java = CompilationUnit ;
 
 OptDocComment = (DocComment)? ;
 
 TypeDeclaration =
- OptDocComment ( ClassDeclaration | InterfaceDeclaration | EnumDeclaration | AnnotationDeclaration )  ;
+ OptDocComment ModifierList TypeDeclRest ;
 
 ImportList = (ImportStatement)*;
 CompilationUnit  =
@@ -35,9 +114,15 @@ AnnotationElement = id '=' ConditionalExpression | ConditionalExpression ;
 
 AnnotationList = Annotation* ;
 
-# NOTE: ModifierList creates shift/reduce conflicts (~14) because the parser must decide
-# when to stop adding modifiers/annotations and start parsing the Type. These conflicts
-# resolve correctly with lookahead (inherent to the grammar design).
+# Exactly ONE ModifierList is parsed per declaration, owned by the enclosing
+# declaration rule (TypeDeclaration at the top level, FieldDeclaration inside
+# a type body). The class/interface/enum/@interface rules must NOT start with
+# their own nullable ModifierList: after the enclosing list, every token that
+# can extend a ModifierList (the 10 modifier keywords, '@', and the splice
+# tokens qq_Modifier/qq_Annotation/qq_ModifierList) used to conflict between
+# extending the outer list and epsilon-starting the inner one - 14
+# shift/reduce conflicts whose shift put all modifiers on the outer list and
+# left the inner one always empty.
 ModifierList = (Modifier | Annotation)* ;
 
 ExtendsList = 'extends' CompoundName (',' CompoundName)* ;
@@ -45,19 +130,22 @@ ImplementsList = 'implements' CompoundName + ~',';
 FieldDeclarationList = FieldDeclaration *;
 
 ClassDeclaration  =
- ModifierList 'class' id TypeParameters
+ 'class' id TypeParameters
  ExtendsList?
  ImplementsList?
  '{'  FieldDeclarationList  '}'  ;
 
 InterfaceDeclaration  =
- ModifierList 'interface' id TypeParameters
+ 'interface' id TypeParameters
  ExtendsList?
  '{'  FieldDeclarationList  '}'  ;
 
-# Annotation declaration (@interface)
+# Annotation declaration (@interface). The leading '@' shifts from the same
+# state where '@' could extend the enclosing ModifierList with an Annotation;
+# the NEXT token disambiguates ('interface' here vs id for an annotation), so
+# the two uses of '@' never conflict.
 AnnotationDeclaration =
- ModifierList '@' 'interface' id
+ '@' 'interface' id
  '{' AnnotationTypeElementList '}' ;
 
 AnnotationTypeElementList = AnnotationTypeElement* ;
@@ -73,7 +161,7 @@ EnumConstant = AnnotationList id ('(' Arglist ')')? ('{' FieldDeclarationList '}
 EnumConstantList = EnumConstant (',' EnumConstant)* (',')? ;
 
 EnumDeclaration =
- ModifierList 'enum' id
+ 'enum' id
  ImplementsList?
  '{' EnumConstantList (';' FieldDeclarationList)? '}' ;
 
@@ -87,16 +175,18 @@ EnumDeclaration =
 # NOTE: DocComment comes BEFORE ModifierList to match standard Java style:
 #   /** doc */ public int field;
 # NOT: public /** doc */ int field;
-# NestedTypeDeclaration handles all nested type declarations (class, interface, enum, annotation)
-# These all share the same pattern: Javadoc? Modifiers TypeKeyword Name ...
-NestedTypeDeclaration =
+# TypeDeclRest is everything of a type declaration AFTER its modifiers: the
+# class/interface/enum/@interface keyword onwards. The ModifierList lives on
+# the enclosing rule (TypeDeclaration at the top level, FieldDeclaration for
+# nested types), see the NOTE at ModifierList.
+TypeDeclRest =
  ClassDeclaration
  | InterfaceDeclaration
  | EnumDeclaration
  | AnnotationDeclaration ;
 
 FieldDeclaration  =
- OptDocComment (ModifierList ((MemberDeclaration | NestedTypeDeclaration) | StaticInitializer))
+ OptDocComment ModifierList (MemberDeclaration | TypeDeclRest | StaticInitializer)
  |  ';'  ;
 
 # Array brackets (JLS-style split): types and declarators may only contain
@@ -166,7 +256,7 @@ StatementBlock  =  '{'  StatementList  '}'  ;
 VariableDeclaratorList = VariableDeclarator (',' VariableDeclarator)* ;
 
 # VariableDeclaration is used for:
-# 1. Local variable declarations inside method bodies (via StatementWithoutIf)
+# 1. Local variable declarations inside method bodies (via Statement)
 # 2. For loops (via ForStatement)
 # Note: Field-level variable declarations use MemberDeclaration above
 VariableDeclaration  =
@@ -200,15 +290,11 @@ OptExpression = Expression? ;
 OptId = id?;
 
 Statement =
- StatementWithoutIf
- |  IfStatement
-  ;
-
-StatementWithoutIf =
 VariableDeclaration
  |  'return'  OptExpression  ';'
  |  Expression  ';'
  |  StatementBlock
+ |  IfStatement
  |  DoStatement
  |  WhileStatement
  |  ForStatement
@@ -223,11 +309,17 @@ VariableDeclaration
 
 OptElsePart = ('else' Statement)? ;
 
-# NOTE: If-else statements create shift/reduce conflicts due to the dangling-else problem.
-# The current design with StatementWithoutIf resolves this correctly by binding else to
-# the nearest if. These conflicts (~13) are acceptable and standard in Java parsers.
+# The then-branch is a full Statement, so a nested if needs no braces:
+# 'if (a) if (b) f(); else g();' is valid Java. This is the classic
+# dangling-else shift/reduce conflict (family 1 of the inventory at the top
+# of this file); happy resolves it by shifting, i.e. 'else' binds to the
+# NEAREST 'if' - exactly the JLS 14.5 rule. (A StatementWithoutIf then-
+# branch used to exclude nested ifs from the then position: that dodged
+# nothing - the conflict already existed via loop bodies like
+# 'if (a) while (b) if (c) f(); else g();' - while rejecting the valid
+# direct form above.)
 IfStatement =
- 'if'  '(' Expression  ')' StatementWithoutIf
+ 'if'  '(' Expression  ')' Statement
    OptElsePart ;
 
 DoStatement =
@@ -349,24 +441,10 @@ Expression : MultiplicativeExpression = UnaryExpression | MultiplicativeExpressi
 # conditions (if/while/for) and argument lists there is no cast context, so
 # 'if (a < b)' and 'f(a < b)' are unaffected.
 #
-# Shift/reduce inventory after this restructure (happy: 32 s/r, 0 r/r; the
-# two reduce/reduce conflicts of the previous grammar are gone). The 8
-# java-specific conflicts beyond the long-standing ones (dangling else,
-# catch/finally repetition, ModifierList stop, compound-name '.', member
-# id-vs-TypeParameters, bootstrap dummy token) are all intended
-# shift-preferences:
-#   on '[' (5 states): after CompoundName in expression, statement-start,
-#     cast, and after DimExprs/NonEmptyDims in creation - shifting '[' just
-#     defers the type-vs-access decision to the next token (']' vs
-#     expression start) or extends the bracket list; no input is lost.
-#   on '<' (3 states): after CompoundName at statement start, in casts, and
-#     after 'instanceof' - shift prefers type arguments. Only the cast state
-#     loses input ('(a < b)' above); the other two reject only semantically
-#     invalid Java ('a < b;' as a bare statement-expression,
-#     'x instanceof T < y').
-# The cast-vs-paren decision after ')' is conflict-FREE: operand-start
-# tokens can never follow a complete parenthesized expression, so the
-# lookahead sets are disjoint.
+# The '[' and '<' shifts inside the cast head are families 5 and 6 of the
+# conflict inventory at the top of this file. The cast-vs-paren decision
+# after ')' is conflict-FREE: operand-start tokens can never follow a
+# complete parenthesized expression, so the lookahead sets are disjoint.
 Expression : CastExpression =
  '(' PrimitiveTypeKeyword Dims ')' UnaryExpression
  | '(' CompoundName NonEmptyTypeArguments Dims ')' UnaryExpressionNotPlusMinus

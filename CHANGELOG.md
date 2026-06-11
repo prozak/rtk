@@ -179,6 +179,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lexer-generation errors name the lexical rule they occur in
 
 ### Changed
+- The Java grammar parses exactly ONE `ModifierList` per declaration. The
+  class/interface/enum/`@interface` rules no longer begin with their own
+  nullable list; `TypeDeclRest` (ex-`NestedTypeDeclaration`, now used at the
+  top level too) carries everything after the modifiers, and the list lives
+  on the enclosing rule: `TypeDeclaration = OptDocComment ModifierList
+  TypeDeclRest`, `FieldDeclaration = OptDocComment ModifierList
+  (MemberDeclaration | TypeDeclRest | StaticInitializer) | ';'`. The nested
+  nullable lists used to produce 14 shift/reduce conflicts (after the outer
+  list, every modifier/annotation token chose between extending it and
+  epsilon-starting the inner one) whose shift resolution parsed
+  `public class A {}` with `public` on the OUTER list and a confusing,
+  always-empty inner list; that always-empty `ModifierList` field is gone
+  from the class/interface/enum/annotation AST constructors, and the
+  generated quasi-quoter renames `nestedTypeDeclaration` to `typeDeclRest`.
+  Together with the restored dangling-else conflict (see Fixed) the
+  generated `JavaParser.y` is down to 18 shift/reduce + 0 reduce/reduce
+  conflicts (from 32 + 0), and java.pg now opens with a complete inventory
+  of all 18 - each family with its automaton items and why the shift is the
+  correct Java reading (dangling else; catch/finally attach to the nearest
+  try; member id vs empty TypeParameters; greedy CompoundName `.`;
+  bracket-list `[` shifts; `<` commits to type arguments; the QQ bootstrap
+  dummy bracket) - replacing the stale "~14"/"~13"/"32" conflict comments.
+  The commons-lang corpus success sets are unchanged (14/16 main/tests
+  files), so the parser blacklists stay as they are
 - The makefile test pipeline now runs alex with `-g` (the GHC backend), so
   generated lexers in `test-out/` compile as compact string-encoded tables
   instead of ~half-a-million-line pattern matches. GHC's compile of the
@@ -212,6 +236,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   printed an error
 
 ### Fixed
+- A brace-less nested `if` parses again: `IfStatement`'s then-branch was
+  `StatementWithoutIf`, so valid Java like `if (a) if (b) f(); else g();`
+  was rejected with "unexpected 'if'". The then-branch is a full `Statement`
+  and `StatementWithoutIf` is inlined away (`Statement` absorbs its
+  alternatives; nothing else referenced it). This re-surfaces the classic
+  dangling-else shift/reduce conflict, which happy resolves by shifting:
+  `else` binds to the NEAREST `if`, exactly the JLS 14.5 rule (verified on
+  the printed AST; regression coverage via
+  `test-grammars/java/test-nested-if.java` / `make test-java-nested-if` and
+  a quasi-quotation construction case). The exclusion never even avoided
+  that conflict - it already existed through loop bodies in then-position,
+  e.g. `if (a) while (b) if (c) f(); else g();` - it only rejected the
+  direct nested form
 - The Java grammar's last structural LALR ambiguity - deciding between a
   type and an expression after a `CompoundName` at statement start or after
   `(` - is resolved JLS-style (`happy` now reports 0 reduce/reduce
