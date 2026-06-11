@@ -1,35 +1,35 @@
-Tk__tok_class_12
+Tk__tok_class_13
 Tk__id "StringLiterals"
-Tk__tok__symbol__13
+Tk__tok__symbol__14
 Tk__id "String"
 Tk__id "empty"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__string "\"\""
 Tk__tok__semi__1
 Tk__id "String"
 Tk__id "simple"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__string "\"hello\""
 Tk__tok__semi__1
 Tk__id "String"
 Tk__id "escapes"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__string "\"tab\\there\\nnewline\""
 Tk__tok__semi__1
 Tk__id "String"
 Tk__id "quote"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__string "\"she said \\\"hi\\\"\""
 Tk__tok__semi__1
 Tk__id "String"
 Tk__id "backslash"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__string "\"back\\\\slash\""
 Tk__tok__semi__1
 Tk__id "String"
 Tk__id "unicode"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__string "\"\\u0041BC\""
 Tk__tok__semi__1
-Tk__tok__symbol__14
+Tk__tok__symbol__15
 EndOfFile

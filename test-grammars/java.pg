@@ -96,8 +96,22 @@ Package  =
  'package' CompoundName  ';'  ;
 
 ImportStatement  =
- 'import'  (  ( CompoundName  '.'  '*' )
- | CompoundName  )  ';'  ;
+ 'import'  ('static')?  ImportName  ';'  ;
+
+# Import names have their own LEFT-recursive spelling instead of reusing
+# CompoundName: the on-demand form would need CompoundName reduced on
+# lookahead '.' (to then shift '.' '*'), but that reduce loses to the greedy
+# name-extension shift (family 4), which made the star branch unreachable
+# ('import a.b.*;' never parsed). Left recursion keeps both '.'
+# continuations in one item set, so the token AFTER each '.' (id vs '*')
+# picks the branch - no early commitment, no conflict.
+ImportName =
+ ImportHead
+ | ImportHead '.' '*' ;
+
+ImportHead =
+ id
+ | ImportHead '.' id ;
 
 DocComment = doccomment;
 
@@ -219,7 +233,7 @@ PrimitiveTypeKeyword =
 
 # After first id (without TypeParameters or primitive type), branch on next token:
 MemberAfterFirstId =
- '(' ParameterList? ')' StatementBlock                          # Constructor: id '(' ...
+ '(' ParameterList? ')' ThrowsClause? StatementBlock            # Constructor: id '(' ...
  | MoreTypeSpecifier id MemberRest ;                            # Reference type: id ... id MemberRest
 
 # MoreTypeSpecifier handles the rest of a type after the first id
@@ -228,6 +242,13 @@ MoreTypeSpecifier =
  '.' id MoreTypeSpecifier                                       # Qualified name
  | TypeArguments Dims ;                                          # Generics + array brackets
 
+# Throws clause for methods and constructors (JLS 8.4.6): 'throws' is a fresh
+# keyword in follow position, so the optional clause never conflicts with the
+# tokens that end a method header ('{', ';', 'default'). Exception types are
+# CompoundNames: a generic class may not subclass Throwable, so type
+# arguments cannot occur here.
+ThrowsClause = 'throws' CompoundName (',' CompoundName)* ;
+
 # MemberRest branches on what follows "Type id":
 # - '(' indicates a method declaration
 # - '[' or '=' or ',' or ';' indicates a variable declaration
@@ -235,7 +256,7 @@ MoreTypeSpecifier =
 # (int value() default 5;). Accepting it on ordinary methods too is
 # parser-level tolerance; rejecting it there is a semantic check (javac's job).
 MemberRest =
- '(' ParameterList? ')' Dims ( StatementBlock | ('default' Expression)? ';' )
+ '(' ParameterList? ')' Dims ThrowsClause? ( StatementBlock | ('default' Expression)? ';' )
  | Dims OptVariableInitializer MoreVariableDeclarators ';' ;
 
 MoreVariableDeclarators = (',' VariableDeclarator)* ;
