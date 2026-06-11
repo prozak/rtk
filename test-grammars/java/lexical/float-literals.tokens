@@ -1,82 +1,82 @@
 Tk__tok_class_12
 Tk__id "FloatLiterals"
 Tk__tok__symbol__13
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "plain"
 Tk__tok__eql__9
 Tk__floatLiteral "1.5"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "leadingDot"
 Tk__tok__eql__9
 Tk__floatLiteral ".5"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "trailingDot"
 Tk__tok__eql__9
 Tk__floatLiteral "1."
 Tk__tok__semi__1
-Tk__tok_float_25
+Tk__tok_float_24
 Tk__id "suffixF"
 Tk__tok__eql__9
 Tk__floatLiteral "1.5f"
 Tk__tok__semi__1
-Tk__tok_float_25
+Tk__tok_float_24
 Tk__id "suffixFUpper"
 Tk__tok__eql__9
 Tk__floatLiteral "1.5F"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "suffixD"
 Tk__tok__eql__9
 Tk__floatLiteral "1.5d"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "suffixDUpper"
 Tk__tok__eql__9
 Tk__floatLiteral "1.5D"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "expLower"
 Tk__tok__eql__9
 Tk__floatLiteral "1.5e10"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "expUpper"
 Tk__tok__eql__9
 Tk__floatLiteral "1.5E10"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "expPlus"
 Tk__tok__eql__9
 Tk__floatLiteral "1.5e+10"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "expMinus"
 Tk__tok__eql__9
 Tk__floatLiteral "1.5e-10"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "intExp"
 Tk__tok__eql__9
 Tk__floatLiteral "1e5"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "intExpSuffix"
 Tk__tok__eql__9
 Tk__floatLiteral "2E5d"
 Tk__tok__semi__1
-Tk__tok_float_25
+Tk__tok_float_24
 Tk__id "intSuffix"
 Tk__tok__eql__9
 Tk__floatLiteral "10f"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "intSuffixUpper"
 Tk__tok__eql__9
 Tk__floatLiteral "10D"
 Tk__tok__semi__1
-Tk__tok_double_27
+Tk__tok_double_26
 Tk__id "underscore"
 Tk__tok__eql__9
 Tk__floatLiteral "1_000.000_1"
