@@ -28,6 +28,10 @@ data DebugOptions = DebugOptions
       grammarFile :: FilePath
     , outputDir :: FilePath
 
+    -- Front-end selection: parse the grammar with the lexer/parser RTK
+    -- generated from test-grammars/grammar.pg instead of the hand-written ones
+    , useGenerated :: Bool
+
     -- Pipeline stage inspection
     , debugTokens :: Bool
     , debugParse :: Bool
@@ -69,6 +73,7 @@ defaultDebugOptions :: FilePath -> FilePath -> DebugOptions
 defaultDebugOptions file dir = DebugOptions
     { grammarFile = file
     , outputDir = dir
+    , useGenerated = False
     , debugTokens = False
     , debugParse = False
     , debugStringNorm = False
@@ -117,6 +122,11 @@ debugOptionsParser = DebugOptions
     <*> argument str
         ( metavar "OUTPUT_DIR"
        <> help "Output directory for generated files" )
+
+    -- Front-end selection
+    <*> switch
+        ( long "use-generated"
+       <> help "Parse the grammar with RTK's own generated lexer/parser (self-hosting mode)" )
 
     -- Pipeline stage inspection
     <*> switch

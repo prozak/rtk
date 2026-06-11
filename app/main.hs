@@ -1,5 +1,6 @@
 import Lexer
 import Parser
+import ASTAdapter (parseWithGenerated)
 import Diagnostics (Diagnostic, renderDiagnostic)
 import TokenProcessing
 import StringLiterals
@@ -24,23 +25,41 @@ main = do
     -- Load grammar file
     content <- readFile (grammarFile opts)
 
-    -- Stage 1: Lexical Analysis
-    (eRawTokens, maybeT1) <- runStage opts "Lexical Analysis" $ scanTokens content
-    rawTokens <- orDie opts eRawTokens
+    -- Stages 1-2: front end (lexing and parsing). --use-generated swaps the
+    -- hand-written lexer/parser for the ones RTK generated from
+    -- test-grammars/grammar.pg (compiled from the test/golden/grammar
+    -- snapshot) plus the AST adapter; everything after this point is the
+    -- same shared pipeline. In generated mode there is no separate token
+    -- stream, so --debug-tokens prints nothing and --debug-stage lex stops
+    -- after the combined front end.
+    (grammar, frontEndTimings) <-
+        if useGenerated opts
+            then do
+                (eGrammar, maybeT) <- runStage opts "Front End (generated)" $
+                    parseWithGenerated content
+                g <- orDie opts eGrammar
+                when (debugStage opts == Just StageLex)
+                    exitAfterDebug
+                return (g, [maybeT])
+            else do
+                -- Stage 1: Lexical Analysis
+                (eRawTokens, maybeT1) <- runStage opts "Lexical Analysis" $ scanTokens content
+                rawTokens <- orDie opts eRawTokens
 
-    -- Stage 1.5: Token Post-Processing
-    -- Process escape sequences and concatenate multi-line strings
-    (tokens, maybeT1_5) <- runStage opts "Token Post-Processing" $ processTokens rawTokens
+                -- Stage 1.5: Token Post-Processing
+                -- Process escape sequences and concatenate multi-line strings
+                (tokens, maybeT1_5) <- runStage opts "Token Post-Processing" $ processTokens rawTokens
 
-    when (debugTokens opts) $
-        D.printTokens opts tokens
+                when (debugTokens opts) $
+                    D.printTokens opts tokens
 
-    when (debugStage opts == Just StageLex)
-        exitAfterDebug
+                when (debugStage opts == Just StageLex)
+                    exitAfterDebug
 
-    -- Stage 2: Parsing
-    (eGrammar, maybeT2) <- runStage opts "Parsing" $ parse tokens
-    grammar <- orDie opts eGrammar
+                -- Stage 2: Parsing
+                (eGrammar, maybeT2) <- runStage opts "Parsing" $ parse tokens
+                g <- orDie opts eGrammar
+                return (g, [maybeT1, maybeT1_5, maybeT2])
 
     when (debugParse opts) $
         D.printInitialGrammar opts grammar
@@ -145,7 +164,7 @@ main = do
 
     -- Show timing profile if requested
     when (profileStages opts) $ do
-        let allTimings = catMaybes [maybeT1, maybeT1_5, maybeT2, maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8]
+        let allTimings = catMaybes (frontEndTimings ++ [maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8])
         when (not $ null allTimings) $
             D.showTimingInfo opts allTimings
 
