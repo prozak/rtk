@@ -10,12 +10,13 @@ import Text.Show.Pretty
 
 subst :: Id -> E -> Int -> E
 subst id [e|(fold $e1 $e2 (lambda ( $id1 $id2 ) $e3))|] i =
-  let e1 = subst id e1 i
-      e2 = subst id e2 i
-      e3 = subst id e3 i
-    in [e|(fold $e1 $e2 (lambda ( $id1 $id2 ) $e3))|]
+  let e1s = subst id e1 i
+      e2s = subst id e2 i
+      e3s = subst id e3 i
+    in [e|(fold $e1s $e2s (lambda ( $id1 $id2 ) $e3s))|]
+subst _ e _ = e
 
--- subst id [e|$id1|] i = if 
+-- subst id [e|$id1|] i = if
 
 evalE :: E -> Int
 evalE _ = 0
