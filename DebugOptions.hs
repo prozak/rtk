@@ -51,6 +51,7 @@ data DebugOptions = DebugOptions
     , listRules :: Bool
 
     -- Selective debug
+    , debugRule :: Maybe String
     , debugStage :: Maybe DebugStage
 
     -- Validation
@@ -86,6 +87,7 @@ defaultDebugOptions file dir = DebugOptions
     , analyzeConflicts = False
     , showRuleGraph = False
     , listRules = False
+    , debugRule = Nothing
     , debugStage = Nothing
     , validateGrammar = False
     , showUnusedRules = False
@@ -175,6 +177,10 @@ debugOptionsParser = DebugOptions
        <> help "List all rule names by category" )
 
     -- Selective debug
+    <*> optional (strOption
+        ( long "debug-rule"
+       <> metavar "RULENAME"
+       <> help "Debug a specific rule through all stages" ))
     <*> optional (option (maybeReader parseStage)
         ( long "debug-stage"
        <> metavar "STAGE"

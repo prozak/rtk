@@ -12,7 +12,8 @@ import DebugOptions
 import qualified Debug as D
 import Control.Monad (when)
 import Data.Data (Data)
-import Data.Maybe (catMaybes)
+import Data.IORef (newIORef, readIORef, writeIORef)
+import Data.Maybe (catMaybes, isJust)
 import Control.Exception (evaluate)
 import System.IO (hPutStrLn, stderr)
 import System.Exit (exitSuccess, exitWith, ExitCode (ExitFailure))
@@ -24,6 +25,16 @@ main = do
 
     -- Load grammar file
     content <- readFile (grammarFile opts)
+
+    -- --debug-rule: trace one rule through the pipeline, printing only its
+    -- representation after each stage. Remember whether it was seen at any
+    -- stage so an unknown name can fail the run at the end (catches typos).
+    ruleFound <- newIORef False
+    let traceRule trace = case debugRule opts of
+            Just name -> do
+                found <- trace name
+                when found $ writeIORef ruleFound True
+            Nothing -> return ()
 
     -- Stages 1-2: front end (lexing and parsing). --use-generated swaps the
     -- hand-written lexer/parser for the ones RTK generated from
@@ -38,6 +49,9 @@ main = do
                 (eGrammar, maybeT) <- runStage opts "Front End (generated)" $
                     parseWithGenerated content
                 g <- orDie opts eGrammar
+                traceRule $ \name -> do
+                    D.traceRuleTokensUnavailable opts name
+                    return False
                 when (debugStage opts == Just StageLex)
                     exitAfterDebug
                 return (g, [maybeT])
@@ -53,6 +67,8 @@ main = do
                 when (debugTokens opts) $
                     D.printTokens opts tokens
 
+                traceRule $ \name -> D.traceRuleTokens opts name tokens
+
                 when (debugStage opts == Just StageLex)
                     exitAfterDebug
 
@@ -64,6 +80,8 @@ main = do
     when (debugParse opts) $
         D.printInitialGrammar opts grammar
 
+    traceRule $ \name -> D.traceRuleInitial opts name "After Parse" grammar
+
     when (debugStage opts == Just StageParse)
         exitAfterDebug
 
@@ -72,6 +90,8 @@ main = do
 
     when (debugStringNorm opts) $
         D.printComparison opts "Before String Normalization" grammar "After String Normalization" grammar0
+
+    traceRule $ \name -> D.traceRuleInitial opts name "After String Normalization" grammar0
 
     when (debugStage opts == Just StageStringNorm)
         exitAfterDebug
@@ -83,6 +103,8 @@ main = do
     when (debugClauseNorm opts) $
         D.printNormalGrammar opts "CLAUSE NORMALIZATION OUTPUT" grammar1
 
+    traceRule $ \name -> D.traceRuleNormal opts name "After Clause Normalization" grammar1
+
     when (debugStage opts == Just StageClauseNorm)
         exitAfterDebug
 
@@ -91,6 +113,19 @@ main = do
 
     when (debugConstructors opts) $
         D.printNormalGrammar opts "FINAL GRAMMAR (with Constructor Names)" grammar2
+
+    traceRule $ \name -> D.traceRuleNormal opts name "After Constructor Fill" grammar2
+
+    -- Constructor fill is the last traced stage: a rule that matched nowhere
+    -- can only be a typo, so fail the run
+    case debugRule opts of
+        Just name -> do
+            found <- readIORef ruleFound
+            when (not found) $ do
+                hPutStrLn stderr $
+                    "rtk: rule '" ++ name ++ "' was not found at any pipeline stage"
+                exitWith (ExitFailure 1)
+        Nothing -> return ()
 
     when (debugStage opts == Just StageFillNames)
         exitAfterDebug
@@ -172,7 +207,8 @@ main = do
     when (not $ any id [debugTokens opts, debugParse opts, debugStringNorm opts,
                         debugClauseNorm opts, debugConstructors opts,
                         debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts,
-                        showStats opts, validateGrammar opts]) $ do
+                        showStats opts, validateGrammar opts,
+                        isJust (debugRule opts)]) $ do
         putStrLn $ "Successfully generated files for " ++ grammar_name
 
 -- | Either surface a pipeline diagnostic on stderr and exit 1, or return the

@@ -10,6 +10,12 @@ module Debug
     , printNormalGrammar
     , printComparison
 
+    -- * Single-rule pipeline trace
+    , traceRuleTokens
+    , traceRuleTokensUnavailable
+    , traceRuleInitial
+    , traceRuleNormal
+
     -- * Statistics and analysis
     , showGrammarStats
     , analyzeGrammarConflicts
@@ -37,10 +43,13 @@ module Debug
 import qualified Lexer as L
 import Parser
 import DebugOptions
+import Diagnostics (showSourcePos)
 import Text.Show.Pretty (ppShow)
+import Control.Monad (when)
+import Data.Char (toLower)
 import Data.Data (Data, gmapQ)
 import Data.Time.Clock (getCurrentTime, diffUTCTime, UTCTime)
-import Data.List (intercalate, nub, (\\))
+import Data.List (intercalate, isInfixOf, nub, (\\))
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Maybe (fromMaybe, mapMaybe)
@@ -153,6 +162,131 @@ printComparison opts title1 val1 title2 val2 = do
     if val1 == val2
         then withColor (debugColor opts) Green "No differences found.\n"
         else withColor (debugColor opts) Yellow "Differences detected.\n"
+
+-------------------------------------------------------------------------------
+-- Single-rule pipeline trace (--debug-rule)
+-------------------------------------------------------------------------------
+
+-- | Header shared by all stages of a rule trace
+traceSection :: DebugOptions -> String -> String -> IO ()
+traceSection opts ruleName stage =
+    debugSection opts $ "RULE TRACE: '" ++ ruleName ++ "' - " ++ stage
+
+-- | Token-stage view of a rule trace: every place the rule name is mentioned
+-- in the source, as Id tokens with their positions. Returns whether the rule
+-- was found at this stage.
+traceRuleTokens :: DebugOptions -> String -> [L.PosToken] -> IO Bool
+traceRuleTokens opts ruleName tokens = do
+    traceSection opts ruleName "Tokens"
+    let mentions = [pos | L.PosToken pos (L.Id name) <- tokens, name == ruleName]
+    if null mentions
+        then do
+            reportNotFoundAtStage opts ruleName [n | L.PosToken _ (L.Id n) <- tokens]
+            return False
+        else do
+            putStrLn $ "Mentioned " ++ show (length mentions) ++ " time(s) in the token stream:"
+            mapM_ (putStrLn . showMention) mentions
+            putStrLn ""
+            return True
+  where
+    showMention (L.AlexPn _ line col) =
+        "  line " ++ show line ++ ", column " ++ show col ++ ": Id " ++ show ruleName
+
+-- | Under --use-generated the front end has no separate token stream to
+-- inspect, so the token stage of a rule trace is just a note.
+traceRuleTokensUnavailable :: DebugOptions -> String -> IO ()
+traceRuleTokensUnavailable opts ruleName = do
+    traceSection opts ruleName "Tokens"
+    putStrLn "Token stage is internal to the generated front end; trace continues after parsing."
+    putStrLn ""
+
+-- | InitialGrammar-stage view of a rule trace (after parse, after
+-- string-norm): the IRules whose rule name or data type name matches, each
+-- headed by its source position.
+traceRuleInitial :: DebugOptions -> String -> String -> InitialGrammar -> IO Bool
+traceRuleInitial opts ruleName stage grammar = do
+    traceSection opts ruleName stage
+    let rules = getIRules grammar
+        matches = filter matchesRule rules
+        matchesRule r = getIRuleName r == ruleName
+                     || getIDataTypeName r == Just ruleName
+    if null matches
+        then do
+            reportNotFoundAtStage opts ruleName
+                (map getIRuleName rules ++ mapMaybe getIDataTypeName rules)
+            return False
+        else do
+            mapM_ printMatch matches
+            return True
+  where
+    printMatch rule = do
+        debugSubSection opts $
+            "Rule '" ++ getIRuleName rule ++ "' ("
+            ++ maybe "no position" showSourcePos (getIRulePos rule) ++ ")"
+        case debugFormat opts of
+            FormatPretty -> putStrLn $ ppShow rule
+            FormatCompact -> putStrLn $ show rule
+        putStrLn ""
+
+-- | NormalGrammar-stage view of a rule trace (after clause-norm, after
+-- constructor-fill): the syntax rule groups that define the rule (by data
+-- type name or by a contained rule name) plus any matching lexical rule,
+-- shown compactly, with the full structure in pretty format.
+traceRuleNormal :: DebugOptions -> String -> String -> NormalGrammar -> IO Bool
+traceRuleNormal opts ruleName stage grammar = do
+    traceSection opts ruleName stage
+    let groups = getSyntaxRuleGroups grammar
+        lRules = getLexicalRules grammar
+        proxyRules = getProxyRules (getGrammarInfo grammar)
+        matchingGroups = filter groupMatches groups
+        groupMatches g = getSDataTypeName g == ruleName
+                      || any ((== ruleName) . getSRuleName) (getSRules g)
+        matchingLexical = filter ((== ruleName) . getLRuleName) lRules
+    if null matchingGroups && null matchingLexical
+        then do
+            reportNotFoundAtStage opts ruleName $
+                map getSDataTypeName groups
+                ++ concatMap (map getSRuleName . getSRules) groups
+                ++ map getLRuleName lRules
+            return False
+        else do
+            mapM_ (printGroup proxyRules) matchingGroups
+            mapM_ printLexical matchingLexical
+            return True
+  where
+    printGroup proxyRules grp = do
+        showRuleGroup opts proxyRules grp
+        printDetail grp
+    printLexical rule = do
+        showLexicalRule opts rule
+        printDetail rule
+    printDetail :: Show a => a -> IO ()
+    printDetail x = do
+        when (debugFormat opts == FormatPretty) $
+            putStrLn $ ppShow x
+        putStrLn ""
+
+-- | Report a rule missing at one stage, with near matches: normalization
+-- renames things (Rule_N, ListElem_*, tok_*), so suggestions keep the trace
+-- usable across stages.
+reportNotFoundAtStage :: DebugOptions -> String -> [String] -> IO ()
+reportNotFoundAtStage opts ruleName names = do
+    withColor (debugColor opts) Yellow $
+        "Rule '" ++ ruleName ++ "' is not present at this stage.\n"
+    let suggestions = take 5 (nearMatches ruleName names)
+    when (not (null suggestions)) $ do
+        putStrLn "Near matches:"
+        mapM_ (putStrLn . ("  - " ++)) suggestions
+    putStrLn ""
+
+-- | Case-insensitive near matches: equal up to case, or one name contained
+-- in the other (catches tok_foo, Foo_1, ListElem_Foo style renames)
+nearMatches :: String -> [String] -> [String]
+nearMatches query names = filter close (nub names)
+  where
+    q = lower query
+    close name = let n = lower name in q `isInfixOf` n || n `isInfixOf` q
+    lower = map toLower
 
 -------------------------------------------------------------------------------
 -- Statistics and analysis
