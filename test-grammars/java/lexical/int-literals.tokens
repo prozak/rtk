@@ -1,75 +1,75 @@
-Tk__tok_class_12
+Tk__tok_class_13
 Tk__id "IntLiterals"
-Tk__tok__symbol__13
-Tk__tok_int_23
+Tk__tok__symbol__14
+Tk__tok_int_24
 Tk__id "dec"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "42"
 Tk__tok__semi__1
-Tk__tok_int_23
+Tk__tok_int_24
 Tk__id "zero"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "0"
 Tk__tok__semi__1
-Tk__tok_int_23
+Tk__tok_int_24
 Tk__id "oct"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "0777"
 Tk__tok__semi__1
-Tk__tok_int_23
+Tk__tok_int_24
 Tk__id "hexLower"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "0xCafeBabe"
 Tk__tok__semi__1
-Tk__tok_int_23
+Tk__tok_int_24
 Tk__id "hexUpper"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "0X1F"
 Tk__tok__semi__1
-Tk__tok_int_23
+Tk__tok_int_24
 Tk__id "bin"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "0b1010"
 Tk__tok__semi__1
-Tk__tok_int_23
+Tk__tok_int_24
 Tk__id "binUpper"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "0B1"
 Tk__tok__semi__1
-Tk__tok_long_25
+Tk__tok_long_26
 Tk__id "longLower"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "42l"
 Tk__tok__semi__1
-Tk__tok_long_25
+Tk__tok_long_26
 Tk__id "longUpper"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "42L"
 Tk__tok__semi__1
-Tk__tok_long_25
+Tk__tok_long_26
 Tk__id "hexLong"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "0xFFL"
 Tk__tok__semi__1
-Tk__tok_int_23
+Tk__tok_int_24
 Tk__id "underscore"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "1_000_000"
 Tk__tok__semi__1
-Tk__tok_int_23
+Tk__tok_int_24
 Tk__id "underscoreHex"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "0xFF_EC_DE_5E"
 Tk__tok__semi__1
-Tk__tok_int_23
+Tk__tok_int_24
 Tk__id "underscoreBin"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "0b1010_1010"
 Tk__tok__semi__1
-Tk__tok_long_25
+Tk__tok_long_26
 Tk__id "underscoreLong"
-Tk__tok__eql__9
+Tk__tok__eql__10
 Tk__integerLiteral "9_999_999_999L"
 Tk__tok__semi__1
-Tk__tok__symbol__14
+Tk__tok__symbol__15
 EndOfFile

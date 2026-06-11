@@ -1,14 +1,13 @@
 # Blacklist for full parsing tests (test sources)
-# These files use Java 8+ features not yet supported by the grammar:
-# - Lambda expressions (->)
-# - Method references (::)
-# - Anonymous inner classes
-# - Enhanced for-each with colon
+# These files use features not yet supported by the grammar, chiefly:
+# - 'final' (and annotations) on method parameters
+# - generic method calls / nested generics in expressions
+# - class literals (Foo.class), lambda expressions (->), method
+#   references (::), anonymous inner classes, enhanced for (:)
 #
-# Total: 251 files blacklisted, 16 files passing
+# Total: 238 files blacklisted, 29 files passing
 # As grammar support is added, remove files from this list
 
-org/apache/commons/lang3/AbstractLangTest.java
 org/apache/commons/lang3/AnnotationUtilsTest.java
 org/apache/commons/lang3/AppendableJoinerTest.java
 org/apache/commons/lang3/ArchUtilsTest.java
@@ -40,7 +39,6 @@ org/apache/commons/lang3/EnumUtilsTest.java
 org/apache/commons/lang3/FunctionsTest.java
 org/apache/commons/lang3/HashSetvBitSetTest.java
 org/apache/commons/lang3/IntegerRangeTest.java
-org/apache/commons/lang3/JavaVersionTest.java
 org/apache/commons/lang3/LangAssertions.java
 org/apache/commons/lang3/LocaleUtilsTest.java
 org/apache/commons/lang3/LongRangeTest.java
@@ -57,12 +55,8 @@ org/apache/commons/lang3/StreamsTest.java
 org/apache/commons/lang3/StringEscapeUtilsTest.java
 org/apache/commons/lang3/StringUtilsAbbreviateTest.java
 org/apache/commons/lang3/StringUtilsContainsTest.java
-org/apache/commons/lang3/StringUtilsEmptyBlankTest.java
 org/apache/commons/lang3/StringUtilsEqualsIndexOfTest.java
 org/apache/commons/lang3/StringUtilsIsMixedCaseTest.java
-org/apache/commons/lang3/StringUtilsIsTest.java
-org/apache/commons/lang3/StringUtilsStartsEndsWithTest.java
-org/apache/commons/lang3/StringUtilsSubstringTest.java
 org/apache/commons/lang3/StringUtilsTest.java
 org/apache/commons/lang3/StringUtilsTrimStripTest.java
 org/apache/commons/lang3/StringUtilsValueOfTest.java
@@ -81,7 +75,6 @@ org/apache/commons/lang3/builder/EqualsBuilderReflectJreImplementationTest.java
 org/apache/commons/lang3/builder/EqualsBuilderTest.java
 org/apache/commons/lang3/builder/HashCodeBuilderAndEqualsBuilderTest.java
 org/apache/commons/lang3/builder/HashCodeBuilderTest.java
-org/apache/commons/lang3/builder/IDKeyTest.java
 org/apache/commons/lang3/builder/JsonToStringStyleTest.java
 org/apache/commons/lang3/builder/MultiLineToStringStyleTest.java
 org/apache/commons/lang3/builder/MultilineRecursiveToStringStyleTest.java
@@ -96,8 +89,6 @@ org/apache/commons/lang3/builder/ReflectionToStringBuilderExcludeTest.java
 org/apache/commons/lang3/builder/ReflectionToStringBuilderExcludeWithAnnotationTest.java
 org/apache/commons/lang3/builder/ReflectionToStringBuilderIncludeTest.java
 org/apache/commons/lang3/builder/ReflectionToStringBuilderMutateInspectConcurrencyTest.java
-org/apache/commons/lang3/builder/ReflectionToStringBuilderSummaryTest.java
-org/apache/commons/lang3/builder/ReflectionToStringBuilderTest.java
 org/apache/commons/lang3/builder/ShortPrefixToStringStyleTest.java
 org/apache/commons/lang3/builder/SimpleToStringStyleTest.java
 org/apache/commons/lang3/builder/StandardToStringStyleTest.java
@@ -170,7 +161,6 @@ org/apache/commons/lang3/function/MethodInvokersBiFunctionTest.java
 org/apache/commons/lang3/function/MethodInvokersFailableBiConsumerTest.java
 org/apache/commons/lang3/function/MethodInvokersFailableBiFunctionTest.java
 org/apache/commons/lang3/function/MethodInvokersFailableFunctionTest.java
-org/apache/commons/lang3/function/MethodInvokersFailableSupplierTest.java
 org/apache/commons/lang3/function/MethodInvokersFunctionTest.java
 org/apache/commons/lang3/function/MethodInvokersSupplierTest.java
 org/apache/commons/lang3/function/Objects.java
@@ -229,7 +219,6 @@ org/apache/commons/lang3/text/translate/NumericEntityUnescaperTest.java
 org/apache/commons/lang3/text/translate/OctalUnescaperTest.java
 org/apache/commons/lang3/text/translate/UnicodeEscaperTest.java
 org/apache/commons/lang3/text/translate/UnicodeUnescaperTest.java
-org/apache/commons/lang3/text/translate/UnicodeUnpairedSurrogateRemoverTest.java
 org/apache/commons/lang3/time/CalendarUtilsTest.java
 org/apache/commons/lang3/time/DateFormatUtilsTest.java
 org/apache/commons/lang3/time/DateUtilsFragmentTest.java
@@ -245,11 +234,9 @@ org/apache/commons/lang3/time/FastDateParser_MoreOrLessTest.java
 org/apache/commons/lang3/time/FastDateParser_TimeZoneStrategyTest.java
 org/apache/commons/lang3/time/FastDatePrinterTest.java
 org/apache/commons/lang3/time/FastDatePrinterTimeZonesTest.java
-org/apache/commons/lang3/time/FastTimeZoneTest.java
 org/apache/commons/lang3/time/GmtTimeZoneTest.java
 org/apache/commons/lang3/time/Java15BugFastDateParserTest.java
 org/apache/commons/lang3/time/StopWatchTest.java
-org/apache/commons/lang3/time/TimeZonesTest.java
 org/apache/commons/lang3/time/WeekYearTest.java
 org/apache/commons/lang3/tuple/ImmutablePairTest.java
 org/apache/commons/lang3/tuple/ImmutableTripleTest.java
