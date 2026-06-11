@@ -99,7 +99,19 @@ FieldDeclaration  =
  OptDocComment (ModifierList ((MemberDeclaration | NestedTypeDeclaration) | StaticInitializer))
  |  ';'  ;
 
-SquareBracketsList = ('[' OptExpression ']')* ;
+# Array brackets (JLS-style split): types and declarators may only contain
+# EMPTY bracket pairs; sizing expressions are only allowed in array creation
+# (see CreationExpression). Keeping expressions out of type brackets is what
+# lets one token after 'name [' decide between a type (']') and an array
+# access (expression start), so 'a[0] = 1;' and 'Foo[] x;' both parse.
+#
+# NOTE: RTK expands X* into a LEFT-recursive list with an empty base case, so
+# a nullable Dims placed directly after CompoundName would demand an
+# epsilon-reduce on '[' - exactly the early commitment we must avoid. Where
+# the brackets compete with an expression interpretation (Type, casts) we
+# therefore use NonEmptyDims, whose first '[' is a plain shift.
+Dims = ('[' ']')* ;
+NonEmptyDims = ('[' ']')+ ;
 
 # MemberDeclaration unifies constructors, methods, and fields
 # Strategy: Disambiguate early by checking what comes first
@@ -107,7 +119,7 @@ SquareBracketsList = ('[' OptExpression ']')* ;
 # - TypeParameters → definitely method (generic)
 # - id → could be constructor or reference type method/field
 MemberDeclaration =
- PrimitiveTypeKeyword SquareBracketsList id MemberRest         # Primitive type method/field
+ PrimitiveTypeKeyword Dims id MemberRest                       # Primitive type method/field
  | TypeParameters id MoreTypeSpecifier id MemberRest           # Generic method with any type
  | id MemberAfterFirstId ;                                     # Constructor or reference type
 
@@ -124,7 +136,7 @@ MemberAfterFirstId =
 # Could be: empty (simple type), '.' id (qualified), '<' ... '>' (generics), '[' ']' (array)
 MoreTypeSpecifier =
  '.' id MoreTypeSpecifier                                       # Qualified name
- | TypeArguments SquareBracketsList ;                            # Generics + array brackets
+ | TypeArguments Dims ;                                          # Generics + array brackets
 
 # MemberRest branches on what follows "Type id":
 # - '(' indicates a method declaration
@@ -133,8 +145,8 @@ MoreTypeSpecifier =
 # (int value() default 5;). Accepting it on ordinary methods too is
 # parser-level tolerance; rejecting it there is a semantic check (javac's job).
 MemberRest =
- '(' ParameterList? ')' SquareBracketsList ( StatementBlock | ('default' Expression)? ';' )
- | SquareBracketsList OptVariableInitializer MoreVariableDeclarators ';' ;
+ '(' ParameterList? ')' Dims ( StatementBlock | ('default' Expression)? ';' )
+ | Dims OptVariableInitializer MoreVariableDeclarators ';' ;
 
 MoreVariableDeclarators = (',' VariableDeclarator)* ;
 
@@ -164,7 +176,7 @@ VariableDeclaration  =
 OptVariableInitializer = ('=' VariableInitializer)? ;
 
 VariableDeclarator  =
- id  SquareBracketsList  OptVariableInitializer  ;
+ id  Dims  OptVariableInitializer  ;
 
 VariableInitializerList = (VariableInitializer (',' VariableInitializer)* (',')?)? ;
 
@@ -179,7 +191,7 @@ ParameterList  =
 Parameter (',' Parameter)* ;
 
 Parameter  =
-Type id SquareBracketsList ;
+Type id Dims ;
 
 StatementList = Statement *;
 
@@ -316,7 +328,50 @@ MultiplicativeOp = '*' | '/' | '%' ;
 
 Expression : MultiplicativeExpression = UnaryExpression | MultiplicativeExpression MultiplicativeOp UnaryExpression ;
 
-Expression : CastExpression = '(' Type ')' UnaryExpression ;
+# JLS cast trick (JLS 19, CastExpression): no alternative needs a reduce
+# before its first distinguishing token, so LALR(1) never has to decide
+# "type or expression?" early:
+#  - a primitive keyword after '(' can only be a cast;
+#  - '(' CompoundName '<' commits to a generic cast (NonEmptyTypeArguments);
+#  - '(' CompoundName '[' is decided one token later: ']' means an array
+#    cast (NonEmptyDims), an expression start means an array access inside
+#    a parenthesized expression;
+#  - every other reference cast is parsed as '(' Expression ')' with the
+#    type-as-expression, e.g. (Foo) x or (java.util.List) x. Whether
+#    '(' Expression ')' is a cast or a parenthesized expression is decided
+#    one token after ')': an operand start means cast. '(a) + b' stays an
+#    addition precisely because '+'/'-' are excluded from
+#    UnaryExpressionNotPlusMinus (which is why the JLS has that nonterminal).
+#
+# KNOWN LIMITATION: '(a < b)' as a primary expression mis-commits on '<'
+# (the shift prefers a generic cast '(a<...>) ...'), so e.g. 'x = (a < b);'
+# is rejected. This is the standard trade-off of LALR Java parsers. In
+# conditions (if/while/for) and argument lists there is no cast context, so
+# 'if (a < b)' and 'f(a < b)' are unaffected.
+#
+# Shift/reduce inventory after this restructure (happy: 32 s/r, 0 r/r; the
+# two reduce/reduce conflicts of the previous grammar are gone). The 8
+# java-specific conflicts beyond the long-standing ones (dangling else,
+# catch/finally repetition, ModifierList stop, compound-name '.', member
+# id-vs-TypeParameters, bootstrap dummy token) are all intended
+# shift-preferences:
+#   on '[' (5 states): after CompoundName in expression, statement-start,
+#     cast, and after DimExprs/NonEmptyDims in creation - shifting '[' just
+#     defers the type-vs-access decision to the next token (']' vs
+#     expression start) or extends the bracket list; no input is lost.
+#   on '<' (3 states): after CompoundName at statement start, in casts, and
+#     after 'instanceof' - shift prefers type arguments. Only the cast state
+#     loses input ('(a < b)' above); the other two reject only semantically
+#     invalid Java ('a < b;' as a bare statement-expression,
+#     'x instanceof T < y').
+# The cast-vs-paren decision after ')' is conflict-FREE: operand-start
+# tokens can never follow a complete parenthesized expression, so the
+# lookahead sets are disjoint.
+Expression : CastExpression =
+ '(' PrimitiveTypeKeyword Dims ')' UnaryExpression
+ | '(' CompoundName NonEmptyTypeArguments Dims ')' UnaryExpressionNotPlusMinus
+ | '(' CompoundName NonEmptyDims ')' UnaryExpressionNotPlusMinus
+ | '(' Expression ')' UnaryExpressionNotPlusMinus ;
 
 # '~' and '!' live in UnaryExpressionNotPlusMinus (JLS 15.15), not here:
 # keeping them in both derives ~x two ways, and they must stay in
@@ -342,26 +397,49 @@ Expression : PostfixExpression =
  | PostfixExpression '.' id '(' Arglist ')'
  | PostfixExpression '[' Expression ']' ;
 
+# The 'CompoundName '[' Expression ']'' alternative anchors array access on
+# the unreduced name (JLS ArrayAccess: Name [ Expression ]). It must sit here
+# and not only on PostfixExpression: reaching PostfixExpression first would
+# reduce CompoundName on lookahead '[', committing against the type
+# interpretation ('Foo[] x;', '(Foo[]) x') one token too early. With the
+# anchored alternative both interpretations shift '[' and the NEXT token
+# decides. 'a[0]' is still derivable through PostfixExpression too; the
+# resulting shift/reduce conflicts on '[' prefer the shift, i.e. exactly this
+# anchored production (the PostfixExpression production still applies to
+# non-name bases such as 'f()[0]' or 'this.x[0]').
 Expression : PrimaryNoPostfix =
  Literal
  | 'this'
  | '(' Expression ')'
  | CreationExpression
  | CompoundName ('(' Arglist ')')?
+ | CompoundName '[' Expression ']'
  | 'super' '.' id ('(' Arglist ')')? ;
 
-CreationExpression = 'new' Type ( '(' Arglist ')' | SquareBracketsList );
+# Only array creation takes sizing expressions (DimExprs); trailing empty
+# pairs allow 'new int[3][]'. Uses TypeSpecifier, not Type, so the dims are
+# not consumed twice. 'new int[] {1,2}' (initializer syntax) is a separate
+# feature (Phase 4g).
+CreationExpression = 'new' TypeSpecifier ( '(' Arglist ')' | DimExprs (NonEmptyDims)? );
+
+DimExprs = ('[' Expression ']')+ ;
 
 Literal = integerLiteral | floatLiteral | 'true' | 'false' | char | string | 'null' ;
 
 Arglist = (Expression (',' Expression)*)? ;
 
 # Generics support
-# NOTE: The '<' and '>' symbols create shift/reduce conflicts (~60) because they are used for both:
-#   - Type arguments: List<String>
-#   - Comparison operators: x < y
-# These conflicts resolve correctly with default shift behavior (standard for Java parsers).
-TypeArguments = ('<' TypeArgument (',' TypeArgument)* '>')? ;
+# NOTE: '<' is both the type-argument opener (List<String>) and the
+# comparison operator (x < y). Wherever a CompoundName can be followed by
+# either, the parser shifts '<' into NonEmptyTypeArguments (standard for
+# Java parsers); see the shift/reduce inventory at CastExpression for the
+# three states where this surfaces.
+TypeArguments = NonEmptyTypeArguments? ;
+
+# Non-optional variant: Type and CastExpression need the '<' to be a plain
+# shift from CompoundName (an optional TypeArguments would interpose an
+# epsilon-reduce and recreate the type-vs-expression conflict).
+NonEmptyTypeArguments = '<' TypeArgument (',' TypeArgument)* '>' ;
 
 TypeArgument =
  Type
@@ -376,9 +454,22 @@ TypeParameters = ('<' TypeParameter (',' TypeParameter)* '>')? ;
 
 TypeParameter = id ('extends' Type ('&' Type)*)? ;
 
+# Type is spelled out by alternatives (instead of 'TypeSpecifier Dims') so
+# that in positions where both a type and an expression may start (statement
+# start, for-init) every alternative either shifts its next token directly
+# from CompoundName ('<' for generics, '[' for array types) or reduces bare
+# CompoundName only on lookahead 'id' (the declared variable's name), which
+# no expression interpretation shares. This is what removes the
+# PrimaryNoPostfix-vs-TypeSpecifier reduce/reduce conflict: the parser no
+# longer has to pick type-or-expression while staring at '['.
 Type  =
-TypeSpecifier  SquareBracketsList  ;
+ PrimitiveTypeKeyword Dims
+ | CompoundName NonEmptyTypeArguments Dims
+ | CompoundName NonEmptyDims
+ | CompoundName ;
 
+# Only used by CreationExpression nowadays (Type spells out its own
+# alternatives, see above).
 TypeSpecifier =
  'boolean'
  |  'byte'
