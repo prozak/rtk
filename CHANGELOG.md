@@ -161,6 +161,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   printed an error
 
 ### Fixed
+- The Java grammar's last structural LALR ambiguity - deciding between a
+  type and an expression after a `CompoundName` at statement start or after
+  `(` - is resolved JLS-style (`happy` now reports 0 reduce/reduce
+  conflicts on the generated `JavaParser.y`, down from 2). Types and
+  declarators take only empty bracket pairs (`Dims`/`NonEmptyDims`,
+  anchored on the unreduced name so `[` is a plain shift); only array
+  creation takes sizing expressions; `CastExpression` uses the JLS trick
+  (`'(' Expression ')' UnaryExpressionNotPlusMinus` for reference casts
+  plus explicit primitive/generic/array alternatives); and array access is
+  anchored on `CompoundName` in `PrimaryNoPostfix`. `a[0] = 1;`,
+  `x = (a);`, `x = (Foo) y;`, `x = (List<String>) y;`, `((Map) c).get(k);`
+  and `new int[3][];` now parse; JLS-invalid `int[3] x;` declarations are
+  now rejected. Known residual limitation (shared by LALR Java parsers
+  generally): `(a < b)` as a parenthesized primary mis-commits to a
+  generic cast on `<` (conditions like `if (a < b)` are unaffected)
 - `make test-p` works again: the target had a hand-rolled recipe that
   compiled the driver with bare `ghc` outside the cabal package environment,
   failing with `Could not find module 'Data.Generics'` in clean
