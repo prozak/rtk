@@ -14,17 +14,17 @@ import qualified SandboxLexer as L (Token(..), PosToken(..), AlexPosn(..), alexS
 
 rtk__eof { L.PosToken _ L.EndOfFile }
 tok_Sandbox_dummy_0 { L.PosToken _ L.Tk__tok_Sandbox_dummy_0 }
-doccomment { L.PosToken _ (L.Tk__doccomment $$) }
-qq_Sandbox { L.PosToken _ (L.Tk__qq_Sandbox $$) }
+doccomment { L.PosToken _ (L.Tk__doccomment _) }
+qq_Sandbox { L.PosToken _ (L.Tk__qq_Sandbox _) }
 
 %%
 
 Sandbox__top : Sandbox rtk__eof { $1 }
 
-Sandbox : tok_Sandbox_dummy_0 Sandbox tok_Sandbox_dummy_0 { Ctr__Sandbox__0 $2 }
+Sandbox : tok_Sandbox_dummy_0 Sandbox tok_Sandbox_dummy_0 { Ctr__Sandbox__0 (rtkPosOf $1) $2 }
 
-Sandbox : qq_Sandbox { Anti_Sandbox $1 } |
-          doccomment { Ctr__Sandbox__1 $1 }
+Sandbox : qq_Sandbox { Anti_Sandbox (tkVal_qq_Sandbox $1) } |
+          doccomment { Ctr__Sandbox__1 (rtkPosOf $1) (tkVal_doccomment $1) }
 
 
 {
@@ -40,8 +40,49 @@ showRtkToken L.Tk__tok_Sandbox_dummy_0 = "'tok_Sandbox_dummy_0'"
 showRtkToken (L.Tk__doccomment v) = "doccomment " ++ show v
 showRtkToken (L.Tk__qq_Sandbox v) = "qq_Sandbox " ++ show v
 
-data Sandbox = Ctr__Sandbox__0 Sandbox |
+-- Source position of a node: every constructor except the Anti_* splice
+-- artifacts stores the position of its alternative's first symbol in its
+-- first field. Positions are transparent for equality and ordering, so two
+-- ASTs that differ only in source positions (e.g. a quasi-quote parsed at
+-- compile time vs the same construct parsed at run time) compare equal.
+newtype RtkPos = RtkPos L.AlexPosn deriving (Show, Gen.Data, Gen.Typeable)
+instance Eq RtkPos where _ == _ = True
+instance Ord RtkPos where compare _ _ = EQ
+
+-- The position used where no source token exists: empty productions, empty
+-- lists, absent optionals and Anti_* quasi-quote splices
+rtkNoPos :: RtkPos
+rtkNoPos = RtkPos (L.AlexPn 0 0 0)
+
+class RtkPosOf a where
+    rtkPosOf :: a -> RtkPos
+instance RtkPosOf L.PosToken where
+    rtkPosOf (L.PosToken p _) = RtkPos p
+instance RtkPosOf a => RtkPosOf [a] where
+    rtkPosOf (x : _) = rtkPosOf x
+    rtkPosOf []      = rtkNoPos
+instance RtkPosOf a => RtkPosOf (Maybe a) where
+    rtkPosOf (Just x) = rtkPosOf x
+    rtkPosOf Nothing  = rtkNoPos
+-- A Char carries no position; this also covers String token payloads
+instance RtkPosOf Char where
+    rtkPosOf _ = rtkNoPos
+
+-- Recover a token's payload from the whole positioned token: %token
+-- bindings keep the L.PosToken so semantic actions can read its position
+tkVal_doccomment :: L.PosToken -> String
+tkVal_doccomment (L.PosToken _ (L.Tk__doccomment v)) = v
+tkVal_doccomment t = error ("rtk internal error: token doccomment expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Sandbox :: L.PosToken -> String
+tkVal_qq_Sandbox (L.PosToken _ (L.Tk__qq_Sandbox v)) = v
+tkVal_qq_Sandbox t = error ("rtk internal error: token qq_Sandbox expected, got " ++ showRtkToken (L.ptToken t))
+
+data Sandbox = Ctr__Sandbox__0 RtkPos Sandbox |
                Anti_Sandbox String |
-               Ctr__Sandbox__1 String
+               Ctr__Sandbox__1 RtkPos String
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Sandbox where
+    rtkPosOf (Ctr__Sandbox__0 p _) = p
+    rtkPosOf (Anti_Sandbox _) = rtkNoPos
+    rtkPosOf (Ctr__Sandbox__1 p _) = p
 }

@@ -51,6 +51,14 @@ replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 qqShortcuts = M.fromList [ ("grammar","Grammar"),("clause","Clause"),("idList","IdList"),("importsOpt","ImportsOpt"),("name","Name"),("optDelim","OptDelim"),("option","Option"),("optionList","OptionList"),("rule","Rule"),("ruleList","RuleList"),("strLit","StrLit"),("cl","Clause"),("r","Rule")]
 
+-- A quasi-quote pattern must match an AST parsed from anywhere in a source
+-- file, while the pattern itself was parsed from the quote body - so every
+-- RtkPos position field becomes a wildcard in generated patterns.
+-- (Expressions need no special case: the compile-time position they embed
+-- is equality-transparent.)
+rtkPosWildPat :: RtkPos -> Maybe (TH.Q TH.Pat)
+rtkPosWildPat _ = Just TH.wildP
+
 quoteGrammarExp :: Data.Data a => String -> (Grammar -> a) -> String -> TH.ExpQ
 quoteGrammarExp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
@@ -66,7 +74,7 @@ quoteGrammarPat dummy func s = do
            Left err -> fail err
            Right a -> return a
   let expr = func ast
-  dataToPatQ (const Nothing `Generics.extQ` antiGrammarPat `Generics.extQ` antiImportsOptPat `Generics.extQ` antiRulePat `Generics.extQ` antiOptionPat `Generics.extQ` antiNamePat `Generics.extQ` antiClausePat `Generics.extQ` antiOptDelimPat `Generics.extQ` antiStrLitPat) expr
+  dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiGrammarPat `Generics.extQ` antiImportsOptPat `Generics.extQ` antiRulePat `Generics.extQ` antiOptionPat `Generics.extQ` antiNamePat `Generics.extQ` antiClausePat `Generics.extQ` antiOptDelimPat `Generics.extQ` antiStrLitPat) expr
 
 antiStrLitExp :: StrLit -> Maybe (TH.Q TH.Exp )
 antiStrLitExp ( Anti_StrLit v) = Just $ TH.varE (TH.mkName v)
@@ -162,57 +170,57 @@ antiGrammarPat _ = Nothing
 quoteGrammarType s = return TH.ListT
 quoteGrammarDecs s = return []
 
-getGrammar ( Ctr__Grammar__0 s) = s
+getGrammar ( Ctr__Grammar__0 _ s) = s
 
 grammar :: QuasiQuoter
 grammar = QuasiQuoter (quoteGrammarExp "tok_Grammar_dummy_15" getGrammar ) (quoteGrammarPat "tok_Grammar_dummy_15" getGrammar ) quoteGrammarType quoteGrammarDecs
 
-getClause ( Ctr__Grammar__1 s) = s
+getClause ( Ctr__Grammar__1 _ s) = s
 
 clause :: QuasiQuoter
 clause = QuasiQuoter (quoteGrammarExp "tok_Clause_dummy_14" getClause ) (quoteGrammarPat "tok_Clause_dummy_14" getClause ) quoteGrammarType quoteGrammarDecs
 
-getIdList ( Ctr__Grammar__2 s) = s
+getIdList ( Ctr__Grammar__2 _ s) = s
 
 idList :: QuasiQuoter
 idList = QuasiQuoter (quoteGrammarExp "tok_IdList_dummy_13" getIdList ) (quoteGrammarPat "tok_IdList_dummy_13" getIdList ) quoteGrammarType quoteGrammarDecs
 
-getImportsOpt ( Ctr__Grammar__3 s) = s
+getImportsOpt ( Ctr__Grammar__3 _ s) = s
 
 importsOpt :: QuasiQuoter
 importsOpt = QuasiQuoter (quoteGrammarExp "tok_ImportsOpt_dummy_12" getImportsOpt ) (quoteGrammarPat "tok_ImportsOpt_dummy_12" getImportsOpt ) quoteGrammarType quoteGrammarDecs
 
-getName ( Ctr__Grammar__4 s) = s
+getName ( Ctr__Grammar__4 _ s) = s
 
 name :: QuasiQuoter
 name = QuasiQuoter (quoteGrammarExp "tok_Name_dummy_11" getName ) (quoteGrammarPat "tok_Name_dummy_11" getName ) quoteGrammarType quoteGrammarDecs
 
-getOptDelim ( Ctr__Grammar__5 s) = s
+getOptDelim ( Ctr__Grammar__5 _ s) = s
 
 optDelim :: QuasiQuoter
 optDelim = QuasiQuoter (quoteGrammarExp "tok_OptDelim_dummy_10" getOptDelim ) (quoteGrammarPat "tok_OptDelim_dummy_10" getOptDelim ) quoteGrammarType quoteGrammarDecs
 
-getOption ( Ctr__Grammar__6 s) = s
+getOption ( Ctr__Grammar__6 _ s) = s
 
 option :: QuasiQuoter
 option = QuasiQuoter (quoteGrammarExp "tok_Option_dummy_9" getOption ) (quoteGrammarPat "tok_Option_dummy_9" getOption ) quoteGrammarType quoteGrammarDecs
 
-getOptionList ( Ctr__Grammar__7 s) = s
+getOptionList ( Ctr__Grammar__7 _ s) = s
 
 optionList :: QuasiQuoter
 optionList = QuasiQuoter (quoteGrammarExp "tok_OptionList_dummy_8" getOptionList ) (quoteGrammarPat "tok_OptionList_dummy_8" getOptionList ) quoteGrammarType quoteGrammarDecs
 
-getRule ( Ctr__Grammar__8 s) = s
+getRule ( Ctr__Grammar__8 _ s) = s
 
 rule :: QuasiQuoter
 rule = QuasiQuoter (quoteGrammarExp "tok_Rule_dummy_7" getRule ) (quoteGrammarPat "tok_Rule_dummy_7" getRule ) quoteGrammarType quoteGrammarDecs
 
-getRuleList ( Ctr__Grammar__9 s) = s
+getRuleList ( Ctr__Grammar__9 _ s) = s
 
 ruleList :: QuasiQuoter
 ruleList = QuasiQuoter (quoteGrammarExp "tok_RuleList_dummy_6" getRuleList ) (quoteGrammarPat "tok_RuleList_dummy_6" getRuleList ) quoteGrammarType quoteGrammarDecs
 
-getStrLit ( Ctr__Grammar__10 s) = s
+getStrLit ( Ctr__Grammar__10 _ s) = s
 
 strLit :: QuasiQuoter
 strLit = QuasiQuoter (quoteGrammarExp "tok_StrLit_dummy_5" getStrLit ) (quoteGrammarPat "tok_StrLit_dummy_5" getStrLit ) quoteGrammarType quoteGrammarDecs

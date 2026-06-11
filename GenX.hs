@@ -67,9 +67,18 @@ genX (NormalGrammar { getNGrammarName = name, getLexicalRules = tokens, getNImpo
     where macroIds = getMacroIds tokens
           symMacroIds = getSymMacroIds tokens
           adt = genTokenADT $ removeSymmacros tokens
-          header = vcat [text "{", ((text "module" <+> text name) <> text "Lexer(scanTokens, alexScanTokens, Token(..), PosToken(..), AlexPosn(..))"), text "where", text imports, text " }",
+          header = vcat [text "{",
+                         text "{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}",
+                         ((text "module" <+> text name) <> text "Lexer(scanTokens, alexScanTokens, Token(..), PosToken(..), AlexPosn(..))"), text "where",
+                         text "import Data.Data (Data)",
+                         text imports, text " }",
                          text "%wrapper \"monad\""]
           funs_text = [str|
+-- AlexPosn is defined by the alex wrapper, so the Data instance (required by
+-- the parser's RtkPos position type) can only be attached via standalone
+-- deriving - the same solution as the hand-written Lexer.x
+deriving instance Data AlexPosn
+
 -- A token together with the source position where it starts
 data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }
                 deriving (Show)

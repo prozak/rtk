@@ -28,5 +28,5 @@ main = do
     let _p = either errorWithoutStackTrace Prelude.id $
                scanTokens "(lambda (x) (fold x 0 (lambda (y z) (or y z))))" >>= parseP
     let [p|(lambda ($id) $e)|] = _p
-    putStrLn $ show $ subst (Ctr__Id__0 "x") e 0x1122334455667788
+    putStrLn $ show $ subst (Ctr__Id__0 rtkNoPos "x") e 0x1122334455667788
     return ()

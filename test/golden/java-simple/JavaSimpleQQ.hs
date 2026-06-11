@@ -51,6 +51,14 @@ replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 qqShortcuts = M.fromList [ ("javaSimple","JavaSimple"),("classDeclaration","ClassDeclaration"),("compilationUnit","CompilationUnit"),("compoundName","CompoundName"),("field","Field"),("fieldList","FieldList"),("package","Package"),("type","Type")]
 
+-- A quasi-quote pattern must match an AST parsed from anywhere in a source
+-- file, while the pattern itself was parsed from the quote body - so every
+-- RtkPos position field becomes a wildcard in generated patterns.
+-- (Expressions need no special case: the compile-time position they embed
+-- is equality-transparent.)
+rtkPosWildPat :: RtkPos -> Maybe (TH.Q TH.Pat)
+rtkPosWildPat _ = Just TH.wildP
+
 quoteJavaSimpleExp :: Data.Data a => String -> (JavaSimple -> a) -> String -> TH.ExpQ
 quoteJavaSimpleExp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
@@ -66,7 +74,7 @@ quoteJavaSimplePat dummy func s = do
            Left err -> fail err
            Right a -> return a
   let expr = func ast
-  dataToPatQ (const Nothing `Generics.extQ` antiJavaSimplePat `Generics.extQ` antiCompilationUnitPat `Generics.extQ` antiPackagePat `Generics.extQ` antiClassDeclarationPat `Generics.extQ` antiFieldPat `Generics.extQ` antiTypePat `Generics.extQ` antiCompoundNamePat) expr
+  dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiJavaSimplePat `Generics.extQ` antiCompilationUnitPat `Generics.extQ` antiPackagePat `Generics.extQ` antiClassDeclarationPat `Generics.extQ` antiFieldPat `Generics.extQ` antiTypePat `Generics.extQ` antiCompoundNamePat) expr
 
 antiCompoundNameExp :: CompoundName -> Maybe (TH.Q TH.Exp )
 antiCompoundNameExp ( Anti_CompoundName v) = Just $ TH.varE (TH.mkName v)
@@ -146,42 +154,42 @@ antiJavaSimplePat _ = Nothing
 quoteJavaSimpleType s = return TH.ListT
 quoteJavaSimpleDecs s = return []
 
-getJavaSimple ( Ctr__JavaSimple__0 s) = s
+getJavaSimple ( Ctr__JavaSimple__0 _ s) = s
 
 javaSimple :: QuasiQuoter
 javaSimple = QuasiQuoter (quoteJavaSimpleExp "tok_JavaSimple_dummy_11" getJavaSimple ) (quoteJavaSimplePat "tok_JavaSimple_dummy_11" getJavaSimple ) quoteJavaSimpleType quoteJavaSimpleDecs
 
-getClassDeclaration ( Ctr__JavaSimple__1 s) = s
+getClassDeclaration ( Ctr__JavaSimple__1 _ s) = s
 
 classDeclaration :: QuasiQuoter
 classDeclaration = QuasiQuoter (quoteJavaSimpleExp "tok_ClassDeclaration_dummy_10" getClassDeclaration ) (quoteJavaSimplePat "tok_ClassDeclaration_dummy_10" getClassDeclaration ) quoteJavaSimpleType quoteJavaSimpleDecs
 
-getCompilationUnit ( Ctr__JavaSimple__2 s) = s
+getCompilationUnit ( Ctr__JavaSimple__2 _ s) = s
 
 compilationUnit :: QuasiQuoter
 compilationUnit = QuasiQuoter (quoteJavaSimpleExp "tok_CompilationUnit_dummy_9" getCompilationUnit ) (quoteJavaSimplePat "tok_CompilationUnit_dummy_9" getCompilationUnit ) quoteJavaSimpleType quoteJavaSimpleDecs
 
-getCompoundName ( Ctr__JavaSimple__3 s) = s
+getCompoundName ( Ctr__JavaSimple__3 _ s) = s
 
 compoundName :: QuasiQuoter
 compoundName = QuasiQuoter (quoteJavaSimpleExp "tok_CompoundName_dummy_8" getCompoundName ) (quoteJavaSimplePat "tok_CompoundName_dummy_8" getCompoundName ) quoteJavaSimpleType quoteJavaSimpleDecs
 
-getField ( Ctr__JavaSimple__4 s) = s
+getField ( Ctr__JavaSimple__4 _ s) = s
 
 field :: QuasiQuoter
 field = QuasiQuoter (quoteJavaSimpleExp "tok_Field_dummy_7" getField ) (quoteJavaSimplePat "tok_Field_dummy_7" getField ) quoteJavaSimpleType quoteJavaSimpleDecs
 
-getFieldList ( Ctr__JavaSimple__5 s) = s
+getFieldList ( Ctr__JavaSimple__5 _ s) = s
 
 fieldList :: QuasiQuoter
 fieldList = QuasiQuoter (quoteJavaSimpleExp "tok_FieldList_dummy_6" getFieldList ) (quoteJavaSimplePat "tok_FieldList_dummy_6" getFieldList ) quoteJavaSimpleType quoteJavaSimpleDecs
 
-getPackage ( Ctr__JavaSimple__6 s) = s
+getPackage ( Ctr__JavaSimple__6 _ s) = s
 
 package :: QuasiQuoter
 package = QuasiQuoter (quoteJavaSimpleExp "tok_Package_dummy_5" getPackage ) (quoteJavaSimplePat "tok_Package_dummy_5" getPackage ) quoteJavaSimpleType quoteJavaSimpleDecs
 
-getType ( Ctr__JavaSimple__7 s) = s
+getType ( Ctr__JavaSimple__7 _ s) = s
 
 __type :: QuasiQuoter
 __type = QuasiQuoter (quoteJavaSimpleExp "tok_Type_dummy_4" getType ) (quoteJavaSimplePat "tok_Type_dummy_4" getType ) quoteJavaSimpleType quoteJavaSimpleDecs

@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Source positions in generated ASTs: every constructor that generated
+  parsers build (except the quasi-quotation-only `Anti_*` splice
+  constructors) now stores the position of its alternative's first symbol
+  in a leading `RtkPos` field. `RtkPos` is transparent for equality and
+  ordering (`==` always holds, `compare` is always `EQ`), so ASTs that
+  differ only in source positions compare equal — in particular a
+  quasi-quote parsed at compile time still matches the same construct
+  parsed at run time, and quasi-quote *patterns* wildcard every position
+  field while *expressions* may embed them. Payload-carrying `%token`
+  bindings now bind the whole positioned token, with generated `tkVal_*`
+  extractors recovering the payload in semantic actions; a generated
+  `RtkPosOf` class projects the position of any symbol (tokens,
+  nonterminals, lists, optionals). Generated code stays dependency-free.
+  The self-hosted front end now maps the rule constructors' positions into
+  `getIRulePos` (previously `Nothing` under `--use-generated`), so
+  pipeline diagnostics carry real `FILE:LINE:COL:` positions with both
+  front ends, and the dual-front-end AST equality suite compares positions
+  too. The hand-written parser's position for the `'.' id ':' …` rule form
+  moved from the identifier to the leading dot (a rule's position is where
+  the rule starts), aligning it with first-symbol capture; no corpus
+  grammar uses that form
 - Self-hosting milestone (Prototype 2 closed): `rtk --use-generated` parses
   grammar files with the lexer/parser RTK generated from
   `test-grammars/grammar.pg`. The generated modules are compiled into rtk

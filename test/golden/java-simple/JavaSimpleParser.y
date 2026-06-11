@@ -30,67 +30,67 @@ tok_class_3 { L.PosToken _ L.Tk__tok_class_3 }
 tok_String_7 { L.PosToken _ L.Tk__tok_String_7 }
 tok__semi__1 { L.PosToken _ L.Tk__tok__semi__1 }
 tok__dot__8 { L.PosToken _ L.Tk__tok__dot__8 }
-id { L.PosToken _ (L.Tk__id $$) }
-qq_CompoundName { L.PosToken _ (L.Tk__qq_CompoundName $$) }
-qq_Type { L.PosToken _ (L.Tk__qq_Type $$) }
-qq_Field { L.PosToken _ (L.Tk__qq_Field $$) }
-qq_FieldList { L.PosToken _ (L.Tk__qq_FieldList $$) }
-qq_ClassDeclaration { L.PosToken _ (L.Tk__qq_ClassDeclaration $$) }
-qq_Package { L.PosToken _ (L.Tk__qq_Package $$) }
-qq_CompilationUnit { L.PosToken _ (L.Tk__qq_CompilationUnit $$) }
-qq_JavaSimple { L.PosToken _ (L.Tk__qq_JavaSimple $$) }
+id { L.PosToken _ (L.Tk__id _) }
+qq_CompoundName { L.PosToken _ (L.Tk__qq_CompoundName _) }
+qq_Type { L.PosToken _ (L.Tk__qq_Type _) }
+qq_Field { L.PosToken _ (L.Tk__qq_Field _) }
+qq_FieldList { L.PosToken _ (L.Tk__qq_FieldList _) }
+qq_ClassDeclaration { L.PosToken _ (L.Tk__qq_ClassDeclaration _) }
+qq_Package { L.PosToken _ (L.Tk__qq_Package _) }
+qq_CompilationUnit { L.PosToken _ (L.Tk__qq_CompilationUnit _) }
+qq_JavaSimple { L.PosToken _ (L.Tk__qq_JavaSimple _) }
 
 %%
 
 JavaSimple__top : JavaSimple rtk__eof { $1 }
 
-JavaSimple : tok_JavaSimple_dummy_11 JavaSimple tok_JavaSimple_dummy_11 { Ctr__JavaSimple__0 $2 } |
-             tok_ClassDeclaration_dummy_10 ClassDeclaration tok_ClassDeclaration_dummy_10 { Ctr__JavaSimple__1 $2 } |
-             tok_CompilationUnit_dummy_9 CompilationUnit tok_CompilationUnit_dummy_9 { Ctr__JavaSimple__2 $2 } |
-             tok_CompoundName_dummy_8 CompoundName tok_CompoundName_dummy_8 { Ctr__JavaSimple__3 $2 } |
-             tok_Field_dummy_7 Field tok_Field_dummy_7 { Ctr__JavaSimple__4 $2 } |
-             tok_FieldList_dummy_6 FieldList tok_FieldList_dummy_6 { Ctr__JavaSimple__5 (reverse $2) } |
-             tok_Package_dummy_5 Package tok_Package_dummy_5 { Ctr__JavaSimple__6 $2 } |
-             tok_Type_dummy_4 Type tok_Type_dummy_4 { Ctr__JavaSimple__7 $2 }
+JavaSimple : tok_JavaSimple_dummy_11 JavaSimple tok_JavaSimple_dummy_11 { Ctr__JavaSimple__0 (rtkPosOf $1) $2 } |
+             tok_ClassDeclaration_dummy_10 ClassDeclaration tok_ClassDeclaration_dummy_10 { Ctr__JavaSimple__1 (rtkPosOf $1) $2 } |
+             tok_CompilationUnit_dummy_9 CompilationUnit tok_CompilationUnit_dummy_9 { Ctr__JavaSimple__2 (rtkPosOf $1) $2 } |
+             tok_CompoundName_dummy_8 CompoundName tok_CompoundName_dummy_8 { Ctr__JavaSimple__3 (rtkPosOf $1) $2 } |
+             tok_Field_dummy_7 Field tok_Field_dummy_7 { Ctr__JavaSimple__4 (rtkPosOf $1) $2 } |
+             tok_FieldList_dummy_6 FieldList tok_FieldList_dummy_6 { Ctr__JavaSimple__5 (rtkPosOf $1) (reverse $2) } |
+             tok_Package_dummy_5 Package tok_Package_dummy_5 { Ctr__JavaSimple__6 (rtkPosOf $1) $2 } |
+             tok_Type_dummy_4 Type tok_Type_dummy_4 { Ctr__JavaSimple__7 (rtkPosOf $1) $2 }
 
-JavaSimple : qq_JavaSimple { Anti_JavaSimple $1 } |
-             CompilationUnit { Ctr__JavaSimple__8 $1 }
+JavaSimple : qq_JavaSimple { Anti_JavaSimple (tkVal_qq_JavaSimple $1) } |
+             CompilationUnit { Ctr__JavaSimple__8 (rtkPosOf $1) $1 }
 
-ClassDeclaration : qq_ClassDeclaration { Anti_ClassDeclaration $1 } |
-                   Rule_2 tok_class_3 id tok__symbol__4 FieldList tok__symbol__5 { Ctr__ClassDeclaration__0 $1 $3 (reverse $5) }
+ClassDeclaration : qq_ClassDeclaration { Anti_ClassDeclaration (tkVal_qq_ClassDeclaration $1) } |
+                   Rule_2 tok_class_3 id tok__symbol__4 FieldList tok__symbol__5 { Ctr__ClassDeclaration__0 (rtkPosOf $1) $1 (tkVal_id $3) (reverse $5) }
 
-CompilationUnit : qq_CompilationUnit { Anti_CompilationUnit $1 } |
-                  Rule_0 Rule_1 { Ctr__CompilationUnit__0 $1 $2 }
+CompilationUnit : qq_CompilationUnit { Anti_CompilationUnit (tkVal_qq_CompilationUnit $1) } |
+                  Rule_0 Rule_1 { Ctr__CompilationUnit__0 (rtkPosOf $1) $1 $2 }
 
-CompoundName : qq_CompoundName { Anti_CompoundName $1 } |
-               id { Ctr__CompoundName__0 $1 } |
-               CompoundName tok__dot__8 id { Ctr__CompoundName__1 $1 $3 }
+CompoundName : qq_CompoundName { Anti_CompoundName (tkVal_qq_CompoundName $1) } |
+               id { Ctr__CompoundName__0 (rtkPosOf $1) (tkVal_id $1) } |
+               CompoundName tok__dot__8 id { Ctr__CompoundName__1 (rtkPosOf $1) $1 (tkVal_id $3) }
 
-Field : qq_Field { Anti_Field $1 } |
-        Type id tok__semi__1 { Ctr__Field__0 $1 $2 }
+Field : qq_Field { Anti_Field (tkVal_qq_Field $1) } |
+        Type id tok__semi__1 { Ctr__Field__0 (rtkPosOf $1) $1 (tkVal_id $2) }
 
-ListElem_FieldList3 : qq_FieldList { Anti_Field $1 } |
+ListElem_FieldList3 : qq_FieldList { Anti_Field (tkVal_qq_FieldList $1) } |
                       Field { $1 }
 
 FieldList : {- empty -} { [] } |
             FieldList ListElem_FieldList3 { $2 : $1 }
 
-Package : qq_Package { Anti_Package $1 } |
-          tok_package_0 CompoundName tok__semi__1 { Ctr__Package__0 $2 }
+Package : qq_Package { Anti_Package (tkVal_qq_Package $1) } |
+          tok_package_0 CompoundName tok__semi__1 { Ctr__Package__0 (rtkPosOf $1) $2 }
 
-Rule_0 : { Ctr__Rule_0__0 } |
-         Package { Ctr__Rule_0__1 $1 }
+Rule_0 : { Ctr__Rule_0__0 rtkNoPos } |
+         Package { Ctr__Rule_0__1 (rtkPosOf $1) $1 }
 
-Rule_1 : { Ctr__Rule_1__0 } |
-         ClassDeclaration { Ctr__Rule_1__1 $1 }
+Rule_1 : { Ctr__Rule_1__0 rtkNoPos } |
+         ClassDeclaration { Ctr__Rule_1__1 (rtkPosOf $1) $1 }
 
-Rule_2 : { Ctr__Rule_2__0 } |
-         tok_public_2 { Ctr__Rule_2__1 }
+Rule_2 : { Ctr__Rule_2__0 rtkNoPos } |
+         tok_public_2 { Ctr__Rule_2__1 (rtkPosOf $1) }
 
-Type : qq_Type { Anti_Type $1 } |
-       tok_int_6 { Ctr__Type__0 } |
-       tok_String_7 { Ctr__Type__1 } |
-       id { Ctr__Type__2 $1 }
+Type : qq_Type { Anti_Type (tkVal_qq_Type $1) } |
+       tok_int_6 { Ctr__Type__0 (rtkPosOf $1) } |
+       tok_String_7 { Ctr__Type__1 (rtkPosOf $1) } |
+       id { Ctr__Type__2 (rtkPosOf $1) (tkVal_id $1) }
 
 
 {
@@ -129,46 +129,145 @@ showRtkToken (L.Tk__qq_Package v) = "qq_Package " ++ show v
 showRtkToken (L.Tk__qq_CompilationUnit v) = "qq_CompilationUnit " ++ show v
 showRtkToken (L.Tk__qq_JavaSimple v) = "qq_JavaSimple " ++ show v
 
-data JavaSimple = Ctr__JavaSimple__0 JavaSimple |
-                  Ctr__JavaSimple__1 ClassDeclaration |
-                  Ctr__JavaSimple__2 CompilationUnit |
-                  Ctr__JavaSimple__3 CompoundName |
-                  Ctr__JavaSimple__4 Field |
-                  Ctr__JavaSimple__5 FieldList |
-                  Ctr__JavaSimple__6 Package |
-                  Ctr__JavaSimple__7 Type |
+-- Source position of a node: every constructor except the Anti_* splice
+-- artifacts stores the position of its alternative's first symbol in its
+-- first field. Positions are transparent for equality and ordering, so two
+-- ASTs that differ only in source positions (e.g. a quasi-quote parsed at
+-- compile time vs the same construct parsed at run time) compare equal.
+newtype RtkPos = RtkPos L.AlexPosn deriving (Show, Gen.Data, Gen.Typeable)
+instance Eq RtkPos where _ == _ = True
+instance Ord RtkPos where compare _ _ = EQ
+
+-- The position used where no source token exists: empty productions, empty
+-- lists, absent optionals and Anti_* quasi-quote splices
+rtkNoPos :: RtkPos
+rtkNoPos = RtkPos (L.AlexPn 0 0 0)
+
+class RtkPosOf a where
+    rtkPosOf :: a -> RtkPos
+instance RtkPosOf L.PosToken where
+    rtkPosOf (L.PosToken p _) = RtkPos p
+instance RtkPosOf a => RtkPosOf [a] where
+    rtkPosOf (x : _) = rtkPosOf x
+    rtkPosOf []      = rtkNoPos
+instance RtkPosOf a => RtkPosOf (Maybe a) where
+    rtkPosOf (Just x) = rtkPosOf x
+    rtkPosOf Nothing  = rtkNoPos
+-- A Char carries no position; this also covers String token payloads
+instance RtkPosOf Char where
+    rtkPosOf _ = rtkNoPos
+
+-- Recover a token's payload from the whole positioned token: %token
+-- bindings keep the L.PosToken so semantic actions can read its position
+tkVal_id :: L.PosToken -> String
+tkVal_id (L.PosToken _ (L.Tk__id v)) = v
+tkVal_id t = error ("rtk internal error: token id expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_CompoundName :: L.PosToken -> String
+tkVal_qq_CompoundName (L.PosToken _ (L.Tk__qq_CompoundName v)) = v
+tkVal_qq_CompoundName t = error ("rtk internal error: token qq_CompoundName expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Type :: L.PosToken -> String
+tkVal_qq_Type (L.PosToken _ (L.Tk__qq_Type v)) = v
+tkVal_qq_Type t = error ("rtk internal error: token qq_Type expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Field :: L.PosToken -> String
+tkVal_qq_Field (L.PosToken _ (L.Tk__qq_Field v)) = v
+tkVal_qq_Field t = error ("rtk internal error: token qq_Field expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_FieldList :: L.PosToken -> String
+tkVal_qq_FieldList (L.PosToken _ (L.Tk__qq_FieldList v)) = v
+tkVal_qq_FieldList t = error ("rtk internal error: token qq_FieldList expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_ClassDeclaration :: L.PosToken -> String
+tkVal_qq_ClassDeclaration (L.PosToken _ (L.Tk__qq_ClassDeclaration v)) = v
+tkVal_qq_ClassDeclaration t = error ("rtk internal error: token qq_ClassDeclaration expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Package :: L.PosToken -> String
+tkVal_qq_Package (L.PosToken _ (L.Tk__qq_Package v)) = v
+tkVal_qq_Package t = error ("rtk internal error: token qq_Package expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_CompilationUnit :: L.PosToken -> String
+tkVal_qq_CompilationUnit (L.PosToken _ (L.Tk__qq_CompilationUnit v)) = v
+tkVal_qq_CompilationUnit t = error ("rtk internal error: token qq_CompilationUnit expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_JavaSimple :: L.PosToken -> String
+tkVal_qq_JavaSimple (L.PosToken _ (L.Tk__qq_JavaSimple v)) = v
+tkVal_qq_JavaSimple t = error ("rtk internal error: token qq_JavaSimple expected, got " ++ showRtkToken (L.ptToken t))
+
+data JavaSimple = Ctr__JavaSimple__0 RtkPos JavaSimple |
+                  Ctr__JavaSimple__1 RtkPos ClassDeclaration |
+                  Ctr__JavaSimple__2 RtkPos CompilationUnit |
+                  Ctr__JavaSimple__3 RtkPos CompoundName |
+                  Ctr__JavaSimple__4 RtkPos Field |
+                  Ctr__JavaSimple__5 RtkPos FieldList |
+                  Ctr__JavaSimple__6 RtkPos Package |
+                  Ctr__JavaSimple__7 RtkPos Type |
                   Anti_JavaSimple String |
-                  Ctr__JavaSimple__8 CompilationUnit
+                  Ctr__JavaSimple__8 RtkPos CompilationUnit
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf JavaSimple where
+    rtkPosOf (Ctr__JavaSimple__0 p _) = p
+    rtkPosOf (Ctr__JavaSimple__1 p _) = p
+    rtkPosOf (Ctr__JavaSimple__2 p _) = p
+    rtkPosOf (Ctr__JavaSimple__3 p _) = p
+    rtkPosOf (Ctr__JavaSimple__4 p _) = p
+    rtkPosOf (Ctr__JavaSimple__5 p _) = p
+    rtkPosOf (Ctr__JavaSimple__6 p _) = p
+    rtkPosOf (Ctr__JavaSimple__7 p _) = p
+    rtkPosOf (Anti_JavaSimple _) = rtkNoPos
+    rtkPosOf (Ctr__JavaSimple__8 p _) = p
 data ClassDeclaration = Anti_ClassDeclaration String |
-                        Ctr__ClassDeclaration__0 Rule_2 String FieldList
+                        Ctr__ClassDeclaration__0 RtkPos Rule_2 String FieldList
                         deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf ClassDeclaration where
+    rtkPosOf (Anti_ClassDeclaration _) = rtkNoPos
+    rtkPosOf (Ctr__ClassDeclaration__0 p _ _ _) = p
 data CompilationUnit = Anti_CompilationUnit String |
-                       Ctr__CompilationUnit__0 Rule_0 Rule_1
+                       Ctr__CompilationUnit__0 RtkPos Rule_0 Rule_1
                        deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf CompilationUnit where
+    rtkPosOf (Anti_CompilationUnit _) = rtkNoPos
+    rtkPosOf (Ctr__CompilationUnit__0 p _ _) = p
 data CompoundName = Anti_CompoundName String |
-                    Ctr__CompoundName__0 String |
-                    Ctr__CompoundName__1 CompoundName String
+                    Ctr__CompoundName__0 RtkPos String |
+                    Ctr__CompoundName__1 RtkPos CompoundName String
                     deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf CompoundName where
+    rtkPosOf (Anti_CompoundName _) = rtkNoPos
+    rtkPosOf (Ctr__CompoundName__0 p _) = p
+    rtkPosOf (Ctr__CompoundName__1 p _ _) = p
 data Field = Anti_Field String |
-             Ctr__Field__0 Type String
+             Ctr__Field__0 RtkPos Type String
              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Field where
+    rtkPosOf (Anti_Field _) = rtkNoPos
+    rtkPosOf (Ctr__Field__0 p _ _) = p
 type FieldList = [Field]
 data Package = Anti_Package String |
-               Ctr__Package__0 CompoundName
+               Ctr__Package__0 RtkPos CompoundName
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-data Rule_0 = Ctr__Rule_0__0 |
-              Ctr__Rule_0__1 Package
+instance RtkPosOf Package where
+    rtkPosOf (Anti_Package _) = rtkNoPos
+    rtkPosOf (Ctr__Package__0 p _) = p
+data Rule_0 = Ctr__Rule_0__0 RtkPos |
+              Ctr__Rule_0__1 RtkPos Package
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-data Rule_1 = Ctr__Rule_1__0 |
-              Ctr__Rule_1__1 ClassDeclaration
+instance RtkPosOf Rule_0 where
+    rtkPosOf (Ctr__Rule_0__0 p) = p
+    rtkPosOf (Ctr__Rule_0__1 p _) = p
+data Rule_1 = Ctr__Rule_1__0 RtkPos |
+              Ctr__Rule_1__1 RtkPos ClassDeclaration
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-data Rule_2 = Ctr__Rule_2__0 |
-              Ctr__Rule_2__1
+instance RtkPosOf Rule_1 where
+    rtkPosOf (Ctr__Rule_1__0 p) = p
+    rtkPosOf (Ctr__Rule_1__1 p _) = p
+data Rule_2 = Ctr__Rule_2__0 RtkPos |
+              Ctr__Rule_2__1 RtkPos
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_2 where
+    rtkPosOf (Ctr__Rule_2__0 p) = p
+    rtkPosOf (Ctr__Rule_2__1 p) = p
 data Type = Anti_Type String |
-            Ctr__Type__0 |
-            Ctr__Type__1 |
-            Ctr__Type__2 String
+            Ctr__Type__0 RtkPos |
+            Ctr__Type__1 RtkPos |
+            Ctr__Type__2 RtkPos String
             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Type where
+    rtkPosOf (Anti_Type _) = rtkNoPos
+    rtkPosOf (Ctr__Type__0 p) = p
+    rtkPosOf (Ctr__Type__1 p) = p
+    rtkPosOf (Ctr__Type__2 p _) = p
 }

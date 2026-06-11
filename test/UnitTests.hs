@@ -10,7 +10,6 @@ module Main (main) where
 
 import Control.Exception (SomeException, evaluate, try)
 import Control.Monad (when)
-import Data.Generics (everywhere, mkT)
 import Data.List (find, group, isInfixOf, isPrefixOf, nub, sort)
 import qualified Data.Map as M
 import Data.Maybe (maybeToList)
@@ -450,13 +449,15 @@ testFillConstructorNames = TestCase $ do
 
 selfHostedFrontEndTests :: Test
 selfHostedFrontEndTests = TestList
-    [ TestLabel "errors carry the position in the message text" $ TestCase $
-        -- ';' missing after the grammar declaration. Until task 7b the
-        -- generated front end has no structured positions; the message text
-        -- itself names line and column.
+    [ TestLabel "parse errors carry the position in the message text" $ TestCase $
+        -- ';' missing after the grammar declaration. The generated lexer and
+        -- parser report Either String, so their failures render line and
+        -- column into the message text instead of a structured position
+        -- (everything after parsing carries structured positions, see the
+        -- duplicate-rule test below).
         expectDiagnostic "a missing ';'"
             (parseGrammarSourceGenerated "grammar 'Test'\nFoo = bar;\n") $ \d -> do
-            assertEqual "no structured position yet (task 7b)" Nothing (diagPos d)
+            assertEqual "no structured position for parse errors" Nothing (diagPos d)
             assertBool ("message names the position: " ++ diagMessage d) $
                 "line 2" `isInfixOf` diagMessage d
     , TestLabel "lexical errors are diagnostics, not exceptions" $ TestCase $
@@ -464,15 +465,27 @@ selfHostedFrontEndTests = TestList
             (parseGrammarSourceGenerated "grammar 'Test';\nA = % ;\n") $ \d ->
             assertBool ("message names the position: " ++ diagMessage d) $
                 "line 2" `isInfixOf` diagMessage d
+    , TestLabel "rule positions are captured: duplicate rules get a structured diagnostic" $ TestCase $
+        -- The generated AST carries the position of every rule's first
+        -- token, and the adapter maps it into getIRulePos, so a
+        -- normalization diagnostic under --use-generated points at the
+        -- offending line and column exactly like the hand-written front end.
+        expectDiagnostic "a duplicate rule"
+            (parseGrammarSourceGenerated "grammar 'Dup';\nFoo = 'a';\nFoo = 'b';\n"
+                >>= normalizeParsedGrammar) $ \d -> do
+            assertEqual "position of the second definition" (Just (SourcePos 3 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "defined more than once" `isInfixOf` diagMessage d
+                && "line 2, column 1" `isInfixOf` diagMessage d
     ]
 
 -- | Both front ends must produce the same 'InitialGrammar' for every grammar
--- in the corpus, up to source positions: the generated front end does not
--- capture 'getIRulePos' yet (task 7b), so positions are stripped before
--- comparing. This catches adapter bugs with far better messages than a
--- generated-artifact diff. Grammars pinned in 'frontEndDivergentGrammars'
--- are expected to differ (or be rejected); the test fails once they agree,
--- so the pin gets dropped.
+-- in the corpus, source positions included: the generated front end captures
+-- 'getIRulePos' from the position fields of its AST, and they must agree
+-- with the positions the hand-written parser records. This catches adapter
+-- bugs with far better messages than a generated-artifact diff. Grammars
+-- pinned in 'frontEndDivergentGrammars' are expected to differ (or be
+-- rejected); the test fails once they agree, so the pin gets dropped.
 astEqualityTestFor :: FilePath -> IO Test
 astEqualityTestFor pgFile = do
     source <- readFileUtf8 pgFile
@@ -484,19 +497,14 @@ astEqualityTestFor pgFile = do
             (_, Left d, _) -> assertFailure $
                 "hand-written front end failed on " ++ pgFile ++ ": " ++ show d
             (Nothing, Right h, Right g) ->
-                assertEqual "hand-written vs generated front end (positions stripped)"
-                    (stripPositions h) (stripPositions g)
+                assertEqual "hand-written vs generated front end (positions included)" h g
             (Nothing, _, Left d) -> assertFailure $
                 "generated front end failed on " ++ pgFile ++ ": " ++ show d
             (Just _, _, Left _) -> return () -- rejected: still divergent
             (Just reason, Right h, Right g) ->
-                when (stripPositions h == stripPositions g) $ assertFailure $
+                when (h == g) $ assertFailure $
                     "the front ends now agree on this grammar (pinned because: " ++ reason
                     ++ ");\ndrop it from frontEndDivergentGrammars in test/TestSupport.hs"
-
--- | Forget every source position in the parsed grammar.
-stripPositions :: InitialGrammar -> InitialGrammar
-stripPositions = everywhere (mkT (const Nothing :: Maybe SourcePos -> Maybe SourcePos))
 
 --------------------------------------------------------------------------------
 -- Invariants checked against every grammar in test-grammars/
