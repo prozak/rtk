@@ -101,6 +101,9 @@ testConstruction = do
     let _ = [J.statement| if (x > 0) { return x; } else { return -x; } |]
     putStrLn "✅ [statement| if-else |]"
 
+    let _ = [J.statement| if (x > 0) if (y > 0) f(); else g(); |]
+    putStrLn "✅ [statement| nested if without braces (dangling else) |]"
+
     let _ = [J.statement| while (x > 0) { x = x - 1; } |]
     putStrLn "✅ [statement| while loop |]"
 

@@ -10,88 +10,87 @@ import Data.Data (Data)
 @exponentPart = ([eE]  ("+"| "-") ?  [0-9]  ([0-9_]*  [0-9]) ?)
 @floatTypeSuffix = ([fFdD])
 
-tokens :- "tok_AdditiveOp_dummy_165" { simple Tk__tok_AdditiveOp_dummy_165 }
-          "tok_Annotation_dummy_164" { simple Tk__tok_Annotation_dummy_164 }
-          "tok_AnnotationArguments_dummy_163" { simple Tk__tok_AnnotationArguments_dummy_163 }
-          "tok_AnnotationDeclaration_dummy_162" { simple Tk__tok_AnnotationDeclaration_dummy_162 }
-          "tok_AnnotationElement_dummy_161" { simple Tk__tok_AnnotationElement_dummy_161 }
-          "tok_AnnotationList_dummy_160" { simple Tk__tok_AnnotationList_dummy_160 }
-          "tok_AnnotationTypeElement_dummy_159" { simple Tk__tok_AnnotationTypeElement_dummy_159 }
-          "tok_AnnotationTypeElementList_dummy_158" { simple Tk__tok_AnnotationTypeElementList_dummy_158 }
-          "tok_Arglist_dummy_157" { simple Tk__tok_Arglist_dummy_157 }
-          "tok_AssignmentOp_dummy_156" { simple Tk__tok_AssignmentOp_dummy_156 }
-          "tok_CatchList_dummy_155" { simple Tk__tok_CatchList_dummy_155 }
-          "tok_ClassDeclaration_dummy_154" { simple Tk__tok_ClassDeclaration_dummy_154 }
-          "tok_CompilationUnit_dummy_153" { simple Tk__tok_CompilationUnit_dummy_153 }
-          "tok_CompoundName_dummy_152" { simple Tk__tok_CompoundName_dummy_152 }
-          "tok_CreationExpression_dummy_151" { simple Tk__tok_CreationExpression_dummy_151 }
-          "tok_DimExprs_dummy_150" { simple Tk__tok_DimExprs_dummy_150 }
-          "tok_Dims_dummy_149" { simple Tk__tok_Dims_dummy_149 }
-          "tok_DoStatement_dummy_148" { simple Tk__tok_DoStatement_dummy_148 }
-          "tok_DocComment_dummy_147" { simple Tk__tok_DocComment_dummy_147 }
-          "tok_EnumConstant_dummy_146" { simple Tk__tok_EnumConstant_dummy_146 }
-          "tok_EnumConstantList_dummy_145" { simple Tk__tok_EnumConstantList_dummy_145 }
-          "tok_EnumDeclaration_dummy_144" { simple Tk__tok_EnumDeclaration_dummy_144 }
-          "tok_EqualityOp_dummy_143" { simple Tk__tok_EqualityOp_dummy_143 }
-          "tok_Expression_dummy_142" { simple Tk__tok_Expression_dummy_142 }
-          "tok_ExtendsList_dummy_141" { simple Tk__tok_ExtendsList_dummy_141 }
-          "tok_FieldDeclaration_dummy_140" { simple Tk__tok_FieldDeclaration_dummy_140 }
-          "tok_FieldDeclarationList_dummy_139" { simple Tk__tok_FieldDeclarationList_dummy_139 }
-          "tok_ForStatement_dummy_138" { simple Tk__tok_ForStatement_dummy_138 }
-          "tok_IfStatement_dummy_137" { simple Tk__tok_IfStatement_dummy_137 }
-          "tok_ImplementsList_dummy_136" { simple Tk__tok_ImplementsList_dummy_136 }
-          "tok_ImportList_dummy_135" { simple Tk__tok_ImportList_dummy_135 }
-          "tok_ImportStatement_dummy_134" { simple Tk__tok_ImportStatement_dummy_134 }
-          "tok_InterfaceDeclaration_dummy_133" { simple Tk__tok_InterfaceDeclaration_dummy_133 }
-          "tok_Java_dummy_166" { simple Tk__tok_Java_dummy_166 }
-          "tok_Literal_dummy_132" { simple Tk__tok_Literal_dummy_132 }
-          "tok_MemberAfterFirstId_dummy_131" { simple Tk__tok_MemberAfterFirstId_dummy_131 }
-          "tok_MemberDeclaration_dummy_130" { simple Tk__tok_MemberDeclaration_dummy_130 }
-          "tok_MemberRest_dummy_129" { simple Tk__tok_MemberRest_dummy_129 }
-          "tok_Modifier_dummy_128" { simple Tk__tok_Modifier_dummy_128 }
-          "tok_ModifierList_dummy_127" { simple Tk__tok_ModifierList_dummy_127 }
-          "tok_MoreTypeSpecifier_dummy_126" { simple Tk__tok_MoreTypeSpecifier_dummy_126 }
-          "tok_MoreVariableDeclarators_dummy_125" { simple Tk__tok_MoreVariableDeclarators_dummy_125 }
-          "tok_MultiplicativeOp_dummy_124" { simple Tk__tok_MultiplicativeOp_dummy_124 }
-          "tok_NestedTypeDeclaration_dummy_123" { simple Tk__tok_NestedTypeDeclaration_dummy_123 }
-          "tok_NonEmptyDims_dummy_122" { simple Tk__tok_NonEmptyDims_dummy_122 }
-          "tok_NonEmptyTypeArguments_dummy_121" { simple Tk__tok_NonEmptyTypeArguments_dummy_121 }
-          "tok_OptDocComment_dummy_120" { simple Tk__tok_OptDocComment_dummy_120 }
-          "tok_OptElsePart_dummy_119" { simple Tk__tok_OptElsePart_dummy_119 }
-          "tok_OptExpression_dummy_118" { simple Tk__tok_OptExpression_dummy_118 }
-          "tok_OptFinally_dummy_117" { simple Tk__tok_OptFinally_dummy_117 }
-          "tok_OptId_dummy_116" { simple Tk__tok_OptId_dummy_116 }
-          "tok_OptVariableInitializer_dummy_115" { simple Tk__tok_OptVariableInitializer_dummy_115 }
-          "tok_Package_dummy_114" { simple Tk__tok_Package_dummy_114 }
-          "tok_Parameter_dummy_113" { simple Tk__tok_Parameter_dummy_113 }
-          "tok_ParameterList_dummy_112" { simple Tk__tok_ParameterList_dummy_112 }
-          "tok_PostfixOp_dummy_111" { simple Tk__tok_PostfixOp_dummy_111 }
-          "tok_PrefixOp_dummy_110" { simple Tk__tok_PrefixOp_dummy_110 }
-          "tok_PrimitiveTypeKeyword_dummy_109" { simple Tk__tok_PrimitiveTypeKeyword_dummy_109 }
-          "tok_RelationalOp_dummy_108" { simple Tk__tok_RelationalOp_dummy_108 }
-          "tok_ShiftOp_dummy_107" { simple Tk__tok_ShiftOp_dummy_107 }
-          "tok_Statement_dummy_106" { simple Tk__tok_Statement_dummy_106 }
-          "tok_StatementBlock_dummy_105" { simple Tk__tok_StatementBlock_dummy_105 }
-          "tok_StatementList_dummy_104" { simple Tk__tok_StatementList_dummy_104 }
-          "tok_StatementWithoutIf_dummy_103" { simple Tk__tok_StatementWithoutIf_dummy_103 }
-          "tok_StaticInitializer_dummy_102" { simple Tk__tok_StaticInitializer_dummy_102 }
-          "tok_SwitchCaseList_dummy_101" { simple Tk__tok_SwitchCaseList_dummy_101 }
-          "tok_SwitchStatement_dummy_100" { simple Tk__tok_SwitchStatement_dummy_100 }
-          "tok_TryStatement_dummy_99" { simple Tk__tok_TryStatement_dummy_99 }
-          "tok_Type_dummy_98" { simple Tk__tok_Type_dummy_98 }
-          "tok_TypeArgument_dummy_97" { simple Tk__tok_TypeArgument_dummy_97 }
-          "tok_TypeArguments_dummy_96" { simple Tk__tok_TypeArguments_dummy_96 }
-          "tok_TypeDeclaration_dummy_95" { simple Tk__tok_TypeDeclaration_dummy_95 }
-          "tok_TypeParameter_dummy_94" { simple Tk__tok_TypeParameter_dummy_94 }
-          "tok_TypeParameters_dummy_93" { simple Tk__tok_TypeParameters_dummy_93 }
-          "tok_TypeSpecifier_dummy_92" { simple Tk__tok_TypeSpecifier_dummy_92 }
-          "tok_VariableDeclaration_dummy_91" { simple Tk__tok_VariableDeclaration_dummy_91 }
-          "tok_VariableDeclarator_dummy_90" { simple Tk__tok_VariableDeclarator_dummy_90 }
-          "tok_VariableDeclaratorList_dummy_89" { simple Tk__tok_VariableDeclaratorList_dummy_89 }
-          "tok_VariableInitializer_dummy_88" { simple Tk__tok_VariableInitializer_dummy_88 }
-          "tok_VariableInitializerList_dummy_87" { simple Tk__tok_VariableInitializerList_dummy_87 }
-          "tok_WhileStatement_dummy_86" { simple Tk__tok_WhileStatement_dummy_86 }
-          "tok_WildcardType_dummy_85" { simple Tk__tok_WildcardType_dummy_85 }
+tokens :- "tok_AdditiveOp_dummy_162" { simple Tk__tok_AdditiveOp_dummy_162 }
+          "tok_Annotation_dummy_161" { simple Tk__tok_Annotation_dummy_161 }
+          "tok_AnnotationArguments_dummy_160" { simple Tk__tok_AnnotationArguments_dummy_160 }
+          "tok_AnnotationDeclaration_dummy_159" { simple Tk__tok_AnnotationDeclaration_dummy_159 }
+          "tok_AnnotationElement_dummy_158" { simple Tk__tok_AnnotationElement_dummy_158 }
+          "tok_AnnotationList_dummy_157" { simple Tk__tok_AnnotationList_dummy_157 }
+          "tok_AnnotationTypeElement_dummy_156" { simple Tk__tok_AnnotationTypeElement_dummy_156 }
+          "tok_AnnotationTypeElementList_dummy_155" { simple Tk__tok_AnnotationTypeElementList_dummy_155 }
+          "tok_Arglist_dummy_154" { simple Tk__tok_Arglist_dummy_154 }
+          "tok_AssignmentOp_dummy_153" { simple Tk__tok_AssignmentOp_dummy_153 }
+          "tok_CatchList_dummy_152" { simple Tk__tok_CatchList_dummy_152 }
+          "tok_ClassDeclaration_dummy_151" { simple Tk__tok_ClassDeclaration_dummy_151 }
+          "tok_CompilationUnit_dummy_150" { simple Tk__tok_CompilationUnit_dummy_150 }
+          "tok_CompoundName_dummy_149" { simple Tk__tok_CompoundName_dummy_149 }
+          "tok_CreationExpression_dummy_148" { simple Tk__tok_CreationExpression_dummy_148 }
+          "tok_DimExprs_dummy_147" { simple Tk__tok_DimExprs_dummy_147 }
+          "tok_Dims_dummy_146" { simple Tk__tok_Dims_dummy_146 }
+          "tok_DoStatement_dummy_145" { simple Tk__tok_DoStatement_dummy_145 }
+          "tok_DocComment_dummy_144" { simple Tk__tok_DocComment_dummy_144 }
+          "tok_EnumConstant_dummy_143" { simple Tk__tok_EnumConstant_dummy_143 }
+          "tok_EnumConstantList_dummy_142" { simple Tk__tok_EnumConstantList_dummy_142 }
+          "tok_EnumDeclaration_dummy_141" { simple Tk__tok_EnumDeclaration_dummy_141 }
+          "tok_EqualityOp_dummy_140" { simple Tk__tok_EqualityOp_dummy_140 }
+          "tok_Expression_dummy_139" { simple Tk__tok_Expression_dummy_139 }
+          "tok_ExtendsList_dummy_138" { simple Tk__tok_ExtendsList_dummy_138 }
+          "tok_FieldDeclaration_dummy_137" { simple Tk__tok_FieldDeclaration_dummy_137 }
+          "tok_FieldDeclarationList_dummy_136" { simple Tk__tok_FieldDeclarationList_dummy_136 }
+          "tok_ForStatement_dummy_135" { simple Tk__tok_ForStatement_dummy_135 }
+          "tok_IfStatement_dummy_134" { simple Tk__tok_IfStatement_dummy_134 }
+          "tok_ImplementsList_dummy_133" { simple Tk__tok_ImplementsList_dummy_133 }
+          "tok_ImportList_dummy_132" { simple Tk__tok_ImportList_dummy_132 }
+          "tok_ImportStatement_dummy_131" { simple Tk__tok_ImportStatement_dummy_131 }
+          "tok_InterfaceDeclaration_dummy_130" { simple Tk__tok_InterfaceDeclaration_dummy_130 }
+          "tok_Java_dummy_163" { simple Tk__tok_Java_dummy_163 }
+          "tok_Literal_dummy_129" { simple Tk__tok_Literal_dummy_129 }
+          "tok_MemberAfterFirstId_dummy_128" { simple Tk__tok_MemberAfterFirstId_dummy_128 }
+          "tok_MemberDeclaration_dummy_127" { simple Tk__tok_MemberDeclaration_dummy_127 }
+          "tok_MemberRest_dummy_126" { simple Tk__tok_MemberRest_dummy_126 }
+          "tok_Modifier_dummy_125" { simple Tk__tok_Modifier_dummy_125 }
+          "tok_ModifierList_dummy_124" { simple Tk__tok_ModifierList_dummy_124 }
+          "tok_MoreTypeSpecifier_dummy_123" { simple Tk__tok_MoreTypeSpecifier_dummy_123 }
+          "tok_MoreVariableDeclarators_dummy_122" { simple Tk__tok_MoreVariableDeclarators_dummy_122 }
+          "tok_MultiplicativeOp_dummy_121" { simple Tk__tok_MultiplicativeOp_dummy_121 }
+          "tok_NonEmptyDims_dummy_120" { simple Tk__tok_NonEmptyDims_dummy_120 }
+          "tok_NonEmptyTypeArguments_dummy_119" { simple Tk__tok_NonEmptyTypeArguments_dummy_119 }
+          "tok_OptDocComment_dummy_118" { simple Tk__tok_OptDocComment_dummy_118 }
+          "tok_OptElsePart_dummy_117" { simple Tk__tok_OptElsePart_dummy_117 }
+          "tok_OptExpression_dummy_116" { simple Tk__tok_OptExpression_dummy_116 }
+          "tok_OptFinally_dummy_115" { simple Tk__tok_OptFinally_dummy_115 }
+          "tok_OptId_dummy_114" { simple Tk__tok_OptId_dummy_114 }
+          "tok_OptVariableInitializer_dummy_113" { simple Tk__tok_OptVariableInitializer_dummy_113 }
+          "tok_Package_dummy_112" { simple Tk__tok_Package_dummy_112 }
+          "tok_Parameter_dummy_111" { simple Tk__tok_Parameter_dummy_111 }
+          "tok_ParameterList_dummy_110" { simple Tk__tok_ParameterList_dummy_110 }
+          "tok_PostfixOp_dummy_109" { simple Tk__tok_PostfixOp_dummy_109 }
+          "tok_PrefixOp_dummy_108" { simple Tk__tok_PrefixOp_dummy_108 }
+          "tok_PrimitiveTypeKeyword_dummy_107" { simple Tk__tok_PrimitiveTypeKeyword_dummy_107 }
+          "tok_RelationalOp_dummy_106" { simple Tk__tok_RelationalOp_dummy_106 }
+          "tok_ShiftOp_dummy_105" { simple Tk__tok_ShiftOp_dummy_105 }
+          "tok_Statement_dummy_104" { simple Tk__tok_Statement_dummy_104 }
+          "tok_StatementBlock_dummy_103" { simple Tk__tok_StatementBlock_dummy_103 }
+          "tok_StatementList_dummy_102" { simple Tk__tok_StatementList_dummy_102 }
+          "tok_StaticInitializer_dummy_101" { simple Tk__tok_StaticInitializer_dummy_101 }
+          "tok_SwitchCaseList_dummy_100" { simple Tk__tok_SwitchCaseList_dummy_100 }
+          "tok_SwitchStatement_dummy_99" { simple Tk__tok_SwitchStatement_dummy_99 }
+          "tok_TryStatement_dummy_98" { simple Tk__tok_TryStatement_dummy_98 }
+          "tok_Type_dummy_97" { simple Tk__tok_Type_dummy_97 }
+          "tok_TypeArgument_dummy_96" { simple Tk__tok_TypeArgument_dummy_96 }
+          "tok_TypeArguments_dummy_95" { simple Tk__tok_TypeArguments_dummy_95 }
+          "tok_TypeDeclRest_dummy_94" { simple Tk__tok_TypeDeclRest_dummy_94 }
+          "tok_TypeDeclaration_dummy_93" { simple Tk__tok_TypeDeclaration_dummy_93 }
+          "tok_TypeParameter_dummy_92" { simple Tk__tok_TypeParameter_dummy_92 }
+          "tok_TypeParameters_dummy_91" { simple Tk__tok_TypeParameters_dummy_91 }
+          "tok_TypeSpecifier_dummy_90" { simple Tk__tok_TypeSpecifier_dummy_90 }
+          "tok_VariableDeclaration_dummy_89" { simple Tk__tok_VariableDeclaration_dummy_89 }
+          "tok_VariableDeclarator_dummy_88" { simple Tk__tok_VariableDeclarator_dummy_88 }
+          "tok_VariableDeclaratorList_dummy_87" { simple Tk__tok_VariableDeclaratorList_dummy_87 }
+          "tok_VariableInitializer_dummy_86" { simple Tk__tok_VariableInitializer_dummy_86 }
+          "tok_VariableInitializerList_dummy_85" { simple Tk__tok_VariableInitializerList_dummy_85 }
+          "tok_WhileStatement_dummy_84" { simple Tk__tok_WhileStatement_dummy_84 }
+          "tok_WildcardType_dummy_83" { simple Tk__tok_WildcardType_dummy_83 }
           "~" { simple Tk__tok__tilde__78 }
           "}" { simple Tk__tok__symbol__14 }
           "||" { simple Tk__tok__pipe__pipe__57 }
@@ -231,7 +230,6 @@ tokens :- "tok_AdditiveOp_dummy_165" { simple Tk__tok_AdditiveOp_dummy_165 }
           ("$"  "DoStatement"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_DoStatement . ((tail . dropWhile (/= ':'))) }
           ("$"  "IfStatement"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_IfStatement . ((tail . dropWhile (/= ':'))) }
           ("$"  "OptElsePart"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_OptElsePart . ((tail . dropWhile (/= ':'))) }
-          ("$"  "StatementWithoutIf"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_StatementWithoutIf . ((tail . dropWhile (/= ':'))) }
           ("$"  "Statement"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Statement . ((tail . dropWhile (/= ':'))) }
           ("$"  "OptId"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_OptId . ((tail . dropWhile (/= ':'))) }
           ("$"  "OptExpression"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_OptExpression . ((tail . dropWhile (/= ':'))) }
@@ -255,7 +253,7 @@ tokens :- "tok_AdditiveOp_dummy_165" { simple Tk__tok_AdditiveOp_dummy_165 }
           ("$"  "NonEmptyDims"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_NonEmptyDims . ((tail . dropWhile (/= ':'))) }
           ("$"  "Dims"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Dims . ((tail . dropWhile (/= ':'))) }
           ("$"  "FieldDeclaration"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_FieldDeclaration . ((tail . dropWhile (/= ':'))) }
-          ("$"  "NestedTypeDeclaration"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_NestedTypeDeclaration . ((tail . dropWhile (/= ':'))) }
+          ("$"  "TypeDeclRest"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_TypeDeclRest . ((tail . dropWhile (/= ':'))) }
           ("$"  "EnumDeclaration"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_EnumDeclaration . ((tail . dropWhile (/= ':'))) }
           ("$"  "EnumConstantList"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_EnumConstantList . ((tail . dropWhile (/= ':'))) }
           ("$"  "EnumConstant"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_EnumConstant . ((tail . dropWhile (/= ':'))) }
@@ -284,88 +282,87 @@ tokens :- "tok_AdditiveOp_dummy_165" { simple Tk__tok_AdditiveOp_dummy_165 }
 
 {
 data Token = EndOfFile |
-             Tk__tok_AdditiveOp_dummy_165 |
-             Tk__tok_Annotation_dummy_164 |
-             Tk__tok_AnnotationArguments_dummy_163 |
-             Tk__tok_AnnotationDeclaration_dummy_162 |
-             Tk__tok_AnnotationElement_dummy_161 |
-             Tk__tok_AnnotationList_dummy_160 |
-             Tk__tok_AnnotationTypeElement_dummy_159 |
-             Tk__tok_AnnotationTypeElementList_dummy_158 |
-             Tk__tok_Arglist_dummy_157 |
-             Tk__tok_AssignmentOp_dummy_156 |
-             Tk__tok_CatchList_dummy_155 |
-             Tk__tok_ClassDeclaration_dummy_154 |
-             Tk__tok_CompilationUnit_dummy_153 |
-             Tk__tok_CompoundName_dummy_152 |
-             Tk__tok_CreationExpression_dummy_151 |
-             Tk__tok_DimExprs_dummy_150 |
-             Tk__tok_Dims_dummy_149 |
-             Tk__tok_DoStatement_dummy_148 |
-             Tk__tok_DocComment_dummy_147 |
-             Tk__tok_EnumConstant_dummy_146 |
-             Tk__tok_EnumConstantList_dummy_145 |
-             Tk__tok_EnumDeclaration_dummy_144 |
-             Tk__tok_EqualityOp_dummy_143 |
-             Tk__tok_Expression_dummy_142 |
-             Tk__tok_ExtendsList_dummy_141 |
-             Tk__tok_FieldDeclaration_dummy_140 |
-             Tk__tok_FieldDeclarationList_dummy_139 |
-             Tk__tok_ForStatement_dummy_138 |
-             Tk__tok_IfStatement_dummy_137 |
-             Tk__tok_ImplementsList_dummy_136 |
-             Tk__tok_ImportList_dummy_135 |
-             Tk__tok_ImportStatement_dummy_134 |
-             Tk__tok_InterfaceDeclaration_dummy_133 |
-             Tk__tok_Java_dummy_166 |
-             Tk__tok_Literal_dummy_132 |
-             Tk__tok_MemberAfterFirstId_dummy_131 |
-             Tk__tok_MemberDeclaration_dummy_130 |
-             Tk__tok_MemberRest_dummy_129 |
-             Tk__tok_Modifier_dummy_128 |
-             Tk__tok_ModifierList_dummy_127 |
-             Tk__tok_MoreTypeSpecifier_dummy_126 |
-             Tk__tok_MoreVariableDeclarators_dummy_125 |
-             Tk__tok_MultiplicativeOp_dummy_124 |
-             Tk__tok_NestedTypeDeclaration_dummy_123 |
-             Tk__tok_NonEmptyDims_dummy_122 |
-             Tk__tok_NonEmptyTypeArguments_dummy_121 |
-             Tk__tok_OptDocComment_dummy_120 |
-             Tk__tok_OptElsePart_dummy_119 |
-             Tk__tok_OptExpression_dummy_118 |
-             Tk__tok_OptFinally_dummy_117 |
-             Tk__tok_OptId_dummy_116 |
-             Tk__tok_OptVariableInitializer_dummy_115 |
-             Tk__tok_Package_dummy_114 |
-             Tk__tok_Parameter_dummy_113 |
-             Tk__tok_ParameterList_dummy_112 |
-             Tk__tok_PostfixOp_dummy_111 |
-             Tk__tok_PrefixOp_dummy_110 |
-             Tk__tok_PrimitiveTypeKeyword_dummy_109 |
-             Tk__tok_RelationalOp_dummy_108 |
-             Tk__tok_ShiftOp_dummy_107 |
-             Tk__tok_Statement_dummy_106 |
-             Tk__tok_StatementBlock_dummy_105 |
-             Tk__tok_StatementList_dummy_104 |
-             Tk__tok_StatementWithoutIf_dummy_103 |
-             Tk__tok_StaticInitializer_dummy_102 |
-             Tk__tok_SwitchCaseList_dummy_101 |
-             Tk__tok_SwitchStatement_dummy_100 |
-             Tk__tok_TryStatement_dummy_99 |
-             Tk__tok_Type_dummy_98 |
-             Tk__tok_TypeArgument_dummy_97 |
-             Tk__tok_TypeArguments_dummy_96 |
-             Tk__tok_TypeDeclaration_dummy_95 |
-             Tk__tok_TypeParameter_dummy_94 |
-             Tk__tok_TypeParameters_dummy_93 |
-             Tk__tok_TypeSpecifier_dummy_92 |
-             Tk__tok_VariableDeclaration_dummy_91 |
-             Tk__tok_VariableDeclarator_dummy_90 |
-             Tk__tok_VariableDeclaratorList_dummy_89 |
-             Tk__tok_VariableInitializer_dummy_88 |
-             Tk__tok_VariableInitializerList_dummy_87 |
-             Tk__tok_WhileStatement_dummy_86 |
-             Tk__tok_WildcardType_dummy_85 |
+             Tk__tok_AdditiveOp_dummy_162 |
+             Tk__tok_Annotation_dummy_161 |
+             Tk__tok_AnnotationArguments_dummy_160 |
+             Tk__tok_AnnotationDeclaration_dummy_159 |
+             Tk__tok_AnnotationElement_dummy_158 |
+             Tk__tok_AnnotationList_dummy_157 |
+             Tk__tok_AnnotationTypeElement_dummy_156 |
+             Tk__tok_AnnotationTypeElementList_dummy_155 |
+             Tk__tok_Arglist_dummy_154 |
+             Tk__tok_AssignmentOp_dummy_153 |
+             Tk__tok_CatchList_dummy_152 |
+             Tk__tok_ClassDeclaration_dummy_151 |
+             Tk__tok_CompilationUnit_dummy_150 |
+             Tk__tok_CompoundName_dummy_149 |
+             Tk__tok_CreationExpression_dummy_148 |
+             Tk__tok_DimExprs_dummy_147 |
+             Tk__tok_Dims_dummy_146 |
+             Tk__tok_DoStatement_dummy_145 |
+             Tk__tok_DocComment_dummy_144 |
+             Tk__tok_EnumConstant_dummy_143 |
+             Tk__tok_EnumConstantList_dummy_142 |
+             Tk__tok_EnumDeclaration_dummy_141 |
+             Tk__tok_EqualityOp_dummy_140 |
+             Tk__tok_Expression_dummy_139 |
+             Tk__tok_ExtendsList_dummy_138 |
+             Tk__tok_FieldDeclaration_dummy_137 |
+             Tk__tok_FieldDeclarationList_dummy_136 |
+             Tk__tok_ForStatement_dummy_135 |
+             Tk__tok_IfStatement_dummy_134 |
+             Tk__tok_ImplementsList_dummy_133 |
+             Tk__tok_ImportList_dummy_132 |
+             Tk__tok_ImportStatement_dummy_131 |
+             Tk__tok_InterfaceDeclaration_dummy_130 |
+             Tk__tok_Java_dummy_163 |
+             Tk__tok_Literal_dummy_129 |
+             Tk__tok_MemberAfterFirstId_dummy_128 |
+             Tk__tok_MemberDeclaration_dummy_127 |
+             Tk__tok_MemberRest_dummy_126 |
+             Tk__tok_Modifier_dummy_125 |
+             Tk__tok_ModifierList_dummy_124 |
+             Tk__tok_MoreTypeSpecifier_dummy_123 |
+             Tk__tok_MoreVariableDeclarators_dummy_122 |
+             Tk__tok_MultiplicativeOp_dummy_121 |
+             Tk__tok_NonEmptyDims_dummy_120 |
+             Tk__tok_NonEmptyTypeArguments_dummy_119 |
+             Tk__tok_OptDocComment_dummy_118 |
+             Tk__tok_OptElsePart_dummy_117 |
+             Tk__tok_OptExpression_dummy_116 |
+             Tk__tok_OptFinally_dummy_115 |
+             Tk__tok_OptId_dummy_114 |
+             Tk__tok_OptVariableInitializer_dummy_113 |
+             Tk__tok_Package_dummy_112 |
+             Tk__tok_Parameter_dummy_111 |
+             Tk__tok_ParameterList_dummy_110 |
+             Tk__tok_PostfixOp_dummy_109 |
+             Tk__tok_PrefixOp_dummy_108 |
+             Tk__tok_PrimitiveTypeKeyword_dummy_107 |
+             Tk__tok_RelationalOp_dummy_106 |
+             Tk__tok_ShiftOp_dummy_105 |
+             Tk__tok_Statement_dummy_104 |
+             Tk__tok_StatementBlock_dummy_103 |
+             Tk__tok_StatementList_dummy_102 |
+             Tk__tok_StaticInitializer_dummy_101 |
+             Tk__tok_SwitchCaseList_dummy_100 |
+             Tk__tok_SwitchStatement_dummy_99 |
+             Tk__tok_TryStatement_dummy_98 |
+             Tk__tok_Type_dummy_97 |
+             Tk__tok_TypeArgument_dummy_96 |
+             Tk__tok_TypeArguments_dummy_95 |
+             Tk__tok_TypeDeclRest_dummy_94 |
+             Tk__tok_TypeDeclaration_dummy_93 |
+             Tk__tok_TypeParameter_dummy_92 |
+             Tk__tok_TypeParameters_dummy_91 |
+             Tk__tok_TypeSpecifier_dummy_90 |
+             Tk__tok_VariableDeclaration_dummy_89 |
+             Tk__tok_VariableDeclarator_dummy_88 |
+             Tk__tok_VariableDeclaratorList_dummy_87 |
+             Tk__tok_VariableInitializer_dummy_86 |
+             Tk__tok_VariableInitializerList_dummy_85 |
+             Tk__tok_WhileStatement_dummy_84 |
+             Tk__tok_WildcardType_dummy_83 |
              Tk__tok__tilde__78 |
              Tk__tok__symbol__14 |
              Tk__tok__pipe__pipe__57 |
@@ -502,7 +499,6 @@ data Token = EndOfFile |
              Tk__qq_DoStatement String |
              Tk__qq_IfStatement String |
              Tk__qq_OptElsePart String |
-             Tk__qq_StatementWithoutIf String |
              Tk__qq_Statement String |
              Tk__qq_OptId String |
              Tk__qq_OptExpression String |
@@ -526,7 +522,7 @@ data Token = EndOfFile |
              Tk__qq_NonEmptyDims String |
              Tk__qq_Dims String |
              Tk__qq_FieldDeclaration String |
-             Tk__qq_NestedTypeDeclaration String |
+             Tk__qq_TypeDeclRest String |
              Tk__qq_EnumDeclaration String |
              Tk__qq_EnumConstantList String |
              Tk__qq_EnumConstant String |
