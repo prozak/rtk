@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-lex-java accept-lex-java test-all-java test-bootstrap test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-lex-java accept-lex-java test-all-java test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -24,7 +24,6 @@ help:
 	@echo "Use 'accept-golden' target to refresh golden snapshots after generator changes"
 	@echo "Use 'test-lex-java' target to check exact Java token streams against goldens"
 	@echo "Use 'accept-lex-java' target to refresh the Java token goldens after a lexer change"
-	@echo "Use 'test-bootstrap' target to compare hand-written vs generated grammar files"
 	@echo "Available grammar tests: $(GRAMMAR_TARGETS)"
 
 # ============================================================================
@@ -197,12 +196,6 @@ test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
 	$(CP) test-grammars/java-qq-test.hs test-out
 	cabal exec -- ghc --make -itest-out test-out/java-qq-test.hs -o test-out/java-qq-test
 	test-out/java-qq-test
-
-# Bootstrap comparison test - compares hand-written files with generated ones
-test-bootstrap: build test-out/GrammarLexer.x test-out/GrammarParser.y test-out/GrammarQQ.hs | test-out
-	@echo ""
-	@echo "Running bootstrap comparison test..."
-	./compare-bootstrap.sh
 
 # Test debug options - uses grammar.pg as test subject
 test-debug: build | test-out

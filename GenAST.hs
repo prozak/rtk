@@ -1,7 +1,7 @@
 module GenAST (genAST, isAntiConstructor)
     where
 
-import Parser
+import Syntax
 import Diagnostics (Diagnostic(..))
 import Text.PrettyPrint
 import Grammar

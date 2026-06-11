@@ -49,6 +49,20 @@ replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, 
 replaceAllPatterns :: String -> Either String String
 replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
+-- The generated lexer and parser encode error positions as "LINE:COL:message"
+-- so structured-diagnostic callers can split them; render them back
+-- human-readably for quasi-quote compile errors. Positions refer to the quote
+-- body (padded with a start token in front).
+rtkRenderError :: String -> String
+rtkRenderError err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- (reads l :: [(Int, String)]) ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- (reads c :: [(Int, String)]) ->
+                    "line " ++ show line ++ ", column " ++ show col ++ ": " ++ msg
+                _ -> err
+        _ -> err
+
 qqShortcuts = M.fromList [ ("grammar","Grammar"),("clause","Clause"),("idList","IdList"),("importsOpt","ImportsOpt"),("name","Name"),("optDelim","OptDelim"),("option","Option"),("optionList","OptionList"),("rule","Rule"),("ruleList","RuleList"),("strLit","StrLit"),("cl","Clause"),("r","Rule")]
 
 -- A quasi-quote pattern must match an AST parsed from anywhere in a source
@@ -63,7 +77,7 @@ quoteGrammarExp :: Data.Data a => String -> (Grammar -> a) -> String -> TH.ExpQ
 quoteGrammarExp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
   ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseGrammar of
-           Left err -> fail err
+           Left err -> fail (rtkRenderError err)
            Right a -> return a
   let expr = func ast
   dataToExpQ (const Nothing `Generics.extQ` antiGrammarExp `Generics.extQ` antiImportsOptExp `Generics.extQ` antiRuleExp `Generics.extQ` antiOptionExp `Generics.extQ` antiNameExp `Generics.extQ` antiClauseExp `Generics.extQ` antiOptDelimExp `Generics.extQ` antiStrLitExp) expr
@@ -71,7 +85,7 @@ quoteGrammarPat :: Data.Data a => String -> (Grammar -> a) -> String -> TH.PatQ
 quoteGrammarPat dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
   ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseGrammar of
-           Left err -> fail err
+           Left err -> fail (rtkRenderError err)
            Right a -> return a
   let expr = func ast
   dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiGrammarPat `Generics.extQ` antiImportsOptPat `Generics.extQ` antiRulePat `Generics.extQ` antiOptionPat `Generics.extQ` antiNamePat `Generics.extQ` antiClausePat `Generics.extQ` antiOptDelimPat `Generics.extQ` antiStrLitPat) expr

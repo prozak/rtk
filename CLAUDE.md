@@ -17,9 +17,13 @@ RTK (Rewrite ToolKit) is a tool for generating parser and rewrite facilities fro
 ## Key Components
 
 ### Core Modules
+- `Syntax.hs` - The pipeline's core data types (`InitialGrammar`, `IClause`,
+  `NormalGrammar`, ...) shared by both front ends
 - `Grammar.hs` - Grammar data structures and AST definitions
-- `Lexer.x` - Hand-written lexer for grammar files (Alex spec)
-- `Parser.y` - Hand-written parser for grammar files (Happy spec)
+- `Lexer.x` - Hand-written reference lexer for grammar files (Alex spec)
+- `Parser.y` - Hand-written reference parser for grammar files (Happy spec)
+- `src/generated/ASTAdapter.hs` - adapts the generated front end's AST
+  (compiled from `test/golden/grammar/`) to `InitialGrammar`
 - `Normalize.hs` - Grammar normalization and transformation
 - `GenAST.hs`, `GenQ.hs`, `GenX.hs`, `GenY.hs` - Code generators
 
@@ -34,18 +38,25 @@ RTK (Rewrite ToolKit) is a tool for generating parser and rewrite facilities fro
 
 ## Bootstrap Self-Hosting
 
-RTK is **self-hosting** - it can parse and generate parsers for its own grammar language:
-1. Hand-written `Lexer.x` and `Parser.y` parse grammar files (default front end)
-2. `test-grammars/grammar.pg` describes the grammar language itself
-3. RTK generates lexer/parser from `grammar.pg`; the checked-in snapshot in
-   `test/golden/grammar/` is compiled into rtk and selected with
-   `rtk --use-generated` (AST adapted by `src/generated/ASTAdapter.hs`)
+RTK is **self-hosting** - grammar files are parsed BY DEFAULT with the parser
+RTK generated from its own grammar description:
+1. `test-grammars/grammar.pg` is the authoritative definition of the grammar
+   language; changes to the language land there (plus regenerated goldens)
+   first
+2. The default front end is RTK's own output for `grammar.pg`: the checked-in
+   snapshot in `test/golden/grammar/` is compiled into rtk (AST adapted by
+   `src/generated/ASTAdapter.hs`); `make accept-golden` advances the snapshot
+3. Hand-written `Lexer.x` and `Parser.y` are the reference oracle, selected
+   with `rtk --use-handwritten`; they follow grammar.pg and change only to
+   keep the equivalence harness green
 4. The golden/unit test suites require both front ends to produce identical
-   artifacts and equal ASTs for every grammar in `test-grammars/` (three
-   grammars using hand-parser-only syntax are pinned, see BOOTSTRAP.md)
-5. `compare-bootstrap.sh` compares hand-written vs generated versions textually
+   artifacts and equal ASTs for every grammar in `test-grammars/` (the
+   pinned-divergence list in `test/TestSupport.hs` is empty)
+5. The fixed point: `rtk test-grammars/grammar.pg out/` (default invocation)
+   reproduces `test/golden/grammar/` byte-for-byte
 
-See `BOOTSTRAP.md` for the fixed point and the accepted divergences.
+See `BOOTSTRAP.md` for the fixed point and the remaining documented
+divergences (parse-error wording, nested comments, adjacent `"""` blocks).
 
 ## Typical Workflow
 
@@ -200,10 +211,10 @@ make test
 ### Running Tests
 
 The project has comprehensive tests:
-- Unit tests for core functionality
+- Unit tests for core functionality (including dual-front-end AST equality
+  and error parity for every corpus grammar)
 - Integration tests for Java grammar parsing
 - Quasi-quotation tests for embedding Java syntax
-- Bootstrap self-hosting comparison test
 
 All tests pass successfully as of 2025-11-01.
 
@@ -230,12 +241,12 @@ make accept-golden     # or: RTK_ACCEPT=1 cabal test golden
 git diff test/golden/
 ```
 
-#### Bootstrap Comparison Test
-```bash
-make test-bootstrap
-```
-
-Compares hand-written grammar parser with auto-generated version.
+#### Bootstrap Equivalence
+The golden and unit suites above double as the self-hosting equivalence
+harness: every grammar runs through both the default (generated) and the
+reference (hand-written) front end, which must produce identical artifacts
+and equal ASTs. (The old `compare-bootstrap.sh` textual comparison and its
+`make test-bootstrap` target are retired.)
 
 #### Java Grammar Tests
 ```bash

@@ -2,7 +2,7 @@
 module Lexer where
 
 import Data.Data (Data, Typeable)
-import Diagnostics (Diagnostic(..), SourcePos(..), renderDiagnostic)
+import Diagnostics (Diagnostic, diagnosticFromPositioned, renderDiagnostic)
 }
 
 %wrapper "monadUserState"
@@ -116,25 +116,14 @@ data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }
 -- lexical error. The returned list always ends with an EndOfFile token that
 -- carries the position of the end of input, so parse errors at end of input
 -- can be reported with a position too.
+-- rtkError encodes the error position as "LINE:COL:message";
+-- diagnosticFromPositioned recovers it so the diagnostic carries a real
+-- SourcePos.
 scanTokens :: String -> Either Diagnostic [PosToken]
 scanTokens str =
                case alexScanTokens1 str of
                   Right toks -> Right toks
-                  Left err   -> Left (lexDiagnostic err)
-
--- rtkError encodes the error position as "LINE:COL:message"; recover it here so
--- the diagnostic carries a real SourcePos. Fall back to a position-less
--- diagnostic if the encoding is absent (e.g. an internal alex error).
-lexDiagnostic :: String -> Diagnostic
-lexDiagnostic err =
-    case span (/= ':') err of
-        (l, ':' : rest1) | [(line, "")] <- reads l ->
-            case span (/= ':') rest1 of
-                (c, ':' : msg) | [(col, "")] <- reads c ->
-                    Diagnostic (Just (SourcePos line col)) Nothing msg
-                _ -> noPos
-        _ -> noPos
-  where noPos = Diagnostic Nothing Nothing err
+                  Left err   -> Left (diagnosticFromPositioned err)
 
 -- Thin wrapper kept during the migration to structured diagnostics: callers
 -- that have not yet switched to 'scanTokens' get the rendered message thrown.

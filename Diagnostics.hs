@@ -13,6 +13,7 @@ module Diagnostics
     , showSourcePos
     , Diagnostic(..)
     , renderDiagnostic
+    , diagnosticFromPositioned
     ) where
 
 import Data.Data (Data, Typeable)
@@ -54,3 +55,19 @@ renderDiagnostic file (Diagnostic mpos mctx msg) =
     ctxPart = case mctx of
                 Just ctx -> ctx ++ ": "
                 Nothing  -> ""
+
+-- | Recover a structured diagnostic from an error message that encodes its
+-- position as @\"LINE:COL:message\"@ — the machine-splittable encoding shared
+-- by the hand-written lexer and by every generated lexer and parser. Falls
+-- back to a position-less diagnostic when the encoding is absent (e.g. an
+-- internal alex error).
+diagnosticFromPositioned :: String -> Diagnostic
+diagnosticFromPositioned err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- reads l ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- reads c ->
+                    Diagnostic (Just (SourcePos line col)) Nothing msg
+                _ -> noPos
+        _ -> noPos
+  where noPos = Diagnostic Nothing Nothing err

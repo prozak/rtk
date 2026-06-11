@@ -13,17 +13,17 @@ import qualified T1Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTo
 %token
 
 rtk__eof { L.PosToken _ L.EndOfFile }
-tok_A_dummy_19 { L.PosToken _ L.Tk__tok_A_dummy_19 }
-tok_B_dummy_18 { L.PosToken _ L.Tk__tok_B_dummy_18 }
-tok_C_dummy_17 { L.PosToken _ L.Tk__tok_C_dummy_17 }
-tok_D_dummy_16 { L.PosToken _ L.Tk__tok_D_dummy_16 }
-tok_E_dummy_15 { L.PosToken _ L.Tk__tok_E_dummy_15 }
-tok_F1_dummy_14 { L.PosToken _ L.Tk__tok_F1_dummy_14 }
-tok_F2_dummy_13 { L.PosToken _ L.Tk__tok_F2_dummy_13 }
-tok_F3_dummy_12 { L.PosToken _ L.Tk__tok_F3_dummy_12 }
-tok_F4_dummy_11 { L.PosToken _ L.Tk__tok_F4_dummy_11 }
-tok_F5_dummy_10 { L.PosToken _ L.Tk__tok_F5_dummy_10 }
-tok_G_dummy_9 { L.PosToken _ L.Tk__tok_G_dummy_9 }
+tok_A_dummy_17 { L.PosToken _ L.Tk__tok_A_dummy_17 }
+tok_B_dummy_16 { L.PosToken _ L.Tk__tok_B_dummy_16 }
+tok_C_dummy_15 { L.PosToken _ L.Tk__tok_C_dummy_15 }
+tok_D_dummy_14 { L.PosToken _ L.Tk__tok_D_dummy_14 }
+tok_E_dummy_13 { L.PosToken _ L.Tk__tok_E_dummy_13 }
+tok_F1_dummy_12 { L.PosToken _ L.Tk__tok_F1_dummy_12 }
+tok_F2_dummy_11 { L.PosToken _ L.Tk__tok_F2_dummy_11 }
+tok_F3_dummy_10 { L.PosToken _ L.Tk__tok_F3_dummy_10 }
+tok_F4_dummy_9 { L.PosToken _ L.Tk__tok_F4_dummy_9 }
+tok_F5_dummy_8 { L.PosToken _ L.Tk__tok_F5_dummy_8 }
+tok_G_dummy_7 { L.PosToken _ L.Tk__tok_G_dummy_7 }
 tok_b_1 { L.PosToken _ L.Tk__tok_b_1 }
 tok_a_0 { L.PosToken _ L.Tk__tok_a_0 }
 tok__coma__2 { L.PosToken _ L.Tk__tok__coma__2 }
@@ -43,28 +43,28 @@ qq_A { L.PosToken _ (L.Tk__qq_A _) }
 
 T1__top : A rtk__eof { $1 }
 
-A : tok_A_dummy_19 A tok_A_dummy_19 { Ctr__A__0 (rtkPosOf $1) $2 } |
-    tok_B_dummy_18 B tok_B_dummy_18 { Ctr__A__1 (rtkPosOf $1) $2 } |
-    tok_C_dummy_17 C tok_C_dummy_17 { Ctr__A__2 (rtkPosOf $1) (reverse $2) } |
-    tok_D_dummy_16 D tok_D_dummy_16 { Ctr__A__3 (rtkPosOf $1) $2 } |
-    tok_E_dummy_15 E tok_E_dummy_15 { Ctr__A__4 (rtkPosOf $1) $2 } |
-    tok_F1_dummy_14 F1 tok_F1_dummy_14 { Ctr__A__5 (rtkPosOf $1) (reverse $2) } |
-    tok_F2_dummy_13 F2 tok_F2_dummy_13 { Ctr__A__6 (rtkPosOf $1) (reverse $2) } |
-    tok_F3_dummy_12 F3 tok_F3_dummy_12 { Ctr__A__7 (rtkPosOf $1) (reverse $2) } |
-    tok_F4_dummy_11 F4 tok_F4_dummy_11 { Ctr__A__8 (rtkPosOf $1) $2 } |
-    tok_F5_dummy_10 F5 tok_F5_dummy_10 { Ctr__A__9 (rtkPosOf $1) (reverse $2) } |
-    tok_G_dummy_9 G tok_G_dummy_9 { Ctr__A__10 (rtkPosOf $1) $2 }
+A : tok_A_dummy_17 A tok_A_dummy_17 { Ctr__A__0 (rtkPosOf $1) $2 } |
+    tok_B_dummy_16 B tok_B_dummy_16 { Ctr__A__1 (rtkPosOf $1) $2 } |
+    tok_C_dummy_15 C tok_C_dummy_15 { Ctr__A__2 (rtkPosOf $1) (reverse $2) } |
+    tok_D_dummy_14 D tok_D_dummy_14 { Ctr__A__3 (rtkPosOf $1) $2 } |
+    tok_E_dummy_13 E tok_E_dummy_13 { Ctr__A__4 (rtkPosOf $1) $2 } |
+    tok_F1_dummy_12 F1 tok_F1_dummy_12 { Ctr__A__5 (rtkPosOf $1) (reverse $2) } |
+    tok_F2_dummy_11 F2 tok_F2_dummy_11 { Ctr__A__6 (rtkPosOf $1) (reverse $2) } |
+    tok_F3_dummy_10 F3 tok_F3_dummy_10 { Ctr__A__7 (rtkPosOf $1) (reverse $2) } |
+    tok_F4_dummy_9 F4 tok_F4_dummy_9 { Ctr__A__8 (rtkPosOf $1) $2 } |
+    tok_F5_dummy_8 F5 tok_F5_dummy_8 { Ctr__A__9 (rtkPosOf $1) (reverse $2) } |
+    tok_G_dummy_7 G tok_G_dummy_7 { Ctr__A__10 (rtkPosOf $1) $2 }
 
-ListElem_F56 : qq_F5 { Anti_A (tkVal_qq_F5 $1) } |
+ListElem_F54 : qq_F5 { Anti_A (tkVal_qq_F5 $1) } |
                A { $1 }
 
-ListElem_F35 : qq_F3 { Anti_A (tkVal_qq_F3 $1) } |
+ListElem_F33 : qq_F3 { Anti_A (tkVal_qq_F3 $1) } |
                A { $1 }
 
-ListElem_F24 : qq_F2 { Anti_A (tkVal_qq_F2 $1) } |
+ListElem_F22 : qq_F2 { Anti_A (tkVal_qq_F2 $1) } |
                A { $1 }
 
-ListElem_F13 : qq_F1 { Anti_A (tkVal_qq_F1 $1) } |
+ListElem_F11 : qq_F1 { Anti_A (tkVal_qq_F1 $1) } |
                A { $1 }
 
 ListElem_C0 : qq_C { Anti_A (tkVal_qq_C $1) } |
@@ -81,20 +81,20 @@ C : {- empty -} { [] } |
     C ListElem_C0 { $2 : $1 }
 
 D : qq_D { Anti_D (tkVal_qq_D $1) } |
-    Rule_1 C { Ctr__D__0 (rtkPosOf $1) $1 (reverse $2) }
+    A B C { Ctr__D__0 (rtkPosOf $1) $1 $2 (reverse $3) }
 
 E : qq_E { Anti_E (tkVal_qq_E $1) } |
-    Rule_2 { Ctr__E__0 (rtkPosOf $1) $1 } |
+    A B { Ctr__E__0 (rtkPosOf $1) $1 $2 } |
     C { Ctr__E__1 (rtkPosOf (reverse $1)) (reverse $1) }
 
-F1 : ListElem_F13 { [$1] } |
-     F1 ListElem_F13 { $2 : $1 }
+F1 : ListElem_F11 { [$1] } |
+     F1 ListElem_F11 { $2 : $1 }
 
 F2 : {- empty -} { [] } |
-     F2 ListElem_F24 { $2 : $1 }
+     F2 ListElem_F22 { $2 : $1 }
 
-F3__plus_list_ : ListElem_F35 { [$1] } |
-                 F3__plus_list_ tok__coma__2 ListElem_F35 { $3 : $1 }
+F3__plus_list_ : ListElem_F33 { [$1] } |
+                 F3__plus_list_ tok__coma__2 ListElem_F33 { $3 : $1 }
 
 F3 : F3__plus_list_ { $1 } |
      {- empty -} { [] }
@@ -103,41 +103,37 @@ F4 : qq_F4 { Anti_F4 (tkVal_qq_F4 $1) } |
      { Ctr__F4__0 rtkNoPos } |
      A { Ctr__F4__1 (rtkPosOf $1) $1 }
 
-F5 : ListElem_F56 { [$1] } |
-     F5 tok__coma__2 ListElem_F56 { $3 : $1 }
+F5 : ListElem_F54 { [$1] } |
+     F5 tok__coma__2 ListElem_F54 { $3 : $1 }
 
 G : qq_G { Anti_G (tkVal_qq_G $1) } |
-    A Rule_7 { Ctr__G__0 (rtkPosOf $1) $1 $2 }
+    A Rule_5 { Ctr__G__0 (rtkPosOf $1) $1 $2 }
 
-Rule_1 : A B { Ctr__Rule_1__0 (rtkPosOf $1) $1 $2 }
+Rule_5 : B C Rule_6 A { Ctr__Rule_5__0 (rtkPosOf $1) $1 (reverse $2) $3 $4 }
 
-Rule_2 : A B { Ctr__Rule_2__0 (rtkPosOf $1) $1 $2 }
-
-Rule_7 : B C Rule_8 A { Ctr__Rule_7__0 (rtkPosOf $1) $1 (reverse $2) $3 $4 }
-
-Rule_8 : D E { Ctr__Rule_8__0 (rtkPosOf $1) $1 $2 }
+Rule_6 : D E { Ctr__Rule_6__0 (rtkPosOf $1) $1 $2 }
 
 
 {
 parseError :: [L.PosToken] -> Either String a
-parseError [] = Left "Parse error: unexpected end of input"
+parseError [] = Left "unexpected end of input"
 parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
-    Left $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+    Left $ show line ++ ":" ++ show col ++ ":unexpected " ++ showRtkToken tok
 
 -- Render a token the way it appears in the source, for error messages
 showRtkToken :: L.Token -> String
 showRtkToken L.EndOfFile = "end of input"
-showRtkToken L.Tk__tok_A_dummy_19 = "'tok_A_dummy_19'"
-showRtkToken L.Tk__tok_B_dummy_18 = "'tok_B_dummy_18'"
-showRtkToken L.Tk__tok_C_dummy_17 = "'tok_C_dummy_17'"
-showRtkToken L.Tk__tok_D_dummy_16 = "'tok_D_dummy_16'"
-showRtkToken L.Tk__tok_E_dummy_15 = "'tok_E_dummy_15'"
-showRtkToken L.Tk__tok_F1_dummy_14 = "'tok_F1_dummy_14'"
-showRtkToken L.Tk__tok_F2_dummy_13 = "'tok_F2_dummy_13'"
-showRtkToken L.Tk__tok_F3_dummy_12 = "'tok_F3_dummy_12'"
-showRtkToken L.Tk__tok_F4_dummy_11 = "'tok_F4_dummy_11'"
-showRtkToken L.Tk__tok_F5_dummy_10 = "'tok_F5_dummy_10'"
-showRtkToken L.Tk__tok_G_dummy_9 = "'tok_G_dummy_9'"
+showRtkToken L.Tk__tok_A_dummy_17 = "'tok_A_dummy_17'"
+showRtkToken L.Tk__tok_B_dummy_16 = "'tok_B_dummy_16'"
+showRtkToken L.Tk__tok_C_dummy_15 = "'tok_C_dummy_15'"
+showRtkToken L.Tk__tok_D_dummy_14 = "'tok_D_dummy_14'"
+showRtkToken L.Tk__tok_E_dummy_13 = "'tok_E_dummy_13'"
+showRtkToken L.Tk__tok_F1_dummy_12 = "'tok_F1_dummy_12'"
+showRtkToken L.Tk__tok_F2_dummy_11 = "'tok_F2_dummy_11'"
+showRtkToken L.Tk__tok_F3_dummy_10 = "'tok_F3_dummy_10'"
+showRtkToken L.Tk__tok_F4_dummy_9 = "'tok_F4_dummy_9'"
+showRtkToken L.Tk__tok_F5_dummy_8 = "'tok_F5_dummy_8'"
+showRtkToken L.Tk__tok_G_dummy_7 = "'tok_G_dummy_7'"
 showRtkToken L.Tk__tok_b_1 = "'b'"
 showRtkToken L.Tk__tok_a_0 = "'a'"
 showRtkToken L.Tk__tok__coma__2 = "','"
@@ -255,18 +251,18 @@ instance RtkPosOf B where
     rtkPosOf (Ctr__B__1 p) = p
 type C = [A]
 data D = Anti_D String |
-         Ctr__D__0 RtkPos Rule_1 C
+         Ctr__D__0 RtkPos A B C
          deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf D where
     rtkPosOf (Anti_D _) = rtkNoPos
-    rtkPosOf (Ctr__D__0 p _ _) = p
+    rtkPosOf (Ctr__D__0 p _ _ _) = p
 data E = Anti_E String |
-         Ctr__E__0 RtkPos Rule_2 |
+         Ctr__E__0 RtkPos A B |
          Ctr__E__1 RtkPos C
          deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf E where
     rtkPosOf (Anti_E _) = rtkNoPos
-    rtkPosOf (Ctr__E__0 p _) = p
+    rtkPosOf (Ctr__E__0 p _ _) = p
     rtkPosOf (Ctr__E__1 p _) = p
 type F1 = [A]
 type F2 = [A]
@@ -281,25 +277,17 @@ instance RtkPosOf F4 where
     rtkPosOf (Ctr__F4__1 p _) = p
 type F5 = [A]
 data G = Anti_G String |
-         Ctr__G__0 RtkPos A Rule_7
+         Ctr__G__0 RtkPos A Rule_5
          deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf G where
     rtkPosOf (Anti_G _) = rtkNoPos
     rtkPosOf (Ctr__G__0 p _ _) = p
-data Rule_1 = Ctr__Rule_1__0 RtkPos A B
+data Rule_5 = Ctr__Rule_5__0 RtkPos B C Rule_6 A
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_1 where
-    rtkPosOf (Ctr__Rule_1__0 p _ _) = p
-data Rule_2 = Ctr__Rule_2__0 RtkPos A B
+instance RtkPosOf Rule_5 where
+    rtkPosOf (Ctr__Rule_5__0 p _ _ _ _) = p
+data Rule_6 = Ctr__Rule_6__0 RtkPos D E
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_2 where
-    rtkPosOf (Ctr__Rule_2__0 p _ _) = p
-data Rule_7 = Ctr__Rule_7__0 RtkPos B C Rule_8 A
-              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_7 where
-    rtkPosOf (Ctr__Rule_7__0 p _ _ _ _) = p
-data Rule_8 = Ctr__Rule_8__0 RtkPos D E
-              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_8 where
-    rtkPosOf (Ctr__Rule_8__0 p _ _) = p
+instance RtkPosOf Rule_6 where
+    rtkPosOf (Ctr__Rule_6__0 p _ _) = p
 }

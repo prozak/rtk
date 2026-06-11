@@ -15,6 +15,18 @@ parseArgs args = case args of
     [file] -> Right (FullParse, file)
     _ -> Left "Usage: java-main [--lex-only|--dump-tokens] <java-file>"
 
+-- The generated lexer and parser encode error positions as "LINE:COL:message"
+-- (machine-splittable); render them back human-readably for the console
+renderError :: String -> String
+renderError err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- (reads l :: [(Int, String)]) ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- (reads c :: [(Int, String)]) ->
+                    "line " ++ show line ++ ", column " ++ show col ++ ": " ++ msg
+                _ -> err
+        _ -> err
+
 -- Simple Java file parser driver
 -- For quasi-quotation tests, see java-qq-test.hs
 main = do
@@ -44,7 +56,7 @@ main = do
 
                 FullParse -> do
                     -- Perform full parse; lexer and parser report errors as Left
-                    let ast = either errorWithoutStackTrace id $
+                    let ast = either (errorWithoutStackTrace . renderError) id $
                                 scanTokens content >>= parseJava
                     putStrLn "=== Parsed Java AST ==="
                     putStrLn $ ppShow ast

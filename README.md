@@ -8,7 +8,10 @@ RTK generates parser and rewrite facilities from grammar specifications. It prod
 - **Lexer Generation**: Generates Alex (`.x`) lexer specifications
 - **Parser Generation**: Generates Happy (`.y`) parser specifications
 - **Quasi-Quotation**: Embed parsed syntax in Haskell via Template Haskell
-- **Self-Hosting**: RTK can parse and generate parsers for its own grammar format
+- **Self-Hosting**: RTK parses grammar files with the parser it generated
+  from its own grammar description (`test-grammars/grammar.pg`) — by default.
+  The hand-written front end is kept as a reference oracle behind
+  `--use-handwritten`; see [BOOTSTRAP.md](BOOTSTRAP.md)
 
 ## Installation
 
@@ -81,7 +84,9 @@ Int:    num = [0-9]+ ;
 Ignore: ws  = [ \t\n]+ ;
 ```
 
-See `test-grammars/grammar.pg` for the grammar language described in itself.
+See `test-grammars/grammar.pg` for the grammar language described in itself —
+that file is the authoritative definition of the grammar language: rtk parses
+your grammar with the parser it generated from it (self-hosting).
 
 ## Example Grammars
 

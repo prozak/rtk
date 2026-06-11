@@ -4,6 +4,12 @@
 
 Enable RTK to use its own generated parsers (from `test-grammars/grammar.pg`) instead of hand-written `Lexer.x` and `Parser.y`, while maintaining both paths during transition.
 
+**STATUS: COMPLETE.** The generated front end is the default, grammar.pg is
+the authoritative definition of the grammar language, and the hand-written
+`Lexer.x`/`Parser.y` are the reference oracle behind `--use-handwritten`.
+This document is kept as the historical record of the strategy; the living
+documentation is `BOOTSTRAP.md`.
+
 ## Motivations
 
 1. **Validation/Dogfooding**: Prove RTK is powerful enough to parse its own grammar
@@ -43,7 +49,7 @@ Enable RTK to use its own generated parsers (from `test-grammars/grammar.pg`) in
 **Actions:**
 ```bash
 make test-grammar
-make test-bootstrap
+make test-bootstrap   # textual comparison; target retired after the flip
 ```
 
 **Deliverable:** Gap analysis showing exact differences
@@ -101,7 +107,9 @@ import GrammarQQ
 
 **Success:** At least one working QQ example that preserves semantic info
 
-**Status:** Not started
+**Status:** ✅ Complete in substance: `make test-grammar` compiles the
+generated `GrammarQQ.hs` and exercises `[grammar| ... |]` / `[rule| ... |]`
+splices (see test-grammars/grammar-main.hs).
 
 ---
 
@@ -131,15 +139,14 @@ byte-for-byte (v2 ≡ v3).
 
 **Success:** Full test suite passes with `--use-generated` flag
 
-**Status:** ✅ Largely complete via the in-process equivalence harness:
+**Status:** ✅ Complete via the in-process equivalence harness:
 `cabal test` parses every grammar in test-grammars/ with both front ends,
-asserts AST equality (positions stripped) and requires both to reproduce the
-golden artifacts byte-for-byte — except haskell.pg, java.pg and t1.pg, which
-use hand-parser-only syntax (empty alternatives, redundant-paren grouping)
-and are pinned in `TestSupport.frontEndDivergentGrammars`; see BOOTSTRAP.md.
-The Java/commons-lang end-to-end suites still run only against artifacts
-(which are identical in both modes by the golden tests, so re-running them
-under --use-generated would be redundant).
+asserts AST equality (positions included) and requires both to reproduce the
+golden artifacts byte-for-byte. The historic exceptions (haskell.pg, java.pg,
+t1.pg) are resolved — the reference parser now defines the same language as
+grammar.pg and the pin list `TestSupport.frontEndDivergentGrammars` is empty;
+see BOOTSTRAP.md. The Java/commons-lang end-to-end suites still run only
+against artifacts (which are identical in both modes by the golden tests).
 
 ---
 
@@ -148,8 +155,8 @@ under --use-generated would be redundant).
 ### File Structure (as implemented)
 ```
 rtk/
-├── Lexer.x                    # Hand-written (default front end)
-├── Parser.y                   # Hand-written (default front end)
+├── Lexer.x                    # Hand-written reference (--use-handwritten)
+├── Parser.y                   # Hand-written reference (--use-handwritten)
 ├── test/golden/grammar/
 │   ├── GrammarLexer.x        # Generated; checked-in bootstrap stage,
 │   ├── GrammarParser.y       # compiled into the library directly
@@ -164,8 +171,8 @@ rtk/
 ### Build Modes
 ```bash
 # One build contains both front ends; the flag picks at run time:
-cabal run rtk -- <grammar> <out>                  # hand-written (default)
-cabal run rtk -- --use-generated <grammar> <out>  # self-hosted
+cabal run rtk -- <grammar> <out>                    # self-hosted (default)
+cabal run rtk -- --use-handwritten <grammar> <out>  # reference front end
 ```
 
 ## Success Metrics
@@ -180,11 +187,11 @@ cabal run rtk -- --use-generated <grammar> <out>  # self-hosted
 - ✅ Generated and hand-written produce equivalent output
 - ✅ All existing tests pass in both modes
 
-### Phase 3: Production Ready (Future)
-- ✅ Generated mode is default
-- ✅ Hand-written parsers archived as reference
-- ✅ Documentation updated
-- ✅ No regressions
+### Phase 3: Production Ready
+- ✅ Generated mode is the default (`--use-handwritten` selects the reference)
+- ✅ Hand-written parsers kept as the equivalence-harness reference oracle
+- ✅ Documentation updated (BOOTSTRAP.md is authoritative)
+- ✅ No regressions (full suite green, fixed point holds on default invocation)
 
 ## Risk Mitigation
 
@@ -209,11 +216,8 @@ cabal run rtk -- --use-generated <grammar> <out>  # self-hosted
 
 ## Next Steps
 
-1. Run `make test-bootstrap` to see current differences
-2. Analyze gap and document findings
-3. Implement Prototype 1 (dual-mode flag)
-4. Iterate through prototypes
-5. Re-evaluate strategy after each prototype
+None — the strategy is executed. Changes to the grammar language now follow
+the workflow in BOOTSTRAP.md ("Changing the grammar language").
 
 ## Open Questions
 
@@ -224,10 +228,9 @@ cabal run rtk -- --use-generated <grammar> <out>  # self-hosted
 
 ## References
 
-- BOOTSTRAP.md - Current test infrastructure
-- compare-bootstrap.sh - Comparison script
-- test-grammars/grammar.pg - RTK's self-description
+- BOOTSTRAP.md - Current test infrastructure and the authority inversion
+- test-grammars/grammar.pg - RTK's self-description (the spec)
 
 ## Prototype 0 Findings
 
-(To be filled in after running make test-bootstrap)
+See docs/prototype-0-gap-analysis.md.

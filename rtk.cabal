@@ -36,12 +36,12 @@ Common warnings
   Default-Language:  Haskell2010
   ghc-options:       -Wall -Wunused-imports -Wunused-top-binds -Wunused-local-binds -Wunused-matches
 
--- The self-hosted front end: the lexer/parser RTK generated from
--- test-grammars/grammar.pg, compiled directly from the checked-in golden
+-- The self-hosted front end (the default): the lexer/parser RTK generated
+-- from test-grammars/grammar.pg, compiled directly from the checked-in golden
 -- snapshot in test/golden/grammar (the bootstrap stage, produced by the
 -- previous rtk binary like every self-hosting compiler's stage files).
 -- Compiling the snapshot directly means `make accept-golden` keeps the build
--- input of the --use-generated front end in sync by construction.
+-- input of the default front end in sync by construction.
 -- GrammarQQ deliberately stays out: compiling the generated quasi-quoter
 -- would pull regex-posix and Template Haskell splices into the build.
 -- Separate component because generated alex code trips -Wunused-matches
@@ -69,6 +69,7 @@ Library
                      src/generated
   Exposed-Modules:
                      Diagnostics,
+                     Syntax,
                      Lexer,
                      Parser,
                      TokenProcessing,

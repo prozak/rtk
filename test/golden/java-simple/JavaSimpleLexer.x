@@ -81,9 +81,10 @@ alexEOF = do
   return $ PosToken pos EndOfFile
 
 -- Lex the input into a token stream, returning the positioned error message
--- on a lexical error. The returned list always ends with an EndOfFile token
--- that carries the position of the end of input, so parse errors at end of
--- input can be reported with a position too
+-- on a lexical error (encoded as "LINE:COL:message", see rtkError below).
+-- The returned list always ends with an EndOfFile token that carries the
+-- position of the end of input, so parse errors at end of input can be
+-- reported with a position too
 scanTokens :: String -> Either String [PosToken]
 scanTokens str = runAlex str $ do
   let loop toks = do tok <- alexMonadScan
@@ -107,6 +108,8 @@ simple1 t (pos, _, _, str) len = return $ PosToken pos (t (take len str))
 simple :: Token -> AlexInput -> Int -> Alex PosToken
 simple t (pos, _, _, _) len = return $ PosToken pos t
 
-rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at line " ++ (show line) ++ ", column " ++ (show column) ++ ". Following chars: " ++ (take 10 str)
+-- Encode the position as "LINE:COL:message" so callers can split it back out
+-- into a structured position - the same encoding the rtk grammar lexer uses
+rtkError ((AlexPn _ line column), _, _, str) len = alexError $ (show line) ++ ":" ++ (show column) ++ ":lexical error. Following chars: " ++ (take 10 str)
 
 }

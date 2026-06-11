@@ -24,30 +24,43 @@
 -- Every generated constructor (except the quasi-quotation-only @Anti_*@
 -- ones) carries the source position of its first symbol in its first field;
 -- the adapter maps the rule constructors' position into 'getIRulePos', so
--- diagnostics under @--use-generated@ point at real source locations, the
--- same ones the hand-written front end records.
+-- diagnostics under the default front end point at real source locations,
+-- the same ones the hand-written reference front end records.
 module ASTAdapter
     ( parseWithGenerated
+    , scanTokensGenerated
     , convertGrammar
     ) where
 
 import qualified GrammarLexer as GL
 import qualified GrammarParser as GP
 
-import Diagnostics (Diagnostic(..), SourcePos(..))
-import Parser (IClause(..), IOption(..), IRule(..), InitialGrammar(..),
+import Diagnostics (Diagnostic, SourcePos(..), diagnosticFromPositioned)
+import Syntax (IClause(..), IOption(..), IRule(..), InitialGrammar(..),
                addRuleOptions)
 import TokenProcessing (unBackQuote)
 
 -- | Lex and parse a grammar source with the generated front end and adapt the
--- result. The generated modules report @Either String@ with the position
--- rendered into the message text, so lexer and parser failures carry no
--- structured position; everything after parsing works on real positions.
+-- result. The generated lexer and parser encode error positions as
+-- @\"LINE:COL:message\"@ (the same encoding the hand-written lexer uses), so
+-- their failures are split back into a positioned 'Diagnostic' here and
+-- render with the same GNU-style @FILE:LINE:COL:@ prefix as the hand-written
+-- front end's.
 parseWithGenerated :: String -> Either Diagnostic InitialGrammar
 parseWithGenerated src =
     case GL.scanTokens src >>= GP.parseGrammar of
-        Left msg -> Left (Diagnostic Nothing Nothing msg)
+        Left msg -> Left (diagnosticFromPositioned msg)
         Right g  -> Right (convertGrammar g)
+
+-- | The generated lexer's token stream, rendered one token per line for
+-- @--debug-tokens@. The generated front end has no separate token
+-- post-processing stage (the adapter strips delimiters and escapes during
+-- AST conversion), so this is the stream exactly as the parser consumes it.
+scanTokensGenerated :: String -> Either Diagnostic [String]
+scanTokensGenerated src =
+    case GL.scanTokens src of
+        Left msg   -> Left (diagnosticFromPositioned msg)
+        Right toks -> Right (map show toks)
 
 -- | Convert the generated AST to the hand-written 'InitialGrammar'.
 convertGrammar :: GP.Grammar -> InitialGrammar

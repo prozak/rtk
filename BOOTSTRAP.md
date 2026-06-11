@@ -1,186 +1,141 @@
-# RTK Bootstrap Self-Hosting Test
+# RTK Bootstrap Self-Hosting
 
-## Overview
+## Status: self-hosting achieved — grammar.pg is the specification
 
-This test tracks RTK's progress toward **self-hosting** - the ability to use RTK's own generated parsers instead of hand-written Alex and Happy specifications.
+RTK parses grammar files **by default** with the lexer and parser it generated
+from its own grammar description, `test-grammars/grammar.pg`. Like a C
+compiler compiled by itself, RTK is self-hosting:
 
-Similar to how C compilers were eventually rewritten in C, RTK can potentially use its own generated code to parse RTK grammar files.
+- **`test-grammars/grammar.pg` is the authoritative definition of the grammar
+  language.** Changes to the grammar language land in grammar.pg (and the
+  regenerated goldens) FIRST.
+- **The generated front end is the default.** `GrammarLexer.x` /
+  `GrammarParser.y` — RTK's own output for grammar.pg — are compiled into rtk
+  straight from the golden snapshot in `test/golden/grammar/`;
+  `src/generated/ASTAdapter.hs` converts the generated AST to the pipeline's
+  `InitialGrammar`, after which everything (normalization, code generation) is
+  front-end independent. `--use-generated` is still accepted as an explicit
+  choice.
+- **The hand-written `Lexer.x` / `Parser.y` are the reference oracle.** They
+  are selected with `rtk --use-handwritten` and exist to keep the equivalence
+  harness honest: they follow grammar.pg, not the other way round, and change
+  only to keep the harness green.
 
-## Current State: RTK is self-hosting in substance
+The snapshot in `test/golden/grammar/` is the checked-in bootstrap stage: it
+was produced by the *previous* rtk binary, exactly like the stage files of any
+self-hosting compiler, and `make accept-golden` advances it.
 
-RTK ships **two front ends** and both are exercised on every test run:
+## The fixed point
 
-- **Hand-written** `Lexer.x` / `Parser.y` — the default
-- **Generated** `GrammarLexer.x` / `GrammarParser.y` — RTK's own output for
-  `test-grammars/grammar.pg`, compiled into rtk straight from the golden
-  snapshot in `test/golden/grammar/` and selected with `--use-generated`
-
-The snapshot is the checked-in bootstrap stage: it was produced by the
-*previous* rtk binary, exactly like the stage files of any self-hosting
-compiler, and `make accept-golden` refreshes it. `src/generated/ASTAdapter.hs`
-converts the generated AST to the hand-written `InitialGrammar`, after which
-both modes share the whole pipeline (normalization and code generation).
-
-The fixed point holds:
+A default invocation regenerates RTK's own front end byte-for-byte:
 
 ```bash
-cabal run rtk -- --use-generated test-grammars/grammar.pg /tmp/out
+cabal run rtk -- test-grammars/grammar.pg /tmp/out
 diff /tmp/out/GrammarLexer.x  test/golden/grammar/GrammarLexer.x   # identical
 diff /tmp/out/GrammarParser.y test/golden/grammar/GrammarParser.y  # identical
 diff /tmp/out/GrammarQQ.hs    test/golden/grammar/GrammarQQ.hs     # identical
 ```
 
 RTK parses its own grammar with the parser it generated from that grammar and
-regenerates that parser byte-for-byte.
+reproduces that parser exactly.
 
-### Equivalence harness
+## The equivalence harness (the standing oracle)
+
+Both front ends are exercised on every test run; the harness is what makes the
+hand-written front end a usable reference:
 
 - `cabal test golden` runs **every** grammar in `test-grammars/` through both
   front ends; both must reproduce the snapshots in `test/golden/`
-  byte-for-byte (except the three grammars pinned for divergences 4 and 5
-  below, which are checked hand-written-only plus a still-diverges guard).
-- `cabal test unit` parses every grammar with both front ends and asserts
-  the `InitialGrammar`s are equal, source positions included (same three
-  pinned exceptions, with the same guard).
+  byte-for-byte.
+- `cabal test unit` parses every grammar with both front ends and asserts the
+  `InitialGrammar`s are equal, source positions included. It also asserts
+  front-end error parity: lexical errors render identically under both front
+  ends, and parse errors carry the same structured position.
+- `TestSupport.frontEndDivergentGrammars` is the pin list for grammars whose
+  front ends are temporarily allowed to diverge. **It is empty.** Should a
+  divergence ever have to be tolerated again, a pinned grammar is checked with
+  the reference front end only, and both suites fail as soon as it stops
+  diverging so the pin gets dropped.
 
-### Known divergences (accepted and documented)
+(The earlier `compare-bootstrap.sh` textual comparison of the generated
+`.x`/`.y` against the hand-written ones is retired: behavioral equivalence is
+enforced by the harness above, and full textual identity was never the goal.)
 
-These do not affect generated artifacts for any grammar in the corpus — the
-equivalence harness proves it — but they are real behavioral deltas:
+## Changing the grammar language
 
-1. **Lexer/parser error reporting.** The generated lexer and parser report
-   `Either String` with the line/column rendered into the message text; the
-   hand-written front end reports structured `Either Diagnostic` (so a
-   `--use-generated` *parse* error lacks the `FILE:LINE:COL:` prefix).
-   Everything after parsing is converged: generated ASTs carry the position
-   of every constructor's first token, the adapter maps rule positions into
-   `getIRulePos`, and diagnostics from the shared pipeline (normalization,
-   generation) are identical under both front ends.
-2. **Nested comments.** The generated lexer cannot lex nested
-   `/* /* */ */` comments (hand-written lexer can; GitHub issue #25). No
-   corpus grammar nests comments.
-3. **Adjacent `"""…"""` blocks.** The hand-written path concatenates adjacent
-   triple-quoted blocks (`catBigstrs`); the generated grammar accepts a
-   single block after `imports`. Only `grammar.pg` uses `imports`, with one
-   block, so this is theoretical today.
-4. **Empty alternatives.** The hand-written parser accepts `Gd = | ExpI ;`
-   (an empty first alternative, used by `test-grammars/haskell.pg`);
-   grammar.pg's own clause syntax cannot derive an empty alternative, so the
-   generated front end rejects the file. One of the two definitions of the
-   grammar language has to win here — follow-up work.
-5. **Redundant parentheses are grouping to the hand-written parser.**
-   `(ImportStatement)*` (java.pg) and `(A B) C` (t1.pg) parse to nested
-   `IAlt [ISeq …]` groups that normalize into extra proxy sub-rules;
-   grammar.pg's `Clause5 = '(' ,Clause ')'` lifts the group, so the parens
-   are absent from the generated AST and the artifacts genuinely differ.
+1. Edit `test-grammars/grammar.pg` — the spec.
+2. `make accept-golden` and review the diff of `test/golden/` (this also
+   advances the bootstrap stage that the default front end is compiled from).
+3. Update the hand-written `Lexer.x` / `Parser.y` so the reference follows the
+   spec and the equivalence harness is green again.
+4. `cabal test` — both suites must pass.
 
-Because of 4 and 5, three grammars (`haskell`, `java`, `t1`) are pinned in
-`test/TestSupport.hs` (`frontEndDivergentGrammars`): the golden suite checks
-them with the hand-written front end only, and both suites fail as soon as a
-pinned grammar stops diverging so the pin gets dropped. Every other grammar
-in the corpus — including `grammar.pg` itself — passes the strict
-dual-front-end equivalence.
+## Error reporting parity
 
-The original comparison test below remains useful for tracking *textual*
-convergence of the generated `.x`/`.y` with the hand-written ones — full
-textual identity is not the goal anymore, behavioral equivalence is.
+Lexer and parser errors carry structured positions under both front ends and
+render in GNU one-line style. The same broken grammar produces the SAME stderr
+line through either front end for lexical errors:
 
-## Running the Test
-
-### Locally
-
-```bash
-# Build RTK and generate grammar files
-make build
-make test-grammar
-
-# Run the bootstrap comparison
-make test-bootstrap
+```
+$ rtk broken.pg out                    # default (generated) front end
+broken.pg:2:5: error: lexical error. Following chars: % ;
+$ rtk --use-handwritten broken.pg out  # reference front end
+broken.pg:2:5: error: lexical error. Following chars: % ;
 ```
 
-### In CI
+Mechanically: generated lexers/parsers (and the hand-written lexer) encode
+errors as `LINE:COL:message`; `Diagnostics.diagnosticFromPositioned` splits
+the encoding back into a positioned diagnostic. Generated quasi-quoters and
+standalone drivers re-render the encoding human-readably (`line L, column C:
+…`) for their `fail`/console paths.
 
-The test runs automatically in GitHub Actions after all other tests. It's marked as **informational only** (`continue-on-error: true`), so differences won't fail the build.
+## Known divergences (accepted and documented)
 
-## What the Test Does
+The historic divergences 4 and 5 (empty alternatives, redundant-paren
+grouping) are **resolved**: the reference parser now defines the same language
+as grammar.pg — it rejects empty alternatives and lifts parenthesis groups
+exactly like grammar.pg's `Clause5 = '(' ,Clause ')'` does — and haskell.pg's
+`Gd = | ExpI ;` was rewritten as the equivalent `Gd = ExpI? ;`. What remains:
 
-The `compare-bootstrap.sh` script:
+1. **Parse-error wording.** Both front ends report the same structured
+   position, but the message text differs: the reference parser knows the
+   grammar language's token names (`unexpected identifier 'Foo', followed by:
+   …`), while generated parsers render tokens generically (`unexpected id
+   "Foo"`). Lexical errors are identical character for character.
+2. **Nested comments.** The generated lexer cannot lex nested
+   `/* /* */ */` comments (the reference lexer can; GitHub issue #25). No
+   corpus grammar nests comments — and per the authority inversion, the spec
+   (grammar.pg) does not define nested comments today.
+3. **Adjacent `"""…"""` blocks.** The reference path concatenates adjacent
+   triple-quoted blocks (`catBigstrs`); grammar.pg accepts a single block
+   after `imports`. Only `grammar.pg` uses `imports`, with one block, so this
+   is theoretical today.
 
-1. **Generates** files from `test-grammars/grammar.pg`:
-   - `test-out/GrammarLexer.x`
-   - `test-out/GrammarParser.y`
-   - `test-out/GrammarQQ.hs`
+None of these affect generated artifacts for any corpus grammar — the
+equivalence harness proves it on every run.
 
-2. **Compares** generated files with hand-written ones:
-   - `Lexer.x` ↔ `test-out/GrammarLexer.x`
-   - `Parser.y` ↔ `test-out/GrammarParser.y`
+## History: the path that got here
 
-3. **Reports** differences (two-level check):
-   - First: Exact match check
-   - Second: Content match (using `diff -uwB` to ignore whitespace and blank lines)
-   - ✓ Green: Files are identical (self-hosting achieved!)
-   - ℹ Blue: Only whitespace differences (content is identical)
-   - ⚠ Yellow: Content differences found (expected during development)
-   - Shows line counts and diff statistics
-
-## Interpreting Results
-
-### If files are identical (✓)
-RTK is fully self-hosting! The generated code matches hand-written code exactly.
-
-### If only whitespace differs (ℹ)
-The content is functionally identical! Only whitespace, indentation, or blank lines differ. This is excellent progress toward self-hosting.
-
-### If files differ (⚠)
-This is **expected** and shows what needs to be addressed:
-
-- **Formatting differences**: Auto-generated code may format differently
-- **Comments**: Hand-written files may have more documentation
-- **Optimizations**: Hand-written code may include manual optimizations
-- **Features**: Grammar may not yet capture all hand-written features
-
-### Diff Options Used
-
-The comparison uses `diff -uwB` for content checking:
-- `-u`: Unified diff format (shows context)
-- `-w`: Ignore all whitespace differences (spaces, tabs)
-- `-B`: Ignore blank line changes
-
-This focuses the comparison on actual semantic differences rather than formatting.
-
-## Path to Self-Hosting
-
-1. ✅ **Verify grammar completeness**: `test-grammars/grammar.pg` parses the
-   corpus, surfacing exactly two constructs the hand-written parser supports
-   beyond the spec (divergences 4 and 5 above)
-2. ✅ **Test equivalence**: both front ends reproduce identical artifacts for
-   every corpus grammar except the three pinned divergent ones
-3. ✅ **Dual-mode entry point**: `--use-generated` switches `main.hs` to the
-   generated front end
-4. ✅ **Bootstrap cycle**: `rtk --use-generated grammar.pg` regenerates its own
-   parser byte-for-byte (the fixed point)
-5. ✅ **Structured positions in the generated path**: every generated AST
-   constructor carries the position of its first token (equality-transparent
-   `RtkPos`), the adapter maps rule positions into `getIRulePos`, and the
-   AST equality suite compares positions too
-6. **Retire hand-written files**: make generated mode the default, keep
-   `Lexer.x`/`Parser.y` as reference
-
-## Benefits of Self-Hosting
-
-- **Dogfooding**: RTK uses its own capabilities
-- **Simplified maintenance**: Update `grammar.pg` instead of editing `.x`/`.y` files
-- **QuasiQuoter support**: Get compile-time code generation for grammar manipulation
-- **Feature validation**: Every RTK feature must work on RTK's own grammar
+1. ✅ Grammar completeness: grammar.pg parses the whole corpus
+2. ✅ Artifact equivalence for every corpus grammar
+3. ✅ Dual-mode entry point (`--use-generated`)
+4. ✅ Bootstrap fixed point (`rtk --use-generated grammar.pg` regenerated its
+   own parser byte-for-byte)
+5. ✅ Structured positions in the generated path (position-transparent
+   `RtkPos`, rule positions mapped into `getIRulePos`)
+6. ✅ Front-end error parity (`LINE:COL:` encoding split into diagnostics)
+7. ✅ **Generated front end made the default**; hand-written files demoted to
+   reference; pinned-divergence list emptied
 
 ## Files
 
-- `compare-bootstrap.sh` - Comparison script
-- `test-grammars/grammar.pg` - RTK's grammar definition
-- `Lexer.x` - Hand-written lexer (current)
-- `Parser.y` - Hand-written parser (current)
-- `.github/workflows/ci.yml` - CI configuration (runs test automatically)
-- `makefile` - Build system (includes `test-bootstrap` target)
+- `test-grammars/grammar.pg` — the grammar language specification
+- `test/golden/grammar/` — checked-in bootstrap stage (compiled into rtk)
+- `src/generated/ASTAdapter.hs` — generated AST → `InitialGrammar`
+- `Lexer.x`, `Parser.y` — hand-written reference front end
+  (`--use-handwritten`)
+- `test/TestSupport.hs` — equivalence-harness support (pin list, both
+  pipelines)
 
 ## Further Reading
 

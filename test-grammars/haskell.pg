@@ -79,7 +79,11 @@ Rhs = '=' Exp OptWhere
 
 OptGdRhs = (GdRhs)? ;
 
-Gd = | ExpI ;
+# An optional guard expression. (Formerly written with an empty first
+# alternative 'Gd = | ExpI ;', hand-parser-only syntax that grammar.pg cannot
+# derive; a top-level option normalizes to exactly the same empty-or-present
+# alternatives.)
+Gd = ExpI? ;
 
 OptExpTypeSignature = ('::' OptContext Type)?;
 

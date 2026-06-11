@@ -27,8 +27,9 @@ import GenX (genX)
 import GenY (genY)
 import Lexer (scanTokens)
 import Normalize (fillConstructorNames, normalizeTopLevelClauses)
-import Parser
+import Parser (parse)
 import StringLiterals (normalizeStringLiterals)
+import Syntax
 import TokenProcessing (processTokens)
 
 -- | Lexing, token post-processing and parsing of a grammar specification.
@@ -65,32 +66,21 @@ artifactsFor g = do
     where name = getNGrammarName g
 
 -- | Grammars whose hand-written-front-end parse the generated front end
--- provably cannot reproduce, with the reason. These are differences between
--- the two definitions of the grammar language, not adapter bugs:
+-- provably cannot reproduce, with the reason.
 --
---   * The hand-written parser accepts an EMPTY ALTERNATIVE (haskell.pg has
---     @Gd = | ExpI ;@, parsed as @IAlt [ISeq [], …]@), a construct that
---     grammar.pg's own clause syntax cannot derive (its Clause2 requires at
---     least one Clause3), so the generated parser rejects the file.
+-- EMPTY since the generated front end became the default: the two historic
+-- divergences were resolved by making the reference parser define the same
+-- language as grammar.pg (empty alternatives are rejected, redundant
+-- parentheses are lifted exactly like grammar.pg's @Clause5 = '(' ,Clause ')'@
+-- does) and by rewriting haskell.pg's @Gd = | ExpI ;@ as @Gd = ExpI? ;@. Every
+-- grammar in the corpus now passes the strict dual-front-end equivalence.
 --
---   * The hand-written parser keeps REDUNDANT PARENTHESES as semantic
---     grouping (java.pg has @(ImportStatement)*@, t1.pg has @(A B) C@ —
---     nested @IAlt [ISeq …]@ groups that normalize into extra proxy
---     sub-rules), while grammar.pg's @Clause5 = '(' ,Clause ')'@ lifts the
---     group, so the parens are simply absent from the generated AST and the
---     distinction cannot be recovered by the adapter.
---
--- The golden suite checks these grammars against the snapshots with the
--- hand-written front end only, and both suites fail as soon as a pinned
--- grammar stops diverging so the pin gets dropped. Resolving them means
--- deciding which front end defines the language — follow-up work tracked in
--- BOOTSTRAP.md ("Known divergences"), out of scope for the 7a milestone.
+-- Should a new divergence ever have to be tolerated temporarily, pin the
+-- grammar here: the golden suite then checks it with the reference front end
+-- only, and both suites fail as soon as the grammar stops diverging so the
+-- pin gets dropped again.
 frontEndDivergentGrammars :: [(String, String)]
-frontEndDivergentGrammars =
-    [ ("haskell", "the empty alternative 'Gd = | ExpI ;' is hand-written-parser-only syntax")
-    , ("java",    "redundant parens like '(ImportStatement)*' are grouping to the hand-written parser only")
-    , ("t1",      "redundant parens like '(A B) C' are grouping to the hand-written parser only")
-    ]
+frontEndDivergentGrammars = []
 
 grammarsDir :: FilePath
 grammarsDir = "test-grammars"

@@ -1,7 +1,7 @@
 module StringLiterals (normalizeStringLiterals)
     where
 
-import Parser
+import Syntax
 import Data.Char
 import Data.Generics
 import qualified Data.Map as Map

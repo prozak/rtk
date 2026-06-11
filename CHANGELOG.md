@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **RTK is now self-hosting by default — the headline of this release.**
+  Grammar files are parsed with the front end RTK generated from its own
+  grammar description, and `test-grammars/grammar.pg` is the authoritative
+  definition of the grammar language. The hand-written `Lexer.x`/`Parser.y`
+  are demoted to a reference oracle selected with the new
+  `--use-handwritten` flag (`--use-generated` remains accepted and is now a
+  no-op); the equivalence harness keeps holding both front ends to identical
+  artifacts and equal ASTs for every corpus grammar, and the bootstrap fixed
+  point now holds for a *default* invocation: `rtk test-grammars/grammar.pg
+  out/` reproduces `test/golden/grammar/` byte-for-byte. Changes to the
+  grammar language land in grammar.pg (plus regenerated goldens) first; the
+  hand-written files follow only to keep the harness green. See BOOTSTRAP.md
+- Front-end error parity (prerequisite of the default flip): generated
+  lexers and parsers now encode failures as machine-splittable
+  `LINE:COL:message` (previously prose like `Parse error at line L, column
+  C: …`), the shared `Diagnostics.diagnosticFromPositioned` splits the
+  encoding into a positioned diagnostic, and rtk renders the same GNU-style
+  `FILE:LINE:COL: error: …` line under both front ends — for lexical errors
+  the stderr line is identical character for character; for parse errors the
+  position is identical and only the token wording differs (generated
+  parsers render tokens generically). Generated quasi-quoters re-render the
+  encoding human-readably (`line L, column C: …`) in their `fail` path, as
+  do the standalone test drivers. Every golden `<Name>Lexer.x`/`<Name>Parser.y`
+  changed uniformly with the new error templates
+- The two historic front-end divergences are resolved and the
+  pinned-divergence list (`TestSupport.frontEndDivergentGrammars`) is empty:
+  the hand-written reference parser now defines the same language as
+  grammar.pg — it rejects empty alternatives (`R = | X ;`) and lifts
+  redundant parenthesis groups exactly like grammar.pg's
+  `Clause5 = '(' ,Clause ')'` (single-leaf groups collapse, pure-sequence
+  groups merge at the head of a sequence, alternation groups merge as the
+  first alternative); haskell.pg's `Gd = | ExpI ;` was rewritten as the
+  equivalent `Gd = ExpI? ;`. java.pg, t1.pg and haskell.pg artifacts changed
+  accordingly (fewer proxy sub-rules, e.g. java.pg's `(ImportStatement)*`
+  now generates a plain list rule)
+- The core pipeline data types (`InitialGrammar`, `IClause`,
+  `NormalGrammar`, …) moved from the footer of the hand-written `Parser.y`
+  into the new front-end-agnostic `Syntax` module; a demoted parser no
+  longer owns the project's core types. Pure move, no behavior change
+- `--debug-tokens` in the default (generated) front end now dumps the
+  generated lexer's token stream (it previously printed nothing under
+  `--use-generated`)
+
+### Removed
+- The superseded textual bootstrap comparison: `compare-bootstrap.sh`, the
+  `make test-bootstrap` target and its informational CI step. Behavioral
+  equivalence of the two front ends is enforced by the golden/unit harness
+  on every test run; textual identity of the generated `.x`/`.y` with the
+  hand-written ones was never the goal
+
 ### Added
 - Source positions in generated ASTs: every constructor that generated
   parsers build (except the quasi-quotation-only `Anti_*` splice

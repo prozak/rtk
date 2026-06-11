@@ -49,6 +49,20 @@ replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, 
 replaceAllPatterns :: String -> Either String String
 replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
+-- The generated lexer and parser encode error positions as "LINE:COL:message"
+-- so structured-diagnostic callers can split them; render them back
+-- human-readably for quasi-quote compile errors. Positions refer to the quote
+-- body (padded with a start token in front).
+rtkRenderError :: String -> String
+rtkRenderError err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- (reads l :: [(Int, String)]) ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- (reads c :: [(Int, String)]) ->
+                    "line " ++ show line ++ ", column " ++ show col ++ ": " ++ msg
+                _ -> err
+        _ -> err
+
 qqShortcuts = M.fromList [ ("program","Program"),("assignment","Assignment"),("block","Block"),("expression","Expression"),("factor","Factor"),("ifStatement","IfStatement"),("statement","Statement"),("term","Term"),("unusedRule1","UnusedRule1"),("unusedRule2","UnusedRule2"),("whileLoop","WhileLoop")]
 
 -- A quasi-quote pattern must match an AST parsed from anywhere in a source
@@ -63,7 +77,7 @@ quoteDebugTestExp :: Data.Data a => String -> (Program -> a) -> String -> TH.Exp
 quoteDebugTestExp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
   ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseDebugTest of
-           Left err -> fail err
+           Left err -> fail (rtkRenderError err)
            Right a -> return a
   let expr = func ast
   dataToExpQ (const Nothing `Generics.extQ` antiStatementExp `Generics.extQ` antiAssignmentExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiTermExp `Generics.extQ` antiFactorExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiWhileLoopExp `Generics.extQ` antiBlockExp `Generics.extQ` antiUnusedRule1Exp) expr
@@ -71,7 +85,7 @@ quoteDebugTestPat :: Data.Data a => String -> (Program -> a) -> String -> TH.Pat
 quoteDebugTestPat dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
   ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseDebugTest of
-           Left err -> fail err
+           Left err -> fail (rtkRenderError err)
            Right a -> return a
   let expr = func ast
   dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiStatementPat `Generics.extQ` antiAssignmentPat `Generics.extQ` antiExpressionPat `Generics.extQ` antiTermPat `Generics.extQ` antiFactorPat `Generics.extQ` antiIfStatementPat `Generics.extQ` antiWhileLoopPat `Generics.extQ` antiBlockPat `Generics.extQ` antiUnusedRule1Pat) expr

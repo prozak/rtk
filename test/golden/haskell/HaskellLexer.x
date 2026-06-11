@@ -11,75 +11,75 @@ import Data.Data (Data)
 @octal = ([0-7]+)
 @hexadecimal = ([0-9A-Fa-f]+)
 
-tokens :- "tok_AType_dummy_121" { simple Tk__tok_AType_dummy_121 }
-          "tok_ATypeList_dummy_120" { simple Tk__tok_ATypeList_dummy_120 }
-          "tok_BType_dummy_119" { simple Tk__tok_BType_dummy_119 }
-          "tok_Body_dummy_118" { simple Tk__tok_Body_dummy_118 }
-          "tok_CName_dummy_117" { simple Tk__tok_CName_dummy_117 }
-          "tok_CNameList_dummy_116" { simple Tk__tok_CNameList_dummy_116 }
-          "tok_Class_dummy_115" { simple Tk__tok_Class_dummy_115 }
-          "tok_ClassList_dummy_114" { simple Tk__tok_ClassList_dummy_114 }
-          "tok_Con_dummy_113" { simple Tk__tok_Con_dummy_113 }
-          "tok_Constr_dummy_112" { simple Tk__tok_Constr_dummy_112 }
-          "tok_Constrs_dummy_111" { simple Tk__tok_Constrs_dummy_111 }
-          "tok_Context_dummy_110" { simple Tk__tok_Context_dummy_110 }
-          "tok_DClass_dummy_109" { simple Tk__tok_DClass_dummy_109 }
-          "tok_DClassList_dummy_108" { simple Tk__tok_DClassList_dummy_108 }
-          "tok_Decl_dummy_107" { simple Tk__tok_Decl_dummy_107 }
-          "tok_DeclList_dummy_106" { simple Tk__tok_DeclList_dummy_106 }
-          "tok_Decls_dummy_105" { simple Tk__tok_Decls_dummy_105 }
-          "tok_Deriving_dummy_104" { simple Tk__tok_Deriving_dummy_104 }
-          "tok_Exp_dummy_103" { simple Tk__tok_Exp_dummy_103 }
-          "tok_ExpI_dummy_102" { simple Tk__tok_ExpI_dummy_102 }
-          "tok_Export_dummy_101" { simple Tk__tok_Export_dummy_101 }
-          "tok_ExportsList_dummy_100" { simple Tk__tok_ExportsList_dummy_100 }
-          "tok_ExportsOpt_dummy_99" { simple Tk__tok_ExportsOpt_dummy_99 }
-          "tok_FieldDecl_dummy_98" { simple Tk__tok_FieldDecl_dummy_98 }
-          "tok_FieldDeclList_dummy_97" { simple Tk__tok_FieldDeclList_dummy_97 }
-          "tok_Fixity_dummy_96" { simple Tk__tok_Fixity_dummy_96 }
-          "tok_FunLhs_dummy_95" { simple Tk__tok_FunLhs_dummy_95 }
-          "tok_GTyCon_dummy_94" { simple Tk__tok_GTyCon_dummy_94 }
-          "tok_Gd_dummy_93" { simple Tk__tok_Gd_dummy_93 }
-          "tok_GdRhs_dummy_92" { simple Tk__tok_GdRhs_dummy_92 }
-          "tok_GenDecl_dummy_91" { simple Tk__tok_GenDecl_dummy_91 }
-          "tok_Haskell_dummy_122" { simple Tk__tok_Haskell_dummy_122 }
-          "tok_ImpDecl_dummy_90" { simple Tk__tok_ImpDecl_dummy_90 }
-          "tok_ImpDeclList_dummy_89" { simple Tk__tok_ImpDeclList_dummy_89 }
-          "tok_Import_dummy_88" { simple Tk__tok_Import_dummy_88 }
-          "tok_ImportList_dummy_87" { simple Tk__tok_ImportList_dummy_87 }
-          "tok_ModId_dummy_86" { simple Tk__tok_ModId_dummy_86 }
-          "tok_ModIdList_dummy_85" { simple Tk__tok_ModIdList_dummy_85 }
-          "tok_Module_dummy_84" { simple Tk__tok_Module_dummy_84 }
-          "tok_Op_dummy_83" { simple Tk__tok_Op_dummy_83 }
-          "tok_Ops_dummy_82" { simple Tk__tok_Ops_dummy_82 }
-          "tok_OptContext_dummy_81" { simple Tk__tok_OptContext_dummy_81 }
-          "tok_OptDeriving_dummy_80" { simple Tk__tok_OptDeriving_dummy_80 }
-          "tok_OptExpTypeSignature_dummy_79" { simple Tk__tok_OptExpTypeSignature_dummy_79 }
-          "tok_OptGdRhs_dummy_78" { simple Tk__tok_OptGdRhs_dummy_78 }
-          "tok_OptImpSpec_dummy_77" { simple Tk__tok_OptImpSpec_dummy_77 }
-          "tok_OptInteger_dummy_76" { simple Tk__tok_OptInteger_dummy_76 }
-          "tok_OptQualified_dummy_75" { simple Tk__tok_OptQualified_dummy_75 }
-          "tok_OptQualifiedAs_dummy_74" { simple Tk__tok_OptQualifiedAs_dummy_74 }
-          "tok_OptWhere_dummy_73" { simple Tk__tok_OptWhere_dummy_73 }
-          "tok_Pat_dummy_72" { simple Tk__tok_Pat_dummy_72 }
-          "tok_QOp_dummy_71" { simple Tk__tok_QOp_dummy_71 }
-          "tok_QTyCls_dummy_70" { simple Tk__tok_QTyCls_dummy_70 }
-          "tok_QTyCon_dummy_69" { simple Tk__tok_QTyCon_dummy_69 }
-          "tok_QVar_dummy_68" { simple Tk__tok_QVar_dummy_68 }
-          "tok_QVarId_dummy_67" { simple Tk__tok_QVarId_dummy_67 }
-          "tok_QVarList_dummy_66" { simple Tk__tok_QVarList_dummy_66 }
-          "tok_Rhs_dummy_65" { simple Tk__tok_Rhs_dummy_65 }
-          "tok_SimpleType_dummy_64" { simple Tk__tok_SimpleType_dummy_64 }
-          "tok_TopDecl_dummy_63" { simple Tk__tok_TopDecl_dummy_63 }
-          "tok_TopDecls_dummy_62" { simple Tk__tok_TopDecls_dummy_62 }
-          "tok_TyCls_dummy_61" { simple Tk__tok_TyCls_dummy_61 }
-          "tok_TyCon_dummy_60" { simple Tk__tok_TyCon_dummy_60 }
-          "tok_TyVar_dummy_59" { simple Tk__tok_TyVar_dummy_59 }
-          "tok_TyVars_dummy_58" { simple Tk__tok_TyVars_dummy_58 }
-          "tok_Type_dummy_57" { simple Tk__tok_Type_dummy_57 }
-          "tok_TypeList_dummy_56" { simple Tk__tok_TypeList_dummy_56 }
-          "tok_Var_dummy_55" { simple Tk__tok_Var_dummy_55 }
-          "tok_Vars_dummy_54" { simple Tk__tok_Vars_dummy_54 }
+tokens :- "tok_AType_dummy_111" { simple Tk__tok_AType_dummy_111 }
+          "tok_ATypeList_dummy_110" { simple Tk__tok_ATypeList_dummy_110 }
+          "tok_BType_dummy_109" { simple Tk__tok_BType_dummy_109 }
+          "tok_Body_dummy_108" { simple Tk__tok_Body_dummy_108 }
+          "tok_CName_dummy_107" { simple Tk__tok_CName_dummy_107 }
+          "tok_CNameList_dummy_106" { simple Tk__tok_CNameList_dummy_106 }
+          "tok_Class_dummy_105" { simple Tk__tok_Class_dummy_105 }
+          "tok_ClassList_dummy_104" { simple Tk__tok_ClassList_dummy_104 }
+          "tok_Con_dummy_103" { simple Tk__tok_Con_dummy_103 }
+          "tok_Constr_dummy_102" { simple Tk__tok_Constr_dummy_102 }
+          "tok_Constrs_dummy_101" { simple Tk__tok_Constrs_dummy_101 }
+          "tok_Context_dummy_100" { simple Tk__tok_Context_dummy_100 }
+          "tok_DClass_dummy_99" { simple Tk__tok_DClass_dummy_99 }
+          "tok_DClassList_dummy_98" { simple Tk__tok_DClassList_dummy_98 }
+          "tok_Decl_dummy_97" { simple Tk__tok_Decl_dummy_97 }
+          "tok_DeclList_dummy_96" { simple Tk__tok_DeclList_dummy_96 }
+          "tok_Decls_dummy_95" { simple Tk__tok_Decls_dummy_95 }
+          "tok_Deriving_dummy_94" { simple Tk__tok_Deriving_dummy_94 }
+          "tok_Exp_dummy_93" { simple Tk__tok_Exp_dummy_93 }
+          "tok_ExpI_dummy_92" { simple Tk__tok_ExpI_dummy_92 }
+          "tok_Export_dummy_91" { simple Tk__tok_Export_dummy_91 }
+          "tok_ExportsList_dummy_90" { simple Tk__tok_ExportsList_dummy_90 }
+          "tok_ExportsOpt_dummy_89" { simple Tk__tok_ExportsOpt_dummy_89 }
+          "tok_FieldDecl_dummy_88" { simple Tk__tok_FieldDecl_dummy_88 }
+          "tok_FieldDeclList_dummy_87" { simple Tk__tok_FieldDeclList_dummy_87 }
+          "tok_Fixity_dummy_86" { simple Tk__tok_Fixity_dummy_86 }
+          "tok_FunLhs_dummy_85" { simple Tk__tok_FunLhs_dummy_85 }
+          "tok_GTyCon_dummy_84" { simple Tk__tok_GTyCon_dummy_84 }
+          "tok_Gd_dummy_83" { simple Tk__tok_Gd_dummy_83 }
+          "tok_GdRhs_dummy_82" { simple Tk__tok_GdRhs_dummy_82 }
+          "tok_GenDecl_dummy_81" { simple Tk__tok_GenDecl_dummy_81 }
+          "tok_Haskell_dummy_112" { simple Tk__tok_Haskell_dummy_112 }
+          "tok_ImpDecl_dummy_80" { simple Tk__tok_ImpDecl_dummy_80 }
+          "tok_ImpDeclList_dummy_79" { simple Tk__tok_ImpDeclList_dummy_79 }
+          "tok_Import_dummy_78" { simple Tk__tok_Import_dummy_78 }
+          "tok_ImportList_dummy_77" { simple Tk__tok_ImportList_dummy_77 }
+          "tok_ModId_dummy_76" { simple Tk__tok_ModId_dummy_76 }
+          "tok_ModIdList_dummy_75" { simple Tk__tok_ModIdList_dummy_75 }
+          "tok_Module_dummy_74" { simple Tk__tok_Module_dummy_74 }
+          "tok_Op_dummy_73" { simple Tk__tok_Op_dummy_73 }
+          "tok_Ops_dummy_72" { simple Tk__tok_Ops_dummy_72 }
+          "tok_OptContext_dummy_71" { simple Tk__tok_OptContext_dummy_71 }
+          "tok_OptDeriving_dummy_70" { simple Tk__tok_OptDeriving_dummy_70 }
+          "tok_OptExpTypeSignature_dummy_69" { simple Tk__tok_OptExpTypeSignature_dummy_69 }
+          "tok_OptGdRhs_dummy_68" { simple Tk__tok_OptGdRhs_dummy_68 }
+          "tok_OptImpSpec_dummy_67" { simple Tk__tok_OptImpSpec_dummy_67 }
+          "tok_OptInteger_dummy_66" { simple Tk__tok_OptInteger_dummy_66 }
+          "tok_OptQualified_dummy_65" { simple Tk__tok_OptQualified_dummy_65 }
+          "tok_OptQualifiedAs_dummy_64" { simple Tk__tok_OptQualifiedAs_dummy_64 }
+          "tok_OptWhere_dummy_63" { simple Tk__tok_OptWhere_dummy_63 }
+          "tok_Pat_dummy_62" { simple Tk__tok_Pat_dummy_62 }
+          "tok_QOp_dummy_61" { simple Tk__tok_QOp_dummy_61 }
+          "tok_QTyCls_dummy_60" { simple Tk__tok_QTyCls_dummy_60 }
+          "tok_QTyCon_dummy_59" { simple Tk__tok_QTyCon_dummy_59 }
+          "tok_QVar_dummy_58" { simple Tk__tok_QVar_dummy_58 }
+          "tok_QVarId_dummy_57" { simple Tk__tok_QVarId_dummy_57 }
+          "tok_QVarList_dummy_56" { simple Tk__tok_QVarList_dummy_56 }
+          "tok_Rhs_dummy_55" { simple Tk__tok_Rhs_dummy_55 }
+          "tok_SimpleType_dummy_54" { simple Tk__tok_SimpleType_dummy_54 }
+          "tok_TopDecl_dummy_53" { simple Tk__tok_TopDecl_dummy_53 }
+          "tok_TopDecls_dummy_52" { simple Tk__tok_TopDecls_dummy_52 }
+          "tok_TyCls_dummy_51" { simple Tk__tok_TyCls_dummy_51 }
+          "tok_TyCon_dummy_50" { simple Tk__tok_TyCon_dummy_50 }
+          "tok_TyVar_dummy_49" { simple Tk__tok_TyVar_dummy_49 }
+          "tok_TyVars_dummy_48" { simple Tk__tok_TyVars_dummy_48 }
+          "tok_Type_dummy_47" { simple Tk__tok_Type_dummy_47 }
+          "tok_TypeList_dummy_46" { simple Tk__tok_TypeList_dummy_46 }
+          "tok_Var_dummy_45" { simple Tk__tok_Var_dummy_45 }
+          "tok_Vars_dummy_44" { simple Tk__tok_Vars_dummy_44 }
           "}" { simple Tk__tok__symbol__8 }
           "|" { simple Tk__tok__pipe__21 }
           "{" { simple Tk__tok__symbol__6 }
@@ -190,75 +190,75 @@ tokens :- "tok_AType_dummy_121" { simple Tk__tok_AType_dummy_121 }
 
 {
 data Token = EndOfFile |
-             Tk__tok_AType_dummy_121 |
-             Tk__tok_ATypeList_dummy_120 |
-             Tk__tok_BType_dummy_119 |
-             Tk__tok_Body_dummy_118 |
-             Tk__tok_CName_dummy_117 |
-             Tk__tok_CNameList_dummy_116 |
-             Tk__tok_Class_dummy_115 |
-             Tk__tok_ClassList_dummy_114 |
-             Tk__tok_Con_dummy_113 |
-             Tk__tok_Constr_dummy_112 |
-             Tk__tok_Constrs_dummy_111 |
-             Tk__tok_Context_dummy_110 |
-             Tk__tok_DClass_dummy_109 |
-             Tk__tok_DClassList_dummy_108 |
-             Tk__tok_Decl_dummy_107 |
-             Tk__tok_DeclList_dummy_106 |
-             Tk__tok_Decls_dummy_105 |
-             Tk__tok_Deriving_dummy_104 |
-             Tk__tok_Exp_dummy_103 |
-             Tk__tok_ExpI_dummy_102 |
-             Tk__tok_Export_dummy_101 |
-             Tk__tok_ExportsList_dummy_100 |
-             Tk__tok_ExportsOpt_dummy_99 |
-             Tk__tok_FieldDecl_dummy_98 |
-             Tk__tok_FieldDeclList_dummy_97 |
-             Tk__tok_Fixity_dummy_96 |
-             Tk__tok_FunLhs_dummy_95 |
-             Tk__tok_GTyCon_dummy_94 |
-             Tk__tok_Gd_dummy_93 |
-             Tk__tok_GdRhs_dummy_92 |
-             Tk__tok_GenDecl_dummy_91 |
-             Tk__tok_Haskell_dummy_122 |
-             Tk__tok_ImpDecl_dummy_90 |
-             Tk__tok_ImpDeclList_dummy_89 |
-             Tk__tok_Import_dummy_88 |
-             Tk__tok_ImportList_dummy_87 |
-             Tk__tok_ModId_dummy_86 |
-             Tk__tok_ModIdList_dummy_85 |
-             Tk__tok_Module_dummy_84 |
-             Tk__tok_Op_dummy_83 |
-             Tk__tok_Ops_dummy_82 |
-             Tk__tok_OptContext_dummy_81 |
-             Tk__tok_OptDeriving_dummy_80 |
-             Tk__tok_OptExpTypeSignature_dummy_79 |
-             Tk__tok_OptGdRhs_dummy_78 |
-             Tk__tok_OptImpSpec_dummy_77 |
-             Tk__tok_OptInteger_dummy_76 |
-             Tk__tok_OptQualified_dummy_75 |
-             Tk__tok_OptQualifiedAs_dummy_74 |
-             Tk__tok_OptWhere_dummy_73 |
-             Tk__tok_Pat_dummy_72 |
-             Tk__tok_QOp_dummy_71 |
-             Tk__tok_QTyCls_dummy_70 |
-             Tk__tok_QTyCon_dummy_69 |
-             Tk__tok_QVar_dummy_68 |
-             Tk__tok_QVarId_dummy_67 |
-             Tk__tok_QVarList_dummy_66 |
-             Tk__tok_Rhs_dummy_65 |
-             Tk__tok_SimpleType_dummy_64 |
-             Tk__tok_TopDecl_dummy_63 |
-             Tk__tok_TopDecls_dummy_62 |
-             Tk__tok_TyCls_dummy_61 |
-             Tk__tok_TyCon_dummy_60 |
-             Tk__tok_TyVar_dummy_59 |
-             Tk__tok_TyVars_dummy_58 |
-             Tk__tok_Type_dummy_57 |
-             Tk__tok_TypeList_dummy_56 |
-             Tk__tok_Var_dummy_55 |
-             Tk__tok_Vars_dummy_54 |
+             Tk__tok_AType_dummy_111 |
+             Tk__tok_ATypeList_dummy_110 |
+             Tk__tok_BType_dummy_109 |
+             Tk__tok_Body_dummy_108 |
+             Tk__tok_CName_dummy_107 |
+             Tk__tok_CNameList_dummy_106 |
+             Tk__tok_Class_dummy_105 |
+             Tk__tok_ClassList_dummy_104 |
+             Tk__tok_Con_dummy_103 |
+             Tk__tok_Constr_dummy_102 |
+             Tk__tok_Constrs_dummy_101 |
+             Tk__tok_Context_dummy_100 |
+             Tk__tok_DClass_dummy_99 |
+             Tk__tok_DClassList_dummy_98 |
+             Tk__tok_Decl_dummy_97 |
+             Tk__tok_DeclList_dummy_96 |
+             Tk__tok_Decls_dummy_95 |
+             Tk__tok_Deriving_dummy_94 |
+             Tk__tok_Exp_dummy_93 |
+             Tk__tok_ExpI_dummy_92 |
+             Tk__tok_Export_dummy_91 |
+             Tk__tok_ExportsList_dummy_90 |
+             Tk__tok_ExportsOpt_dummy_89 |
+             Tk__tok_FieldDecl_dummy_88 |
+             Tk__tok_FieldDeclList_dummy_87 |
+             Tk__tok_Fixity_dummy_86 |
+             Tk__tok_FunLhs_dummy_85 |
+             Tk__tok_GTyCon_dummy_84 |
+             Tk__tok_Gd_dummy_83 |
+             Tk__tok_GdRhs_dummy_82 |
+             Tk__tok_GenDecl_dummy_81 |
+             Tk__tok_Haskell_dummy_112 |
+             Tk__tok_ImpDecl_dummy_80 |
+             Tk__tok_ImpDeclList_dummy_79 |
+             Tk__tok_Import_dummy_78 |
+             Tk__tok_ImportList_dummy_77 |
+             Tk__tok_ModId_dummy_76 |
+             Tk__tok_ModIdList_dummy_75 |
+             Tk__tok_Module_dummy_74 |
+             Tk__tok_Op_dummy_73 |
+             Tk__tok_Ops_dummy_72 |
+             Tk__tok_OptContext_dummy_71 |
+             Tk__tok_OptDeriving_dummy_70 |
+             Tk__tok_OptExpTypeSignature_dummy_69 |
+             Tk__tok_OptGdRhs_dummy_68 |
+             Tk__tok_OptImpSpec_dummy_67 |
+             Tk__tok_OptInteger_dummy_66 |
+             Tk__tok_OptQualified_dummy_65 |
+             Tk__tok_OptQualifiedAs_dummy_64 |
+             Tk__tok_OptWhere_dummy_63 |
+             Tk__tok_Pat_dummy_62 |
+             Tk__tok_QOp_dummy_61 |
+             Tk__tok_QTyCls_dummy_60 |
+             Tk__tok_QTyCon_dummy_59 |
+             Tk__tok_QVar_dummy_58 |
+             Tk__tok_QVarId_dummy_57 |
+             Tk__tok_QVarList_dummy_56 |
+             Tk__tok_Rhs_dummy_55 |
+             Tk__tok_SimpleType_dummy_54 |
+             Tk__tok_TopDecl_dummy_53 |
+             Tk__tok_TopDecls_dummy_52 |
+             Tk__tok_TyCls_dummy_51 |
+             Tk__tok_TyCon_dummy_50 |
+             Tk__tok_TyVar_dummy_49 |
+             Tk__tok_TyVars_dummy_48 |
+             Tk__tok_Type_dummy_47 |
+             Tk__tok_TypeList_dummy_46 |
+             Tk__tok_Var_dummy_45 |
+             Tk__tok_Vars_dummy_44 |
              Tk__tok__symbol__8 |
              Tk__tok__pipe__21 |
              Tk__tok__symbol__6 |
@@ -380,9 +380,10 @@ alexEOF = do
   return $ PosToken pos EndOfFile
 
 -- Lex the input into a token stream, returning the positioned error message
--- on a lexical error. The returned list always ends with an EndOfFile token
--- that carries the position of the end of input, so parse errors at end of
--- input can be reported with a position too
+-- on a lexical error (encoded as "LINE:COL:message", see rtkError below).
+-- The returned list always ends with an EndOfFile token that carries the
+-- position of the end of input, so parse errors at end of input can be
+-- reported with a position too
 scanTokens :: String -> Either String [PosToken]
 scanTokens str = runAlex str $ do
   let loop toks = do tok <- alexMonadScan
@@ -406,6 +407,8 @@ simple1 t (pos, _, _, str) len = return $ PosToken pos (t (take len str))
 simple :: Token -> AlexInput -> Int -> Alex PosToken
 simple t (pos, _, _, _) len = return $ PosToken pos t
 
-rtkError ((AlexPn _ line column), _, _, str) len = alexError $ "lexical error at line " ++ (show line) ++ ", column " ++ (show column) ++ ". Following chars: " ++ (take 10 str)
+-- Encode the position as "LINE:COL:message" so callers can split it back out
+-- into a structured position - the same encoding the rtk grammar lexer uses
+rtkError ((AlexPn _ line column), _, _, str) len = alexError $ (show line) ++ ":" ++ (show column) ++ ":lexical error. Following chars: " ++ (take 10 str)
 
 }

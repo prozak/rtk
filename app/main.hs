@@ -1,6 +1,7 @@
 import Lexer
-import Parser
-import ASTAdapter (parseWithGenerated)
+import Parser (parse)
+import Syntax
+import ASTAdapter (parseWithGenerated, scanTokensGenerated)
 import Diagnostics (Diagnostic, renderDiagnostic)
 import TokenProcessing
 import StringLiterals
@@ -36,16 +37,25 @@ main = do
                 when found $ writeIORef ruleFound True
             Nothing -> return ()
 
-    -- Stages 1-2: front end (lexing and parsing). --use-generated swaps the
-    -- hand-written lexer/parser for the ones RTK generated from
+    -- Stages 1-2: front end (lexing and parsing). The default is the
+    -- self-hosted front end: the lexer/parser RTK generated from
     -- test-grammars/grammar.pg (compiled from the test/golden/grammar
-    -- snapshot) plus the AST adapter; everything after this point is the
-    -- same shared pipeline. In generated mode there is no separate token
-    -- stream, so --debug-tokens prints nothing and --debug-stage lex stops
-    -- after the combined front end.
+    -- snapshot) plus the AST adapter. --use-handwritten swaps in the
+    -- hand-written reference Lexer.x/Parser.y instead; everything after this
+    -- point is the same shared pipeline. The generated front end has no
+    -- token post-processing stage, so --debug-tokens shows the raw generated
+    -- token stream and --debug-stage lex stops after the combined front end.
     (grammar, frontEndTimings) <-
         if useGenerated opts
             then do
+                when (debugTokens opts) $ do
+                    D.debugSection opts "LEXER OUTPUT - TOKENS (generated front end)"
+                    case scanTokensGenerated content of
+                        Left _     -> return () -- the parse below reports it
+                        Right toks -> do
+                            putStrLn $ "Total tokens: " ++ show (length toks)
+                            putStrLn ""
+                            mapM_ putStrLn toks
                 (eGrammar, maybeT) <- runStage opts "Front End (generated)" $
                     parseWithGenerated content
                 g <- orDie opts eGrammar
