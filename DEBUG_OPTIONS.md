@@ -10,23 +10,34 @@ rtk <grammar-file> <output-dir> [OPTIONS]
 
 ## Front-End Selection
 
+By default RTK parses grammars with its **self-hosted front end**: the
+lexer/parser RTK generated from `test-grammars/grammar.pg` (the authoritative
+definition of the grammar language), compiled from the checked-in snapshot in
+`test/golden/grammar/`. The resulting AST is adapted to the pipeline's
+`InitialGrammar` and everything after parsing is the same shared pipeline, so
+the generated files are byte-identical whichever front end parsed the
+grammar. See `BOOTSTRAP.md`.
+
 ### `--use-generated`
-Parse the grammar with RTK's own generated lexer/parser (self-hosting mode)
-instead of the hand-written `Lexer.x`/`Parser.y`. The generated modules are
-compiled from the checked-in snapshot in `test/golden/grammar/` (RTK's output
-for `test-grammars/grammar.pg`); the resulting AST is adapted to the
-hand-written `InitialGrammar` and everything after parsing is the same shared
-pipeline, so the generated files are byte-identical in both modes.
+Explicitly select the self-hosted front end. This is the default, so the flag
+is a no-op kept for compatibility and for being explicit in scripts.
+
+### `--use-handwritten`
+Parse the grammar with the hand-written reference `Lexer.x`/`Parser.y`
+instead. The reference front end exists as the oracle for the self-hosting
+equivalence harness; output artifacts are identical to the default's.
 
 **Example:**
 ```bash
-rtk --use-generated test-grammars/grammar.pg test-out
+rtk test-grammars/grammar.pg test-out                    # generated (default)
+rtk --use-handwritten test-grammars/grammar.pg test-out  # reference
 ```
 
-**Notes:** error messages carry the line/column in the message text rather
-than as a structured `FILE:LINE:COL:` prefix, `--debug-tokens` prints nothing
-(there is no separate token stream), and `--debug-stage lex` stops after the
-combined front end.
+**Notes:** lexical and parse errors carry a structured `FILE:LINE:COL:`
+prefix under both front ends (parse-error *wording* differs slightly: the
+generated parser renders tokens generically). In default mode there is no
+token post-processing stage, so `--debug-tokens` shows the raw generated
+token stream and `--debug-stage lex` stops after the combined front end.
 
 ## Pipeline Stage Inspection Options
 

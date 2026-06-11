@@ -1,0 +1,136 @@
+-- | The core data types of the grammar-processing pipeline: the parsed
+-- grammar ('InitialGrammar' and its clauses), the normalized grammar
+-- ('NormalGrammar' and friends) that the code generators consume, and the
+-- pure helpers over them.
+--
+-- These types used to live in the footer of the hand-written @Parser.y@.
+-- They are owned by the pipeline, not by any particular front end: both the
+-- hand-written parser and the generated one (via @ASTAdapter@) produce an
+-- 'InitialGrammar', and everything downstream is front-end agnostic.
+module Syntax where
+
+import Data.Char (isLower)
+import Data.Data (Data, Typeable)
+import Data.List (intercalate)
+import qualified Data.Map as M
+import qualified Data.Set as S
+
+import Diagnostics (SourcePos)
+
+data InitialGrammar = InitialGrammar { getIGrammarName :: String, getImports :: String, getIRules :: [IRule] }
+                 deriving (Eq, Show, Typeable, Data)
+
+data IRule = IRule { getIDataTypeName :: (Maybe String),
+                     getIDataFunc :: (Maybe String),
+                     getIRuleName :: String,
+                     getIClause :: IClause,
+                     getIRuleOptions :: [IOption],
+                     getIRulePos :: (Maybe SourcePos)}
+                  deriving (Eq, Show, Typeable, Data)
+
+data IOption = OShortcuts [ID] | OSymmacro
+                  deriving (Eq, Show, Typeable, Data)
+
+addRuleOptions :: [IOption] -> IRule -> IRule
+addRuleOptions opts rule = rule{ getIRuleOptions = opts ++ (getIRuleOptions rule)}
+
+type ConstructorName = String
+
+type ID = String
+
+data IClause = IId { getIdStr :: ID }
+             | IStrLit String
+             | IDot
+             | IRegExpLit String
+             | IStar IClause (Maybe IClause)
+             | IPlus IClause (Maybe IClause)
+             | IAlt [IClause]
+             | ISeq [IClause]
+             | IOpt IClause
+             | ILifted IClause
+             | IIgnore IClause
+              deriving (Eq, Show, Typeable, Data)
+
+-- Render a clause the way it appears in the grammar source, for error messages
+showClause :: IClause -> String
+showClause (IId name)      = name
+showClause (IStrLit s)     = "'" ++ s ++ "'"
+showClause IDot            = "."
+showClause (IRegExpLit s)  = "[" ++ s ++ "]"
+showClause (IStar c md)    = showClause c ++ "*" ++ showDelim md
+showClause (IPlus c md)    = showClause c ++ "+" ++ showDelim md
+showClause (IAlt cs)       = "(" ++ intercalate " | " (map showClause cs) ++ ")"
+showClause (ISeq cs)       = unwords (map showClause cs)
+showClause (IOpt c)        = showClause c ++ "?"
+showClause (ILifted c)     = "," ++ showClause c
+showClause (IIgnore c)     = "!" ++ showClause c
+
+showDelim :: Maybe IClause -> String
+showDelim = maybe "" (\d -> " ~ " ++ showClause d)
+
+data GrammarInfo =
+  GrammarInfo
+  {
+     getStartRuleName :: Maybe String,
+     getRuleToStartInfo :: M.Map String String,
+     getNameCounter :: Int,
+     getProxyRules :: S.Set String
+  }
+  deriving (Eq, Show, Typeable, Data)
+
+data AntiRule = AntiRule { arTypeName :: ID,
+                           arQQName :: ID,
+                           arConstr :: ID ,
+                           arIsList :: Bool
+                         }
+                     deriving (Eq, Show, Typeable, Data)
+
+data NormalGrammar = NormalGrammar { getNGrammarName :: String,
+                                     getSyntaxRuleGroups :: [SyntaxRuleGroup],
+                                     getLexicalRules :: [LexicalRule],
+                                     getAntiRules :: [AntiRule],
+                                     getShortcuts :: [(String, String)],
+                                     getNImports :: String,
+                                     getGrammarInfo :: GrammarInfo }
+                     deriving (Eq, Show, Typeable, Data)
+
+data SyntaxRuleGroup = SyntaxRuleGroup { getSDataTypeName :: ID,
+                                         getSRules :: [SyntaxRule]}
+                       deriving (Eq, Show, Typeable, Data)
+
+data SyntaxRule = SyntaxRule { getSRuleName :: ID,
+                               getSClause :: SyntaxTopClause}
+                       deriving (Eq, Show, Typeable, Data)
+
+data STManyOp = STStar
+              | STPlus
+                deriving (Eq, Show, Typeable, Data)
+
+data STSeq = STSeq ConstructorName [SyntaxSimpleClause]
+             deriving (Eq, Show, Typeable, Data)
+
+data SyntaxTopClause = STMany STManyOp SyntaxSimpleClause (Maybe SyntaxSimpleClause)
+                     | STOpt SyntaxSimpleClause
+                     | STAltOfSeq { getAltOfSeq :: [STSeq] } -- alternative of sequences
+                       deriving (Eq, Show, Typeable, Data)
+
+data SyntaxSimpleClause = SSId ID
+                        | SSLifted ID
+                        | SSIgnore ID
+                          deriving (Eq, Show, Typeable, Data)
+
+data LexicalRule = LexicalRule { getLRuleDataType :: String,
+                                 getLRuleFunc :: String,
+                                 getLRuleName :: String,
+                                 getLClause :: LClause}
+                   | MacroRule { getLRuleName :: String, getLClause :: LClause}
+                   deriving (Eq, Show, Typeable, Data)
+
+type LClause = IClause
+
+isLexicalRule :: String -> Bool
+isLexicalRule [] = False
+isLexicalRule (c:_) = isLower c
+
+filterProxyRules :: S.Set ID -> [SyntaxRuleGroup] -> [SyntaxRuleGroup]
+filterProxyRules proxyRules rules = filter (((flip S.notMember) proxyRules) . getSDataTypeName) rules

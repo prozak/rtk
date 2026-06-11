@@ -138,8 +138,35 @@ echo ""
 # Ensure output directory exists
 mkdir -p "$OUT_DIR"
 
+echo "=== Front-End Selection ==="
+# The self-hosted (generated) front end is the default; --use-generated is
+# still accepted, and --use-handwritten selects the reference front end.
+test_option "default (generated front end)" "" "Successfully generated"
+test_option "--use-generated" "--use-generated" "Successfully generated"
+test_option "--use-handwritten" "--use-handwritten" "Successfully generated"
+
+# Both front ends must report a broken grammar with the same GNU-style
+# FILE:LINE:COL: error line and exit 1.
+echo -n "Testing front-end error parity... "
+BROKEN_PG="$OUT_DIR/broken-parity.pg"
+printf "grammar 'Broken';\nA = %% ;\n" > "$BROKEN_PG"
+default_err=$($RTK_EXEC "$BROKEN_PG" "$OUT_DIR" 2>&1 >/dev/null)
+default_rc=$?
+hand_err=$($RTK_EXEC "$BROKEN_PG" "$OUT_DIR" --use-handwritten 2>&1 >/dev/null)
+hand_rc=$?
+if [ "$default_rc" -eq 1 ] && [ "$hand_rc" -eq 1 ] && [ "$default_err" = "$hand_err" ] \
+   && echo "$default_err" | grep -q "$BROKEN_PG:2:5: error:"; then
+    echo -e "${GREEN}PASS${NC}"
+    ((passed++))
+else
+    echo -e "${RED}FAIL${NC} - default: rc=$default_rc '$default_err' vs handwritten: rc=$hand_rc '$hand_err'"
+    ((failed++))
+fi
+echo ""
+
 echo "=== Pipeline Stage Inspection ==="
 test_option "--debug-tokens" "--debug-tokens" "LEXER OUTPUT"
+test_option "--use-handwritten --debug-tokens" "--use-handwritten --debug-tokens" "LEXER OUTPUT"
 test_option "--debug-parse" "--debug-parse" "PARSER OUTPUT"
 test_option "--debug-string-norm" "--debug-string-norm" "String Normalization"
 test_option "--debug-clause-norm" "--debug-clause-norm" "CLAUSE NORMALIZATION"
@@ -170,12 +197,19 @@ echo "=== Selective Debug ==="
 # --debug-stage stops the pipeline early and must exit successfully
 test_option "--debug-stage=lex" "--debug-stage=lex" "Stopped after requested debug stage"
 test_option "--debug-stage=parse" "--debug-stage=parse" "Stopped after requested debug stage"
-# --debug-rule traces one rule through the pipeline: one block per stage
+# --debug-rule traces one rule through the pipeline: one block per stage.
+# In the default (generated) front end the token stage is only a note;
+# every later stage is traced normally.
 test_option_multi "--debug-rule=Clause" "--debug-rule=Clause" \
-    "RULE TRACE: 'Clause' - Tokens" \
+    "internal to the generated front end" \
     "RULE TRACE: 'Clause' - After Parse" \
     "RULE TRACE: 'Clause' - After String Normalization" \
     "RULE TRACE: 'Clause' - After Clause Normalization" \
+    "RULE TRACE: 'Clause' - After Constructor Fill"
+# the reference front end has a real token stream, so the token stage is traced too
+test_option_multi "--use-handwritten --debug-rule=Clause" "--use-handwritten --debug-rule=Clause" \
+    "RULE TRACE: 'Clause' - Tokens" \
+    "RULE TRACE: 'Clause' - After Parse" \
     "RULE TRACE: 'Clause' - After Constructor Fill"
 # an unknown rule must fail the run and suggest near matches
 test_option_fails "--debug-rule=clause (unknown, suggests)" "--debug-rule=clause" "Near matches"
@@ -184,10 +218,6 @@ test_option_fails "--debug-rule=NoSuchRule (unknown)" "--debug-rule=NoSuchRule" 
 test_option_multi "--debug-rule=Clause --debug-stage=parse" "--debug-rule=Clause --debug-stage=parse" \
     "RULE TRACE: 'Clause' - After Parse" \
     "Stopped after requested debug stage"
-# under --use-generated the token stage is only a note, the rest works
-test_option_multi "--use-generated --debug-rule=Clause" "--use-generated --debug-rule=Clause" \
-    "internal to the generated front end" \
-    "RULE TRACE: 'Clause' - After Constructor Fill"
 echo ""
 
 echo "=== Output Format ==="

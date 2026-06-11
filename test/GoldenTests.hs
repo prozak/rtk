@@ -6,16 +6,15 @@
 -- This catches generator regressions instantly, without alex, happy or a GHC
 -- compile cycle.
 --
--- Every grammar is run through BOTH front ends — the hand-written
--- lexer/parser and the self-hosted one that RTK generated from grammar.pg
--- (--use-generated) — and both must reproduce the same snapshots
--- byte-for-byte. This is the self-hosting equivalence harness: source
--- positions only affect diagnostics, never the generated artifacts, so any
--- artifact divergence on a valid grammar is a real front-end bug. The
--- exceptions are the grammars pinned in
--- TestSupport.frontEndDivergentGrammars (hand-parser-only syntax that
--- grammar.pg cannot express); those are checked with the hand-written front
--- end only, plus a guard that fails once they stop diverging.
+-- Every grammar is run through BOTH front ends — the self-hosted one that
+-- RTK generated from grammar.pg (the default) and the hand-written reference
+-- lexer/parser (--use-handwritten) — and both must reproduce the same
+-- snapshots byte-for-byte. This is the self-hosting equivalence harness:
+-- source positions only affect diagnostics, never the generated artifacts,
+-- so any artifact divergence on a valid grammar is a real front-end bug.
+-- Grammars pinned in TestSupport.frontEndDivergentGrammars (none today)
+-- would be checked with the reference front end only, plus a guard that
+-- fails once they stop diverging.
 --
 -- After an intentional generator change, refresh the snapshots with
 -- `make accept-golden` (or `RTK_ACCEPT=1 cabal test golden`) and review the
@@ -34,7 +33,7 @@ import System.FilePath ((</>), takeBaseName)
 import Test.HUnit
 
 import Diagnostics (Diagnostic, renderDiagnostic)
-import Parser (InitialGrammar)
+import Syntax (InitialGrammar)
 import TestSupport
 
 goldenRoot :: FilePath
@@ -168,9 +167,15 @@ acceptAll pgFiles = do
                 putStrLn $ "skipping " ++ pgFile ++ " (listed in knownBrokenGrammars)"
                 return False
             else do
-                -- Snapshots are always produced by the hand-written front
-                -- end; the generated front end must then reproduce them.
-                generated <- generateArtifacts parseGrammarSource pgFile
+                -- Snapshots are produced by the generated (default) front
+                -- end — grammar.pg is the authority; the hand-written
+                -- reference front end must then reproduce them. A grammar
+                -- pinned as divergent (none today) is snapshotted from the
+                -- reference front end, matching how it is checked.
+                let parseSrc = case lookup grammarKey frontEndDivergentGrammars of
+                        Just _  -> parseGrammarSource
+                        Nothing -> parseGrammarSourceGenerated
+                generated <- generateArtifacts parseSrc pgFile
                 case generated of
                     Left err -> do
                         putStrLn $ "FAILED to generate " ++ pgFile ++ ":\n" ++ err

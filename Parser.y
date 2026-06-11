@@ -3,12 +3,8 @@ module Parser where
 
 import qualified Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)
 import Diagnostics (Diagnostic(..), SourcePos(..))
-import Data.Generics
-import Data.Data
-import Data.Char
+import Syntax
 import Data.List (intercalate)
-import qualified Data.Map as M
-import qualified Data.Set as S
 
 }
 
@@ -76,19 +72,22 @@ Rule : id '=' ClauseAlt ';'         { IRule Nothing Nothing (idStr $1) $3 [] (Ju
      -- generated parsers
      | '.' id ':' id '=' ClauseAlt ';'  { IRule Nothing (Just (idStr $2)) (idStr $4) $6 [] (Just (idPos $1)) }
 
-ClauseAlt : ClauseAlt1              { IAlt (reverse $1) }
+ClauseAlt : ClauseAlt1              { mkAlt (reverse $1) }
 
-ClauseAlt1 : ClauseAlt1 '|' ClauseSeq   { $3 : $1 } 
+ClauseAlt1 : ClauseAlt1 '|' ClauseSeq   { $3 : $1 }
            | ClauseSeq                  { [$1] }
 
-ClauseSeq : ClauseSeq1              { ISeq (reverse $1) }
+ClauseSeq : ClauseSeq1              { mkSeq (reverse $1) }
 
-ClauseSeq1 : ClauseSeq1 ClausePre    { $2 : $1 } 
-           | {- empty -}             { [] }
+-- A sequence has at least one element: grammar.pg's clause syntax cannot
+-- derive an empty alternative, and the reference parser must define the same
+-- language
+ClauseSeq1 : ClauseSeq1 ClausePre    { $2 : $1 }
+           | ClausePre               { [$1] }
 
-ClausePre :  ',' ClausePost           { ILifted $2 }
-           | '!' ClausePost           { IIgnore $2 }
-           | ClausePost               { $1 }
+ClausePre :  ',' ClausePost           { ILifted (unliftGroupOp $2) }
+           | '!' ClausePost           { IIgnore (unliftGroupOp $2) }
+           | ClausePost               { unliftGroupElem $1 }
 
 ClausePost : ClauseItem '*' OptDelim  { IStar $1 $3 }
            | ClauseItem '+' OptDelim  { IPlus $1 $3 }
@@ -96,7 +95,7 @@ ClausePost : ClauseItem '*' OptDelim  { IStar $1 $3 }
            | ClauseItem               { $1 }
 
 
-ClauseItem : '(' ClauseAlt ')'        { $2 }
+ClauseItem : '(' ClauseAlt ')'        { unliftGroupLeaf $2 }
            | id                       { IId (idStr $1) }
            | str                      { IStrLit $1 }
            | '.'                      { IDot }
@@ -106,6 +105,68 @@ OptDelim : {- empty -}          { Nothing }
          | '~' ClauseItem       { Just $2 }
 
 {
+
+-- grammar.pg, the authoritative definition of the grammar language, treats
+-- parentheses as pure grouping: its 'Clause5 = '(' ,Clause ')'' lifts the
+-- group, so the generated front end records no node for the parentheses
+-- themselves. The reference parser mirrors that with the helpers below, which
+-- reproduce exactly what the lifted parse trees look like after
+-- ASTAdapter flattens them (the AST-equality test suite holds the two front
+-- ends to it for every corpus grammar):
+--
+--   * a group around a single leaf collapses to the leaf (every position);
+--   * in sequence-element position, a group around a single repetition,
+--     option, lifted or ignored clause collapses to that clause;
+--   * a pure-sequence group at the head of a sequence merges into it (the
+--     juxtaposition spine is left-recursive, so only the head merges);
+--   * an alternation group that is the whole first alternative merges into
+--     the enclosing alternation (the '|' spine is left-recursive too).
+
+-- Group content that collapses everywhere parentheses themselves may appear
+isLeafClause :: IClause -> Bool
+isLeafClause (IId _)        = True
+isLeafClause (IStrLit _)    = True
+isLeafClause IDot           = True
+isLeafClause (IRegExpLit _) = True
+isLeafClause _              = False
+
+-- In item position (operand of '*'/'+'/'?' and the '~' delimiter) only a
+-- single-leaf group collapses
+unliftGroupLeaf :: IClause -> IClause
+unliftGroupLeaf (IAlt [ISeq [c]]) | isLeafClause c = c
+unliftGroupLeaf c = c
+
+-- Under ',' and '!' a group around one repetition or option collapses too
+unliftGroupOp :: IClause -> IClause
+unliftGroupOp (IAlt [ISeq [c]]) | isOpClause c = c
+  where isOpClause IStar{} = True
+        isOpClause IPlus{} = True
+        isOpClause IOpt{}  = True
+        isOpClause _       = False
+unliftGroupOp c = c
+
+-- In sequence-element position lifted and ignored content collapses as well
+unliftGroupElem :: IClause -> IClause
+unliftGroupElem (IAlt [ISeq [c]]) | isElemClause c = c
+  where isElemClause IStar{}   = True
+        isElemClause IPlus{}   = True
+        isElemClause IOpt{}    = True
+        isElemClause ILifted{} = True
+        isElemClause IIgnore{} = True
+        isElemClause _         = False
+unliftGroupElem c = c
+
+-- A pure-sequence group at the head of a sequence merges into it
+mkSeq :: [IClause] -> IClause
+mkSeq (IAlt [ISeq xs] : rest) = ISeq (xs ++ rest)
+mkSeq cs                      = ISeq cs
+
+-- An alternation group as the whole first alternative merges into the
+-- enclosing alternation (a single-alternative group cannot reach here: mkSeq
+-- has already merged it into its alternative's sequence)
+mkAlt :: [IClause] -> IClause
+mkAlt (ISeq [IAlt alts] : rest) = IAlt (alts ++ rest)
+mkAlt alts                      = IAlt alts
 
 parseError :: [L.PosToken] -> Either Diagnostic a
 parseError [] = Left $ Diagnostic Nothing Nothing "unexpected end of input; expected a grammar definition"
@@ -151,121 +212,4 @@ idStr t = error $ "Internal error: identifier token expected, but got: " ++ show
 
 idPos :: L.PosToken -> SourcePos
 idPos (L.PosToken (L.AlexPn _ line col) _) = SourcePos line col
-
-data InitialGrammar = InitialGrammar { getIGrammarName :: String, getImports :: String, getIRules :: [IRule] }
-                 deriving (Eq, Show, Typeable, Data)
-
-data IRule = IRule { getIDataTypeName :: (Maybe String),
-                     getIDataFunc :: (Maybe String),
-                     getIRuleName :: String,
-                     getIClause :: IClause,
-                     getIRuleOptions :: [IOption],
-                     getIRulePos :: (Maybe SourcePos)}
-                  deriving (Eq, Show, Typeable, Data)
-
-data IOption = OShortcuts [ID] | OSymmacro
-                  deriving (Eq, Show, Typeable, Data)
-
-addRuleOptions :: [IOption] -> IRule -> IRule
-addRuleOptions opts rule = rule{ getIRuleOptions = opts ++ (getIRuleOptions rule)}                        
-
-type ConstructorName = String
-
-type ID = String
-
-data IClause = IId { getIdStr :: ID }
-             | IStrLit String
-             | IDot
-             | IRegExpLit String
-             | IStar IClause (Maybe IClause)
-             | IPlus IClause (Maybe IClause)
-             | IAlt [IClause]
-             | ISeq [IClause]
-             | IOpt IClause
-             | ILifted IClause
-             | IIgnore IClause
-              deriving (Eq, Show, Typeable, Data)
-
--- Render a clause the way it appears in the grammar source, for error messages
-showClause :: IClause -> String
-showClause (IId name)      = name
-showClause (IStrLit s)     = "'" ++ s ++ "'"
-showClause IDot            = "."
-showClause (IRegExpLit s)  = "[" ++ s ++ "]"
-showClause (IStar c md)    = showClause c ++ "*" ++ showDelim md
-showClause (IPlus c md)    = showClause c ++ "+" ++ showDelim md
-showClause (IAlt cs)       = "(" ++ intercalate " | " (map showClause cs) ++ ")"
-showClause (ISeq cs)       = unwords (map showClause cs)
-showClause (IOpt c)        = showClause c ++ "?"
-showClause (ILifted c)     = "," ++ showClause c
-showClause (IIgnore c)     = "!" ++ showClause c
-
-showDelim :: Maybe IClause -> String
-showDelim = maybe "" (\d -> " ~ " ++ showClause d)
-
-data GrammarInfo =
-  GrammarInfo
-  {
-     getStartRuleName :: Maybe String,
-     getRuleToStartInfo :: M.Map String String,
-     getNameCounter :: Int,
-     getProxyRules :: S.Set String
-  }
-  deriving (Eq, Show, Typeable, Data)
-
-data AntiRule = AntiRule { arTypeName :: ID,
-                           arQQName :: ID,
-                           arConstr :: ID ,
-                           arIsList :: Bool 
-                         }
-                     deriving (Eq, Show, Typeable, Data)
-
-data NormalGrammar = NormalGrammar { getNGrammarName :: String, 
-                                     getSyntaxRuleGroups :: [SyntaxRuleGroup], 
-                                     getLexicalRules :: [LexicalRule],
-                                     getAntiRules :: [AntiRule],
-                                     getShortcuts :: [(String, String)],
-                                     getNImports :: String,
-                                     getGrammarInfo :: GrammarInfo }
-                     deriving (Eq, Show, Typeable, Data)
-
-data SyntaxRuleGroup = SyntaxRuleGroup { getSDataTypeName :: ID,
-                                         getSRules :: [SyntaxRule]}
-                       deriving (Eq, Show, Typeable, Data)
-
-data SyntaxRule = SyntaxRule { getSRuleName :: ID,
-                               getSClause :: SyntaxTopClause}
-                       deriving (Eq, Show, Typeable, Data)
-
-data STManyOp = STStar
-              | STPlus
-                deriving (Eq, Show, Typeable, Data)
-
-data STSeq = STSeq ConstructorName [SyntaxSimpleClause]
-             deriving (Eq, Show, Typeable, Data)
-
-data SyntaxTopClause = STMany STManyOp SyntaxSimpleClause (Maybe SyntaxSimpleClause)
-                     | STOpt SyntaxSimpleClause
-                     | STAltOfSeq { getAltOfSeq :: [STSeq] } -- alternative of sequences
-                       deriving (Eq, Show, Typeable, Data)
-                                   
-data SyntaxSimpleClause = SSId ID
-                        | SSLifted ID
-                        | SSIgnore ID
-                          deriving (Eq, Show, Typeable, Data)
-
-data LexicalRule = LexicalRule { getLRuleDataType :: String, 
-                                 getLRuleFunc :: String, 
-                                 getLRuleName :: String, 
-                                 getLClause :: LClause}
-                   | MacroRule { getLRuleName :: String, getLClause :: LClause}
-                   deriving (Eq, Show, Typeable, Data)
-
-type LClause = IClause
-
-isLexicalRule :: String -> Bool
-isLexicalRule [] = False
-isLexicalRule (c:_) = isLower c
-
-filterProxyRules proxyRules rules = filter (((flip S.notMember) proxyRules) . getSDataTypeName) rules
 }

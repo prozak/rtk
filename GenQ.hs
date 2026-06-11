@@ -2,7 +2,7 @@
 module GenQ (genQ)
     where
 
-import Parser
+import Syntax
 import Diagnostics (Diagnostic)
 import qualified Data.Char as C
 import qualified Data.Map as M
@@ -71,6 +71,20 @@ replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, 
 -- Add ' ' at the end, so regex can match variable in the end of the string
 replaceAllPatterns :: String -> Either String String
 replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
+
+-- The generated lexer and parser encode error positions as "LINE:COL:message"
+-- so structured-diagnostic callers can split them; render them back
+-- human-readably for quasi-quote compile errors. Positions refer to the quote
+-- body (padded with a start token in front).
+rtkRenderError :: String -> String
+rtkRenderError err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- (reads l :: [(Int, String)]) ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- (reads c :: [(Int, String)]) ->
+                    "line " ++ show line ++ ", column " ++ show col ++ ": " ++ msg
+                _ -> err
+        _ -> err
 
 ?qqShortCutsMapDef
 
@@ -148,7 +162,7 @@ rtkPosWildPat _ = Just TH.wildP
           qqFunImplGen typ = [str|?(qqFunName typ ) dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
   ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parse?name of
-           Left err -> fail err
+           Left err -> fail (rtkRenderError err)
            Right a -> return a
   let expr = func ast
 |] ++ dataToExpCall typ "expr"

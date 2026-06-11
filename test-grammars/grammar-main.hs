@@ -14,11 +14,23 @@ getGrammarFileName = do
                 file:_ -> file
                 _ -> error $ "Usage: <pg-file>"
 
+-- The generated lexer and parser encode error positions as "LINE:COL:message"
+-- (machine-splittable); render them back human-readably for the console
+renderError :: String -> String
+renderError err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- (reads l :: [(Int, String)]) ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- (reads c :: [(Int, String)]) ->
+                    "line " ++ show line ++ ", column " ++ show col ++ ": " ++ msg
+                _ -> err
+        _ -> err
+
 -- TODO: options parsing etc
 main = do
     file <- getGrammarFileName
     content <- readFile file
-    let grm = either errorWithoutStackTrace id $ scanTokens content >>= parseGrammar
+    let grm = either (errorWithoutStackTrace . renderError) id $ scanTokens content >>= parseGrammar
     let [grammar|grammar $StrLit:str ; $importsOpt|] = [grammar|grammar 'test' ;|]
     let [rule|Rule = $cl1 | $clause2 | $clause3 | $clause4 ;|] = [rule| Rule = id '=' Clause ';' 
                                                                       | id ':' id '=' Clause ';'

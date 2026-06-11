@@ -49,6 +49,20 @@ replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, 
 replaceAllPatterns :: String -> Either String String
 replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
+-- The generated lexer and parser encode error positions as "LINE:COL:message"
+-- so structured-diagnostic callers can split them; render them back
+-- human-readably for quasi-quote compile errors. Positions refer to the quote
+-- body (padded with a start token in front).
+rtkRenderError :: String -> String
+rtkRenderError err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- (reads l :: [(Int, String)]) ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- (reads c :: [(Int, String)]) ->
+                    "line " ++ show line ++ ", column " ++ show col ++ ": " ++ msg
+                _ -> err
+        _ -> err
+
 qqShortcuts = M.fromList [ ("sandbox","Sandbox")]
 
 -- A quasi-quote pattern must match an AST parsed from anywhere in a source
@@ -63,7 +77,7 @@ quoteSandboxExp :: Data.Data a => String -> (Sandbox -> a) -> String -> TH.ExpQ
 quoteSandboxExp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
   ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseSandbox of
-           Left err -> fail err
+           Left err -> fail (rtkRenderError err)
            Right a -> return a
   let expr = func ast
   dataToExpQ (const Nothing `Generics.extQ` antiSandboxExp) expr
@@ -71,7 +85,7 @@ quoteSandboxPat :: Data.Data a => String -> (Sandbox -> a) -> String -> TH.PatQ
 quoteSandboxPat dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
   ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseSandbox of
-           Left err -> fail err
+           Left err -> fail (rtkRenderError err)
            Right a -> return a
   let expr = func ast
   dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiSandboxPat) expr

@@ -23,7 +23,7 @@ import GenX (isAlexEscape)
 import Grammar (isClauseSeqLifted)
 import Lexer (AlexPosn (..), PosToken (..), Token (..))
 import Normalize (fillConstructorNames, normalizeTopLevelClauses)
-import Parser
+import Syntax
 import StrQuote (str)
 import StringLiterals (normalizeStringLiterals)
 import TokenProcessing (catBigstrs, processTokens, unBackQuote)
@@ -449,26 +449,38 @@ testFillConstructorNames = TestCase $ do
 
 selfHostedFrontEndTests :: Test
 selfHostedFrontEndTests = TestList
-    [ TestLabel "parse errors carry the position in the message text" $ TestCase $
-        -- ';' missing after the grammar declaration. The generated lexer and
-        -- parser report Either String, so their failures render line and
-        -- column into the message text instead of a structured position
-        -- (everything after parsing carries structured positions, see the
-        -- duplicate-rule test below).
+    [ TestLabel "parse errors carry a structured position" $ TestCase $
+        -- ';' missing after the grammar declaration. The generated parser
+        -- encodes the position as "LINE:COL:message" and the adapter splits
+        -- it back out, so the diagnostic points at the identifier 'Foo' on
+        -- line 2 exactly like the hand-written front end's does.
         expectDiagnostic "a missing ';'"
             (parseGrammarSourceGenerated "grammar 'Test'\nFoo = bar;\n") $ \d -> do
-            assertEqual "no structured position for parse errors" Nothing (diagPos d)
-            assertBool ("message names the position: " ++ diagMessage d) $
-                "line 2" `isInfixOf` diagMessage d
-    , TestLabel "lexical errors are diagnostics, not exceptions" $ TestCase $
-        expectDiagnostic "an unlexable character"
-            (parseGrammarSourceGenerated "grammar 'Test';\nA = % ;\n") $ \d ->
-            assertBool ("message names the position: " ++ diagMessage d) $
-                "line 2" `isInfixOf` diagMessage d
+            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "unexpected id" `isInfixOf` diagMessage d
+    , TestLabel "parse errors point where the reference front end points" $ TestCase $
+        -- The wording differs (the generated parser renders tokens
+        -- generically, the reference parser knows the grammar language's
+        -- token names) but the position must be the same.
+        case ( parseGrammarSource          "grammar 'Test'\nFoo = bar;\n"
+             , parseGrammarSourceGenerated "grammar 'Test'\nFoo = bar;\n" ) of
+            (Left dh, Left dg) -> assertEqual "same position" (diagPos dh) (diagPos dg)
+            _ -> assertFailure "both front ends should reject the missing ';'"
+    , TestLabel "lexical errors are identical to the reference front end's" $ TestCase $
+        -- Both lexers encode "LINE:COL:lexical error. Following chars: ...",
+        -- so the rendered FILE:LINE:COL: error line is the same character
+        -- for character.
+        case ( parseGrammarSource          "grammar 'Test';\nA = % ;\n"
+             , parseGrammarSourceGenerated "grammar 'Test';\nA = % ;\n" ) of
+            (Left dh, Left dg) -> do
+                assertEqual "identical diagnostics" dh dg
+                assertEqual "position of '%'" (Just (SourcePos 2 5)) (diagPos dg)
+            _ -> assertFailure "both front ends should reject the '%'"
     , TestLabel "rule positions are captured: duplicate rules get a structured diagnostic" $ TestCase $
         -- The generated AST carries the position of every rule's first
         -- token, and the adapter maps it into getIRulePos, so a
-        -- normalization diagnostic under --use-generated points at the
+        -- normalization diagnostic under the default front end points at the
         -- offending line and column exactly like the hand-written front end.
         expectDiagnostic "a duplicate rule"
             (parseGrammarSourceGenerated "grammar 'Dup';\nFoo = 'a';\nFoo = 'b';\n"

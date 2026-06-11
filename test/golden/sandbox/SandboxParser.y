@@ -29,9 +29,9 @@ Sandbox : qq_Sandbox { Anti_Sandbox (tkVal_qq_Sandbox $1) } |
 
 {
 parseError :: [L.PosToken] -> Either String a
-parseError [] = Left "Parse error: unexpected end of input"
+parseError [] = Left "unexpected end of input"
 parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
-    Left $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+    Left $ show line ++ ":" ++ show col ++ ":unexpected " ++ showRtkToken tok
 
 -- Render a token the way it appears in the source, for error messages
 showRtkToken :: L.Token -> String

@@ -28,8 +28,10 @@ data DebugOptions = DebugOptions
       grammarFile :: FilePath
     , outputDir :: FilePath
 
-    -- Front-end selection: parse the grammar with the lexer/parser RTK
-    -- generated from test-grammars/grammar.pg instead of the hand-written ones
+    -- Front-end selection: by default the grammar is parsed with the
+    -- self-hosted front end (the lexer/parser RTK generated from
+    -- test-grammars/grammar.pg); --use-handwritten selects the hand-written
+    -- reference front end instead
     , useGenerated :: Bool
 
     -- Pipeline stage inspection
@@ -74,7 +76,7 @@ defaultDebugOptions :: FilePath -> FilePath -> DebugOptions
 defaultDebugOptions file dir = DebugOptions
     { grammarFile = file
     , outputDir = dir
-    , useGenerated = False
+    , useGenerated = True
     , debugTokens = False
     , debugParse = False
     , debugStringNorm = False
@@ -125,10 +127,15 @@ debugOptionsParser = DebugOptions
         ( metavar "OUTPUT_DIR"
        <> help "Output directory for generated files" )
 
-    -- Front-end selection
-    <*> switch
-        ( long "use-generated"
-       <> help "Parse the grammar with RTK's own generated lexer/parser (self-hosting mode)" )
+    -- Front-end selection: the self-hosted (generated) front end is the
+    -- default; --use-generated is kept as an accepted explicit choice
+    <*> ( flag' True
+            ( long "use-generated"
+           <> help "Parse the grammar with RTK's own generated lexer/parser (the default)" )
+      <|> flag' False
+            ( long "use-handwritten"
+           <> help "Parse the grammar with the hand-written reference lexer/parser instead of the generated (default) front end" )
+      <|> pure True )
 
     -- Pipeline stage inspection
     <*> switch

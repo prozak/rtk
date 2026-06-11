@@ -49,6 +49,20 @@ replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, 
 replaceAllPatterns :: String -> Either String String
 replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
+-- The generated lexer and parser encode error positions as "LINE:COL:message"
+-- so structured-diagnostic callers can split them; render them back
+-- human-readably for quasi-quote compile errors. Positions refer to the quote
+-- body (padded with a start token in front).
+rtkRenderError :: String -> String
+rtkRenderError err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- (reads l :: [(Int, String)]) ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- (reads c :: [(Int, String)]) ->
+                    "line " ++ show line ++ ", column " ++ show col ++ ": " ++ msg
+                _ -> err
+        _ -> err
+
 qqShortcuts = M.fromList [ ("haskell","Haskell"),("aType","AType"),("aTypeList","ATypeList"),("bType","BType"),("body","Body"),("cName","CName"),("cNameList","CNameList"),("class","Class"),("classList","ClassList"),("con","Con"),("constr","Constr"),("constrs","Constrs"),("context","Context"),("dClass","DClass"),("dClassList","DClassList"),("decl","Decl"),("declList","DeclList"),("decls","Decls"),("deriving","Deriving"),("exp","Exp"),("expI","ExpI"),("export","Export"),("exportsList","ExportsList"),("exportsOpt","ExportsOpt"),("fieldDecl","FieldDecl"),("fieldDeclList","FieldDeclList"),("fixity","Fixity"),("funLhs","FunLhs"),("gTyCon","GTyCon"),("gd","Gd"),("gdRhs","GdRhs"),("genDecl","GenDecl"),("impDecl","ImpDecl"),("impDeclList","ImpDeclList"),("import","Import"),("importList","ImportList"),("modId","ModId"),("modIdList","ModIdList"),("module","Module"),("op","Op"),("ops","Ops"),("optContext","OptContext"),("optDeriving","OptDeriving"),("optExpTypeSignature","OptExpTypeSignature"),("optGdRhs","OptGdRhs"),("optImpSpec","OptImpSpec"),("optInteger","OptInteger"),("optQualified","OptQualified"),("optQualifiedAs","OptQualifiedAs"),("optWhere","OptWhere"),("pat","Pat"),("qOp","QOp"),("qTyCls","QTyCls"),("qTyCon","QTyCon"),("qVar","QVar"),("qVarId","QVarId"),("qVarList","QVarList"),("rhs","Rhs"),("simpleType","SimpleType"),("topDecl","TopDecl"),("topDecls","TopDecls"),("tyCls","TyCls"),("tyCon","TyCon"),("tyVar","TyVar"),("tyVars","TyVars"),("type","Type"),("typeList","TypeList"),("var","Var"),("vars","Vars")]
 
 -- A quasi-quote pattern must match an AST parsed from anywhere in a source
@@ -63,18 +77,18 @@ quoteHaskellExp :: Data.Data a => String -> (Haskell -> a) -> String -> TH.ExpQ
 quoteHaskellExp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
   ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseHaskell of
-           Left err -> fail err
+           Left err -> fail (rtkRenderError err)
            Right a -> return a
   let expr = func ast
-  dataToExpQ (const Nothing `Generics.extQ` antiHaskellExp `Generics.extQ` antiModuleExp `Generics.extQ` antiExportsOptExp `Generics.extQ` antiExportsListExp `Generics.extQ` antiExportExp `Generics.extQ` antiBodyExp `Generics.extQ` antiImpDeclListExp `Generics.extQ` antiImportListExp `Generics.extQ` antiVarExp `Generics.extQ` antiConExp `Generics.extQ` antiRule_13Exp `Generics.extQ` antiQVarIdExp `Generics.extQ` antiQVarExp `Generics.extQ` antiQTyClsExp `Generics.extQ` antiQTyConExp `Generics.extQ` antiCNameExp `Generics.extQ` antiCNameListExp `Generics.extQ` antiQVarListExp `Generics.extQ` antiImportExp `Generics.extQ` antiOptQualifiedExp `Generics.extQ` antiOptQualifiedAsExp `Generics.extQ` antiOptImpSpecExp `Generics.extQ` antiImpDeclExp `Generics.extQ` antiTopDeclsExp `Generics.extQ` antiTopDeclExp `Generics.extQ` antiDeclExp `Generics.extQ` antiOptContextExp `Generics.extQ` antiGenDeclExp `Generics.extQ` antiOptIntegerExp `Generics.extQ` antiOpsExp `Generics.extQ` antiFixityExp `Generics.extQ` antiFunLhsExp `Generics.extQ` antiPatExp `Generics.extQ` antiOptWhereExp `Generics.extQ` antiDeclListExp `Generics.extQ` antiDeclsExp `Generics.extQ` antiRhsExp `Generics.extQ` antiOptGdRhsExp `Generics.extQ` antiGdExp `Generics.extQ` antiOptExpTypeSignatureExp `Generics.extQ` antiExpExp `Generics.extQ` antiExpIExp `Generics.extQ` antiGdRhsExp `Generics.extQ` antiConstrsExp `Generics.extQ` antiConstrExp `Generics.extQ` antiFieldDeclListExp `Generics.extQ` antiFieldDeclExp `Generics.extQ` antiVarsExp `Generics.extQ` antiOptDerivingExp `Generics.extQ` antiDerivingExp `Generics.extQ` antiDClassListExp `Generics.extQ` antiDClassExp `Generics.extQ` antiContextExp `Generics.extQ` antiClassListExp `Generics.extQ` antiClassExp `Generics.extQ` antiTypeExp `Generics.extQ` antiBTypeExp `Generics.extQ` antiATypeExp `Generics.extQ` antiGTyConExp `Generics.extQ` antiTypeListExp `Generics.extQ` antiSimpleTypeExp `Generics.extQ` antiTyVarExp `Generics.extQ` antiTyConExp `Generics.extQ` antiModIdExp `Generics.extQ` antiTyClsExp `Generics.extQ` antiOpExp `Generics.extQ` antiQOpExp) expr
+  dataToExpQ (const Nothing `Generics.extQ` antiHaskellExp `Generics.extQ` antiModuleExp `Generics.extQ` antiExportsOptExp `Generics.extQ` antiExportsListExp `Generics.extQ` antiExportExp `Generics.extQ` antiBodyExp `Generics.extQ` antiImpDeclListExp `Generics.extQ` antiImportListExp `Generics.extQ` antiVarExp `Generics.extQ` antiConExp `Generics.extQ` antiRule_12Exp `Generics.extQ` antiQVarIdExp `Generics.extQ` antiQVarExp `Generics.extQ` antiQTyClsExp `Generics.extQ` antiQTyConExp `Generics.extQ` antiCNameExp `Generics.extQ` antiCNameListExp `Generics.extQ` antiQVarListExp `Generics.extQ` antiImportExp `Generics.extQ` antiOptQualifiedExp `Generics.extQ` antiOptQualifiedAsExp `Generics.extQ` antiOptImpSpecExp `Generics.extQ` antiImpDeclExp `Generics.extQ` antiTopDeclsExp `Generics.extQ` antiTopDeclExp `Generics.extQ` antiDeclExp `Generics.extQ` antiOptContextExp `Generics.extQ` antiGenDeclExp `Generics.extQ` antiOptIntegerExp `Generics.extQ` antiOpsExp `Generics.extQ` antiFixityExp `Generics.extQ` antiFunLhsExp `Generics.extQ` antiPatExp `Generics.extQ` antiOptWhereExp `Generics.extQ` antiDeclListExp `Generics.extQ` antiDeclsExp `Generics.extQ` antiRhsExp `Generics.extQ` antiOptGdRhsExp `Generics.extQ` antiGdExp `Generics.extQ` antiOptExpTypeSignatureExp `Generics.extQ` antiExpExp `Generics.extQ` antiExpIExp `Generics.extQ` antiGdRhsExp `Generics.extQ` antiConstrsExp `Generics.extQ` antiConstrExp `Generics.extQ` antiFieldDeclListExp `Generics.extQ` antiFieldDeclExp `Generics.extQ` antiVarsExp `Generics.extQ` antiOptDerivingExp `Generics.extQ` antiDerivingExp `Generics.extQ` antiDClassListExp `Generics.extQ` antiDClassExp `Generics.extQ` antiContextExp `Generics.extQ` antiClassListExp `Generics.extQ` antiClassExp `Generics.extQ` antiTypeExp `Generics.extQ` antiBTypeExp `Generics.extQ` antiATypeExp `Generics.extQ` antiGTyConExp `Generics.extQ` antiTypeListExp `Generics.extQ` antiSimpleTypeExp `Generics.extQ` antiTyVarExp `Generics.extQ` antiTyConExp `Generics.extQ` antiModIdExp `Generics.extQ` antiTyClsExp `Generics.extQ` antiOpExp `Generics.extQ` antiQOpExp) expr
 quoteHaskellPat :: Data.Data a => String -> (Haskell -> a) -> String -> TH.PatQ
 quoteHaskellPat dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
   ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseHaskell of
-           Left err -> fail err
+           Left err -> fail (rtkRenderError err)
            Right a -> return a
   let expr = func ast
-  dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiHaskellPat `Generics.extQ` antiModulePat `Generics.extQ` antiExportsOptPat `Generics.extQ` antiExportsListPat `Generics.extQ` antiExportPat `Generics.extQ` antiBodyPat `Generics.extQ` antiImpDeclListPat `Generics.extQ` antiImportListPat `Generics.extQ` antiVarPat `Generics.extQ` antiConPat `Generics.extQ` antiRule_13Pat `Generics.extQ` antiQVarIdPat `Generics.extQ` antiQVarPat `Generics.extQ` antiQTyClsPat `Generics.extQ` antiQTyConPat `Generics.extQ` antiCNamePat `Generics.extQ` antiCNameListPat `Generics.extQ` antiQVarListPat `Generics.extQ` antiImportPat `Generics.extQ` antiOptQualifiedPat `Generics.extQ` antiOptQualifiedAsPat `Generics.extQ` antiOptImpSpecPat `Generics.extQ` antiImpDeclPat `Generics.extQ` antiTopDeclsPat `Generics.extQ` antiTopDeclPat `Generics.extQ` antiDeclPat `Generics.extQ` antiOptContextPat `Generics.extQ` antiGenDeclPat `Generics.extQ` antiOptIntegerPat `Generics.extQ` antiOpsPat `Generics.extQ` antiFixityPat `Generics.extQ` antiFunLhsPat `Generics.extQ` antiPatPat `Generics.extQ` antiOptWherePat `Generics.extQ` antiDeclListPat `Generics.extQ` antiDeclsPat `Generics.extQ` antiRhsPat `Generics.extQ` antiOptGdRhsPat `Generics.extQ` antiGdPat `Generics.extQ` antiOptExpTypeSignaturePat `Generics.extQ` antiExpPat `Generics.extQ` antiExpIPat `Generics.extQ` antiGdRhsPat `Generics.extQ` antiConstrsPat `Generics.extQ` antiConstrPat `Generics.extQ` antiFieldDeclListPat `Generics.extQ` antiFieldDeclPat `Generics.extQ` antiVarsPat `Generics.extQ` antiOptDerivingPat `Generics.extQ` antiDerivingPat `Generics.extQ` antiDClassListPat `Generics.extQ` antiDClassPat `Generics.extQ` antiContextPat `Generics.extQ` antiClassListPat `Generics.extQ` antiClassPat `Generics.extQ` antiTypePat `Generics.extQ` antiBTypePat `Generics.extQ` antiATypePat `Generics.extQ` antiGTyConPat `Generics.extQ` antiTypeListPat `Generics.extQ` antiSimpleTypePat `Generics.extQ` antiTyVarPat `Generics.extQ` antiTyConPat `Generics.extQ` antiModIdPat `Generics.extQ` antiTyClsPat `Generics.extQ` antiOpPat `Generics.extQ` antiQOpPat) expr
+  dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiHaskellPat `Generics.extQ` antiModulePat `Generics.extQ` antiExportsOptPat `Generics.extQ` antiExportsListPat `Generics.extQ` antiExportPat `Generics.extQ` antiBodyPat `Generics.extQ` antiImpDeclListPat `Generics.extQ` antiImportListPat `Generics.extQ` antiVarPat `Generics.extQ` antiConPat `Generics.extQ` antiRule_12Pat `Generics.extQ` antiQVarIdPat `Generics.extQ` antiQVarPat `Generics.extQ` antiQTyClsPat `Generics.extQ` antiQTyConPat `Generics.extQ` antiCNamePat `Generics.extQ` antiCNameListPat `Generics.extQ` antiQVarListPat `Generics.extQ` antiImportPat `Generics.extQ` antiOptQualifiedPat `Generics.extQ` antiOptQualifiedAsPat `Generics.extQ` antiOptImpSpecPat `Generics.extQ` antiImpDeclPat `Generics.extQ` antiTopDeclsPat `Generics.extQ` antiTopDeclPat `Generics.extQ` antiDeclPat `Generics.extQ` antiOptContextPat `Generics.extQ` antiGenDeclPat `Generics.extQ` antiOptIntegerPat `Generics.extQ` antiOpsPat `Generics.extQ` antiFixityPat `Generics.extQ` antiFunLhsPat `Generics.extQ` antiPatPat `Generics.extQ` antiOptWherePat `Generics.extQ` antiDeclListPat `Generics.extQ` antiDeclsPat `Generics.extQ` antiRhsPat `Generics.extQ` antiOptGdRhsPat `Generics.extQ` antiGdPat `Generics.extQ` antiOptExpTypeSignaturePat `Generics.extQ` antiExpPat `Generics.extQ` antiExpIPat `Generics.extQ` antiGdRhsPat `Generics.extQ` antiConstrsPat `Generics.extQ` antiConstrPat `Generics.extQ` antiFieldDeclListPat `Generics.extQ` antiFieldDeclPat `Generics.extQ` antiVarsPat `Generics.extQ` antiOptDerivingPat `Generics.extQ` antiDerivingPat `Generics.extQ` antiDClassListPat `Generics.extQ` antiDClassPat `Generics.extQ` antiContextPat `Generics.extQ` antiClassListPat `Generics.extQ` antiClassPat `Generics.extQ` antiTypePat `Generics.extQ` antiBTypePat `Generics.extQ` antiATypePat `Generics.extQ` antiGTyConPat `Generics.extQ` antiTypeListPat `Generics.extQ` antiSimpleTypePat `Generics.extQ` antiTyVarPat `Generics.extQ` antiTyConPat `Generics.extQ` antiModIdPat `Generics.extQ` antiTyClsPat `Generics.extQ` antiOpPat `Generics.extQ` antiQOpPat) expr
 
 antiQOpExp :: QOp -> Maybe (TH.Q TH.Exp )
 antiQOpExp ( Anti_QOp v) = Just $ TH.varE (TH.mkName v)
@@ -103,7 +117,7 @@ antiTyConExp _ = Nothing
 
 antiTyVarExp :: [ TyVar ] -> Maybe (TH.Q TH.Exp)
 antiTyVarExp ((Anti_TyVar v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiHaskellExp `Generics.extQ` antiModuleExp `Generics.extQ` antiExportsOptExp `Generics.extQ` antiExportsListExp `Generics.extQ` antiExportExp `Generics.extQ` antiBodyExp `Generics.extQ` antiImpDeclListExp `Generics.extQ` antiImportListExp `Generics.extQ` antiVarExp `Generics.extQ` antiConExp `Generics.extQ` antiRule_13Exp `Generics.extQ` antiQVarIdExp `Generics.extQ` antiQVarExp `Generics.extQ` antiQTyClsExp `Generics.extQ` antiQTyConExp `Generics.extQ` antiCNameExp `Generics.extQ` antiCNameListExp `Generics.extQ` antiQVarListExp `Generics.extQ` antiImportExp `Generics.extQ` antiOptQualifiedExp `Generics.extQ` antiOptQualifiedAsExp `Generics.extQ` antiOptImpSpecExp `Generics.extQ` antiImpDeclExp `Generics.extQ` antiTopDeclsExp `Generics.extQ` antiTopDeclExp `Generics.extQ` antiDeclExp `Generics.extQ` antiOptContextExp `Generics.extQ` antiGenDeclExp `Generics.extQ` antiOptIntegerExp `Generics.extQ` antiOpsExp `Generics.extQ` antiFixityExp `Generics.extQ` antiFunLhsExp `Generics.extQ` antiPatExp `Generics.extQ` antiOptWhereExp `Generics.extQ` antiDeclListExp `Generics.extQ` antiDeclsExp `Generics.extQ` antiRhsExp `Generics.extQ` antiOptGdRhsExp `Generics.extQ` antiGdExp `Generics.extQ` antiOptExpTypeSignatureExp `Generics.extQ` antiExpExp `Generics.extQ` antiExpIExp `Generics.extQ` antiGdRhsExp `Generics.extQ` antiConstrsExp `Generics.extQ` antiConstrExp `Generics.extQ` antiFieldDeclListExp `Generics.extQ` antiFieldDeclExp `Generics.extQ` antiVarsExp `Generics.extQ` antiOptDerivingExp `Generics.extQ` antiDerivingExp `Generics.extQ` antiDClassListExp `Generics.extQ` antiDClassExp `Generics.extQ` antiContextExp `Generics.extQ` antiClassListExp `Generics.extQ` antiClassExp `Generics.extQ` antiTypeExp `Generics.extQ` antiBTypeExp `Generics.extQ` antiATypeExp `Generics.extQ` antiGTyConExp `Generics.extQ` antiTypeListExp `Generics.extQ` antiSimpleTypeExp `Generics.extQ` antiTyVarExp `Generics.extQ` antiTyConExp `Generics.extQ` antiModIdExp `Generics.extQ` antiTyClsExp `Generics.extQ` antiOpExp `Generics.extQ` antiQOpExp) rest
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiHaskellExp `Generics.extQ` antiModuleExp `Generics.extQ` antiExportsOptExp `Generics.extQ` antiExportsListExp `Generics.extQ` antiExportExp `Generics.extQ` antiBodyExp `Generics.extQ` antiImpDeclListExp `Generics.extQ` antiImportListExp `Generics.extQ` antiVarExp `Generics.extQ` antiConExp `Generics.extQ` antiRule_12Exp `Generics.extQ` antiQVarIdExp `Generics.extQ` antiQVarExp `Generics.extQ` antiQTyClsExp `Generics.extQ` antiQTyConExp `Generics.extQ` antiCNameExp `Generics.extQ` antiCNameListExp `Generics.extQ` antiQVarListExp `Generics.extQ` antiImportExp `Generics.extQ` antiOptQualifiedExp `Generics.extQ` antiOptQualifiedAsExp `Generics.extQ` antiOptImpSpecExp `Generics.extQ` antiImpDeclExp `Generics.extQ` antiTopDeclsExp `Generics.extQ` antiTopDeclExp `Generics.extQ` antiDeclExp `Generics.extQ` antiOptContextExp `Generics.extQ` antiGenDeclExp `Generics.extQ` antiOptIntegerExp `Generics.extQ` antiOpsExp `Generics.extQ` antiFixityExp `Generics.extQ` antiFunLhsExp `Generics.extQ` antiPatExp `Generics.extQ` antiOptWhereExp `Generics.extQ` antiDeclListExp `Generics.extQ` antiDeclsExp `Generics.extQ` antiRhsExp `Generics.extQ` antiOptGdRhsExp `Generics.extQ` antiGdExp `Generics.extQ` antiOptExpTypeSignatureExp `Generics.extQ` antiExpExp `Generics.extQ` antiExpIExp `Generics.extQ` antiGdRhsExp `Generics.extQ` antiConstrsExp `Generics.extQ` antiConstrExp `Generics.extQ` antiFieldDeclListExp `Generics.extQ` antiFieldDeclExp `Generics.extQ` antiVarsExp `Generics.extQ` antiOptDerivingExp `Generics.extQ` antiDerivingExp `Generics.extQ` antiDClassListExp `Generics.extQ` antiDClassExp `Generics.extQ` antiContextExp `Generics.extQ` antiClassListExp `Generics.extQ` antiClassExp `Generics.extQ` antiTypeExp `Generics.extQ` antiBTypeExp `Generics.extQ` antiATypeExp `Generics.extQ` antiGTyConExp `Generics.extQ` antiTypeListExp `Generics.extQ` antiSimpleTypeExp `Generics.extQ` antiTyVarExp `Generics.extQ` antiTyConExp `Generics.extQ` antiModIdExp `Generics.extQ` antiTyClsExp `Generics.extQ` antiOpExp `Generics.extQ` antiQOpExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
 antiTyVarExp _ = Nothing
@@ -126,7 +140,7 @@ antiGTyConExp _ = Nothing
 
 antiATypeExp :: [ AType ] -> Maybe (TH.Q TH.Exp)
 antiATypeExp ((Anti_AType v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiHaskellExp `Generics.extQ` antiModuleExp `Generics.extQ` antiExportsOptExp `Generics.extQ` antiExportsListExp `Generics.extQ` antiExportExp `Generics.extQ` antiBodyExp `Generics.extQ` antiImpDeclListExp `Generics.extQ` antiImportListExp `Generics.extQ` antiVarExp `Generics.extQ` antiConExp `Generics.extQ` antiRule_13Exp `Generics.extQ` antiQVarIdExp `Generics.extQ` antiQVarExp `Generics.extQ` antiQTyClsExp `Generics.extQ` antiQTyConExp `Generics.extQ` antiCNameExp `Generics.extQ` antiCNameListExp `Generics.extQ` antiQVarListExp `Generics.extQ` antiImportExp `Generics.extQ` antiOptQualifiedExp `Generics.extQ` antiOptQualifiedAsExp `Generics.extQ` antiOptImpSpecExp `Generics.extQ` antiImpDeclExp `Generics.extQ` antiTopDeclsExp `Generics.extQ` antiTopDeclExp `Generics.extQ` antiDeclExp `Generics.extQ` antiOptContextExp `Generics.extQ` antiGenDeclExp `Generics.extQ` antiOptIntegerExp `Generics.extQ` antiOpsExp `Generics.extQ` antiFixityExp `Generics.extQ` antiFunLhsExp `Generics.extQ` antiPatExp `Generics.extQ` antiOptWhereExp `Generics.extQ` antiDeclListExp `Generics.extQ` antiDeclsExp `Generics.extQ` antiRhsExp `Generics.extQ` antiOptGdRhsExp `Generics.extQ` antiGdExp `Generics.extQ` antiOptExpTypeSignatureExp `Generics.extQ` antiExpExp `Generics.extQ` antiExpIExp `Generics.extQ` antiGdRhsExp `Generics.extQ` antiConstrsExp `Generics.extQ` antiConstrExp `Generics.extQ` antiFieldDeclListExp `Generics.extQ` antiFieldDeclExp `Generics.extQ` antiVarsExp `Generics.extQ` antiOptDerivingExp `Generics.extQ` antiDerivingExp `Generics.extQ` antiDClassListExp `Generics.extQ` antiDClassExp `Generics.extQ` antiContextExp `Generics.extQ` antiClassListExp `Generics.extQ` antiClassExp `Generics.extQ` antiTypeExp `Generics.extQ` antiBTypeExp `Generics.extQ` antiATypeExp `Generics.extQ` antiGTyConExp `Generics.extQ` antiTypeListExp `Generics.extQ` antiSimpleTypeExp `Generics.extQ` antiTyVarExp `Generics.extQ` antiTyConExp `Generics.extQ` antiModIdExp `Generics.extQ` antiTyClsExp `Generics.extQ` antiOpExp `Generics.extQ` antiQOpExp) rest
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiHaskellExp `Generics.extQ` antiModuleExp `Generics.extQ` antiExportsOptExp `Generics.extQ` antiExportsListExp `Generics.extQ` antiExportExp `Generics.extQ` antiBodyExp `Generics.extQ` antiImpDeclListExp `Generics.extQ` antiImportListExp `Generics.extQ` antiVarExp `Generics.extQ` antiConExp `Generics.extQ` antiRule_12Exp `Generics.extQ` antiQVarIdExp `Generics.extQ` antiQVarExp `Generics.extQ` antiQTyClsExp `Generics.extQ` antiQTyConExp `Generics.extQ` antiCNameExp `Generics.extQ` antiCNameListExp `Generics.extQ` antiQVarListExp `Generics.extQ` antiImportExp `Generics.extQ` antiOptQualifiedExp `Generics.extQ` antiOptQualifiedAsExp `Generics.extQ` antiOptImpSpecExp `Generics.extQ` antiImpDeclExp `Generics.extQ` antiTopDeclsExp `Generics.extQ` antiTopDeclExp `Generics.extQ` antiDeclExp `Generics.extQ` antiOptContextExp `Generics.extQ` antiGenDeclExp `Generics.extQ` antiOptIntegerExp `Generics.extQ` antiOpsExp `Generics.extQ` antiFixityExp `Generics.extQ` antiFunLhsExp `Generics.extQ` antiPatExp `Generics.extQ` antiOptWhereExp `Generics.extQ` antiDeclListExp `Generics.extQ` antiDeclsExp `Generics.extQ` antiRhsExp `Generics.extQ` antiOptGdRhsExp `Generics.extQ` antiGdExp `Generics.extQ` antiOptExpTypeSignatureExp `Generics.extQ` antiExpExp `Generics.extQ` antiExpIExp `Generics.extQ` antiGdRhsExp `Generics.extQ` antiConstrsExp `Generics.extQ` antiConstrExp `Generics.extQ` antiFieldDeclListExp `Generics.extQ` antiFieldDeclExp `Generics.extQ` antiVarsExp `Generics.extQ` antiOptDerivingExp `Generics.extQ` antiDerivingExp `Generics.extQ` antiDClassListExp `Generics.extQ` antiDClassExp `Generics.extQ` antiContextExp `Generics.extQ` antiClassListExp `Generics.extQ` antiClassExp `Generics.extQ` antiTypeExp `Generics.extQ` antiBTypeExp `Generics.extQ` antiATypeExp `Generics.extQ` antiGTyConExp `Generics.extQ` antiTypeListExp `Generics.extQ` antiSimpleTypeExp `Generics.extQ` antiTyVarExp `Generics.extQ` antiTyConExp `Generics.extQ` antiModIdExp `Generics.extQ` antiTyClsExp `Generics.extQ` antiOpExp `Generics.extQ` antiQOpExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
 antiATypeExp _ = Nothing
@@ -362,12 +376,12 @@ antiQVarIdExp ( Anti_QVarId v) = Just $ TH.varE (TH.mkName v)
 antiQVarIdExp _ = Nothing
 
 
-antiRule_13Exp :: [ Rule_13 ] -> Maybe (TH.Q TH.Exp)
-antiRule_13Exp ((Anti_Rule_13 v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiHaskellExp `Generics.extQ` antiModuleExp `Generics.extQ` antiExportsOptExp `Generics.extQ` antiExportsListExp `Generics.extQ` antiExportExp `Generics.extQ` antiBodyExp `Generics.extQ` antiImpDeclListExp `Generics.extQ` antiImportListExp `Generics.extQ` antiVarExp `Generics.extQ` antiConExp `Generics.extQ` antiRule_13Exp `Generics.extQ` antiQVarIdExp `Generics.extQ` antiQVarExp `Generics.extQ` antiQTyClsExp `Generics.extQ` antiQTyConExp `Generics.extQ` antiCNameExp `Generics.extQ` antiCNameListExp `Generics.extQ` antiQVarListExp `Generics.extQ` antiImportExp `Generics.extQ` antiOptQualifiedExp `Generics.extQ` antiOptQualifiedAsExp `Generics.extQ` antiOptImpSpecExp `Generics.extQ` antiImpDeclExp `Generics.extQ` antiTopDeclsExp `Generics.extQ` antiTopDeclExp `Generics.extQ` antiDeclExp `Generics.extQ` antiOptContextExp `Generics.extQ` antiGenDeclExp `Generics.extQ` antiOptIntegerExp `Generics.extQ` antiOpsExp `Generics.extQ` antiFixityExp `Generics.extQ` antiFunLhsExp `Generics.extQ` antiPatExp `Generics.extQ` antiOptWhereExp `Generics.extQ` antiDeclListExp `Generics.extQ` antiDeclsExp `Generics.extQ` antiRhsExp `Generics.extQ` antiOptGdRhsExp `Generics.extQ` antiGdExp `Generics.extQ` antiOptExpTypeSignatureExp `Generics.extQ` antiExpExp `Generics.extQ` antiExpIExp `Generics.extQ` antiGdRhsExp `Generics.extQ` antiConstrsExp `Generics.extQ` antiConstrExp `Generics.extQ` antiFieldDeclListExp `Generics.extQ` antiFieldDeclExp `Generics.extQ` antiVarsExp `Generics.extQ` antiOptDerivingExp `Generics.extQ` antiDerivingExp `Generics.extQ` antiDClassListExp `Generics.extQ` antiDClassExp `Generics.extQ` antiContextExp `Generics.extQ` antiClassListExp `Generics.extQ` antiClassExp `Generics.extQ` antiTypeExp `Generics.extQ` antiBTypeExp `Generics.extQ` antiATypeExp `Generics.extQ` antiGTyConExp `Generics.extQ` antiTypeListExp `Generics.extQ` antiSimpleTypeExp `Generics.extQ` antiTyVarExp `Generics.extQ` antiTyConExp `Generics.extQ` antiModIdExp `Generics.extQ` antiTyClsExp `Generics.extQ` antiOpExp `Generics.extQ` antiQOpExp) rest
+antiRule_12Exp :: [ Rule_12 ] -> Maybe (TH.Q TH.Exp)
+antiRule_12Exp ((Anti_Rule_12 v):rest) =
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiHaskellExp `Generics.extQ` antiModuleExp `Generics.extQ` antiExportsOptExp `Generics.extQ` antiExportsListExp `Generics.extQ` antiExportExp `Generics.extQ` antiBodyExp `Generics.extQ` antiImpDeclListExp `Generics.extQ` antiImportListExp `Generics.extQ` antiVarExp `Generics.extQ` antiConExp `Generics.extQ` antiRule_12Exp `Generics.extQ` antiQVarIdExp `Generics.extQ` antiQVarExp `Generics.extQ` antiQTyClsExp `Generics.extQ` antiQTyConExp `Generics.extQ` antiCNameExp `Generics.extQ` antiCNameListExp `Generics.extQ` antiQVarListExp `Generics.extQ` antiImportExp `Generics.extQ` antiOptQualifiedExp `Generics.extQ` antiOptQualifiedAsExp `Generics.extQ` antiOptImpSpecExp `Generics.extQ` antiImpDeclExp `Generics.extQ` antiTopDeclsExp `Generics.extQ` antiTopDeclExp `Generics.extQ` antiDeclExp `Generics.extQ` antiOptContextExp `Generics.extQ` antiGenDeclExp `Generics.extQ` antiOptIntegerExp `Generics.extQ` antiOpsExp `Generics.extQ` antiFixityExp `Generics.extQ` antiFunLhsExp `Generics.extQ` antiPatExp `Generics.extQ` antiOptWhereExp `Generics.extQ` antiDeclListExp `Generics.extQ` antiDeclsExp `Generics.extQ` antiRhsExp `Generics.extQ` antiOptGdRhsExp `Generics.extQ` antiGdExp `Generics.extQ` antiOptExpTypeSignatureExp `Generics.extQ` antiExpExp `Generics.extQ` antiExpIExp `Generics.extQ` antiGdRhsExp `Generics.extQ` antiConstrsExp `Generics.extQ` antiConstrExp `Generics.extQ` antiFieldDeclListExp `Generics.extQ` antiFieldDeclExp `Generics.extQ` antiVarsExp `Generics.extQ` antiOptDerivingExp `Generics.extQ` antiDerivingExp `Generics.extQ` antiDClassListExp `Generics.extQ` antiDClassExp `Generics.extQ` antiContextExp `Generics.extQ` antiClassListExp `Generics.extQ` antiClassExp `Generics.extQ` antiTypeExp `Generics.extQ` antiBTypeExp `Generics.extQ` antiATypeExp `Generics.extQ` antiGTyConExp `Generics.extQ` antiTypeListExp `Generics.extQ` antiSimpleTypeExp `Generics.extQ` antiTyVarExp `Generics.extQ` antiTyConExp `Generics.extQ` antiModIdExp `Generics.extQ` antiTyClsExp `Generics.extQ` antiOpExp `Generics.extQ` antiQOpExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
-antiRule_13Exp _ = Nothing
+antiRule_12Exp _ = Nothing
 
 
 antiConExp :: Con -> Maybe (TH.Q TH.Exp )
@@ -701,9 +715,9 @@ antiQVarIdPat ( Anti_QVarId v) = Just $ TH.varP (TH.mkName v)
 antiQVarIdPat _ = Nothing
 
 
-antiRule_13Pat :: [ Rule_13 ] -> Maybe (TH.Q TH.Pat)
-antiRule_13Pat [Anti_Rule_13 v] = Just $ TH.varP (TH.mkName v)
-antiRule_13Pat _ = Nothing
+antiRule_12Pat :: [ Rule_12 ] -> Maybe (TH.Q TH.Pat)
+antiRule_12Pat [Anti_Rule_12 v] = Just $ TH.varP (TH.mkName v)
+antiRule_12Pat _ = Nothing
 
 
 antiConPat :: Con -> Maybe (TH.Q TH.Pat )
@@ -763,345 +777,345 @@ quoteHaskellDecs s = return []
 getHaskell ( Ctr__Haskell__0 _ s) = s
 
 haskell :: QuasiQuoter
-haskell = QuasiQuoter (quoteHaskellExp "tok_Haskell_dummy_122" getHaskell ) (quoteHaskellPat "tok_Haskell_dummy_122" getHaskell ) quoteHaskellType quoteHaskellDecs
+haskell = QuasiQuoter (quoteHaskellExp "tok_Haskell_dummy_112" getHaskell ) (quoteHaskellPat "tok_Haskell_dummy_112" getHaskell ) quoteHaskellType quoteHaskellDecs
 
 getAType ( Ctr__Haskell__1 _ s) = s
 
 aType :: QuasiQuoter
-aType = QuasiQuoter (quoteHaskellExp "tok_AType_dummy_121" getAType ) (quoteHaskellPat "tok_AType_dummy_121" getAType ) quoteHaskellType quoteHaskellDecs
+aType = QuasiQuoter (quoteHaskellExp "tok_AType_dummy_111" getAType ) (quoteHaskellPat "tok_AType_dummy_111" getAType ) quoteHaskellType quoteHaskellDecs
 
 getATypeList ( Ctr__Haskell__2 _ s) = s
 
 aTypeList :: QuasiQuoter
-aTypeList = QuasiQuoter (quoteHaskellExp "tok_ATypeList_dummy_120" getATypeList ) (quoteHaskellPat "tok_ATypeList_dummy_120" getATypeList ) quoteHaskellType quoteHaskellDecs
+aTypeList = QuasiQuoter (quoteHaskellExp "tok_ATypeList_dummy_110" getATypeList ) (quoteHaskellPat "tok_ATypeList_dummy_110" getATypeList ) quoteHaskellType quoteHaskellDecs
 
 getBType ( Ctr__Haskell__3 _ s) = s
 
 bType :: QuasiQuoter
-bType = QuasiQuoter (quoteHaskellExp "tok_BType_dummy_119" getBType ) (quoteHaskellPat "tok_BType_dummy_119" getBType ) quoteHaskellType quoteHaskellDecs
+bType = QuasiQuoter (quoteHaskellExp "tok_BType_dummy_109" getBType ) (quoteHaskellPat "tok_BType_dummy_109" getBType ) quoteHaskellType quoteHaskellDecs
 
 getBody ( Ctr__Haskell__4 _ s) = s
 
 body :: QuasiQuoter
-body = QuasiQuoter (quoteHaskellExp "tok_Body_dummy_118" getBody ) (quoteHaskellPat "tok_Body_dummy_118" getBody ) quoteHaskellType quoteHaskellDecs
+body = QuasiQuoter (quoteHaskellExp "tok_Body_dummy_108" getBody ) (quoteHaskellPat "tok_Body_dummy_108" getBody ) quoteHaskellType quoteHaskellDecs
 
 getCName ( Ctr__Haskell__5 _ s) = s
 
 cName :: QuasiQuoter
-cName = QuasiQuoter (quoteHaskellExp "tok_CName_dummy_117" getCName ) (quoteHaskellPat "tok_CName_dummy_117" getCName ) quoteHaskellType quoteHaskellDecs
+cName = QuasiQuoter (quoteHaskellExp "tok_CName_dummy_107" getCName ) (quoteHaskellPat "tok_CName_dummy_107" getCName ) quoteHaskellType quoteHaskellDecs
 
 getCNameList ( Ctr__Haskell__6 _ s) = s
 
 cNameList :: QuasiQuoter
-cNameList = QuasiQuoter (quoteHaskellExp "tok_CNameList_dummy_116" getCNameList ) (quoteHaskellPat "tok_CNameList_dummy_116" getCNameList ) quoteHaskellType quoteHaskellDecs
+cNameList = QuasiQuoter (quoteHaskellExp "tok_CNameList_dummy_106" getCNameList ) (quoteHaskellPat "tok_CNameList_dummy_106" getCNameList ) quoteHaskellType quoteHaskellDecs
 
 getClass ( Ctr__Haskell__7 _ s) = s
 
 __class :: QuasiQuoter
-__class = QuasiQuoter (quoteHaskellExp "tok_Class_dummy_115" getClass ) (quoteHaskellPat "tok_Class_dummy_115" getClass ) quoteHaskellType quoteHaskellDecs
+__class = QuasiQuoter (quoteHaskellExp "tok_Class_dummy_105" getClass ) (quoteHaskellPat "tok_Class_dummy_105" getClass ) quoteHaskellType quoteHaskellDecs
 
 getClassList ( Ctr__Haskell__8 _ s) = s
 
 classList :: QuasiQuoter
-classList = QuasiQuoter (quoteHaskellExp "tok_ClassList_dummy_114" getClassList ) (quoteHaskellPat "tok_ClassList_dummy_114" getClassList ) quoteHaskellType quoteHaskellDecs
+classList = QuasiQuoter (quoteHaskellExp "tok_ClassList_dummy_104" getClassList ) (quoteHaskellPat "tok_ClassList_dummy_104" getClassList ) quoteHaskellType quoteHaskellDecs
 
 getCon ( Ctr__Haskell__9 _ s) = s
 
 con :: QuasiQuoter
-con = QuasiQuoter (quoteHaskellExp "tok_Con_dummy_113" getCon ) (quoteHaskellPat "tok_Con_dummy_113" getCon ) quoteHaskellType quoteHaskellDecs
+con = QuasiQuoter (quoteHaskellExp "tok_Con_dummy_103" getCon ) (quoteHaskellPat "tok_Con_dummy_103" getCon ) quoteHaskellType quoteHaskellDecs
 
 getConstr ( Ctr__Haskell__10 _ s) = s
 
 constr :: QuasiQuoter
-constr = QuasiQuoter (quoteHaskellExp "tok_Constr_dummy_112" getConstr ) (quoteHaskellPat "tok_Constr_dummy_112" getConstr ) quoteHaskellType quoteHaskellDecs
+constr = QuasiQuoter (quoteHaskellExp "tok_Constr_dummy_102" getConstr ) (quoteHaskellPat "tok_Constr_dummy_102" getConstr ) quoteHaskellType quoteHaskellDecs
 
 getConstrs ( Ctr__Haskell__11 _ s) = s
 
 constrs :: QuasiQuoter
-constrs = QuasiQuoter (quoteHaskellExp "tok_Constrs_dummy_111" getConstrs ) (quoteHaskellPat "tok_Constrs_dummy_111" getConstrs ) quoteHaskellType quoteHaskellDecs
+constrs = QuasiQuoter (quoteHaskellExp "tok_Constrs_dummy_101" getConstrs ) (quoteHaskellPat "tok_Constrs_dummy_101" getConstrs ) quoteHaskellType quoteHaskellDecs
 
 getContext ( Ctr__Haskell__12 _ s) = s
 
 context :: QuasiQuoter
-context = QuasiQuoter (quoteHaskellExp "tok_Context_dummy_110" getContext ) (quoteHaskellPat "tok_Context_dummy_110" getContext ) quoteHaskellType quoteHaskellDecs
+context = QuasiQuoter (quoteHaskellExp "tok_Context_dummy_100" getContext ) (quoteHaskellPat "tok_Context_dummy_100" getContext ) quoteHaskellType quoteHaskellDecs
 
 getDClass ( Ctr__Haskell__13 _ s) = s
 
 dClass :: QuasiQuoter
-dClass = QuasiQuoter (quoteHaskellExp "tok_DClass_dummy_109" getDClass ) (quoteHaskellPat "tok_DClass_dummy_109" getDClass ) quoteHaskellType quoteHaskellDecs
+dClass = QuasiQuoter (quoteHaskellExp "tok_DClass_dummy_99" getDClass ) (quoteHaskellPat "tok_DClass_dummy_99" getDClass ) quoteHaskellType quoteHaskellDecs
 
 getDClassList ( Ctr__Haskell__14 _ s) = s
 
 dClassList :: QuasiQuoter
-dClassList = QuasiQuoter (quoteHaskellExp "tok_DClassList_dummy_108" getDClassList ) (quoteHaskellPat "tok_DClassList_dummy_108" getDClassList ) quoteHaskellType quoteHaskellDecs
+dClassList = QuasiQuoter (quoteHaskellExp "tok_DClassList_dummy_98" getDClassList ) (quoteHaskellPat "tok_DClassList_dummy_98" getDClassList ) quoteHaskellType quoteHaskellDecs
 
 getDecl ( Ctr__Haskell__15 _ s) = s
 
 decl :: QuasiQuoter
-decl = QuasiQuoter (quoteHaskellExp "tok_Decl_dummy_107" getDecl ) (quoteHaskellPat "tok_Decl_dummy_107" getDecl ) quoteHaskellType quoteHaskellDecs
+decl = QuasiQuoter (quoteHaskellExp "tok_Decl_dummy_97" getDecl ) (quoteHaskellPat "tok_Decl_dummy_97" getDecl ) quoteHaskellType quoteHaskellDecs
 
 getDeclList ( Ctr__Haskell__16 _ s) = s
 
 declList :: QuasiQuoter
-declList = QuasiQuoter (quoteHaskellExp "tok_DeclList_dummy_106" getDeclList ) (quoteHaskellPat "tok_DeclList_dummy_106" getDeclList ) quoteHaskellType quoteHaskellDecs
+declList = QuasiQuoter (quoteHaskellExp "tok_DeclList_dummy_96" getDeclList ) (quoteHaskellPat "tok_DeclList_dummy_96" getDeclList ) quoteHaskellType quoteHaskellDecs
 
 getDecls ( Ctr__Haskell__17 _ s) = s
 
 decls :: QuasiQuoter
-decls = QuasiQuoter (quoteHaskellExp "tok_Decls_dummy_105" getDecls ) (quoteHaskellPat "tok_Decls_dummy_105" getDecls ) quoteHaskellType quoteHaskellDecs
+decls = QuasiQuoter (quoteHaskellExp "tok_Decls_dummy_95" getDecls ) (quoteHaskellPat "tok_Decls_dummy_95" getDecls ) quoteHaskellType quoteHaskellDecs
 
 getDeriving ( Ctr__Haskell__18 _ s) = s
 
 __deriving :: QuasiQuoter
-__deriving = QuasiQuoter (quoteHaskellExp "tok_Deriving_dummy_104" getDeriving ) (quoteHaskellPat "tok_Deriving_dummy_104" getDeriving ) quoteHaskellType quoteHaskellDecs
+__deriving = QuasiQuoter (quoteHaskellExp "tok_Deriving_dummy_94" getDeriving ) (quoteHaskellPat "tok_Deriving_dummy_94" getDeriving ) quoteHaskellType quoteHaskellDecs
 
 getExp ( Ctr__Haskell__19 _ s) = s
 
 exp :: QuasiQuoter
-exp = QuasiQuoter (quoteHaskellExp "tok_Exp_dummy_103" getExp ) (quoteHaskellPat "tok_Exp_dummy_103" getExp ) quoteHaskellType quoteHaskellDecs
+exp = QuasiQuoter (quoteHaskellExp "tok_Exp_dummy_93" getExp ) (quoteHaskellPat "tok_Exp_dummy_93" getExp ) quoteHaskellType quoteHaskellDecs
 
 getExpI ( Ctr__Haskell__20 _ s) = s
 
 expI :: QuasiQuoter
-expI = QuasiQuoter (quoteHaskellExp "tok_ExpI_dummy_102" getExpI ) (quoteHaskellPat "tok_ExpI_dummy_102" getExpI ) quoteHaskellType quoteHaskellDecs
+expI = QuasiQuoter (quoteHaskellExp "tok_ExpI_dummy_92" getExpI ) (quoteHaskellPat "tok_ExpI_dummy_92" getExpI ) quoteHaskellType quoteHaskellDecs
 
 getExport ( Ctr__Haskell__21 _ s) = s
 
 export :: QuasiQuoter
-export = QuasiQuoter (quoteHaskellExp "tok_Export_dummy_101" getExport ) (quoteHaskellPat "tok_Export_dummy_101" getExport ) quoteHaskellType quoteHaskellDecs
+export = QuasiQuoter (quoteHaskellExp "tok_Export_dummy_91" getExport ) (quoteHaskellPat "tok_Export_dummy_91" getExport ) quoteHaskellType quoteHaskellDecs
 
 getExportsList ( Ctr__Haskell__22 _ s) = s
 
 exportsList :: QuasiQuoter
-exportsList = QuasiQuoter (quoteHaskellExp "tok_ExportsList_dummy_100" getExportsList ) (quoteHaskellPat "tok_ExportsList_dummy_100" getExportsList ) quoteHaskellType quoteHaskellDecs
+exportsList = QuasiQuoter (quoteHaskellExp "tok_ExportsList_dummy_90" getExportsList ) (quoteHaskellPat "tok_ExportsList_dummy_90" getExportsList ) quoteHaskellType quoteHaskellDecs
 
 getExportsOpt ( Ctr__Haskell__23 _ s) = s
 
 exportsOpt :: QuasiQuoter
-exportsOpt = QuasiQuoter (quoteHaskellExp "tok_ExportsOpt_dummy_99" getExportsOpt ) (quoteHaskellPat "tok_ExportsOpt_dummy_99" getExportsOpt ) quoteHaskellType quoteHaskellDecs
+exportsOpt = QuasiQuoter (quoteHaskellExp "tok_ExportsOpt_dummy_89" getExportsOpt ) (quoteHaskellPat "tok_ExportsOpt_dummy_89" getExportsOpt ) quoteHaskellType quoteHaskellDecs
 
 getFieldDecl ( Ctr__Haskell__24 _ s) = s
 
 fieldDecl :: QuasiQuoter
-fieldDecl = QuasiQuoter (quoteHaskellExp "tok_FieldDecl_dummy_98" getFieldDecl ) (quoteHaskellPat "tok_FieldDecl_dummy_98" getFieldDecl ) quoteHaskellType quoteHaskellDecs
+fieldDecl = QuasiQuoter (quoteHaskellExp "tok_FieldDecl_dummy_88" getFieldDecl ) (quoteHaskellPat "tok_FieldDecl_dummy_88" getFieldDecl ) quoteHaskellType quoteHaskellDecs
 
 getFieldDeclList ( Ctr__Haskell__25 _ s) = s
 
 fieldDeclList :: QuasiQuoter
-fieldDeclList = QuasiQuoter (quoteHaskellExp "tok_FieldDeclList_dummy_97" getFieldDeclList ) (quoteHaskellPat "tok_FieldDeclList_dummy_97" getFieldDeclList ) quoteHaskellType quoteHaskellDecs
+fieldDeclList = QuasiQuoter (quoteHaskellExp "tok_FieldDeclList_dummy_87" getFieldDeclList ) (quoteHaskellPat "tok_FieldDeclList_dummy_87" getFieldDeclList ) quoteHaskellType quoteHaskellDecs
 
 getFixity ( Ctr__Haskell__26 _ s) = s
 
 fixity :: QuasiQuoter
-fixity = QuasiQuoter (quoteHaskellExp "tok_Fixity_dummy_96" getFixity ) (quoteHaskellPat "tok_Fixity_dummy_96" getFixity ) quoteHaskellType quoteHaskellDecs
+fixity = QuasiQuoter (quoteHaskellExp "tok_Fixity_dummy_86" getFixity ) (quoteHaskellPat "tok_Fixity_dummy_86" getFixity ) quoteHaskellType quoteHaskellDecs
 
 getFunLhs ( Ctr__Haskell__27 _ s) = s
 
 funLhs :: QuasiQuoter
-funLhs = QuasiQuoter (quoteHaskellExp "tok_FunLhs_dummy_95" getFunLhs ) (quoteHaskellPat "tok_FunLhs_dummy_95" getFunLhs ) quoteHaskellType quoteHaskellDecs
+funLhs = QuasiQuoter (quoteHaskellExp "tok_FunLhs_dummy_85" getFunLhs ) (quoteHaskellPat "tok_FunLhs_dummy_85" getFunLhs ) quoteHaskellType quoteHaskellDecs
 
 getGTyCon ( Ctr__Haskell__28 _ s) = s
 
 gTyCon :: QuasiQuoter
-gTyCon = QuasiQuoter (quoteHaskellExp "tok_GTyCon_dummy_94" getGTyCon ) (quoteHaskellPat "tok_GTyCon_dummy_94" getGTyCon ) quoteHaskellType quoteHaskellDecs
+gTyCon = QuasiQuoter (quoteHaskellExp "tok_GTyCon_dummy_84" getGTyCon ) (quoteHaskellPat "tok_GTyCon_dummy_84" getGTyCon ) quoteHaskellType quoteHaskellDecs
 
 getGd ( Ctr__Haskell__29 _ s) = s
 
 gd :: QuasiQuoter
-gd = QuasiQuoter (quoteHaskellExp "tok_Gd_dummy_93" getGd ) (quoteHaskellPat "tok_Gd_dummy_93" getGd ) quoteHaskellType quoteHaskellDecs
+gd = QuasiQuoter (quoteHaskellExp "tok_Gd_dummy_83" getGd ) (quoteHaskellPat "tok_Gd_dummy_83" getGd ) quoteHaskellType quoteHaskellDecs
 
 getGdRhs ( Ctr__Haskell__30 _ s) = s
 
 gdRhs :: QuasiQuoter
-gdRhs = QuasiQuoter (quoteHaskellExp "tok_GdRhs_dummy_92" getGdRhs ) (quoteHaskellPat "tok_GdRhs_dummy_92" getGdRhs ) quoteHaskellType quoteHaskellDecs
+gdRhs = QuasiQuoter (quoteHaskellExp "tok_GdRhs_dummy_82" getGdRhs ) (quoteHaskellPat "tok_GdRhs_dummy_82" getGdRhs ) quoteHaskellType quoteHaskellDecs
 
 getGenDecl ( Ctr__Haskell__31 _ s) = s
 
 genDecl :: QuasiQuoter
-genDecl = QuasiQuoter (quoteHaskellExp "tok_GenDecl_dummy_91" getGenDecl ) (quoteHaskellPat "tok_GenDecl_dummy_91" getGenDecl ) quoteHaskellType quoteHaskellDecs
+genDecl = QuasiQuoter (quoteHaskellExp "tok_GenDecl_dummy_81" getGenDecl ) (quoteHaskellPat "tok_GenDecl_dummy_81" getGenDecl ) quoteHaskellType quoteHaskellDecs
 
 getImpDecl ( Ctr__Haskell__32 _ s) = s
 
 impDecl :: QuasiQuoter
-impDecl = QuasiQuoter (quoteHaskellExp "tok_ImpDecl_dummy_90" getImpDecl ) (quoteHaskellPat "tok_ImpDecl_dummy_90" getImpDecl ) quoteHaskellType quoteHaskellDecs
+impDecl = QuasiQuoter (quoteHaskellExp "tok_ImpDecl_dummy_80" getImpDecl ) (quoteHaskellPat "tok_ImpDecl_dummy_80" getImpDecl ) quoteHaskellType quoteHaskellDecs
 
 getImpDeclList ( Ctr__Haskell__33 _ s) = s
 
 impDeclList :: QuasiQuoter
-impDeclList = QuasiQuoter (quoteHaskellExp "tok_ImpDeclList_dummy_89" getImpDeclList ) (quoteHaskellPat "tok_ImpDeclList_dummy_89" getImpDeclList ) quoteHaskellType quoteHaskellDecs
+impDeclList = QuasiQuoter (quoteHaskellExp "tok_ImpDeclList_dummy_79" getImpDeclList ) (quoteHaskellPat "tok_ImpDeclList_dummy_79" getImpDeclList ) quoteHaskellType quoteHaskellDecs
 
 getImport ( Ctr__Haskell__34 _ s) = s
 
 __import :: QuasiQuoter
-__import = QuasiQuoter (quoteHaskellExp "tok_Import_dummy_88" getImport ) (quoteHaskellPat "tok_Import_dummy_88" getImport ) quoteHaskellType quoteHaskellDecs
+__import = QuasiQuoter (quoteHaskellExp "tok_Import_dummy_78" getImport ) (quoteHaskellPat "tok_Import_dummy_78" getImport ) quoteHaskellType quoteHaskellDecs
 
 getImportList ( Ctr__Haskell__35 _ s) = s
 
 importList :: QuasiQuoter
-importList = QuasiQuoter (quoteHaskellExp "tok_ImportList_dummy_87" getImportList ) (quoteHaskellPat "tok_ImportList_dummy_87" getImportList ) quoteHaskellType quoteHaskellDecs
+importList = QuasiQuoter (quoteHaskellExp "tok_ImportList_dummy_77" getImportList ) (quoteHaskellPat "tok_ImportList_dummy_77" getImportList ) quoteHaskellType quoteHaskellDecs
 
 getModId ( Ctr__Haskell__36 _ s) = s
 
 modId :: QuasiQuoter
-modId = QuasiQuoter (quoteHaskellExp "tok_ModId_dummy_86" getModId ) (quoteHaskellPat "tok_ModId_dummy_86" getModId ) quoteHaskellType quoteHaskellDecs
+modId = QuasiQuoter (quoteHaskellExp "tok_ModId_dummy_76" getModId ) (quoteHaskellPat "tok_ModId_dummy_76" getModId ) quoteHaskellType quoteHaskellDecs
 
 getModIdList ( Ctr__Haskell__37 _ s) = s
 
 modIdList :: QuasiQuoter
-modIdList = QuasiQuoter (quoteHaskellExp "tok_ModIdList_dummy_85" getModIdList ) (quoteHaskellPat "tok_ModIdList_dummy_85" getModIdList ) quoteHaskellType quoteHaskellDecs
+modIdList = QuasiQuoter (quoteHaskellExp "tok_ModIdList_dummy_75" getModIdList ) (quoteHaskellPat "tok_ModIdList_dummy_75" getModIdList ) quoteHaskellType quoteHaskellDecs
 
 getModule ( Ctr__Haskell__38 _ s) = s
 
 __module :: QuasiQuoter
-__module = QuasiQuoter (quoteHaskellExp "tok_Module_dummy_84" getModule ) (quoteHaskellPat "tok_Module_dummy_84" getModule ) quoteHaskellType quoteHaskellDecs
+__module = QuasiQuoter (quoteHaskellExp "tok_Module_dummy_74" getModule ) (quoteHaskellPat "tok_Module_dummy_74" getModule ) quoteHaskellType quoteHaskellDecs
 
 getOp ( Ctr__Haskell__39 _ s) = s
 
 op :: QuasiQuoter
-op = QuasiQuoter (quoteHaskellExp "tok_Op_dummy_83" getOp ) (quoteHaskellPat "tok_Op_dummy_83" getOp ) quoteHaskellType quoteHaskellDecs
+op = QuasiQuoter (quoteHaskellExp "tok_Op_dummy_73" getOp ) (quoteHaskellPat "tok_Op_dummy_73" getOp ) quoteHaskellType quoteHaskellDecs
 
 getOps ( Ctr__Haskell__40 _ s) = s
 
 ops :: QuasiQuoter
-ops = QuasiQuoter (quoteHaskellExp "tok_Ops_dummy_82" getOps ) (quoteHaskellPat "tok_Ops_dummy_82" getOps ) quoteHaskellType quoteHaskellDecs
+ops = QuasiQuoter (quoteHaskellExp "tok_Ops_dummy_72" getOps ) (quoteHaskellPat "tok_Ops_dummy_72" getOps ) quoteHaskellType quoteHaskellDecs
 
 getOptContext ( Ctr__Haskell__41 _ s) = s
 
 optContext :: QuasiQuoter
-optContext = QuasiQuoter (quoteHaskellExp "tok_OptContext_dummy_81" getOptContext ) (quoteHaskellPat "tok_OptContext_dummy_81" getOptContext ) quoteHaskellType quoteHaskellDecs
+optContext = QuasiQuoter (quoteHaskellExp "tok_OptContext_dummy_71" getOptContext ) (quoteHaskellPat "tok_OptContext_dummy_71" getOptContext ) quoteHaskellType quoteHaskellDecs
 
 getOptDeriving ( Ctr__Haskell__42 _ s) = s
 
 optDeriving :: QuasiQuoter
-optDeriving = QuasiQuoter (quoteHaskellExp "tok_OptDeriving_dummy_80" getOptDeriving ) (quoteHaskellPat "tok_OptDeriving_dummy_80" getOptDeriving ) quoteHaskellType quoteHaskellDecs
+optDeriving = QuasiQuoter (quoteHaskellExp "tok_OptDeriving_dummy_70" getOptDeriving ) (quoteHaskellPat "tok_OptDeriving_dummy_70" getOptDeriving ) quoteHaskellType quoteHaskellDecs
 
 getOptExpTypeSignature ( Ctr__Haskell__43 _ s) = s
 
 optExpTypeSignature :: QuasiQuoter
-optExpTypeSignature = QuasiQuoter (quoteHaskellExp "tok_OptExpTypeSignature_dummy_79" getOptExpTypeSignature ) (quoteHaskellPat "tok_OptExpTypeSignature_dummy_79" getOptExpTypeSignature ) quoteHaskellType quoteHaskellDecs
+optExpTypeSignature = QuasiQuoter (quoteHaskellExp "tok_OptExpTypeSignature_dummy_69" getOptExpTypeSignature ) (quoteHaskellPat "tok_OptExpTypeSignature_dummy_69" getOptExpTypeSignature ) quoteHaskellType quoteHaskellDecs
 
 getOptGdRhs ( Ctr__Haskell__44 _ s) = s
 
 optGdRhs :: QuasiQuoter
-optGdRhs = QuasiQuoter (quoteHaskellExp "tok_OptGdRhs_dummy_78" getOptGdRhs ) (quoteHaskellPat "tok_OptGdRhs_dummy_78" getOptGdRhs ) quoteHaskellType quoteHaskellDecs
+optGdRhs = QuasiQuoter (quoteHaskellExp "tok_OptGdRhs_dummy_68" getOptGdRhs ) (quoteHaskellPat "tok_OptGdRhs_dummy_68" getOptGdRhs ) quoteHaskellType quoteHaskellDecs
 
 getOptImpSpec ( Ctr__Haskell__45 _ s) = s
 
 optImpSpec :: QuasiQuoter
-optImpSpec = QuasiQuoter (quoteHaskellExp "tok_OptImpSpec_dummy_77" getOptImpSpec ) (quoteHaskellPat "tok_OptImpSpec_dummy_77" getOptImpSpec ) quoteHaskellType quoteHaskellDecs
+optImpSpec = QuasiQuoter (quoteHaskellExp "tok_OptImpSpec_dummy_67" getOptImpSpec ) (quoteHaskellPat "tok_OptImpSpec_dummy_67" getOptImpSpec ) quoteHaskellType quoteHaskellDecs
 
 getOptInteger ( Ctr__Haskell__46 _ s) = s
 
 optInteger :: QuasiQuoter
-optInteger = QuasiQuoter (quoteHaskellExp "tok_OptInteger_dummy_76" getOptInteger ) (quoteHaskellPat "tok_OptInteger_dummy_76" getOptInteger ) quoteHaskellType quoteHaskellDecs
+optInteger = QuasiQuoter (quoteHaskellExp "tok_OptInteger_dummy_66" getOptInteger ) (quoteHaskellPat "tok_OptInteger_dummy_66" getOptInteger ) quoteHaskellType quoteHaskellDecs
 
 getOptQualified ( Ctr__Haskell__47 _ s) = s
 
 optQualified :: QuasiQuoter
-optQualified = QuasiQuoter (quoteHaskellExp "tok_OptQualified_dummy_75" getOptQualified ) (quoteHaskellPat "tok_OptQualified_dummy_75" getOptQualified ) quoteHaskellType quoteHaskellDecs
+optQualified = QuasiQuoter (quoteHaskellExp "tok_OptQualified_dummy_65" getOptQualified ) (quoteHaskellPat "tok_OptQualified_dummy_65" getOptQualified ) quoteHaskellType quoteHaskellDecs
 
 getOptQualifiedAs ( Ctr__Haskell__48 _ s) = s
 
 optQualifiedAs :: QuasiQuoter
-optQualifiedAs = QuasiQuoter (quoteHaskellExp "tok_OptQualifiedAs_dummy_74" getOptQualifiedAs ) (quoteHaskellPat "tok_OptQualifiedAs_dummy_74" getOptQualifiedAs ) quoteHaskellType quoteHaskellDecs
+optQualifiedAs = QuasiQuoter (quoteHaskellExp "tok_OptQualifiedAs_dummy_64" getOptQualifiedAs ) (quoteHaskellPat "tok_OptQualifiedAs_dummy_64" getOptQualifiedAs ) quoteHaskellType quoteHaskellDecs
 
 getOptWhere ( Ctr__Haskell__49 _ s) = s
 
 optWhere :: QuasiQuoter
-optWhere = QuasiQuoter (quoteHaskellExp "tok_OptWhere_dummy_73" getOptWhere ) (quoteHaskellPat "tok_OptWhere_dummy_73" getOptWhere ) quoteHaskellType quoteHaskellDecs
+optWhere = QuasiQuoter (quoteHaskellExp "tok_OptWhere_dummy_63" getOptWhere ) (quoteHaskellPat "tok_OptWhere_dummy_63" getOptWhere ) quoteHaskellType quoteHaskellDecs
 
 getPat ( Ctr__Haskell__50 _ s) = s
 
 pat :: QuasiQuoter
-pat = QuasiQuoter (quoteHaskellExp "tok_Pat_dummy_72" getPat ) (quoteHaskellPat "tok_Pat_dummy_72" getPat ) quoteHaskellType quoteHaskellDecs
+pat = QuasiQuoter (quoteHaskellExp "tok_Pat_dummy_62" getPat ) (quoteHaskellPat "tok_Pat_dummy_62" getPat ) quoteHaskellType quoteHaskellDecs
 
 getQOp ( Ctr__Haskell__51 _ s) = s
 
 qOp :: QuasiQuoter
-qOp = QuasiQuoter (quoteHaskellExp "tok_QOp_dummy_71" getQOp ) (quoteHaskellPat "tok_QOp_dummy_71" getQOp ) quoteHaskellType quoteHaskellDecs
+qOp = QuasiQuoter (quoteHaskellExp "tok_QOp_dummy_61" getQOp ) (quoteHaskellPat "tok_QOp_dummy_61" getQOp ) quoteHaskellType quoteHaskellDecs
 
 getQTyCls ( Ctr__Haskell__52 _ s) = s
 
 qTyCls :: QuasiQuoter
-qTyCls = QuasiQuoter (quoteHaskellExp "tok_QTyCls_dummy_70" getQTyCls ) (quoteHaskellPat "tok_QTyCls_dummy_70" getQTyCls ) quoteHaskellType quoteHaskellDecs
+qTyCls = QuasiQuoter (quoteHaskellExp "tok_QTyCls_dummy_60" getQTyCls ) (quoteHaskellPat "tok_QTyCls_dummy_60" getQTyCls ) quoteHaskellType quoteHaskellDecs
 
 getQTyCon ( Ctr__Haskell__53 _ s) = s
 
 qTyCon :: QuasiQuoter
-qTyCon = QuasiQuoter (quoteHaskellExp "tok_QTyCon_dummy_69" getQTyCon ) (quoteHaskellPat "tok_QTyCon_dummy_69" getQTyCon ) quoteHaskellType quoteHaskellDecs
+qTyCon = QuasiQuoter (quoteHaskellExp "tok_QTyCon_dummy_59" getQTyCon ) (quoteHaskellPat "tok_QTyCon_dummy_59" getQTyCon ) quoteHaskellType quoteHaskellDecs
 
 getQVar ( Ctr__Haskell__54 _ s) = s
 
 qVar :: QuasiQuoter
-qVar = QuasiQuoter (quoteHaskellExp "tok_QVar_dummy_68" getQVar ) (quoteHaskellPat "tok_QVar_dummy_68" getQVar ) quoteHaskellType quoteHaskellDecs
+qVar = QuasiQuoter (quoteHaskellExp "tok_QVar_dummy_58" getQVar ) (quoteHaskellPat "tok_QVar_dummy_58" getQVar ) quoteHaskellType quoteHaskellDecs
 
 getQVarId ( Ctr__Haskell__55 _ s) = s
 
 qVarId :: QuasiQuoter
-qVarId = QuasiQuoter (quoteHaskellExp "tok_QVarId_dummy_67" getQVarId ) (quoteHaskellPat "tok_QVarId_dummy_67" getQVarId ) quoteHaskellType quoteHaskellDecs
+qVarId = QuasiQuoter (quoteHaskellExp "tok_QVarId_dummy_57" getQVarId ) (quoteHaskellPat "tok_QVarId_dummy_57" getQVarId ) quoteHaskellType quoteHaskellDecs
 
 getQVarList ( Ctr__Haskell__56 _ s) = s
 
 qVarList :: QuasiQuoter
-qVarList = QuasiQuoter (quoteHaskellExp "tok_QVarList_dummy_66" getQVarList ) (quoteHaskellPat "tok_QVarList_dummy_66" getQVarList ) quoteHaskellType quoteHaskellDecs
+qVarList = QuasiQuoter (quoteHaskellExp "tok_QVarList_dummy_56" getQVarList ) (quoteHaskellPat "tok_QVarList_dummy_56" getQVarList ) quoteHaskellType quoteHaskellDecs
 
 getRhs ( Ctr__Haskell__57 _ s) = s
 
 rhs :: QuasiQuoter
-rhs = QuasiQuoter (quoteHaskellExp "tok_Rhs_dummy_65" getRhs ) (quoteHaskellPat "tok_Rhs_dummy_65" getRhs ) quoteHaskellType quoteHaskellDecs
+rhs = QuasiQuoter (quoteHaskellExp "tok_Rhs_dummy_55" getRhs ) (quoteHaskellPat "tok_Rhs_dummy_55" getRhs ) quoteHaskellType quoteHaskellDecs
 
 getSimpleType ( Ctr__Haskell__58 _ s) = s
 
 simpleType :: QuasiQuoter
-simpleType = QuasiQuoter (quoteHaskellExp "tok_SimpleType_dummy_64" getSimpleType ) (quoteHaskellPat "tok_SimpleType_dummy_64" getSimpleType ) quoteHaskellType quoteHaskellDecs
+simpleType = QuasiQuoter (quoteHaskellExp "tok_SimpleType_dummy_54" getSimpleType ) (quoteHaskellPat "tok_SimpleType_dummy_54" getSimpleType ) quoteHaskellType quoteHaskellDecs
 
 getTopDecl ( Ctr__Haskell__59 _ s) = s
 
 topDecl :: QuasiQuoter
-topDecl = QuasiQuoter (quoteHaskellExp "tok_TopDecl_dummy_63" getTopDecl ) (quoteHaskellPat "tok_TopDecl_dummy_63" getTopDecl ) quoteHaskellType quoteHaskellDecs
+topDecl = QuasiQuoter (quoteHaskellExp "tok_TopDecl_dummy_53" getTopDecl ) (quoteHaskellPat "tok_TopDecl_dummy_53" getTopDecl ) quoteHaskellType quoteHaskellDecs
 
 getTopDecls ( Ctr__Haskell__60 _ s) = s
 
 topDecls :: QuasiQuoter
-topDecls = QuasiQuoter (quoteHaskellExp "tok_TopDecls_dummy_62" getTopDecls ) (quoteHaskellPat "tok_TopDecls_dummy_62" getTopDecls ) quoteHaskellType quoteHaskellDecs
+topDecls = QuasiQuoter (quoteHaskellExp "tok_TopDecls_dummy_52" getTopDecls ) (quoteHaskellPat "tok_TopDecls_dummy_52" getTopDecls ) quoteHaskellType quoteHaskellDecs
 
 getTyCls ( Ctr__Haskell__61 _ s) = s
 
 tyCls :: QuasiQuoter
-tyCls = QuasiQuoter (quoteHaskellExp "tok_TyCls_dummy_61" getTyCls ) (quoteHaskellPat "tok_TyCls_dummy_61" getTyCls ) quoteHaskellType quoteHaskellDecs
+tyCls = QuasiQuoter (quoteHaskellExp "tok_TyCls_dummy_51" getTyCls ) (quoteHaskellPat "tok_TyCls_dummy_51" getTyCls ) quoteHaskellType quoteHaskellDecs
 
 getTyCon ( Ctr__Haskell__62 _ s) = s
 
 tyCon :: QuasiQuoter
-tyCon = QuasiQuoter (quoteHaskellExp "tok_TyCon_dummy_60" getTyCon ) (quoteHaskellPat "tok_TyCon_dummy_60" getTyCon ) quoteHaskellType quoteHaskellDecs
+tyCon = QuasiQuoter (quoteHaskellExp "tok_TyCon_dummy_50" getTyCon ) (quoteHaskellPat "tok_TyCon_dummy_50" getTyCon ) quoteHaskellType quoteHaskellDecs
 
 getTyVar ( Ctr__Haskell__63 _ s) = s
 
 tyVar :: QuasiQuoter
-tyVar = QuasiQuoter (quoteHaskellExp "tok_TyVar_dummy_59" getTyVar ) (quoteHaskellPat "tok_TyVar_dummy_59" getTyVar ) quoteHaskellType quoteHaskellDecs
+tyVar = QuasiQuoter (quoteHaskellExp "tok_TyVar_dummy_49" getTyVar ) (quoteHaskellPat "tok_TyVar_dummy_49" getTyVar ) quoteHaskellType quoteHaskellDecs
 
 getTyVars ( Ctr__Haskell__64 _ s) = s
 
 tyVars :: QuasiQuoter
-tyVars = QuasiQuoter (quoteHaskellExp "tok_TyVars_dummy_58" getTyVars ) (quoteHaskellPat "tok_TyVars_dummy_58" getTyVars ) quoteHaskellType quoteHaskellDecs
+tyVars = QuasiQuoter (quoteHaskellExp "tok_TyVars_dummy_48" getTyVars ) (quoteHaskellPat "tok_TyVars_dummy_48" getTyVars ) quoteHaskellType quoteHaskellDecs
 
 getType ( Ctr__Haskell__65 _ s) = s
 
 __type :: QuasiQuoter
-__type = QuasiQuoter (quoteHaskellExp "tok_Type_dummy_57" getType ) (quoteHaskellPat "tok_Type_dummy_57" getType ) quoteHaskellType quoteHaskellDecs
+__type = QuasiQuoter (quoteHaskellExp "tok_Type_dummy_47" getType ) (quoteHaskellPat "tok_Type_dummy_47" getType ) quoteHaskellType quoteHaskellDecs
 
 getTypeList ( Ctr__Haskell__66 _ s) = s
 
 typeList :: QuasiQuoter
-typeList = QuasiQuoter (quoteHaskellExp "tok_TypeList_dummy_56" getTypeList ) (quoteHaskellPat "tok_TypeList_dummy_56" getTypeList ) quoteHaskellType quoteHaskellDecs
+typeList = QuasiQuoter (quoteHaskellExp "tok_TypeList_dummy_46" getTypeList ) (quoteHaskellPat "tok_TypeList_dummy_46" getTypeList ) quoteHaskellType quoteHaskellDecs
 
 getVar ( Ctr__Haskell__67 _ s) = s
 
 var :: QuasiQuoter
-var = QuasiQuoter (quoteHaskellExp "tok_Var_dummy_55" getVar ) (quoteHaskellPat "tok_Var_dummy_55" getVar ) quoteHaskellType quoteHaskellDecs
+var = QuasiQuoter (quoteHaskellExp "tok_Var_dummy_45" getVar ) (quoteHaskellPat "tok_Var_dummy_45" getVar ) quoteHaskellType quoteHaskellDecs
 
 getVars ( Ctr__Haskell__68 _ s) = s
 
 vars :: QuasiQuoter
-vars = QuasiQuoter (quoteHaskellExp "tok_Vars_dummy_54" getVars ) (quoteHaskellPat "tok_Vars_dummy_54" getVars ) quoteHaskellType quoteHaskellDecs
+vars = QuasiQuoter (quoteHaskellExp "tok_Vars_dummy_44" getVars ) (quoteHaskellPat "tok_Vars_dummy_44" getVars ) quoteHaskellType quoteHaskellDecs
 

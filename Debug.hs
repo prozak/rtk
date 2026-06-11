@@ -41,7 +41,7 @@ module Debug
     ) where
 
 import qualified Lexer as L
-import Parser
+import Syntax
 import DebugOptions
 import Diagnostics (showSourcePos)
 import Text.Show.Pretty (ppShow)

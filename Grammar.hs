@@ -1,6 +1,6 @@
 module Grammar where
 
-import Parser
+import Syntax
 
 normalRules :: [SyntaxRuleGroup] -> [SyntaxRule]
 normalRules groups = concat $ map getSRules groups

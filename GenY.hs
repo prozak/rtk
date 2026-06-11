@@ -2,7 +2,7 @@
 module GenY (genY)
     where
 
-import Parser
+import Syntax
 import Diagnostics (Diagnostic)
 import Text.PrettyPrint hiding ((<>))
 import qualified Data.List as List
@@ -52,10 +52,13 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ _) = do
                    \import qualified Data.Generics as Gen\n\
                    \import qualified " ++ name ++  "Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)\n\
                    \}"
+          -- The position is encoded as "LINE:COL:message" so callers can
+          -- split it back out into a structured position - the same encoding
+          -- the generated lexer's rtkError uses
           parseErrorDefs = "parseError :: [L.PosToken] -> Either String a\n\
-                           \parseError [] = Left \"Parse error: unexpected end of input\"\n\
+                           \parseError [] = Left \"unexpected end of input\"\n\
                            \parseError (L.PosToken (L.AlexPn _ line col) tok : _) =\n\
-                           \    Left $ \"Parse error at line \" ++ show line ++ \", column \" ++ show col ++ \": unexpected \" ++ showRtkToken tok\n"
+                           \    Left $ show line ++ \":\" ++ show col ++ \":unexpected \" ++ showRtkToken tok\n"
           showTokenDefs = render $ vcat (text "-- Render a token the way it appears in the source, for error messages"
                                          : text "showRtkToken :: L.Token -> String"
                                          : text "showRtkToken L.EndOfFile = \"end of input\""

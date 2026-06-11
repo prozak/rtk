@@ -13,75 +13,75 @@ import qualified HaskellLexer as L (Token(..), PosToken(..), AlexPosn(..), alexS
 %token
 
 rtk__eof { L.PosToken _ L.EndOfFile }
-tok_AType_dummy_121 { L.PosToken _ L.Tk__tok_AType_dummy_121 }
-tok_ATypeList_dummy_120 { L.PosToken _ L.Tk__tok_ATypeList_dummy_120 }
-tok_BType_dummy_119 { L.PosToken _ L.Tk__tok_BType_dummy_119 }
-tok_Body_dummy_118 { L.PosToken _ L.Tk__tok_Body_dummy_118 }
-tok_CName_dummy_117 { L.PosToken _ L.Tk__tok_CName_dummy_117 }
-tok_CNameList_dummy_116 { L.PosToken _ L.Tk__tok_CNameList_dummy_116 }
-tok_Class_dummy_115 { L.PosToken _ L.Tk__tok_Class_dummy_115 }
-tok_ClassList_dummy_114 { L.PosToken _ L.Tk__tok_ClassList_dummy_114 }
-tok_Con_dummy_113 { L.PosToken _ L.Tk__tok_Con_dummy_113 }
-tok_Constr_dummy_112 { L.PosToken _ L.Tk__tok_Constr_dummy_112 }
-tok_Constrs_dummy_111 { L.PosToken _ L.Tk__tok_Constrs_dummy_111 }
-tok_Context_dummy_110 { L.PosToken _ L.Tk__tok_Context_dummy_110 }
-tok_DClass_dummy_109 { L.PosToken _ L.Tk__tok_DClass_dummy_109 }
-tok_DClassList_dummy_108 { L.PosToken _ L.Tk__tok_DClassList_dummy_108 }
-tok_Decl_dummy_107 { L.PosToken _ L.Tk__tok_Decl_dummy_107 }
-tok_DeclList_dummy_106 { L.PosToken _ L.Tk__tok_DeclList_dummy_106 }
-tok_Decls_dummy_105 { L.PosToken _ L.Tk__tok_Decls_dummy_105 }
-tok_Deriving_dummy_104 { L.PosToken _ L.Tk__tok_Deriving_dummy_104 }
-tok_Exp_dummy_103 { L.PosToken _ L.Tk__tok_Exp_dummy_103 }
-tok_ExpI_dummy_102 { L.PosToken _ L.Tk__tok_ExpI_dummy_102 }
-tok_Export_dummy_101 { L.PosToken _ L.Tk__tok_Export_dummy_101 }
-tok_ExportsList_dummy_100 { L.PosToken _ L.Tk__tok_ExportsList_dummy_100 }
-tok_ExportsOpt_dummy_99 { L.PosToken _ L.Tk__tok_ExportsOpt_dummy_99 }
-tok_FieldDecl_dummy_98 { L.PosToken _ L.Tk__tok_FieldDecl_dummy_98 }
-tok_FieldDeclList_dummy_97 { L.PosToken _ L.Tk__tok_FieldDeclList_dummy_97 }
-tok_Fixity_dummy_96 { L.PosToken _ L.Tk__tok_Fixity_dummy_96 }
-tok_FunLhs_dummy_95 { L.PosToken _ L.Tk__tok_FunLhs_dummy_95 }
-tok_GTyCon_dummy_94 { L.PosToken _ L.Tk__tok_GTyCon_dummy_94 }
-tok_Gd_dummy_93 { L.PosToken _ L.Tk__tok_Gd_dummy_93 }
-tok_GdRhs_dummy_92 { L.PosToken _ L.Tk__tok_GdRhs_dummy_92 }
-tok_GenDecl_dummy_91 { L.PosToken _ L.Tk__tok_GenDecl_dummy_91 }
-tok_Haskell_dummy_122 { L.PosToken _ L.Tk__tok_Haskell_dummy_122 }
-tok_ImpDecl_dummy_90 { L.PosToken _ L.Tk__tok_ImpDecl_dummy_90 }
-tok_ImpDeclList_dummy_89 { L.PosToken _ L.Tk__tok_ImpDeclList_dummy_89 }
-tok_Import_dummy_88 { L.PosToken _ L.Tk__tok_Import_dummy_88 }
-tok_ImportList_dummy_87 { L.PosToken _ L.Tk__tok_ImportList_dummy_87 }
-tok_ModId_dummy_86 { L.PosToken _ L.Tk__tok_ModId_dummy_86 }
-tok_ModIdList_dummy_85 { L.PosToken _ L.Tk__tok_ModIdList_dummy_85 }
-tok_Module_dummy_84 { L.PosToken _ L.Tk__tok_Module_dummy_84 }
-tok_Op_dummy_83 { L.PosToken _ L.Tk__tok_Op_dummy_83 }
-tok_Ops_dummy_82 { L.PosToken _ L.Tk__tok_Ops_dummy_82 }
-tok_OptContext_dummy_81 { L.PosToken _ L.Tk__tok_OptContext_dummy_81 }
-tok_OptDeriving_dummy_80 { L.PosToken _ L.Tk__tok_OptDeriving_dummy_80 }
-tok_OptExpTypeSignature_dummy_79 { L.PosToken _ L.Tk__tok_OptExpTypeSignature_dummy_79 }
-tok_OptGdRhs_dummy_78 { L.PosToken _ L.Tk__tok_OptGdRhs_dummy_78 }
-tok_OptImpSpec_dummy_77 { L.PosToken _ L.Tk__tok_OptImpSpec_dummy_77 }
-tok_OptInteger_dummy_76 { L.PosToken _ L.Tk__tok_OptInteger_dummy_76 }
-tok_OptQualified_dummy_75 { L.PosToken _ L.Tk__tok_OptQualified_dummy_75 }
-tok_OptQualifiedAs_dummy_74 { L.PosToken _ L.Tk__tok_OptQualifiedAs_dummy_74 }
-tok_OptWhere_dummy_73 { L.PosToken _ L.Tk__tok_OptWhere_dummy_73 }
-tok_Pat_dummy_72 { L.PosToken _ L.Tk__tok_Pat_dummy_72 }
-tok_QOp_dummy_71 { L.PosToken _ L.Tk__tok_QOp_dummy_71 }
-tok_QTyCls_dummy_70 { L.PosToken _ L.Tk__tok_QTyCls_dummy_70 }
-tok_QTyCon_dummy_69 { L.PosToken _ L.Tk__tok_QTyCon_dummy_69 }
-tok_QVar_dummy_68 { L.PosToken _ L.Tk__tok_QVar_dummy_68 }
-tok_QVarId_dummy_67 { L.PosToken _ L.Tk__tok_QVarId_dummy_67 }
-tok_QVarList_dummy_66 { L.PosToken _ L.Tk__tok_QVarList_dummy_66 }
-tok_Rhs_dummy_65 { L.PosToken _ L.Tk__tok_Rhs_dummy_65 }
-tok_SimpleType_dummy_64 { L.PosToken _ L.Tk__tok_SimpleType_dummy_64 }
-tok_TopDecl_dummy_63 { L.PosToken _ L.Tk__tok_TopDecl_dummy_63 }
-tok_TopDecls_dummy_62 { L.PosToken _ L.Tk__tok_TopDecls_dummy_62 }
-tok_TyCls_dummy_61 { L.PosToken _ L.Tk__tok_TyCls_dummy_61 }
-tok_TyCon_dummy_60 { L.PosToken _ L.Tk__tok_TyCon_dummy_60 }
-tok_TyVar_dummy_59 { L.PosToken _ L.Tk__tok_TyVar_dummy_59 }
-tok_TyVars_dummy_58 { L.PosToken _ L.Tk__tok_TyVars_dummy_58 }
-tok_Type_dummy_57 { L.PosToken _ L.Tk__tok_Type_dummy_57 }
-tok_TypeList_dummy_56 { L.PosToken _ L.Tk__tok_TypeList_dummy_56 }
-tok_Var_dummy_55 { L.PosToken _ L.Tk__tok_Var_dummy_55 }
-tok_Vars_dummy_54 { L.PosToken _ L.Tk__tok_Vars_dummy_54 }
+tok_AType_dummy_111 { L.PosToken _ L.Tk__tok_AType_dummy_111 }
+tok_ATypeList_dummy_110 { L.PosToken _ L.Tk__tok_ATypeList_dummy_110 }
+tok_BType_dummy_109 { L.PosToken _ L.Tk__tok_BType_dummy_109 }
+tok_Body_dummy_108 { L.PosToken _ L.Tk__tok_Body_dummy_108 }
+tok_CName_dummy_107 { L.PosToken _ L.Tk__tok_CName_dummy_107 }
+tok_CNameList_dummy_106 { L.PosToken _ L.Tk__tok_CNameList_dummy_106 }
+tok_Class_dummy_105 { L.PosToken _ L.Tk__tok_Class_dummy_105 }
+tok_ClassList_dummy_104 { L.PosToken _ L.Tk__tok_ClassList_dummy_104 }
+tok_Con_dummy_103 { L.PosToken _ L.Tk__tok_Con_dummy_103 }
+tok_Constr_dummy_102 { L.PosToken _ L.Tk__tok_Constr_dummy_102 }
+tok_Constrs_dummy_101 { L.PosToken _ L.Tk__tok_Constrs_dummy_101 }
+tok_Context_dummy_100 { L.PosToken _ L.Tk__tok_Context_dummy_100 }
+tok_DClass_dummy_99 { L.PosToken _ L.Tk__tok_DClass_dummy_99 }
+tok_DClassList_dummy_98 { L.PosToken _ L.Tk__tok_DClassList_dummy_98 }
+tok_Decl_dummy_97 { L.PosToken _ L.Tk__tok_Decl_dummy_97 }
+tok_DeclList_dummy_96 { L.PosToken _ L.Tk__tok_DeclList_dummy_96 }
+tok_Decls_dummy_95 { L.PosToken _ L.Tk__tok_Decls_dummy_95 }
+tok_Deriving_dummy_94 { L.PosToken _ L.Tk__tok_Deriving_dummy_94 }
+tok_Exp_dummy_93 { L.PosToken _ L.Tk__tok_Exp_dummy_93 }
+tok_ExpI_dummy_92 { L.PosToken _ L.Tk__tok_ExpI_dummy_92 }
+tok_Export_dummy_91 { L.PosToken _ L.Tk__tok_Export_dummy_91 }
+tok_ExportsList_dummy_90 { L.PosToken _ L.Tk__tok_ExportsList_dummy_90 }
+tok_ExportsOpt_dummy_89 { L.PosToken _ L.Tk__tok_ExportsOpt_dummy_89 }
+tok_FieldDecl_dummy_88 { L.PosToken _ L.Tk__tok_FieldDecl_dummy_88 }
+tok_FieldDeclList_dummy_87 { L.PosToken _ L.Tk__tok_FieldDeclList_dummy_87 }
+tok_Fixity_dummy_86 { L.PosToken _ L.Tk__tok_Fixity_dummy_86 }
+tok_FunLhs_dummy_85 { L.PosToken _ L.Tk__tok_FunLhs_dummy_85 }
+tok_GTyCon_dummy_84 { L.PosToken _ L.Tk__tok_GTyCon_dummy_84 }
+tok_Gd_dummy_83 { L.PosToken _ L.Tk__tok_Gd_dummy_83 }
+tok_GdRhs_dummy_82 { L.PosToken _ L.Tk__tok_GdRhs_dummy_82 }
+tok_GenDecl_dummy_81 { L.PosToken _ L.Tk__tok_GenDecl_dummy_81 }
+tok_Haskell_dummy_112 { L.PosToken _ L.Tk__tok_Haskell_dummy_112 }
+tok_ImpDecl_dummy_80 { L.PosToken _ L.Tk__tok_ImpDecl_dummy_80 }
+tok_ImpDeclList_dummy_79 { L.PosToken _ L.Tk__tok_ImpDeclList_dummy_79 }
+tok_Import_dummy_78 { L.PosToken _ L.Tk__tok_Import_dummy_78 }
+tok_ImportList_dummy_77 { L.PosToken _ L.Tk__tok_ImportList_dummy_77 }
+tok_ModId_dummy_76 { L.PosToken _ L.Tk__tok_ModId_dummy_76 }
+tok_ModIdList_dummy_75 { L.PosToken _ L.Tk__tok_ModIdList_dummy_75 }
+tok_Module_dummy_74 { L.PosToken _ L.Tk__tok_Module_dummy_74 }
+tok_Op_dummy_73 { L.PosToken _ L.Tk__tok_Op_dummy_73 }
+tok_Ops_dummy_72 { L.PosToken _ L.Tk__tok_Ops_dummy_72 }
+tok_OptContext_dummy_71 { L.PosToken _ L.Tk__tok_OptContext_dummy_71 }
+tok_OptDeriving_dummy_70 { L.PosToken _ L.Tk__tok_OptDeriving_dummy_70 }
+tok_OptExpTypeSignature_dummy_69 { L.PosToken _ L.Tk__tok_OptExpTypeSignature_dummy_69 }
+tok_OptGdRhs_dummy_68 { L.PosToken _ L.Tk__tok_OptGdRhs_dummy_68 }
+tok_OptImpSpec_dummy_67 { L.PosToken _ L.Tk__tok_OptImpSpec_dummy_67 }
+tok_OptInteger_dummy_66 { L.PosToken _ L.Tk__tok_OptInteger_dummy_66 }
+tok_OptQualified_dummy_65 { L.PosToken _ L.Tk__tok_OptQualified_dummy_65 }
+tok_OptQualifiedAs_dummy_64 { L.PosToken _ L.Tk__tok_OptQualifiedAs_dummy_64 }
+tok_OptWhere_dummy_63 { L.PosToken _ L.Tk__tok_OptWhere_dummy_63 }
+tok_Pat_dummy_62 { L.PosToken _ L.Tk__tok_Pat_dummy_62 }
+tok_QOp_dummy_61 { L.PosToken _ L.Tk__tok_QOp_dummy_61 }
+tok_QTyCls_dummy_60 { L.PosToken _ L.Tk__tok_QTyCls_dummy_60 }
+tok_QTyCon_dummy_59 { L.PosToken _ L.Tk__tok_QTyCon_dummy_59 }
+tok_QVar_dummy_58 { L.PosToken _ L.Tk__tok_QVar_dummy_58 }
+tok_QVarId_dummy_57 { L.PosToken _ L.Tk__tok_QVarId_dummy_57 }
+tok_QVarList_dummy_56 { L.PosToken _ L.Tk__tok_QVarList_dummy_56 }
+tok_Rhs_dummy_55 { L.PosToken _ L.Tk__tok_Rhs_dummy_55 }
+tok_SimpleType_dummy_54 { L.PosToken _ L.Tk__tok_SimpleType_dummy_54 }
+tok_TopDecl_dummy_53 { L.PosToken _ L.Tk__tok_TopDecl_dummy_53 }
+tok_TopDecls_dummy_52 { L.PosToken _ L.Tk__tok_TopDecls_dummy_52 }
+tok_TyCls_dummy_51 { L.PosToken _ L.Tk__tok_TyCls_dummy_51 }
+tok_TyCon_dummy_50 { L.PosToken _ L.Tk__tok_TyCon_dummy_50 }
+tok_TyVar_dummy_49 { L.PosToken _ L.Tk__tok_TyVar_dummy_49 }
+tok_TyVars_dummy_48 { L.PosToken _ L.Tk__tok_TyVars_dummy_48 }
+tok_Type_dummy_47 { L.PosToken _ L.Tk__tok_Type_dummy_47 }
+tok_TypeList_dummy_46 { L.PosToken _ L.Tk__tok_TypeList_dummy_46 }
+tok_Var_dummy_45 { L.PosToken _ L.Tk__tok_Var_dummy_45 }
+tok_Vars_dummy_44 { L.PosToken _ L.Tk__tok_Vars_dummy_44 }
 tok__symbol__8 { L.PosToken _ L.Tk__tok__symbol__8 }
 tok__pipe__21 { L.PosToken _ L.Tk__tok__pipe__21 }
 tok__symbol__6 { L.PosToken _ L.Tk__tok__symbol__6 }
@@ -192,75 +192,75 @@ qq_Haskell { L.PosToken _ (L.Tk__qq_Haskell _) }
 
 Haskell__top : Haskell rtk__eof { $1 }
 
-Haskell : tok_Haskell_dummy_122 Haskell tok_Haskell_dummy_122 { Ctr__Haskell__0 (rtkPosOf $1) $2 } |
-          tok_AType_dummy_121 AType tok_AType_dummy_121 { Ctr__Haskell__1 (rtkPosOf $1) $2 } |
-          tok_ATypeList_dummy_120 ATypeList tok_ATypeList_dummy_120 { Ctr__Haskell__2 (rtkPosOf $1) (reverse $2) } |
-          tok_BType_dummy_119 BType tok_BType_dummy_119 { Ctr__Haskell__3 (rtkPosOf $1) $2 } |
-          tok_Body_dummy_118 Body tok_Body_dummy_118 { Ctr__Haskell__4 (rtkPosOf $1) $2 } |
-          tok_CName_dummy_117 CName tok_CName_dummy_117 { Ctr__Haskell__5 (rtkPosOf $1) $2 } |
-          tok_CNameList_dummy_116 CNameList tok_CNameList_dummy_116 { Ctr__Haskell__6 (rtkPosOf $1) $2 } |
-          tok_Class_dummy_115 Class tok_Class_dummy_115 { Ctr__Haskell__7 (rtkPosOf $1) $2 } |
-          tok_ClassList_dummy_114 ClassList tok_ClassList_dummy_114 { Ctr__Haskell__8 (rtkPosOf $1) $2 } |
-          tok_Con_dummy_113 Con tok_Con_dummy_113 { Ctr__Haskell__9 (rtkPosOf $1) $2 } |
-          tok_Constr_dummy_112 Constr tok_Constr_dummy_112 { Ctr__Haskell__10 (rtkPosOf $1) $2 } |
-          tok_Constrs_dummy_111 Constrs tok_Constrs_dummy_111 { Ctr__Haskell__11 (rtkPosOf $1) $2 } |
-          tok_Context_dummy_110 Context tok_Context_dummy_110 { Ctr__Haskell__12 (rtkPosOf $1) $2 } |
-          tok_DClass_dummy_109 DClass tok_DClass_dummy_109 { Ctr__Haskell__13 (rtkPosOf $1) $2 } |
-          tok_DClassList_dummy_108 DClassList tok_DClassList_dummy_108 { Ctr__Haskell__14 (rtkPosOf $1) $2 } |
-          tok_Decl_dummy_107 Decl tok_Decl_dummy_107 { Ctr__Haskell__15 (rtkPosOf $1) $2 } |
-          tok_DeclList_dummy_106 DeclList tok_DeclList_dummy_106 { Ctr__Haskell__16 (rtkPosOf $1) $2 } |
-          tok_Decls_dummy_105 Decls tok_Decls_dummy_105 { Ctr__Haskell__17 (rtkPosOf $1) $2 } |
-          tok_Deriving_dummy_104 Deriving tok_Deriving_dummy_104 { Ctr__Haskell__18 (rtkPosOf $1) $2 } |
-          tok_Exp_dummy_103 Exp tok_Exp_dummy_103 { Ctr__Haskell__19 (rtkPosOf $1) $2 } |
-          tok_ExpI_dummy_102 ExpI tok_ExpI_dummy_102 { Ctr__Haskell__20 (rtkPosOf $1) $2 } |
-          tok_Export_dummy_101 Export tok_Export_dummy_101 { Ctr__Haskell__21 (rtkPosOf $1) $2 } |
-          tok_ExportsList_dummy_100 ExportsList tok_ExportsList_dummy_100 { Ctr__Haskell__22 (rtkPosOf $1) $2 } |
-          tok_ExportsOpt_dummy_99 ExportsOpt tok_ExportsOpt_dummy_99 { Ctr__Haskell__23 (rtkPosOf $1) $2 } |
-          tok_FieldDecl_dummy_98 FieldDecl tok_FieldDecl_dummy_98 { Ctr__Haskell__24 (rtkPosOf $1) $2 } |
-          tok_FieldDeclList_dummy_97 FieldDeclList tok_FieldDeclList_dummy_97 { Ctr__Haskell__25 (rtkPosOf $1) $2 } |
-          tok_Fixity_dummy_96 Fixity tok_Fixity_dummy_96 { Ctr__Haskell__26 (rtkPosOf $1) $2 } |
-          tok_FunLhs_dummy_95 FunLhs tok_FunLhs_dummy_95 { Ctr__Haskell__27 (rtkPosOf $1) $2 } |
-          tok_GTyCon_dummy_94 GTyCon tok_GTyCon_dummy_94 { Ctr__Haskell__28 (rtkPosOf $1) $2 } |
-          tok_Gd_dummy_93 Gd tok_Gd_dummy_93 { Ctr__Haskell__29 (rtkPosOf $1) $2 } |
-          tok_GdRhs_dummy_92 GdRhs tok_GdRhs_dummy_92 { Ctr__Haskell__30 (rtkPosOf $1) $2 } |
-          tok_GenDecl_dummy_91 GenDecl tok_GenDecl_dummy_91 { Ctr__Haskell__31 (rtkPosOf $1) $2 } |
-          tok_ImpDecl_dummy_90 ImpDecl tok_ImpDecl_dummy_90 { Ctr__Haskell__32 (rtkPosOf $1) $2 } |
-          tok_ImpDeclList_dummy_89 ImpDeclList tok_ImpDeclList_dummy_89 { Ctr__Haskell__33 (rtkPosOf $1) $2 } |
-          tok_Import_dummy_88 Import tok_Import_dummy_88 { Ctr__Haskell__34 (rtkPosOf $1) $2 } |
-          tok_ImportList_dummy_87 ImportList tok_ImportList_dummy_87 { Ctr__Haskell__35 (rtkPosOf $1) $2 } |
-          tok_ModId_dummy_86 ModId tok_ModId_dummy_86 { Ctr__Haskell__36 (rtkPosOf $1) $2 } |
-          tok_ModIdList_dummy_85 ModIdList tok_ModIdList_dummy_85 { Ctr__Haskell__37 (rtkPosOf $1) (reverse $2) } |
-          tok_Module_dummy_84 Module tok_Module_dummy_84 { Ctr__Haskell__38 (rtkPosOf $1) $2 } |
-          tok_Op_dummy_83 Op tok_Op_dummy_83 { Ctr__Haskell__39 (rtkPosOf $1) $2 } |
-          tok_Ops_dummy_82 Ops tok_Ops_dummy_82 { Ctr__Haskell__40 (rtkPosOf $1) $2 } |
-          tok_OptContext_dummy_81 OptContext tok_OptContext_dummy_81 { Ctr__Haskell__41 (rtkPosOf $1) $2 } |
-          tok_OptDeriving_dummy_80 OptDeriving tok_OptDeriving_dummy_80 { Ctr__Haskell__42 (rtkPosOf $1) $2 } |
-          tok_OptExpTypeSignature_dummy_79 OptExpTypeSignature tok_OptExpTypeSignature_dummy_79 { Ctr__Haskell__43 (rtkPosOf $1) $2 } |
-          tok_OptGdRhs_dummy_78 OptGdRhs tok_OptGdRhs_dummy_78 { Ctr__Haskell__44 (rtkPosOf $1) $2 } |
-          tok_OptImpSpec_dummy_77 OptImpSpec tok_OptImpSpec_dummy_77 { Ctr__Haskell__45 (rtkPosOf $1) $2 } |
-          tok_OptInteger_dummy_76 OptInteger tok_OptInteger_dummy_76 { Ctr__Haskell__46 (rtkPosOf $1) $2 } |
-          tok_OptQualified_dummy_75 OptQualified tok_OptQualified_dummy_75 { Ctr__Haskell__47 (rtkPosOf $1) $2 } |
-          tok_OptQualifiedAs_dummy_74 OptQualifiedAs tok_OptQualifiedAs_dummy_74 { Ctr__Haskell__48 (rtkPosOf $1) $2 } |
-          tok_OptWhere_dummy_73 OptWhere tok_OptWhere_dummy_73 { Ctr__Haskell__49 (rtkPosOf $1) $2 } |
-          tok_Pat_dummy_72 Pat tok_Pat_dummy_72 { Ctr__Haskell__50 (rtkPosOf $1) $2 } |
-          tok_QOp_dummy_71 QOp tok_QOp_dummy_71 { Ctr__Haskell__51 (rtkPosOf $1) $2 } |
-          tok_QTyCls_dummy_70 QTyCls tok_QTyCls_dummy_70 { Ctr__Haskell__52 (rtkPosOf $1) $2 } |
-          tok_QTyCon_dummy_69 QTyCon tok_QTyCon_dummy_69 { Ctr__Haskell__53 (rtkPosOf $1) $2 } |
-          tok_QVar_dummy_68 QVar tok_QVar_dummy_68 { Ctr__Haskell__54 (rtkPosOf $1) $2 } |
-          tok_QVarId_dummy_67 QVarId tok_QVarId_dummy_67 { Ctr__Haskell__55 (rtkPosOf $1) $2 } |
-          tok_QVarList_dummy_66 QVarList tok_QVarList_dummy_66 { Ctr__Haskell__56 (rtkPosOf $1) $2 } |
-          tok_Rhs_dummy_65 Rhs tok_Rhs_dummy_65 { Ctr__Haskell__57 (rtkPosOf $1) $2 } |
-          tok_SimpleType_dummy_64 SimpleType tok_SimpleType_dummy_64 { Ctr__Haskell__58 (rtkPosOf $1) $2 } |
-          tok_TopDecl_dummy_63 TopDecl tok_TopDecl_dummy_63 { Ctr__Haskell__59 (rtkPosOf $1) $2 } |
-          tok_TopDecls_dummy_62 TopDecls tok_TopDecls_dummy_62 { Ctr__Haskell__60 (rtkPosOf $1) $2 } |
-          tok_TyCls_dummy_61 TyCls tok_TyCls_dummy_61 { Ctr__Haskell__61 (rtkPosOf $1) $2 } |
-          tok_TyCon_dummy_60 TyCon tok_TyCon_dummy_60 { Ctr__Haskell__62 (rtkPosOf $1) $2 } |
-          tok_TyVar_dummy_59 TyVar tok_TyVar_dummy_59 { Ctr__Haskell__63 (rtkPosOf $1) $2 } |
-          tok_TyVars_dummy_58 TyVars tok_TyVars_dummy_58 { Ctr__Haskell__64 (rtkPosOf $1) (reverse $2) } |
-          tok_Type_dummy_57 Type tok_Type_dummy_57 { Ctr__Haskell__65 (rtkPosOf $1) $2 } |
-          tok_TypeList_dummy_56 TypeList tok_TypeList_dummy_56 { Ctr__Haskell__66 (rtkPosOf $1) $2 } |
-          tok_Var_dummy_55 Var tok_Var_dummy_55 { Ctr__Haskell__67 (rtkPosOf $1) $2 } |
-          tok_Vars_dummy_54 Vars tok_Vars_dummy_54 { Ctr__Haskell__68 (rtkPosOf $1) $2 }
+Haskell : tok_Haskell_dummy_112 Haskell tok_Haskell_dummy_112 { Ctr__Haskell__0 (rtkPosOf $1) $2 } |
+          tok_AType_dummy_111 AType tok_AType_dummy_111 { Ctr__Haskell__1 (rtkPosOf $1) $2 } |
+          tok_ATypeList_dummy_110 ATypeList tok_ATypeList_dummy_110 { Ctr__Haskell__2 (rtkPosOf $1) (reverse $2) } |
+          tok_BType_dummy_109 BType tok_BType_dummy_109 { Ctr__Haskell__3 (rtkPosOf $1) $2 } |
+          tok_Body_dummy_108 Body tok_Body_dummy_108 { Ctr__Haskell__4 (rtkPosOf $1) $2 } |
+          tok_CName_dummy_107 CName tok_CName_dummy_107 { Ctr__Haskell__5 (rtkPosOf $1) $2 } |
+          tok_CNameList_dummy_106 CNameList tok_CNameList_dummy_106 { Ctr__Haskell__6 (rtkPosOf $1) $2 } |
+          tok_Class_dummy_105 Class tok_Class_dummy_105 { Ctr__Haskell__7 (rtkPosOf $1) $2 } |
+          tok_ClassList_dummy_104 ClassList tok_ClassList_dummy_104 { Ctr__Haskell__8 (rtkPosOf $1) $2 } |
+          tok_Con_dummy_103 Con tok_Con_dummy_103 { Ctr__Haskell__9 (rtkPosOf $1) $2 } |
+          tok_Constr_dummy_102 Constr tok_Constr_dummy_102 { Ctr__Haskell__10 (rtkPosOf $1) $2 } |
+          tok_Constrs_dummy_101 Constrs tok_Constrs_dummy_101 { Ctr__Haskell__11 (rtkPosOf $1) $2 } |
+          tok_Context_dummy_100 Context tok_Context_dummy_100 { Ctr__Haskell__12 (rtkPosOf $1) $2 } |
+          tok_DClass_dummy_99 DClass tok_DClass_dummy_99 { Ctr__Haskell__13 (rtkPosOf $1) $2 } |
+          tok_DClassList_dummy_98 DClassList tok_DClassList_dummy_98 { Ctr__Haskell__14 (rtkPosOf $1) $2 } |
+          tok_Decl_dummy_97 Decl tok_Decl_dummy_97 { Ctr__Haskell__15 (rtkPosOf $1) $2 } |
+          tok_DeclList_dummy_96 DeclList tok_DeclList_dummy_96 { Ctr__Haskell__16 (rtkPosOf $1) $2 } |
+          tok_Decls_dummy_95 Decls tok_Decls_dummy_95 { Ctr__Haskell__17 (rtkPosOf $1) $2 } |
+          tok_Deriving_dummy_94 Deriving tok_Deriving_dummy_94 { Ctr__Haskell__18 (rtkPosOf $1) $2 } |
+          tok_Exp_dummy_93 Exp tok_Exp_dummy_93 { Ctr__Haskell__19 (rtkPosOf $1) $2 } |
+          tok_ExpI_dummy_92 ExpI tok_ExpI_dummy_92 { Ctr__Haskell__20 (rtkPosOf $1) $2 } |
+          tok_Export_dummy_91 Export tok_Export_dummy_91 { Ctr__Haskell__21 (rtkPosOf $1) $2 } |
+          tok_ExportsList_dummy_90 ExportsList tok_ExportsList_dummy_90 { Ctr__Haskell__22 (rtkPosOf $1) $2 } |
+          tok_ExportsOpt_dummy_89 ExportsOpt tok_ExportsOpt_dummy_89 { Ctr__Haskell__23 (rtkPosOf $1) $2 } |
+          tok_FieldDecl_dummy_88 FieldDecl tok_FieldDecl_dummy_88 { Ctr__Haskell__24 (rtkPosOf $1) $2 } |
+          tok_FieldDeclList_dummy_87 FieldDeclList tok_FieldDeclList_dummy_87 { Ctr__Haskell__25 (rtkPosOf $1) $2 } |
+          tok_Fixity_dummy_86 Fixity tok_Fixity_dummy_86 { Ctr__Haskell__26 (rtkPosOf $1) $2 } |
+          tok_FunLhs_dummy_85 FunLhs tok_FunLhs_dummy_85 { Ctr__Haskell__27 (rtkPosOf $1) $2 } |
+          tok_GTyCon_dummy_84 GTyCon tok_GTyCon_dummy_84 { Ctr__Haskell__28 (rtkPosOf $1) $2 } |
+          tok_Gd_dummy_83 Gd tok_Gd_dummy_83 { Ctr__Haskell__29 (rtkPosOf $1) $2 } |
+          tok_GdRhs_dummy_82 GdRhs tok_GdRhs_dummy_82 { Ctr__Haskell__30 (rtkPosOf $1) $2 } |
+          tok_GenDecl_dummy_81 GenDecl tok_GenDecl_dummy_81 { Ctr__Haskell__31 (rtkPosOf $1) $2 } |
+          tok_ImpDecl_dummy_80 ImpDecl tok_ImpDecl_dummy_80 { Ctr__Haskell__32 (rtkPosOf $1) $2 } |
+          tok_ImpDeclList_dummy_79 ImpDeclList tok_ImpDeclList_dummy_79 { Ctr__Haskell__33 (rtkPosOf $1) $2 } |
+          tok_Import_dummy_78 Import tok_Import_dummy_78 { Ctr__Haskell__34 (rtkPosOf $1) $2 } |
+          tok_ImportList_dummy_77 ImportList tok_ImportList_dummy_77 { Ctr__Haskell__35 (rtkPosOf $1) $2 } |
+          tok_ModId_dummy_76 ModId tok_ModId_dummy_76 { Ctr__Haskell__36 (rtkPosOf $1) $2 } |
+          tok_ModIdList_dummy_75 ModIdList tok_ModIdList_dummy_75 { Ctr__Haskell__37 (rtkPosOf $1) (reverse $2) } |
+          tok_Module_dummy_74 Module tok_Module_dummy_74 { Ctr__Haskell__38 (rtkPosOf $1) $2 } |
+          tok_Op_dummy_73 Op tok_Op_dummy_73 { Ctr__Haskell__39 (rtkPosOf $1) $2 } |
+          tok_Ops_dummy_72 Ops tok_Ops_dummy_72 { Ctr__Haskell__40 (rtkPosOf $1) $2 } |
+          tok_OptContext_dummy_71 OptContext tok_OptContext_dummy_71 { Ctr__Haskell__41 (rtkPosOf $1) $2 } |
+          tok_OptDeriving_dummy_70 OptDeriving tok_OptDeriving_dummy_70 { Ctr__Haskell__42 (rtkPosOf $1) $2 } |
+          tok_OptExpTypeSignature_dummy_69 OptExpTypeSignature tok_OptExpTypeSignature_dummy_69 { Ctr__Haskell__43 (rtkPosOf $1) $2 } |
+          tok_OptGdRhs_dummy_68 OptGdRhs tok_OptGdRhs_dummy_68 { Ctr__Haskell__44 (rtkPosOf $1) $2 } |
+          tok_OptImpSpec_dummy_67 OptImpSpec tok_OptImpSpec_dummy_67 { Ctr__Haskell__45 (rtkPosOf $1) $2 } |
+          tok_OptInteger_dummy_66 OptInteger tok_OptInteger_dummy_66 { Ctr__Haskell__46 (rtkPosOf $1) $2 } |
+          tok_OptQualified_dummy_65 OptQualified tok_OptQualified_dummy_65 { Ctr__Haskell__47 (rtkPosOf $1) $2 } |
+          tok_OptQualifiedAs_dummy_64 OptQualifiedAs tok_OptQualifiedAs_dummy_64 { Ctr__Haskell__48 (rtkPosOf $1) $2 } |
+          tok_OptWhere_dummy_63 OptWhere tok_OptWhere_dummy_63 { Ctr__Haskell__49 (rtkPosOf $1) $2 } |
+          tok_Pat_dummy_62 Pat tok_Pat_dummy_62 { Ctr__Haskell__50 (rtkPosOf $1) $2 } |
+          tok_QOp_dummy_61 QOp tok_QOp_dummy_61 { Ctr__Haskell__51 (rtkPosOf $1) $2 } |
+          tok_QTyCls_dummy_60 QTyCls tok_QTyCls_dummy_60 { Ctr__Haskell__52 (rtkPosOf $1) $2 } |
+          tok_QTyCon_dummy_59 QTyCon tok_QTyCon_dummy_59 { Ctr__Haskell__53 (rtkPosOf $1) $2 } |
+          tok_QVar_dummy_58 QVar tok_QVar_dummy_58 { Ctr__Haskell__54 (rtkPosOf $1) $2 } |
+          tok_QVarId_dummy_57 QVarId tok_QVarId_dummy_57 { Ctr__Haskell__55 (rtkPosOf $1) $2 } |
+          tok_QVarList_dummy_56 QVarList tok_QVarList_dummy_56 { Ctr__Haskell__56 (rtkPosOf $1) $2 } |
+          tok_Rhs_dummy_55 Rhs tok_Rhs_dummy_55 { Ctr__Haskell__57 (rtkPosOf $1) $2 } |
+          tok_SimpleType_dummy_54 SimpleType tok_SimpleType_dummy_54 { Ctr__Haskell__58 (rtkPosOf $1) $2 } |
+          tok_TopDecl_dummy_53 TopDecl tok_TopDecl_dummy_53 { Ctr__Haskell__59 (rtkPosOf $1) $2 } |
+          tok_TopDecls_dummy_52 TopDecls tok_TopDecls_dummy_52 { Ctr__Haskell__60 (rtkPosOf $1) $2 } |
+          tok_TyCls_dummy_51 TyCls tok_TyCls_dummy_51 { Ctr__Haskell__61 (rtkPosOf $1) $2 } |
+          tok_TyCon_dummy_50 TyCon tok_TyCon_dummy_50 { Ctr__Haskell__62 (rtkPosOf $1) $2 } |
+          tok_TyVar_dummy_49 TyVar tok_TyVar_dummy_49 { Ctr__Haskell__63 (rtkPosOf $1) $2 } |
+          tok_TyVars_dummy_48 TyVars tok_TyVars_dummy_48 { Ctr__Haskell__64 (rtkPosOf $1) (reverse $2) } |
+          tok_Type_dummy_47 Type tok_Type_dummy_47 { Ctr__Haskell__65 (rtkPosOf $1) $2 } |
+          tok_TypeList_dummy_46 TypeList tok_TypeList_dummy_46 { Ctr__Haskell__66 (rtkPosOf $1) $2 } |
+          tok_Var_dummy_45 Var tok_Var_dummy_45 { Ctr__Haskell__67 (rtkPosOf $1) $2 } |
+          tok_Vars_dummy_44 Vars tok_Vars_dummy_44 { Ctr__Haskell__68 (rtkPosOf $1) $2 }
 
 Haskell : qq_Haskell { Anti_Haskell (tkVal_qq_Haskell $1) } |
           Module { Ctr__Haskell__69 (rtkPosOf $1) $1 }
@@ -268,34 +268,34 @@ Haskell : qq_Haskell { Anti_Haskell (tkVal_qq_Haskell $1) } |
 AType : qq_AType { Anti_AType (tkVal_qq_AType $1) } |
         TyVar { Ctr__AType__0 (rtkPosOf $1) $1 } |
         GTyCon { Ctr__AType__1 (rtkPosOf $1) $1 } |
-        tok__lparen__2 Rule_49 tok__rparen__4 { Ctr__AType__2 (rtkPosOf $1) $2 } |
-        tok__sq_bkt_l__25 Rule_50 tok__sq_bkt_r__26 { Ctr__AType__3 (rtkPosOf $1) $2 }
+        tok__lparen__2 TypeList tok__rparen__4 { Ctr__AType__2 (rtkPosOf $1) $2 } |
+        tok__sq_bkt_l__25 Rule_41 tok__sq_bkt_r__26 { Ctr__AType__3 (rtkPosOf $1) $2 }
 
-ListElem_ATypeList48 : qq_ATypeList { Anti_AType (tkVal_qq_ATypeList $1) } |
+ListElem_ATypeList40 : qq_ATypeList { Anti_AType (tkVal_qq_ATypeList $1) } |
                        AType { $1 }
 
 ATypeList : {- empty -} { [] } |
-            ATypeList ListElem_ATypeList48 { $2 : $1 }
+            ATypeList ListElem_ATypeList40 { $2 : $1 }
 
 BType : qq_BType { Anti_BType (tkVal_qq_BType $1) } |
-        Rule_46 AType { Ctr__BType__0 (rtkPosOf $1) $1 $2 }
+        Rule_39 AType { Ctr__BType__0 (rtkPosOf $1) $1 $2 }
 
 Body : qq_Body { Anti_Body (tkVal_qq_Body $1) } |
-       tok__symbol__6 Rule_8 tok__symbol__8 { Ctr__Body__0 (rtkPosOf $1) $2 }
+       tok__symbol__6 Rule_7 tok__symbol__8 { Ctr__Body__0 (rtkPosOf $1) $2 }
 
 CName : qq_CName { Anti_CName (tkVal_qq_CName $1) } |
         Var { Ctr__CName__0 (rtkPosOf $1) $1 } |
         Con { Ctr__CName__1 (rtkPosOf $1) $1 }
 
 CNameList : qq_CNameList { Anti_CNameList (tkVal_qq_CNameList $1) } |
-            Rule_15 tok__coma__3 { Ctr__CNameList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+            Rule_14 tok__coma__3 { Ctr__CNameList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 Class : qq_Class { Anti_Class (tkVal_qq_Class $1) } |
         QTyCls TyVar { Ctr__Class__0 (rtkPosOf $1) $1 $2 } |
         QTyCls tok__lparen__2 TyVar ATypeList tok__rparen__4 { Ctr__Class__1 (rtkPosOf $1) $1 $3 (reverse $4) }
 
 ClassList : qq_ClassList { Anti_ClassList (tkVal_qq_ClassList $1) } |
-            Rule_43 tok__coma__3 { Ctr__ClassList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+            Rule_36 tok__coma__3 { Ctr__ClassList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 Con : qq_Con { Anti_Con (tkVal_qq_Con $1) } |
       conid { Ctr__Con__0 (rtkPosOf $1) (tkVal_conid $1) }
@@ -304,7 +304,7 @@ Constr : qq_Constr { Anti_Constr (tkVal_qq_Constr $1) } |
          Con tok__symbol__6 FieldDeclList tok__symbol__8 { Ctr__Constr__0 (rtkPosOf $1) $1 $3 }
 
 Constrs : qq_Constrs { Anti_Constrs (tkVal_qq_Constrs $1) } |
-          Rule_36 tok__pipe__21 { Ctr__Constrs__0 (rtkPosOf (reverse $1)) (reverse $1) }
+          Rule_30 tok__pipe__21 { Ctr__Constrs__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 Context : qq_Context { Anti_Context (tkVal_qq_Context $1) } |
           Class { Ctr__Context__0 (rtkPosOf $1) $1 } |
@@ -314,45 +314,45 @@ DClass : qq_DClass { Anti_DClass (tkVal_qq_DClass $1) } |
          QTyCls { Ctr__DClass__0 (rtkPosOf $1) $1 }
 
 DClassList : qq_DClassList { Anti_DClassList (tkVal_qq_DClassList $1) } |
-             Rule_42 tok__coma__3 { Ctr__DClassList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+             Rule_35 tok__coma__3 { Ctr__DClassList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 Decl : qq_Decl { Anti_Decl (tkVal_qq_Decl $1) } |
        GenDecl { Ctr__Decl__0 (rtkPosOf $1) $1 } |
-       Rule_25 Rhs { Ctr__Decl__1 (rtkPosOf $1) $1 $2 }
+       Rule_22 Rhs { Ctr__Decl__1 (rtkPosOf $1) $1 $2 }
 
 DeclList : qq_DeclList { Anti_DeclList (tkVal_qq_DeclList $1) } |
-           Rule_31 tok__semi__7 { Ctr__DeclList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+           Rule_26 tok__semi__7 { Ctr__DeclList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 Decls : qq_Decls { Anti_Decls (tkVal_qq_Decls $1) } |
         tok__symbol__6 DeclList tok__symbol__8 { Ctr__Decls__0 (rtkPosOf $1) $2 }
 
 Deriving : qq_Deriving { Anti_Deriving (tkVal_qq_Deriving $1) } |
-           tok_deriving_23 Rule_41 { Ctr__Deriving__0 (rtkPosOf $1) $2 }
+           tok_deriving_23 Rule_34 { Ctr__Deriving__0 (rtkPosOf $1) $2 }
 
 Exp : qq_Exp { Anti_Exp (tkVal_qq_Exp $1) } |
       ExpI OptExpTypeSignature { Ctr__Exp__0 (rtkPosOf $1) $1 $2 }
 
 ExpI : qq_ExpI { Anti_ExpI (tkVal_qq_ExpI $1) } |
-       ExpI Rule_34 { Ctr__ExpI__0 (rtkPosOf $1) $1 (reverse $2) }
+       ExpI Rule_28 { Ctr__ExpI__0 (rtkPosOf $1) $1 (reverse $2) }
 
 Export : qq_Export { Anti_Export (tkVal_qq_Export $1) } |
          tok_module_0 ModId { Ctr__Export__0 (rtkPosOf $1) $2 } |
          QVar { Ctr__Export__1 (rtkPosOf $1) $1 } |
-         QTyCon Rule_4 { Ctr__Export__2 (rtkPosOf $1) $1 $2 } |
-         QTyCls Rule_6 { Ctr__Export__3 (rtkPosOf $1) $1 $2 }
+         QTyCon Rule_3 { Ctr__Export__2 (rtkPosOf $1) $1 $2 } |
+         QTyCls Rule_5 { Ctr__Export__3 (rtkPosOf $1) $1 $2 }
 
 ExportsList : qq_ExportsList { Anti_ExportsList (tkVal_qq_ExportsList $1) } |
-              Rule_3 tok__coma__3 { Ctr__ExportsList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+              Rule_2 tok__coma__3 { Ctr__ExportsList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 ExportsOpt : qq_ExportsOpt { Anti_ExportsOpt (tkVal_qq_ExportsOpt $1) } |
              { Ctr__ExportsOpt__0 rtkNoPos } |
              Rule_0 { Ctr__ExportsOpt__1 (rtkPosOf $1) $1 }
 
 FieldDecl : qq_FieldDecl { Anti_FieldDecl (tkVal_qq_FieldDecl $1) } |
-            Vars tok__colon__colon__17 Rule_38 { Ctr__FieldDecl__0 (rtkPosOf $1) $1 $3 }
+            Vars tok__colon__colon__17 Rule_32 { Ctr__FieldDecl__0 (rtkPosOf $1) $1 $3 }
 
 FieldDeclList : qq_FieldDeclList { Anti_FieldDeclList (tkVal_qq_FieldDeclList $1) } |
-                Rule_37 tok__coma__3 { Ctr__FieldDeclList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+                Rule_31 tok__coma__3 { Ctr__FieldDeclList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 Fixity : qq_Fixity { Anti_Fixity (tkVal_qq_Fixity $1) } |
          tok_infixl_18 { Ctr__Fixity__0 (rtkPosOf $1) } |
@@ -378,23 +378,23 @@ GenDecl : qq_GenDecl { Anti_GenDecl (tkVal_qq_GenDecl $1) } |
           Fixity OptInteger Ops { Ctr__GenDecl__1 (rtkPosOf $1) $1 $2 $3 }
 
 ImpDecl : qq_ImpDecl { Anti_ImpDecl (tkVal_qq_ImpDecl $1) } |
-          tok_import_12 OptQualified ModId OptQualifiedAs Rule_23 { Ctr__ImpDecl__0 (rtkPosOf $1) $2 $3 $4 $5 }
+          tok_import_12 OptQualified ModId OptQualifiedAs Rule_20 { Ctr__ImpDecl__0 (rtkPosOf $1) $2 $3 $4 $5 }
 
 ImpDeclList : qq_ImpDeclList { Anti_ImpDeclList (tkVal_qq_ImpDeclList $1) } |
-              Rule_11 tok__semi__7 { Ctr__ImpDeclList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+              Rule_10 tok__semi__7 { Ctr__ImpDeclList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 Import : qq_Import { Anti_Import (tkVal_qq_Import $1) } |
          Var { Ctr__Import__0 (rtkPosOf $1) $1 } |
-         TyCon Rule_17 { Ctr__Import__1 (rtkPosOf $1) $1 $2 }
+         TyCon Rule_16 { Ctr__Import__1 (rtkPosOf $1) $1 $2 }
 
 ImportList : qq_ImportList { Anti_ImportList (tkVal_qq_ImportList $1) } |
-             Rule_12 tok__coma__3 { Ctr__ImportList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+             Rule_11 tok__coma__3 { Ctr__ImportList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 ModId : qq_ModId { Anti_ModId (tkVal_qq_ModId $1) } |
         conid { Ctr__ModId__0 (rtkPosOf $1) (tkVal_conid $1) }
 
 ModIdList : {- empty -} { [] } |
-            ModIdList ListElem_ModIdList14 { $2 : $1 }
+            ModIdList ListElem_ModIdList13 { $2 : $1 }
 
 Module : qq_Module { Anti_Module (tkVal_qq_Module $1) } |
          tok_module_0 ModId ExportsOpt tok_where_1 Body { Ctr__Module__0 (rtkPosOf $1) $2 $3 $5 } |
@@ -405,44 +405,44 @@ Op : qq_Op { Anti_Op (tkVal_qq_Op $1) } |
      conid { Ctr__Op__1 (rtkPosOf $1) (tkVal_conid $1) }
 
 Ops : qq_Ops { Anti_Ops (tkVal_qq_Ops $1) } |
-      Rule_28 tok__coma__3 { Ctr__Ops__0 (rtkPosOf (reverse $1)) (reverse $1) }
+      Rule_24 tok__coma__3 { Ctr__Ops__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 OptContext : qq_OptContext { Anti_OptContext (tkVal_qq_OptContext $1) } |
              { Ctr__OptContext__0 rtkNoPos } |
-             Rule_26 { Ctr__OptContext__1 (rtkPosOf $1) $1 }
+             Rule_23 { Ctr__OptContext__1 (rtkPosOf $1) $1 }
 
 OptDeriving : qq_OptDeriving { Anti_OptDeriving (tkVal_qq_OptDeriving $1) } |
               { Ctr__OptDeriving__0 rtkNoPos } |
-              Rule_40 { Ctr__OptDeriving__1 (rtkPosOf $1) $1 }
+              Deriving { Ctr__OptDeriving__1 (rtkPosOf $1) $1 }
 
 OptExpTypeSignature : qq_OptExpTypeSignature { Anti_OptExpTypeSignature (tkVal_qq_OptExpTypeSignature $1) } |
                       { Ctr__OptExpTypeSignature__0 rtkNoPos } |
-                      Rule_33 { Ctr__OptExpTypeSignature__1 (rtkPosOf $1) $1 }
+                      Rule_27 { Ctr__OptExpTypeSignature__1 (rtkPosOf $1) $1 }
 
 OptGdRhs : qq_OptGdRhs { Anti_OptGdRhs (tkVal_qq_OptGdRhs $1) } |
            { Ctr__OptGdRhs__0 rtkNoPos } |
-           Rule_32 { Ctr__OptGdRhs__1 (rtkPosOf $1) $1 }
+           GdRhs { Ctr__OptGdRhs__1 (rtkPosOf $1) $1 }
 
 OptImpSpec : qq_OptImpSpec { Anti_OptImpSpec (tkVal_qq_OptImpSpec $1) } |
-             tok__lparen__2 ImportList Rule_21 tok__rparen__4 { Ctr__OptImpSpec__0 (rtkPosOf $1) $2 $3 }
+             tok__lparen__2 ImportList Rule_19 tok__rparen__4 { Ctr__OptImpSpec__0 (rtkPosOf $1) $2 $3 }
 
 OptInteger : qq_OptInteger { Anti_OptInteger (tkVal_qq_OptInteger $1) } |
              { Ctr__OptInteger__0 rtkNoPos } |
-             Rule_27 { Ctr__OptInteger__1 (rtkPosOf $1) $1 }
+             integer { Ctr__OptInteger__1 (rtkPosOf $1) (tkVal_integer $1) }
 
 OptQualified : qq_OptQualified { Anti_OptQualified (tkVal_qq_OptQualified $1) } |
                { Ctr__OptQualified__0 rtkNoPos } |
-               Rule_19 { Ctr__OptQualified__1 (rtkPosOf $1) $1 }
+               tok_qualified_10 { Ctr__OptQualified__1 (rtkPosOf $1) }
 
 OptQualifiedAs : qq_OptQualifiedAs { Anti_OptQualifiedAs (tkVal_qq_OptQualifiedAs $1) } |
                  { Ctr__OptQualifiedAs__0 rtkNoPos } |
-                 Rule_20 { Ctr__OptQualifiedAs__1 (rtkPosOf $1) $1 }
+                 Rule_18 { Ctr__OptQualifiedAs__1 (rtkPosOf $1) $1 }
 
 OptWhere : qq_OptWhere { Anti_OptWhere (tkVal_qq_OptWhere $1) } |
            tok_where_1 Decls { Ctr__OptWhere__0 (rtkPosOf $1) $2 }
 
 Pat : qq_Pat { Anti_Pat (tkVal_qq_Pat $1) } |
-      Con Rule_29 { Ctr__Pat__0 (rtkPosOf $1) $1 (reverse $2) }
+      Con Rule_25 { Ctr__Pat__0 (rtkPosOf $1) $1 (reverse $2) }
 
 QOp : qq_QOp { Anti_QOp (tkVal_qq_QOp $1) } |
       ModIdList Op { Ctr__QOp__0 (rtkPosOf (reverse $1)) (reverse $1) $2 }
@@ -460,7 +460,7 @@ QVarId : qq_QVarId { Anti_QVarId (tkVal_qq_QVarId $1) } |
          ModIdList varid { Ctr__QVarId__0 (rtkPosOf (reverse $1)) (reverse $1) (tkVal_varid $2) }
 
 QVarList : qq_QVarList { Anti_QVarList (tkVal_qq_QVarList $1) } |
-           Rule_16 tok__coma__3 { Ctr__QVarList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+           Rule_15 tok__coma__3 { Ctr__QVarList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 Rhs : qq_Rhs { Anti_Rhs (tkVal_qq_Rhs $1) } |
       tok__eql__14 Exp OptWhere { Ctr__Rhs__0 (rtkPosOf $1) $2 $3 } |
@@ -469,140 +469,120 @@ Rhs : qq_Rhs { Anti_Rhs (tkVal_qq_Rhs $1) } |
 Rule_0 : tok__lparen__2 ExportsList Rule_1 tok__rparen__4 { Ctr__Rule_0__0 (rtkPosOf $1) $2 $3 }
 
 Rule_1 : { Ctr__Rule_1__0 rtkNoPos } |
-         Rule_2 { Ctr__Rule_1__1 (rtkPosOf $1) $1 }
+         tok__coma__3 { Ctr__Rule_1__1 (rtkPosOf $1) }
 
-Rule_10 : tok__semi__7 TopDecls { Ctr__Rule_10__0 (rtkPosOf $1) $2 }
+Rule_10 : ImpDecl { [$1] } |
+          Rule_10 ImpDecl { $2 : $1 }
 
-Rule_11 : ImpDecl { [$1] } |
-          Rule_11 ImpDecl { $2 : $1 }
+Rule_11 : {- empty -} { [] } |
+          Rule_11 Import { $2 : $1 }
 
-Rule_12 : {- empty -} { [] } |
-          Rule_12 Import { $2 : $1 }
+ListElem_ModIdList13 : qq_ModIdList { Anti_Rule_12 (tkVal_qq_ModIdList $1) } |
+                       Rule_12 { $1 }
 
-ListElem_ModIdList14 : qq_ModIdList { Anti_Rule_13 (tkVal_qq_ModIdList $1) } |
-                       Rule_13 { $1 }
+Rule_12 : ModId tok__dot__9 { Ctr__Rule_12__1 (rtkPosOf $1) $1 }
 
-Rule_13 : ModId tok__dot__9 { Ctr__Rule_13__1 (rtkPosOf $1) $1 }
+Rule_14 : {- empty -} { [] } |
+          Rule_14 CName { $2 : $1 }
 
 Rule_15 : {- empty -} { [] } |
-          Rule_15 CName { $2 : $1 }
+          Rule_15 QVar { $2 : $1 }
 
-Rule_16 : {- empty -} { [] } |
-          Rule_16 QVar { $2 : $1 }
+Rule_16 : { Ctr__Rule_16__0 rtkNoPos } |
+          Rule_17 { Ctr__Rule_16__1 (rtkPosOf $1) $1 }
 
-Rule_17 : { Ctr__Rule_17__0 rtkNoPos } |
-          Rule_18 { Ctr__Rule_17__1 (rtkPosOf $1) $1 }
+Rule_17 : tok__lparen__2 tok__dot__dot__5 tok__rparen__4 { Ctr__Rule_17__0 (rtkPosOf $1) } |
+          tok__lparen__2 CNameList tok__rparen__4 { Ctr__Rule_17__1 (rtkPosOf $1) $2 }
 
-Rule_18 : tok__lparen__2 tok__dot__dot__5 tok__rparen__4 { Ctr__Rule_18__0 (rtkPosOf $1) } |
-          tok__lparen__2 CNameList tok__rparen__4 { Ctr__Rule_18__1 (rtkPosOf $1) $2 }
+Rule_18 : tok_as_11 ModId { Ctr__Rule_18__0 (rtkPosOf $1) $2 }
 
-Rule_19 : tok_qualified_10 { Ctr__Rule_19__0 (rtkPosOf $1) }
+Rule_19 : { Ctr__Rule_19__0 rtkNoPos } |
+          tok__coma__3 { Ctr__Rule_19__1 (rtkPosOf $1) }
 
-Rule_2 : tok__coma__3 { Ctr__Rule_2__0 (rtkPosOf $1) }
+Rule_2 : {- empty -} { [] } |
+         Rule_2 Export { $2 : $1 }
 
-Rule_20 : tok_as_11 ModId { Ctr__Rule_20__0 (rtkPosOf $1) $2 }
+Rule_20 : { Ctr__Rule_20__0 rtkNoPos } |
+          OptImpSpec { Ctr__Rule_20__1 (rtkPosOf $1) $1 }
 
-Rule_21 : { Ctr__Rule_21__0 rtkNoPos } |
-          Rule_22 { Ctr__Rule_21__1 (rtkPosOf $1) $1 }
+Rule_21 : {- empty -} { [] } |
+          Rule_21 TopDecl { $2 : $1 }
 
-Rule_22 : tok__coma__3 { Ctr__Rule_22__0 (rtkPosOf $1) }
+Rule_22 : FunLhs { Ctr__Rule_22__0 (rtkPosOf $1) $1 } |
+          Pat { Ctr__Rule_22__1 (rtkPosOf $1) $1 }
 
-Rule_23 : { Ctr__Rule_23__0 rtkNoPos } |
-          OptImpSpec { Ctr__Rule_23__1 (rtkPosOf $1) $1 }
+Rule_23 : Context tok__eql__symbol__16 { Ctr__Rule_23__0 (rtkPosOf $1) $1 }
 
 Rule_24 : {- empty -} { [] } |
-          Rule_24 TopDecl { $2 : $1 }
+          Rule_24 Op { $2 : $1 }
 
-Rule_25 : FunLhs { Ctr__Rule_25__0 (rtkPosOf $1) $1 } |
-          Pat { Ctr__Rule_25__1 (rtkPosOf $1) $1 }
+Rule_25 : {- empty -} { [] } |
+          Rule_25 Var { $2 : $1 }
 
-Rule_26 : Context tok__eql__symbol__16 { Ctr__Rule_26__0 (rtkPosOf $1) $1 }
+Rule_26 : {- empty -} { [] } |
+          Rule_26 Decl { $2 : $1 }
 
-Rule_27 : integer { Ctr__Rule_27__0 (rtkPosOf $1) (tkVal_integer $1) }
+Rule_27 : tok__colon__colon__17 OptContext Type { Ctr__Rule_27__0 (rtkPosOf $1) $2 $3 }
 
 Rule_28 : {- empty -} { [] } |
-          Rule_28 Op { $2 : $1 }
+          Rule_28 Rule_29 { $2 : $1 }
 
-Rule_29 : {- empty -} { [] } |
-          Rule_29 Rule_30 { $2 : $1 }
+Rule_29 : QOp ExpI { Ctr__Rule_29__0 (rtkPosOf $1) $1 $2 }
 
-Rule_3 : {- empty -} { [] } |
-         Rule_3 Export { $2 : $1 }
+Rule_3 : { Ctr__Rule_3__0 rtkNoPos } |
+         Rule_4 { Ctr__Rule_3__1 (rtkPosOf $1) $1 }
 
-Rule_30 : Var { Ctr__Rule_30__0 (rtkPosOf $1) $1 }
+Rule_30 : {- empty -} { [] } |
+          Rule_30 Constr { $2 : $1 }
 
 Rule_31 : {- empty -} { [] } |
-          Rule_31 Decl { $2 : $1 }
+          Rule_31 FieldDecl { $2 : $1 }
 
-Rule_32 : GdRhs { Ctr__Rule_32__0 (rtkPosOf $1) $1 }
+Rule_32 : Type { Ctr__Rule_32__0 (rtkPosOf $1) $1 } |
+          tok__exclamation__22 AType { Ctr__Rule_32__1 (rtkPosOf $1) $2 }
 
-Rule_33 : tok__colon__colon__17 OptContext Type { Ctr__Rule_33__0 (rtkPosOf $1) $2 $3 }
+Rule_33 : {- empty -} { [] } |
+          Rule_33 Var { $2 : $1 }
 
-Rule_34 : {- empty -} { [] } |
-          Rule_34 Rule_35 { $2 : $1 }
+Rule_34 : DClass { Ctr__Rule_34__0 (rtkPosOf $1) $1 } |
+          tok__lparen__2 DClassList tok__rparen__4 { Ctr__Rule_34__1 (rtkPosOf $1) $2 }
 
-Rule_35 : QOp ExpI { Ctr__Rule_35__0 (rtkPosOf $1) $1 $2 }
+Rule_35 : {- empty -} { [] } |
+          Rule_35 DClass { $2 : $1 }
 
 Rule_36 : {- empty -} { [] } |
-          Rule_36 Constr { $2 : $1 }
+          Rule_36 Class { $2 : $1 }
 
-Rule_37 : {- empty -} { [] } |
-          Rule_37 FieldDecl { $2 : $1 }
+Rule_37 : { Ctr__Rule_37__0 rtkNoPos } |
+          Rule_38 { Ctr__Rule_37__1 (rtkPosOf $1) $1 }
 
-Rule_38 : Type { Ctr__Rule_38__0 (rtkPosOf $1) $1 } |
-          tok__exclamation__22 AType { Ctr__Rule_38__1 (rtkPosOf $1) $2 }
+Rule_38 : tok__minus__symbol__24 Type { Ctr__Rule_38__0 (rtkPosOf $1) $2 }
 
-Rule_39 : {- empty -} { [] } |
-          Rule_39 Var { $2 : $1 }
+Rule_39 : { Ctr__Rule_39__0 rtkNoPos } |
+          BType { Ctr__Rule_39__1 (rtkPosOf $1) $1 }
 
-Rule_4 : { Ctr__Rule_4__0 rtkNoPos } |
-         Rule_5 { Ctr__Rule_4__1 (rtkPosOf $1) $1 }
+Rule_4 : tok__lparen__2 tok__dot__dot__5 tok__rparen__4 { Ctr__Rule_4__0 (rtkPosOf $1) } |
+         tok__lparen__2 CNameList tok__rparen__4 { Ctr__Rule_4__1 (rtkPosOf $1) $2 }
 
-Rule_40 : Deriving { Ctr__Rule_40__0 (rtkPosOf $1) $1 }
-
-Rule_41 : DClass { Ctr__Rule_41__0 (rtkPosOf $1) $1 } |
-          tok__lparen__2 DClassList tok__rparen__4 { Ctr__Rule_41__1 (rtkPosOf $1) $2 }
+Rule_41 : { Ctr__Rule_41__0 rtkNoPos } |
+          Type { Ctr__Rule_41__1 (rtkPosOf $1) $1 }
 
 Rule_42 : {- empty -} { [] } |
-          Rule_42 DClass { $2 : $1 }
+          Rule_42 Type { $2 : $1 }
 
-Rule_43 : {- empty -} { [] } |
-          Rule_43 Class { $2 : $1 }
+Rule_5 : { Ctr__Rule_5__0 rtkNoPos } |
+         Rule_6 { Ctr__Rule_5__1 (rtkPosOf $1) $1 }
 
-Rule_44 : { Ctr__Rule_44__0 rtkNoPos } |
-          Rule_45 { Ctr__Rule_44__1 (rtkPosOf $1) $1 }
+Rule_6 : tok__lparen__2 tok__dot__dot__5 tok__rparen__4 { Ctr__Rule_6__0 (rtkPosOf $1) } |
+         tok__lparen__2 QVarList tok__rparen__4 { Ctr__Rule_6__1 (rtkPosOf $1) $2 }
 
-Rule_45 : tok__minus__symbol__24 Type { Ctr__Rule_45__0 (rtkPosOf $1) $2 }
+Rule_7 : ImpDeclList Rule_8 { Ctr__Rule_7__0 (rtkPosOf $1) $1 $2 } |
+         ImpDeclList { Ctr__Rule_7__1 (rtkPosOf $1) $1 }
 
-Rule_46 : { Ctr__Rule_46__0 rtkNoPos } |
-          Rule_47 { Ctr__Rule_46__1 (rtkPosOf $1) $1 }
+Rule_8 : { Ctr__Rule_8__0 rtkNoPos } |
+         Rule_9 { Ctr__Rule_8__1 (rtkPosOf $1) $1 }
 
-Rule_47 : BType { Ctr__Rule_47__0 (rtkPosOf $1) $1 }
-
-Rule_49 : TypeList { Ctr__Rule_49__0 (rtkPosOf $1) $1 }
-
-Rule_5 : tok__lparen__2 tok__dot__dot__5 tok__rparen__4 { Ctr__Rule_5__0 (rtkPosOf $1) } |
-         tok__lparen__2 CNameList tok__rparen__4 { Ctr__Rule_5__1 (rtkPosOf $1) $2 }
-
-Rule_50 : { Ctr__Rule_50__0 rtkNoPos } |
-          Rule_51 { Ctr__Rule_50__1 (rtkPosOf $1) $1 }
-
-Rule_51 : Type { Ctr__Rule_51__0 (rtkPosOf $1) $1 }
-
-Rule_52 : {- empty -} { [] } |
-          Rule_52 Type { $2 : $1 }
-
-Rule_6 : { Ctr__Rule_6__0 rtkNoPos } |
-         Rule_7 { Ctr__Rule_6__1 (rtkPosOf $1) $1 }
-
-Rule_7 : tok__lparen__2 tok__dot__dot__5 tok__rparen__4 { Ctr__Rule_7__0 (rtkPosOf $1) } |
-         tok__lparen__2 QVarList tok__rparen__4 { Ctr__Rule_7__1 (rtkPosOf $1) $2 }
-
-Rule_8 : ImpDeclList Rule_9 { Ctr__Rule_8__0 (rtkPosOf $1) $1 $2 } |
-         ImpDeclList { Ctr__Rule_8__1 (rtkPosOf $1) $1 }
-
-Rule_9 : { Ctr__Rule_9__0 rtkNoPos } |
-         Rule_10 { Ctr__Rule_9__1 (rtkPosOf $1) $1 }
+Rule_9 : tok__semi__7 TopDecls { Ctr__Rule_9__0 (rtkPosOf $1) $2 }
 
 SimpleType : qq_SimpleType { Anti_SimpleType (tkVal_qq_SimpleType $1) } |
              TyCon TyVars { Ctr__SimpleType__0 (rtkPosOf $1) $1 (reverse $2) }
@@ -613,7 +593,7 @@ TopDecl : qq_TopDecl { Anti_TopDecl (tkVal_qq_TopDecl $1) } |
           Decl { Ctr__TopDecl__2 (rtkPosOf $1) $1 }
 
 TopDecls : qq_TopDecls { Anti_TopDecls (tkVal_qq_TopDecls $1) } |
-           Rule_24 tok__semi__7 { Ctr__TopDecls__0 (rtkPosOf (reverse $1)) (reverse $1) }
+           Rule_21 tok__semi__7 { Ctr__TopDecls__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 TyCls : qq_TyCls { Anti_TyCls (tkVal_qq_TyCls $1) } |
         conid { Ctr__TyCls__0 (rtkPosOf $1) (tkVal_conid $1) }
@@ -624,103 +604,103 @@ TyCon : qq_TyCon { Anti_TyCon (tkVal_qq_TyCon $1) } |
 TyVar : qq_TyVar { Anti_TyVar (tkVal_qq_TyVar $1) } |
         varid { Ctr__TyVar__0 (rtkPosOf $1) (tkVal_varid $1) }
 
-ListElem_TyVars53 : qq_TyVars { Anti_TyVar (tkVal_qq_TyVars $1) } |
+ListElem_TyVars43 : qq_TyVars { Anti_TyVar (tkVal_qq_TyVars $1) } |
                     TyVar { $1 }
 
 TyVars : {- empty -} { [] } |
-         TyVars ListElem_TyVars53 { $2 : $1 }
+         TyVars ListElem_TyVars43 { $2 : $1 }
 
 Type : qq_Type { Anti_Type (tkVal_qq_Type $1) } |
-       BType Rule_44 { Ctr__Type__0 (rtkPosOf $1) $1 $2 }
+       BType Rule_37 { Ctr__Type__0 (rtkPosOf $1) $1 $2 }
 
 TypeList : qq_TypeList { Anti_TypeList (tkVal_qq_TypeList $1) } |
-           Rule_52 tok__coma__3 { Ctr__TypeList__0 (rtkPosOf (reverse $1)) (reverse $1) }
+           Rule_42 tok__coma__3 { Ctr__TypeList__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 Var : qq_Var { Anti_Var (tkVal_qq_Var $1) } |
       varid { Ctr__Var__0 (rtkPosOf $1) (tkVal_varid $1) }
 
 Vars : qq_Vars { Anti_Vars (tkVal_qq_Vars $1) } |
-       Rule_39 tok__coma__3 { Ctr__Vars__0 (rtkPosOf (reverse $1)) (reverse $1) }
+       Rule_33 tok__coma__3 { Ctr__Vars__0 (rtkPosOf (reverse $1)) (reverse $1) }
 
 
 {
 parseError :: [L.PosToken] -> Either String a
-parseError [] = Left "Parse error: unexpected end of input"
+parseError [] = Left "unexpected end of input"
 parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
-    Left $ "Parse error at line " ++ show line ++ ", column " ++ show col ++ ": unexpected " ++ showRtkToken tok
+    Left $ show line ++ ":" ++ show col ++ ":unexpected " ++ showRtkToken tok
 
 -- Render a token the way it appears in the source, for error messages
 showRtkToken :: L.Token -> String
 showRtkToken L.EndOfFile = "end of input"
-showRtkToken L.Tk__tok_AType_dummy_121 = "'tok_AType_dummy_121'"
-showRtkToken L.Tk__tok_ATypeList_dummy_120 = "'tok_ATypeList_dummy_120'"
-showRtkToken L.Tk__tok_BType_dummy_119 = "'tok_BType_dummy_119'"
-showRtkToken L.Tk__tok_Body_dummy_118 = "'tok_Body_dummy_118'"
-showRtkToken L.Tk__tok_CName_dummy_117 = "'tok_CName_dummy_117'"
-showRtkToken L.Tk__tok_CNameList_dummy_116 = "'tok_CNameList_dummy_116'"
-showRtkToken L.Tk__tok_Class_dummy_115 = "'tok_Class_dummy_115'"
-showRtkToken L.Tk__tok_ClassList_dummy_114 = "'tok_ClassList_dummy_114'"
-showRtkToken L.Tk__tok_Con_dummy_113 = "'tok_Con_dummy_113'"
-showRtkToken L.Tk__tok_Constr_dummy_112 = "'tok_Constr_dummy_112'"
-showRtkToken L.Tk__tok_Constrs_dummy_111 = "'tok_Constrs_dummy_111'"
-showRtkToken L.Tk__tok_Context_dummy_110 = "'tok_Context_dummy_110'"
-showRtkToken L.Tk__tok_DClass_dummy_109 = "'tok_DClass_dummy_109'"
-showRtkToken L.Tk__tok_DClassList_dummy_108 = "'tok_DClassList_dummy_108'"
-showRtkToken L.Tk__tok_Decl_dummy_107 = "'tok_Decl_dummy_107'"
-showRtkToken L.Tk__tok_DeclList_dummy_106 = "'tok_DeclList_dummy_106'"
-showRtkToken L.Tk__tok_Decls_dummy_105 = "'tok_Decls_dummy_105'"
-showRtkToken L.Tk__tok_Deriving_dummy_104 = "'tok_Deriving_dummy_104'"
-showRtkToken L.Tk__tok_Exp_dummy_103 = "'tok_Exp_dummy_103'"
-showRtkToken L.Tk__tok_ExpI_dummy_102 = "'tok_ExpI_dummy_102'"
-showRtkToken L.Tk__tok_Export_dummy_101 = "'tok_Export_dummy_101'"
-showRtkToken L.Tk__tok_ExportsList_dummy_100 = "'tok_ExportsList_dummy_100'"
-showRtkToken L.Tk__tok_ExportsOpt_dummy_99 = "'tok_ExportsOpt_dummy_99'"
-showRtkToken L.Tk__tok_FieldDecl_dummy_98 = "'tok_FieldDecl_dummy_98'"
-showRtkToken L.Tk__tok_FieldDeclList_dummy_97 = "'tok_FieldDeclList_dummy_97'"
-showRtkToken L.Tk__tok_Fixity_dummy_96 = "'tok_Fixity_dummy_96'"
-showRtkToken L.Tk__tok_FunLhs_dummy_95 = "'tok_FunLhs_dummy_95'"
-showRtkToken L.Tk__tok_GTyCon_dummy_94 = "'tok_GTyCon_dummy_94'"
-showRtkToken L.Tk__tok_Gd_dummy_93 = "'tok_Gd_dummy_93'"
-showRtkToken L.Tk__tok_GdRhs_dummy_92 = "'tok_GdRhs_dummy_92'"
-showRtkToken L.Tk__tok_GenDecl_dummy_91 = "'tok_GenDecl_dummy_91'"
-showRtkToken L.Tk__tok_Haskell_dummy_122 = "'tok_Haskell_dummy_122'"
-showRtkToken L.Tk__tok_ImpDecl_dummy_90 = "'tok_ImpDecl_dummy_90'"
-showRtkToken L.Tk__tok_ImpDeclList_dummy_89 = "'tok_ImpDeclList_dummy_89'"
-showRtkToken L.Tk__tok_Import_dummy_88 = "'tok_Import_dummy_88'"
-showRtkToken L.Tk__tok_ImportList_dummy_87 = "'tok_ImportList_dummy_87'"
-showRtkToken L.Tk__tok_ModId_dummy_86 = "'tok_ModId_dummy_86'"
-showRtkToken L.Tk__tok_ModIdList_dummy_85 = "'tok_ModIdList_dummy_85'"
-showRtkToken L.Tk__tok_Module_dummy_84 = "'tok_Module_dummy_84'"
-showRtkToken L.Tk__tok_Op_dummy_83 = "'tok_Op_dummy_83'"
-showRtkToken L.Tk__tok_Ops_dummy_82 = "'tok_Ops_dummy_82'"
-showRtkToken L.Tk__tok_OptContext_dummy_81 = "'tok_OptContext_dummy_81'"
-showRtkToken L.Tk__tok_OptDeriving_dummy_80 = "'tok_OptDeriving_dummy_80'"
-showRtkToken L.Tk__tok_OptExpTypeSignature_dummy_79 = "'tok_OptExpTypeSignature_dummy_79'"
-showRtkToken L.Tk__tok_OptGdRhs_dummy_78 = "'tok_OptGdRhs_dummy_78'"
-showRtkToken L.Tk__tok_OptImpSpec_dummy_77 = "'tok_OptImpSpec_dummy_77'"
-showRtkToken L.Tk__tok_OptInteger_dummy_76 = "'tok_OptInteger_dummy_76'"
-showRtkToken L.Tk__tok_OptQualified_dummy_75 = "'tok_OptQualified_dummy_75'"
-showRtkToken L.Tk__tok_OptQualifiedAs_dummy_74 = "'tok_OptQualifiedAs_dummy_74'"
-showRtkToken L.Tk__tok_OptWhere_dummy_73 = "'tok_OptWhere_dummy_73'"
-showRtkToken L.Tk__tok_Pat_dummy_72 = "'tok_Pat_dummy_72'"
-showRtkToken L.Tk__tok_QOp_dummy_71 = "'tok_QOp_dummy_71'"
-showRtkToken L.Tk__tok_QTyCls_dummy_70 = "'tok_QTyCls_dummy_70'"
-showRtkToken L.Tk__tok_QTyCon_dummy_69 = "'tok_QTyCon_dummy_69'"
-showRtkToken L.Tk__tok_QVar_dummy_68 = "'tok_QVar_dummy_68'"
-showRtkToken L.Tk__tok_QVarId_dummy_67 = "'tok_QVarId_dummy_67'"
-showRtkToken L.Tk__tok_QVarList_dummy_66 = "'tok_QVarList_dummy_66'"
-showRtkToken L.Tk__tok_Rhs_dummy_65 = "'tok_Rhs_dummy_65'"
-showRtkToken L.Tk__tok_SimpleType_dummy_64 = "'tok_SimpleType_dummy_64'"
-showRtkToken L.Tk__tok_TopDecl_dummy_63 = "'tok_TopDecl_dummy_63'"
-showRtkToken L.Tk__tok_TopDecls_dummy_62 = "'tok_TopDecls_dummy_62'"
-showRtkToken L.Tk__tok_TyCls_dummy_61 = "'tok_TyCls_dummy_61'"
-showRtkToken L.Tk__tok_TyCon_dummy_60 = "'tok_TyCon_dummy_60'"
-showRtkToken L.Tk__tok_TyVar_dummy_59 = "'tok_TyVar_dummy_59'"
-showRtkToken L.Tk__tok_TyVars_dummy_58 = "'tok_TyVars_dummy_58'"
-showRtkToken L.Tk__tok_Type_dummy_57 = "'tok_Type_dummy_57'"
-showRtkToken L.Tk__tok_TypeList_dummy_56 = "'tok_TypeList_dummy_56'"
-showRtkToken L.Tk__tok_Var_dummy_55 = "'tok_Var_dummy_55'"
-showRtkToken L.Tk__tok_Vars_dummy_54 = "'tok_Vars_dummy_54'"
+showRtkToken L.Tk__tok_AType_dummy_111 = "'tok_AType_dummy_111'"
+showRtkToken L.Tk__tok_ATypeList_dummy_110 = "'tok_ATypeList_dummy_110'"
+showRtkToken L.Tk__tok_BType_dummy_109 = "'tok_BType_dummy_109'"
+showRtkToken L.Tk__tok_Body_dummy_108 = "'tok_Body_dummy_108'"
+showRtkToken L.Tk__tok_CName_dummy_107 = "'tok_CName_dummy_107'"
+showRtkToken L.Tk__tok_CNameList_dummy_106 = "'tok_CNameList_dummy_106'"
+showRtkToken L.Tk__tok_Class_dummy_105 = "'tok_Class_dummy_105'"
+showRtkToken L.Tk__tok_ClassList_dummy_104 = "'tok_ClassList_dummy_104'"
+showRtkToken L.Tk__tok_Con_dummy_103 = "'tok_Con_dummy_103'"
+showRtkToken L.Tk__tok_Constr_dummy_102 = "'tok_Constr_dummy_102'"
+showRtkToken L.Tk__tok_Constrs_dummy_101 = "'tok_Constrs_dummy_101'"
+showRtkToken L.Tk__tok_Context_dummy_100 = "'tok_Context_dummy_100'"
+showRtkToken L.Tk__tok_DClass_dummy_99 = "'tok_DClass_dummy_99'"
+showRtkToken L.Tk__tok_DClassList_dummy_98 = "'tok_DClassList_dummy_98'"
+showRtkToken L.Tk__tok_Decl_dummy_97 = "'tok_Decl_dummy_97'"
+showRtkToken L.Tk__tok_DeclList_dummy_96 = "'tok_DeclList_dummy_96'"
+showRtkToken L.Tk__tok_Decls_dummy_95 = "'tok_Decls_dummy_95'"
+showRtkToken L.Tk__tok_Deriving_dummy_94 = "'tok_Deriving_dummy_94'"
+showRtkToken L.Tk__tok_Exp_dummy_93 = "'tok_Exp_dummy_93'"
+showRtkToken L.Tk__tok_ExpI_dummy_92 = "'tok_ExpI_dummy_92'"
+showRtkToken L.Tk__tok_Export_dummy_91 = "'tok_Export_dummy_91'"
+showRtkToken L.Tk__tok_ExportsList_dummy_90 = "'tok_ExportsList_dummy_90'"
+showRtkToken L.Tk__tok_ExportsOpt_dummy_89 = "'tok_ExportsOpt_dummy_89'"
+showRtkToken L.Tk__tok_FieldDecl_dummy_88 = "'tok_FieldDecl_dummy_88'"
+showRtkToken L.Tk__tok_FieldDeclList_dummy_87 = "'tok_FieldDeclList_dummy_87'"
+showRtkToken L.Tk__tok_Fixity_dummy_86 = "'tok_Fixity_dummy_86'"
+showRtkToken L.Tk__tok_FunLhs_dummy_85 = "'tok_FunLhs_dummy_85'"
+showRtkToken L.Tk__tok_GTyCon_dummy_84 = "'tok_GTyCon_dummy_84'"
+showRtkToken L.Tk__tok_Gd_dummy_83 = "'tok_Gd_dummy_83'"
+showRtkToken L.Tk__tok_GdRhs_dummy_82 = "'tok_GdRhs_dummy_82'"
+showRtkToken L.Tk__tok_GenDecl_dummy_81 = "'tok_GenDecl_dummy_81'"
+showRtkToken L.Tk__tok_Haskell_dummy_112 = "'tok_Haskell_dummy_112'"
+showRtkToken L.Tk__tok_ImpDecl_dummy_80 = "'tok_ImpDecl_dummy_80'"
+showRtkToken L.Tk__tok_ImpDeclList_dummy_79 = "'tok_ImpDeclList_dummy_79'"
+showRtkToken L.Tk__tok_Import_dummy_78 = "'tok_Import_dummy_78'"
+showRtkToken L.Tk__tok_ImportList_dummy_77 = "'tok_ImportList_dummy_77'"
+showRtkToken L.Tk__tok_ModId_dummy_76 = "'tok_ModId_dummy_76'"
+showRtkToken L.Tk__tok_ModIdList_dummy_75 = "'tok_ModIdList_dummy_75'"
+showRtkToken L.Tk__tok_Module_dummy_74 = "'tok_Module_dummy_74'"
+showRtkToken L.Tk__tok_Op_dummy_73 = "'tok_Op_dummy_73'"
+showRtkToken L.Tk__tok_Ops_dummy_72 = "'tok_Ops_dummy_72'"
+showRtkToken L.Tk__tok_OptContext_dummy_71 = "'tok_OptContext_dummy_71'"
+showRtkToken L.Tk__tok_OptDeriving_dummy_70 = "'tok_OptDeriving_dummy_70'"
+showRtkToken L.Tk__tok_OptExpTypeSignature_dummy_69 = "'tok_OptExpTypeSignature_dummy_69'"
+showRtkToken L.Tk__tok_OptGdRhs_dummy_68 = "'tok_OptGdRhs_dummy_68'"
+showRtkToken L.Tk__tok_OptImpSpec_dummy_67 = "'tok_OptImpSpec_dummy_67'"
+showRtkToken L.Tk__tok_OptInteger_dummy_66 = "'tok_OptInteger_dummy_66'"
+showRtkToken L.Tk__tok_OptQualified_dummy_65 = "'tok_OptQualified_dummy_65'"
+showRtkToken L.Tk__tok_OptQualifiedAs_dummy_64 = "'tok_OptQualifiedAs_dummy_64'"
+showRtkToken L.Tk__tok_OptWhere_dummy_63 = "'tok_OptWhere_dummy_63'"
+showRtkToken L.Tk__tok_Pat_dummy_62 = "'tok_Pat_dummy_62'"
+showRtkToken L.Tk__tok_QOp_dummy_61 = "'tok_QOp_dummy_61'"
+showRtkToken L.Tk__tok_QTyCls_dummy_60 = "'tok_QTyCls_dummy_60'"
+showRtkToken L.Tk__tok_QTyCon_dummy_59 = "'tok_QTyCon_dummy_59'"
+showRtkToken L.Tk__tok_QVar_dummy_58 = "'tok_QVar_dummy_58'"
+showRtkToken L.Tk__tok_QVarId_dummy_57 = "'tok_QVarId_dummy_57'"
+showRtkToken L.Tk__tok_QVarList_dummy_56 = "'tok_QVarList_dummy_56'"
+showRtkToken L.Tk__tok_Rhs_dummy_55 = "'tok_Rhs_dummy_55'"
+showRtkToken L.Tk__tok_SimpleType_dummy_54 = "'tok_SimpleType_dummy_54'"
+showRtkToken L.Tk__tok_TopDecl_dummy_53 = "'tok_TopDecl_dummy_53'"
+showRtkToken L.Tk__tok_TopDecls_dummy_52 = "'tok_TopDecls_dummy_52'"
+showRtkToken L.Tk__tok_TyCls_dummy_51 = "'tok_TyCls_dummy_51'"
+showRtkToken L.Tk__tok_TyCon_dummy_50 = "'tok_TyCon_dummy_50'"
+showRtkToken L.Tk__tok_TyVar_dummy_49 = "'tok_TyVar_dummy_49'"
+showRtkToken L.Tk__tok_TyVars_dummy_48 = "'tok_TyVars_dummy_48'"
+showRtkToken L.Tk__tok_Type_dummy_47 = "'tok_Type_dummy_47'"
+showRtkToken L.Tk__tok_TypeList_dummy_46 = "'tok_TypeList_dummy_46'"
+showRtkToken L.Tk__tok_Var_dummy_45 = "'tok_Var_dummy_45'"
+showRtkToken L.Tk__tok_Vars_dummy_44 = "'tok_Vars_dummy_44'"
 showRtkToken L.Tk__tok__symbol__8 = "'}'"
 showRtkToken L.Tk__tok__pipe__21 = "'|'"
 showRtkToken L.Tk__tok__symbol__6 = "'{'"
@@ -1239,8 +1219,8 @@ instance RtkPosOf Haskell where
 data AType = Anti_AType String |
              Ctr__AType__0 RtkPos TyVar |
              Ctr__AType__1 RtkPos GTyCon |
-             Ctr__AType__2 RtkPos Rule_49 |
-             Ctr__AType__3 RtkPos Rule_50
+             Ctr__AType__2 RtkPos TypeList |
+             Ctr__AType__3 RtkPos Rule_41
              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf AType where
     rtkPosOf (Anti_AType _) = rtkNoPos
@@ -1250,13 +1230,13 @@ instance RtkPosOf AType where
     rtkPosOf (Ctr__AType__3 p _) = p
 type ATypeList = [AType]
 data BType = Anti_BType String |
-             Ctr__BType__0 RtkPos Rule_46 AType
+             Ctr__BType__0 RtkPos Rule_39 AType
              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf BType where
     rtkPosOf (Anti_BType _) = rtkNoPos
     rtkPosOf (Ctr__BType__0 p _ _) = p
 data Body = Anti_Body String |
-            Ctr__Body__0 RtkPos Rule_8
+            Ctr__Body__0 RtkPos Rule_7
             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Body where
     rtkPosOf (Anti_Body _) = rtkNoPos
@@ -1270,7 +1250,7 @@ instance RtkPosOf CName where
     rtkPosOf (Ctr__CName__0 p _) = p
     rtkPosOf (Ctr__CName__1 p _) = p
 data CNameList = Anti_CNameList String |
-                 Ctr__CNameList__0 RtkPos Rule_15
+                 Ctr__CNameList__0 RtkPos Rule_14
                  deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf CNameList where
     rtkPosOf (Anti_CNameList _) = rtkNoPos
@@ -1284,7 +1264,7 @@ instance RtkPosOf Class where
     rtkPosOf (Ctr__Class__0 p _ _) = p
     rtkPosOf (Ctr__Class__1 p _ _ _) = p
 data ClassList = Anti_ClassList String |
-                 Ctr__ClassList__0 RtkPos Rule_43
+                 Ctr__ClassList__0 RtkPos Rule_36
                  deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ClassList where
     rtkPosOf (Anti_ClassList _) = rtkNoPos
@@ -1302,7 +1282,7 @@ instance RtkPosOf Constr where
     rtkPosOf (Anti_Constr _) = rtkNoPos
     rtkPosOf (Ctr__Constr__0 p _ _) = p
 data Constrs = Anti_Constrs String |
-               Ctr__Constrs__0 RtkPos Rule_36
+               Ctr__Constrs__0 RtkPos Rule_30
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Constrs where
     rtkPosOf (Anti_Constrs _) = rtkNoPos
@@ -1322,21 +1302,21 @@ instance RtkPosOf DClass where
     rtkPosOf (Anti_DClass _) = rtkNoPos
     rtkPosOf (Ctr__DClass__0 p _) = p
 data DClassList = Anti_DClassList String |
-                  Ctr__DClassList__0 RtkPos Rule_42
+                  Ctr__DClassList__0 RtkPos Rule_35
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf DClassList where
     rtkPosOf (Anti_DClassList _) = rtkNoPos
     rtkPosOf (Ctr__DClassList__0 p _) = p
 data Decl = Anti_Decl String |
             Ctr__Decl__0 RtkPos GenDecl |
-            Ctr__Decl__1 RtkPos Rule_25 Rhs
+            Ctr__Decl__1 RtkPos Rule_22 Rhs
             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Decl where
     rtkPosOf (Anti_Decl _) = rtkNoPos
     rtkPosOf (Ctr__Decl__0 p _) = p
     rtkPosOf (Ctr__Decl__1 p _ _) = p
 data DeclList = Anti_DeclList String |
-                Ctr__DeclList__0 RtkPos Rule_31
+                Ctr__DeclList__0 RtkPos Rule_26
                 deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf DeclList where
     rtkPosOf (Anti_DeclList _) = rtkNoPos
@@ -1348,7 +1328,7 @@ instance RtkPosOf Decls where
     rtkPosOf (Anti_Decls _) = rtkNoPos
     rtkPosOf (Ctr__Decls__0 p _) = p
 data Deriving = Anti_Deriving String |
-                Ctr__Deriving__0 RtkPos Rule_41
+                Ctr__Deriving__0 RtkPos Rule_34
                 deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Deriving where
     rtkPosOf (Anti_Deriving _) = rtkNoPos
@@ -1360,7 +1340,7 @@ instance RtkPosOf Exp where
     rtkPosOf (Anti_Exp _) = rtkNoPos
     rtkPosOf (Ctr__Exp__0 p _ _) = p
 data ExpI = Anti_ExpI String |
-            Ctr__ExpI__0 RtkPos ExpI Rule_34
+            Ctr__ExpI__0 RtkPos ExpI Rule_28
             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ExpI where
     rtkPosOf (Anti_ExpI _) = rtkNoPos
@@ -1368,8 +1348,8 @@ instance RtkPosOf ExpI where
 data Export = Anti_Export String |
               Ctr__Export__0 RtkPos ModId |
               Ctr__Export__1 RtkPos QVar |
-              Ctr__Export__2 RtkPos QTyCon Rule_4 |
-              Ctr__Export__3 RtkPos QTyCls Rule_6
+              Ctr__Export__2 RtkPos QTyCon Rule_3 |
+              Ctr__Export__3 RtkPos QTyCls Rule_5
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Export where
     rtkPosOf (Anti_Export _) = rtkNoPos
@@ -1378,7 +1358,7 @@ instance RtkPosOf Export where
     rtkPosOf (Ctr__Export__2 p _ _) = p
     rtkPosOf (Ctr__Export__3 p _ _) = p
 data ExportsList = Anti_ExportsList String |
-                   Ctr__ExportsList__0 RtkPos Rule_3
+                   Ctr__ExportsList__0 RtkPos Rule_2
                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ExportsList where
     rtkPosOf (Anti_ExportsList _) = rtkNoPos
@@ -1392,13 +1372,13 @@ instance RtkPosOf ExportsOpt where
     rtkPosOf (Ctr__ExportsOpt__0 p) = p
     rtkPosOf (Ctr__ExportsOpt__1 p _) = p
 data FieldDecl = Anti_FieldDecl String |
-                 Ctr__FieldDecl__0 RtkPos Vars Rule_38
+                 Ctr__FieldDecl__0 RtkPos Vars Rule_32
                  deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf FieldDecl where
     rtkPosOf (Anti_FieldDecl _) = rtkNoPos
     rtkPosOf (Ctr__FieldDecl__0 p _ _) = p
 data FieldDeclList = Anti_FieldDeclList String |
-                     Ctr__FieldDeclList__0 RtkPos Rule_37
+                     Ctr__FieldDeclList__0 RtkPos Rule_31
                      deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf FieldDeclList where
     rtkPosOf (Anti_FieldDeclList _) = rtkNoPos
@@ -1450,27 +1430,27 @@ instance RtkPosOf GenDecl where
     rtkPosOf (Ctr__GenDecl__0 p _ _ _) = p
     rtkPosOf (Ctr__GenDecl__1 p _ _ _) = p
 data ImpDecl = Anti_ImpDecl String |
-               Ctr__ImpDecl__0 RtkPos OptQualified ModId OptQualifiedAs Rule_23
+               Ctr__ImpDecl__0 RtkPos OptQualified ModId OptQualifiedAs Rule_20
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ImpDecl where
     rtkPosOf (Anti_ImpDecl _) = rtkNoPos
     rtkPosOf (Ctr__ImpDecl__0 p _ _ _ _) = p
 data ImpDeclList = Anti_ImpDeclList String |
-                   Ctr__ImpDeclList__0 RtkPos Rule_11
+                   Ctr__ImpDeclList__0 RtkPos Rule_10
                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ImpDeclList where
     rtkPosOf (Anti_ImpDeclList _) = rtkNoPos
     rtkPosOf (Ctr__ImpDeclList__0 p _) = p
 data Import = Anti_Import String |
               Ctr__Import__0 RtkPos Var |
-              Ctr__Import__1 RtkPos TyCon Rule_17
+              Ctr__Import__1 RtkPos TyCon Rule_16
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Import where
     rtkPosOf (Anti_Import _) = rtkNoPos
     rtkPosOf (Ctr__Import__0 p _) = p
     rtkPosOf (Ctr__Import__1 p _ _) = p
 data ImportList = Anti_ImportList String |
-                  Ctr__ImportList__0 RtkPos Rule_12
+                  Ctr__ImportList__0 RtkPos Rule_11
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ImportList where
     rtkPosOf (Anti_ImportList _) = rtkNoPos
@@ -1481,7 +1461,7 @@ data ModId = Anti_ModId String |
 instance RtkPosOf ModId where
     rtkPosOf (Anti_ModId _) = rtkNoPos
     rtkPosOf (Ctr__ModId__0 p _) = p
-type ModIdList = [Rule_13]
+type ModIdList = [Rule_12]
 data Module = Anti_Module String |
               Ctr__Module__0 RtkPos ModId ExportsOpt Body |
               Ctr__Module__1 RtkPos Body
@@ -1499,14 +1479,14 @@ instance RtkPosOf Op where
     rtkPosOf (Ctr__Op__0 p _) = p
     rtkPosOf (Ctr__Op__1 p _) = p
 data Ops = Anti_Ops String |
-           Ctr__Ops__0 RtkPos Rule_28
+           Ctr__Ops__0 RtkPos Rule_24
            deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Ops where
     rtkPosOf (Anti_Ops _) = rtkNoPos
     rtkPosOf (Ctr__Ops__0 p _) = p
 data OptContext = Anti_OptContext String |
                   Ctr__OptContext__0 RtkPos |
-                  Ctr__OptContext__1 RtkPos Rule_26
+                  Ctr__OptContext__1 RtkPos Rule_23
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptContext where
     rtkPosOf (Anti_OptContext _) = rtkNoPos
@@ -1514,7 +1494,7 @@ instance RtkPosOf OptContext where
     rtkPosOf (Ctr__OptContext__1 p _) = p
 data OptDeriving = Anti_OptDeriving String |
                    Ctr__OptDeriving__0 RtkPos |
-                   Ctr__OptDeriving__1 RtkPos Rule_40
+                   Ctr__OptDeriving__1 RtkPos Deriving
                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptDeriving where
     rtkPosOf (Anti_OptDeriving _) = rtkNoPos
@@ -1522,7 +1502,7 @@ instance RtkPosOf OptDeriving where
     rtkPosOf (Ctr__OptDeriving__1 p _) = p
 data OptExpTypeSignature = Anti_OptExpTypeSignature String |
                            Ctr__OptExpTypeSignature__0 RtkPos |
-                           Ctr__OptExpTypeSignature__1 RtkPos Rule_33
+                           Ctr__OptExpTypeSignature__1 RtkPos Rule_27
                            deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptExpTypeSignature where
     rtkPosOf (Anti_OptExpTypeSignature _) = rtkNoPos
@@ -1530,21 +1510,21 @@ instance RtkPosOf OptExpTypeSignature where
     rtkPosOf (Ctr__OptExpTypeSignature__1 p _) = p
 data OptGdRhs = Anti_OptGdRhs String |
                 Ctr__OptGdRhs__0 RtkPos |
-                Ctr__OptGdRhs__1 RtkPos Rule_32
+                Ctr__OptGdRhs__1 RtkPos GdRhs
                 deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptGdRhs where
     rtkPosOf (Anti_OptGdRhs _) = rtkNoPos
     rtkPosOf (Ctr__OptGdRhs__0 p) = p
     rtkPosOf (Ctr__OptGdRhs__1 p _) = p
 data OptImpSpec = Anti_OptImpSpec String |
-                  Ctr__OptImpSpec__0 RtkPos ImportList Rule_21
+                  Ctr__OptImpSpec__0 RtkPos ImportList Rule_19
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptImpSpec where
     rtkPosOf (Anti_OptImpSpec _) = rtkNoPos
     rtkPosOf (Ctr__OptImpSpec__0 p _ _) = p
 data OptInteger = Anti_OptInteger String |
                   Ctr__OptInteger__0 RtkPos |
-                  Ctr__OptInteger__1 RtkPos Rule_27
+                  Ctr__OptInteger__1 RtkPos String
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptInteger where
     rtkPosOf (Anti_OptInteger _) = rtkNoPos
@@ -1552,15 +1532,15 @@ instance RtkPosOf OptInteger where
     rtkPosOf (Ctr__OptInteger__1 p _) = p
 data OptQualified = Anti_OptQualified String |
                     Ctr__OptQualified__0 RtkPos |
-                    Ctr__OptQualified__1 RtkPos Rule_19
+                    Ctr__OptQualified__1 RtkPos
                     deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptQualified where
     rtkPosOf (Anti_OptQualified _) = rtkNoPos
     rtkPosOf (Ctr__OptQualified__0 p) = p
-    rtkPosOf (Ctr__OptQualified__1 p _) = p
+    rtkPosOf (Ctr__OptQualified__1 p) = p
 data OptQualifiedAs = Anti_OptQualifiedAs String |
                       Ctr__OptQualifiedAs__0 RtkPos |
-                      Ctr__OptQualifiedAs__1 RtkPos Rule_20
+                      Ctr__OptQualifiedAs__1 RtkPos Rule_18
                       deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptQualifiedAs where
     rtkPosOf (Anti_OptQualifiedAs _) = rtkNoPos
@@ -1573,7 +1553,7 @@ instance RtkPosOf OptWhere where
     rtkPosOf (Anti_OptWhere _) = rtkNoPos
     rtkPosOf (Ctr__OptWhere__0 p _) = p
 data Pat = Anti_Pat String |
-           Ctr__Pat__0 RtkPos Con Rule_29
+           Ctr__Pat__0 RtkPos Con Rule_25
            deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Pat where
     rtkPosOf (Anti_Pat _) = rtkNoPos
@@ -1609,7 +1589,7 @@ instance RtkPosOf QVarId where
     rtkPosOf (Anti_QVarId _) = rtkNoPos
     rtkPosOf (Ctr__QVarId__0 p _ _) = p
 data QVarList = Anti_QVarList String |
-                Ctr__QVarList__0 RtkPos Rule_16
+                Ctr__QVarList__0 RtkPos Rule_15
                 deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf QVarList where
     rtkPosOf (Anti_QVarList _) = rtkNoPos
@@ -1627,193 +1607,153 @@ data Rule_0 = Ctr__Rule_0__0 RtkPos ExportsList Rule_1
 instance RtkPosOf Rule_0 where
     rtkPosOf (Ctr__Rule_0__0 p _ _) = p
 data Rule_1 = Ctr__Rule_1__0 RtkPos |
-              Ctr__Rule_1__1 RtkPos Rule_2
+              Ctr__Rule_1__1 RtkPos
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_1 where
     rtkPosOf (Ctr__Rule_1__0 p) = p
-    rtkPosOf (Ctr__Rule_1__1 p _) = p
-data Rule_10 = Ctr__Rule_10__0 RtkPos TopDecls
+    rtkPosOf (Ctr__Rule_1__1 p) = p
+type Rule_10 = [ImpDecl]
+type Rule_11 = [Import]
+data Rule_12 = Anti_Rule_12 String |
+               Ctr__Rule_12__1 RtkPos ModId
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_10 where
-    rtkPosOf (Ctr__Rule_10__0 p _) = p
-type Rule_11 = [ImpDecl]
-type Rule_12 = [Import]
-data Rule_13 = Anti_Rule_13 String |
-               Ctr__Rule_13__1 RtkPos ModId
+instance RtkPosOf Rule_12 where
+    rtkPosOf (Anti_Rule_12 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_12__1 p _) = p
+type Rule_14 = [CName]
+type Rule_15 = [QVar]
+data Rule_16 = Ctr__Rule_16__0 RtkPos |
+               Ctr__Rule_16__1 RtkPos Rule_17
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_13 where
-    rtkPosOf (Anti_Rule_13 _) = rtkNoPos
-    rtkPosOf (Ctr__Rule_13__1 p _) = p
-type Rule_15 = [CName]
-type Rule_16 = [QVar]
+instance RtkPosOf Rule_16 where
+    rtkPosOf (Ctr__Rule_16__0 p) = p
+    rtkPosOf (Ctr__Rule_16__1 p _) = p
 data Rule_17 = Ctr__Rule_17__0 RtkPos |
-               Ctr__Rule_17__1 RtkPos Rule_18
+               Ctr__Rule_17__1 RtkPos CNameList
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_17 where
     rtkPosOf (Ctr__Rule_17__0 p) = p
     rtkPosOf (Ctr__Rule_17__1 p _) = p
-data Rule_18 = Ctr__Rule_18__0 RtkPos |
-               Ctr__Rule_18__1 RtkPos CNameList
+data Rule_18 = Ctr__Rule_18__0 RtkPos ModId
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_18 where
-    rtkPosOf (Ctr__Rule_18__0 p) = p
-    rtkPosOf (Ctr__Rule_18__1 p _) = p
-data Rule_19 = Ctr__Rule_19__0 RtkPos
+    rtkPosOf (Ctr__Rule_18__0 p _) = p
+data Rule_19 = Ctr__Rule_19__0 RtkPos |
+               Ctr__Rule_19__1 RtkPos
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_19 where
     rtkPosOf (Ctr__Rule_19__0 p) = p
-data Rule_2 = Ctr__Rule_2__0 RtkPos
-              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_2 where
-    rtkPosOf (Ctr__Rule_2__0 p) = p
-data Rule_20 = Ctr__Rule_20__0 RtkPos ModId
+    rtkPosOf (Ctr__Rule_19__1 p) = p
+type Rule_2 = [Export]
+data Rule_20 = Ctr__Rule_20__0 RtkPos |
+               Ctr__Rule_20__1 RtkPos OptImpSpec
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_20 where
-    rtkPosOf (Ctr__Rule_20__0 p _) = p
-data Rule_21 = Ctr__Rule_21__0 RtkPos |
-               Ctr__Rule_21__1 RtkPos Rule_22
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_21 where
-    rtkPosOf (Ctr__Rule_21__0 p) = p
-    rtkPosOf (Ctr__Rule_21__1 p _) = p
-data Rule_22 = Ctr__Rule_22__0 RtkPos
+    rtkPosOf (Ctr__Rule_20__0 p) = p
+    rtkPosOf (Ctr__Rule_20__1 p _) = p
+type Rule_21 = [TopDecl]
+data Rule_22 = Ctr__Rule_22__0 RtkPos FunLhs |
+               Ctr__Rule_22__1 RtkPos Pat
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_22 where
-    rtkPosOf (Ctr__Rule_22__0 p) = p
-data Rule_23 = Ctr__Rule_23__0 RtkPos |
-               Ctr__Rule_23__1 RtkPos OptImpSpec
+    rtkPosOf (Ctr__Rule_22__0 p _) = p
+    rtkPosOf (Ctr__Rule_22__1 p _) = p
+data Rule_23 = Ctr__Rule_23__0 RtkPos Context
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_23 where
-    rtkPosOf (Ctr__Rule_23__0 p) = p
-    rtkPosOf (Ctr__Rule_23__1 p _) = p
-type Rule_24 = [TopDecl]
-data Rule_25 = Ctr__Rule_25__0 RtkPos FunLhs |
-               Ctr__Rule_25__1 RtkPos Pat
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_25 where
-    rtkPosOf (Ctr__Rule_25__0 p _) = p
-    rtkPosOf (Ctr__Rule_25__1 p _) = p
-data Rule_26 = Ctr__Rule_26__0 RtkPos Context
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_26 where
-    rtkPosOf (Ctr__Rule_26__0 p _) = p
-data Rule_27 = Ctr__Rule_27__0 RtkPos String
+    rtkPosOf (Ctr__Rule_23__0 p _) = p
+type Rule_24 = [Op]
+type Rule_25 = [Var]
+type Rule_26 = [Decl]
+data Rule_27 = Ctr__Rule_27__0 RtkPos OptContext Type
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_27 where
-    rtkPosOf (Ctr__Rule_27__0 p _) = p
-type Rule_28 = [Op]
-type Rule_29 = [Rule_30]
-type Rule_3 = [Export]
-data Rule_30 = Ctr__Rule_30__0 RtkPos Var
+    rtkPosOf (Ctr__Rule_27__0 p _ _) = p
+type Rule_28 = [Rule_29]
+data Rule_29 = Ctr__Rule_29__0 RtkPos QOp ExpI
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_30 where
-    rtkPosOf (Ctr__Rule_30__0 p _) = p
-type Rule_31 = [Decl]
-data Rule_32 = Ctr__Rule_32__0 RtkPos GdRhs
+instance RtkPosOf Rule_29 where
+    rtkPosOf (Ctr__Rule_29__0 p _ _) = p
+data Rule_3 = Ctr__Rule_3__0 RtkPos |
+              Ctr__Rule_3__1 RtkPos Rule_4
+              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_3 where
+    rtkPosOf (Ctr__Rule_3__0 p) = p
+    rtkPosOf (Ctr__Rule_3__1 p _) = p
+type Rule_30 = [Constr]
+type Rule_31 = [FieldDecl]
+data Rule_32 = Ctr__Rule_32__0 RtkPos Type |
+               Ctr__Rule_32__1 RtkPos AType
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_32 where
     rtkPosOf (Ctr__Rule_32__0 p _) = p
-data Rule_33 = Ctr__Rule_33__0 RtkPos OptContext Type
+    rtkPosOf (Ctr__Rule_32__1 p _) = p
+type Rule_33 = [Var]
+data Rule_34 = Ctr__Rule_34__0 RtkPos DClass |
+               Ctr__Rule_34__1 RtkPos DClassList
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_33 where
-    rtkPosOf (Ctr__Rule_33__0 p _ _) = p
-type Rule_34 = [Rule_35]
-data Rule_35 = Ctr__Rule_35__0 RtkPos QOp ExpI
+instance RtkPosOf Rule_34 where
+    rtkPosOf (Ctr__Rule_34__0 p _) = p
+    rtkPosOf (Ctr__Rule_34__1 p _) = p
+type Rule_35 = [DClass]
+type Rule_36 = [Class]
+data Rule_37 = Ctr__Rule_37__0 RtkPos |
+               Ctr__Rule_37__1 RtkPos Rule_38
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_35 where
-    rtkPosOf (Ctr__Rule_35__0 p _ _) = p
-type Rule_36 = [Constr]
-type Rule_37 = [FieldDecl]
-data Rule_38 = Ctr__Rule_38__0 RtkPos Type |
-               Ctr__Rule_38__1 RtkPos AType
+instance RtkPosOf Rule_37 where
+    rtkPosOf (Ctr__Rule_37__0 p) = p
+    rtkPosOf (Ctr__Rule_37__1 p _) = p
+data Rule_38 = Ctr__Rule_38__0 RtkPos Type
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_38 where
     rtkPosOf (Ctr__Rule_38__0 p _) = p
-    rtkPosOf (Ctr__Rule_38__1 p _) = p
-type Rule_39 = [Var]
+data Rule_39 = Ctr__Rule_39__0 RtkPos |
+               Ctr__Rule_39__1 RtkPos BType
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_39 where
+    rtkPosOf (Ctr__Rule_39__0 p) = p
+    rtkPosOf (Ctr__Rule_39__1 p _) = p
 data Rule_4 = Ctr__Rule_4__0 RtkPos |
-              Ctr__Rule_4__1 RtkPos Rule_5
+              Ctr__Rule_4__1 RtkPos CNameList
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_4 where
     rtkPosOf (Ctr__Rule_4__0 p) = p
     rtkPosOf (Ctr__Rule_4__1 p _) = p
-data Rule_40 = Ctr__Rule_40__0 RtkPos Deriving
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_40 where
-    rtkPosOf (Ctr__Rule_40__0 p _) = p
-data Rule_41 = Ctr__Rule_41__0 RtkPos DClass |
-               Ctr__Rule_41__1 RtkPos DClassList
+data Rule_41 = Ctr__Rule_41__0 RtkPos |
+               Ctr__Rule_41__1 RtkPos Type
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_41 where
-    rtkPosOf (Ctr__Rule_41__0 p _) = p
+    rtkPosOf (Ctr__Rule_41__0 p) = p
     rtkPosOf (Ctr__Rule_41__1 p _) = p
-type Rule_42 = [DClass]
-type Rule_43 = [Class]
-data Rule_44 = Ctr__Rule_44__0 RtkPos |
-               Ctr__Rule_44__1 RtkPos Rule_45
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_44 where
-    rtkPosOf (Ctr__Rule_44__0 p) = p
-    rtkPosOf (Ctr__Rule_44__1 p _) = p
-data Rule_45 = Ctr__Rule_45__0 RtkPos Type
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_45 where
-    rtkPosOf (Ctr__Rule_45__0 p _) = p
-data Rule_46 = Ctr__Rule_46__0 RtkPos |
-               Ctr__Rule_46__1 RtkPos Rule_47
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_46 where
-    rtkPosOf (Ctr__Rule_46__0 p) = p
-    rtkPosOf (Ctr__Rule_46__1 p _) = p
-data Rule_47 = Ctr__Rule_47__0 RtkPos BType
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_47 where
-    rtkPosOf (Ctr__Rule_47__0 p _) = p
-data Rule_49 = Ctr__Rule_49__0 RtkPos TypeList
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_49 where
-    rtkPosOf (Ctr__Rule_49__0 p _) = p
+type Rule_42 = [Type]
 data Rule_5 = Ctr__Rule_5__0 RtkPos |
-              Ctr__Rule_5__1 RtkPos CNameList
+              Ctr__Rule_5__1 RtkPos Rule_6
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_5 where
     rtkPosOf (Ctr__Rule_5__0 p) = p
     rtkPosOf (Ctr__Rule_5__1 p _) = p
-data Rule_50 = Ctr__Rule_50__0 RtkPos |
-               Ctr__Rule_50__1 RtkPos Rule_51
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_50 where
-    rtkPosOf (Ctr__Rule_50__0 p) = p
-    rtkPosOf (Ctr__Rule_50__1 p _) = p
-data Rule_51 = Ctr__Rule_51__0 RtkPos Type
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_51 where
-    rtkPosOf (Ctr__Rule_51__0 p _) = p
-type Rule_52 = [Type]
 data Rule_6 = Ctr__Rule_6__0 RtkPos |
-              Ctr__Rule_6__1 RtkPos Rule_7
+              Ctr__Rule_6__1 RtkPos QVarList
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_6 where
     rtkPosOf (Ctr__Rule_6__0 p) = p
     rtkPosOf (Ctr__Rule_6__1 p _) = p
-data Rule_7 = Ctr__Rule_7__0 RtkPos |
-              Ctr__Rule_7__1 RtkPos QVarList
+data Rule_7 = Ctr__Rule_7__0 RtkPos ImpDeclList Rule_8 |
+              Ctr__Rule_7__1 RtkPos ImpDeclList
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_7 where
-    rtkPosOf (Ctr__Rule_7__0 p) = p
+    rtkPosOf (Ctr__Rule_7__0 p _ _) = p
     rtkPosOf (Ctr__Rule_7__1 p _) = p
-data Rule_8 = Ctr__Rule_8__0 RtkPos ImpDeclList Rule_9 |
-              Ctr__Rule_8__1 RtkPos ImpDeclList
+data Rule_8 = Ctr__Rule_8__0 RtkPos |
+              Ctr__Rule_8__1 RtkPos Rule_9
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_8 where
-    rtkPosOf (Ctr__Rule_8__0 p _ _) = p
+    rtkPosOf (Ctr__Rule_8__0 p) = p
     rtkPosOf (Ctr__Rule_8__1 p _) = p
-data Rule_9 = Ctr__Rule_9__0 RtkPos |
-              Ctr__Rule_9__1 RtkPos Rule_10
+data Rule_9 = Ctr__Rule_9__0 RtkPos TopDecls
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_9 where
-    rtkPosOf (Ctr__Rule_9__0 p) = p
-    rtkPosOf (Ctr__Rule_9__1 p _) = p
+    rtkPosOf (Ctr__Rule_9__0 p _) = p
 data SimpleType = Anti_SimpleType String |
                   Ctr__SimpleType__0 RtkPos TyCon TyVars
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
@@ -1831,7 +1771,7 @@ instance RtkPosOf TopDecl where
     rtkPosOf (Ctr__TopDecl__1 p _ _ _ _) = p
     rtkPosOf (Ctr__TopDecl__2 p _) = p
 data TopDecls = Anti_TopDecls String |
-                Ctr__TopDecls__0 RtkPos Rule_24
+                Ctr__TopDecls__0 RtkPos Rule_21
                 deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf TopDecls where
     rtkPosOf (Anti_TopDecls _) = rtkNoPos
@@ -1856,13 +1796,13 @@ instance RtkPosOf TyVar where
     rtkPosOf (Ctr__TyVar__0 p _) = p
 type TyVars = [TyVar]
 data Type = Anti_Type String |
-            Ctr__Type__0 RtkPos BType Rule_44
+            Ctr__Type__0 RtkPos BType Rule_37
             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Type where
     rtkPosOf (Anti_Type _) = rtkNoPos
     rtkPosOf (Ctr__Type__0 p _ _) = p
 data TypeList = Anti_TypeList String |
-                Ctr__TypeList__0 RtkPos Rule_52
+                Ctr__TypeList__0 RtkPos Rule_42
                 deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf TypeList where
     rtkPosOf (Anti_TypeList _) = rtkNoPos
@@ -1874,7 +1814,7 @@ instance RtkPosOf Var where
     rtkPosOf (Anti_Var _) = rtkNoPos
     rtkPosOf (Ctr__Var__0 p _) = p
 data Vars = Anti_Vars String |
-            Ctr__Vars__0 RtkPos Rule_39
+            Ctr__Vars__0 RtkPos Rule_33
             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Vars where
     rtkPosOf (Anti_Vars _) = rtkNoPos

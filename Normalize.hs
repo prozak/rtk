@@ -2,7 +2,7 @@
 module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
-import Parser
+import Syntax
 import Diagnostics (Diagnostic(..), showSourcePos)
 import Grammar (isNotIgnored)
 import Data.Generics
