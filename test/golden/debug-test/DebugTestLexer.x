@@ -8,18 +8,7 @@ import Data.Data (Data)
 %wrapper "monad"
 
 
-tokens :- "tok_Assignment_dummy_18" { simple Tk__tok_Assignment_dummy_18 }
-          "tok_Block_dummy_17" { simple Tk__tok_Block_dummy_17 }
-          "tok_Expression_dummy_16" { simple Tk__tok_Expression_dummy_16 }
-          "tok_Factor_dummy_15" { simple Tk__tok_Factor_dummy_15 }
-          "tok_IfStatement_dummy_14" { simple Tk__tok_IfStatement_dummy_14 }
-          "tok_Program_dummy_19" { simple Tk__tok_Program_dummy_19 }
-          "tok_Statement_dummy_13" { simple Tk__tok_Statement_dummy_13 }
-          "tok_Term_dummy_12" { simple Tk__tok_Term_dummy_12 }
-          "tok_UnusedRule1_dummy_11" { simple Tk__tok_UnusedRule1_dummy_11 }
-          "tok_UnusedRule2_dummy_10" { simple Tk__tok_UnusedRule2_dummy_10 }
-          "tok_WhileLoop_dummy_9" { simple Tk__tok_WhileLoop_dummy_9 }
-          "}" { simple Tk__tok__symbol__12 }
+tokens :- "}" { simple Tk__tok__symbol__12 }
           "{" { simple Tk__tok__symbol__11 }
           "while" { simple Tk__tok_while_10 }
           "unused" { simple Tk__tok_unused_13 }
@@ -50,17 +39,6 @@ tokens :- "tok_Assignment_dummy_18" { simple Tk__tok_Assignment_dummy_18 }
 
 {
 data Token = EndOfFile |
-             Tk__tok_Assignment_dummy_18 |
-             Tk__tok_Block_dummy_17 |
-             Tk__tok_Expression_dummy_16 |
-             Tk__tok_Factor_dummy_15 |
-             Tk__tok_IfStatement_dummy_14 |
-             Tk__tok_Program_dummy_19 |
-             Tk__tok_Statement_dummy_13 |
-             Tk__tok_Term_dummy_12 |
-             Tk__tok_UnusedRule1_dummy_11 |
-             Tk__tok_UnusedRule2_dummy_10 |
-             Tk__tok_WhileLoop_dummy_9 |
              Tk__tok__symbol__12 |
              Tk__tok__symbol__11 |
              Tk__tok_while_10 |

@@ -151,6 +151,10 @@ jobs:
         # `make test` runs the cabal test suites: unit tests (normalization
         # invariants etc.) and golden tests of the generated .x/.y/QQ output.
         run_test "Cabal Test Suites" "make test"
+        # The golden suite compares text; the compile gate additionally
+        # proves every golden Lexer/Parser snapshot is code alex/happy/GHC
+        # accept (the debug-test snapshot once sat green while uncompilable).
+        run_test "Golden Compile Gate" "make test-compile-goldens"
         run_test "Base Grammar Test" "make test-grammar"
         run_test "Java Test Suite" "make test-all-java"
         run_test "Java Lexer Golden Tests" "make test-lex-java"

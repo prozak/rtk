@@ -37,11 +37,16 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ _) = do
           payloadTokens = makePayloadTokenSet lex_rules
           -- The start rule is wrapped so that the parser consumes the
           -- EndOfFile token emitted by the lexer; this way errors at end of
-          -- input are reported by parseError with a real source position
+          -- input are reported by parseError with a real source position.
+          -- A list-typed start rule (alias start group, "Start = Item* ;")
+          -- carries its list reversed like every list nonterminal does, so
+          -- the wrapper restores source order just like any other consumer
           startWrapper = case normal_rules of
                            (r : _) -> [(text (name ++ "__top") <+> text ":" <+> text (getSRuleName r)
-                                        <+> text "rtk__eof" <+> text "{ $1 }") <> text "\n"]
+                                        <+> text "rtk__eof" <+> text "{" <+> topResult r <+> text "}") <> text "\n"]
                            []      -> []
+          topResult r | Set.member (getSRuleName r) listRuleSet = text "(reverse $1)"
+                      | otherwise                               = text "$1"
           rulesDoc = vcat (startWrapper ++ map (genRule listRuleSet payloadTokens) normal_rules)
           lexDoc = vcat (combineAlt (text "rtk__eof") (text "L.PosToken _ L.EndOfFile")
                          : map genToken (removeSymmacros lex_rules))

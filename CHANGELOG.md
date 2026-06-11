@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- A grammar whose start rule is a repetition (`Start = Item* ;`) generated a
+  parser that did not compile: the QQ start-wrapper alternatives extended
+  the start group as a `data` declaration while the repetition typed the
+  same nonterminal as the alias `[Item]` (plus a dummy-token shift/reduce
+  conflict against the empty list). Such an alias start group now skips the
+  QQ entry-point machinery entirely — no dummy tokens, wrapper alternatives
+  or top-level quoters, since an alias has no constructor to project a quote
+  through — while element-level `$Type:var` splices keep working. Groups
+  merely *referenced* by a wrapper alternative (grammar.pg's
+  `RuleList = Rule*`) were always well-typed and are unchanged. The
+  debug-test golden, uncompilable until now, is regenerated (#34)
+- Repetition over a terminal silently generated uncompilable code:
+  `Foo = 'x'* ;` emitted a degenerate self-recursive `data Foo` against
+  list-building parser actions, and `Foo = num* ;` an invalid lowercase
+  `data num`. Decided as by-design and rejected during normalization with a
+  positioned diagnostic: a list element must be a syntax rule, because the
+  element type hosts the list's splice constructor — wrap the terminal in a
+  syntax rule and repeat that rule instead. A lifted `(,X)` element under
+  `*`/`+` is rejected the same way instead of crashing the generator (#28)
+- The synthesized QQ start wrapper is now emitted directly adjacent to the
+  rule it wraps: list-element proxy rules could separate the two same-named
+  rule blocks in the generated `.y`, which happy rejects outright
+  ("Multiple rules for 'A'", t1.pg's golden was affected)
+
+### Added
+- `make test-compile-goldens`, wired into CI after the cabal test suites:
+  runs `alex -g` and `happy --ghc` over every checked-in golden
+  `<Name>Lexer.x`/`<Name>Parser.y` pair and typechecks the result with
+  `ghc -fno-code`. The golden suite diffs text only and sat green while the
+  debug-test and t1 snapshots did not compile; the gate closes that
+  test-architecture hole (QQ goldens join once the regex-posix dependency
+  is dropped, task 8b)
+
 ### Changed
 - **RTK is now self-hosting by default — the headline of this release.**
   Grammar files are parsed with the front end RTK generated from its own

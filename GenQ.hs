@@ -182,6 +182,15 @@ rtkPosWildPat _ = Just TH.wildP
                                            [] -> []
                                          [] -> [])
           rulesWithoutProxies = filterProxyRules proxyRules rules
+          -- Only types wrapped by the synthesized start rule can have a
+          -- top-level quoter: quoting parses the dummy-padded fragment
+          -- through the start symbol and projects it back out by matching
+          -- the wrapper constructor. When the start group is a type alias
+          -- no wrappers exist (see Normalize.addStartGroup) and no quoters
+          -- are emitted; for a data start group every public type is
+          -- wrapped, so nothing is filtered.
+          quotableRules = filter ((`M.member` getRuleToStartInfo info) . getSDataTypeName)
+                                 rulesWithoutProxies
           qqParseFuns =  intercalate "\n"
                             $ map (\ruleGroup ->
                                        case getSDataTypeName ruleGroup of
@@ -197,7 +206,7 @@ rtkPosWildPat _ = Just TH.wildP
 ?sortFunName = QuasiQuoter (?(qqFunName expType) ?dummy ?getFun ) (?(qqFunName pat) ?dummy ?getFun ) ?(qqFunName "Type") ?(qqFunName "Decs")
 |]
                                          _ -> "")
-                                rulesWithoutProxies
+                                quotableRules
           shortCutTypes = map (\ruleGroup ->
                                 case getSDataTypeName ruleGroup of
                                   typeName@(s : rest) -> ((C.toLower s : rest), typeName)
