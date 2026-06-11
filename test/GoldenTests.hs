@@ -6,6 +6,17 @@
 -- This catches generator regressions instantly, without alex, happy or a GHC
 -- compile cycle.
 --
+-- Every grammar is run through BOTH front ends — the hand-written
+-- lexer/parser and the self-hosted one that RTK generated from grammar.pg
+-- (--use-generated) — and both must reproduce the same snapshots
+-- byte-for-byte. This is the self-hosting equivalence harness: positions
+-- never reach the generated artifacts, so the position-blind generated
+-- front end cannot cause artifact divergence on a valid grammar. The
+-- exceptions are the grammars pinned in
+-- TestSupport.frontEndDivergentGrammars (hand-parser-only syntax that
+-- grammar.pg cannot express); those are checked with the hand-written front
+-- end only, plus a guard that fails once they stop diverging.
+--
 -- After an intentional generator change, refresh the snapshots with
 -- `make accept-golden` (or `RTK_ACCEPT=1 cabal test golden`) and review the
 -- resulting diff like any other code change.
@@ -22,7 +33,8 @@ import System.Exit (exitFailure)
 import System.FilePath ((</>), takeBaseName)
 import Test.HUnit
 
-import Diagnostics (renderDiagnostic)
+import Diagnostics (Diagnostic, renderDiagnostic)
+import Parser (InitialGrammar)
 import TestSupport
 
 goldenRoot :: FilePath
@@ -43,11 +55,12 @@ regenerateHint =
 
 -- | Run the pipeline on one grammar file, forcing the generated contents so
 -- that any lazy `error` from the generators surfaces here as a test failure.
-generateArtifacts :: FilePath -> IO (Either String [(FilePath, String)])
-generateArtifacts pgFile = do
+generateArtifacts :: (String -> Either Diagnostic InitialGrammar)
+                  -> FilePath -> IO (Either String [(FilePath, String)])
+generateArtifacts parseSrc pgFile = do
     source <- readFileUtf8 pgFile
     result <- try $
-        case normalizeGrammarSource source >>= artifactsFor of
+        case parseSrc source >>= normalizeParsedGrammar >>= artifactsFor of
             Left d          -> return (Left (renderDiagnostic pgFile d))
             Right artifacts -> do
                 mapM_ (\(_, content) -> evaluate (length content)) artifacts
@@ -79,8 +92,17 @@ diffSummary expected actual =
 goldenTestFor :: FilePath -> IO Test
 goldenTestFor pgFile = do
     let grammarKey = takeBaseName pgFile
-    generated <- generateArtifacts pgFile
-    return $ TestLabel grammarKey $ case lookup grammarKey knownBrokenGrammars of
+    handResult <- generateArtifacts parseGrammarSource pgFile
+    genResult  <- generateArtifacts parseGrammarSourceGenerated pgFile
+    genTest <- case lookup grammarKey frontEndDivergentGrammars of
+        Nothing     -> return $ frontEndTest grammarKey genResult
+        Just reason -> divergenceGuard grammarKey reason genResult
+    return $ TestLabel grammarKey $ TestList
+        [ TestLabel "hand-written front end" (frontEndTest grammarKey handResult)
+        , TestLabel "generated front end" genTest
+        ]
+  where
+    frontEndTest grammarKey generated = case lookup grammarKey knownBrokenGrammars of
         Just expectedError -> TestCase $ case generated of
             Left err -> assertBool
                 ("expected failure mentioning " ++ show expectedError ++ ", got:\n" ++ err)
@@ -92,7 +114,7 @@ goldenTestFor pgFile = do
             Left err -> TestCase $ assertFailure $
                 "generation failed for " ++ pgFile ++ ":\n" ++ err
             Right artifacts -> TestList (map (check grammarKey) artifacts)
-  where
+
     check grammarKey (fileName, actual) = TestLabel fileName $ TestCase $ do
         let goldenFile = goldenRoot </> grammarKey </> fileName
         exists <- doesFileExist goldenFile
@@ -103,6 +125,27 @@ goldenTestFor pgFile = do
                 when (expected /= actual) $ assertFailure $
                     "generated output differs from " ++ goldenFile ++ ":\n"
                     ++ diffSummary expected actual ++ regenerateHint
+
+    -- A pinned divergent grammar must actually diverge: as soon as the
+    -- generated front end reproduces the snapshots too, this fails so the
+    -- pin gets dropped and the grammar joins the strict equivalence check.
+    divergenceGuard grammarKey reason generated =
+        return $ TestLabel "known divergence (pinned in TestSupport)" $ TestCase $
+            case generated of
+                Left _ -> return () -- rejected by the generated front end
+                Right artifacts -> do
+                    same <- mapM (matchesGolden grammarKey) artifacts
+                    when (and same) $ assertFailure $
+                        "the generated front end now reproduces the snapshots for this grammar\n"
+                        ++ "(pinned because: " ++ reason ++ ");\n"
+                        ++ "drop it from frontEndDivergentGrammars in test/TestSupport.hs"
+
+    matchesGolden grammarKey (fileName, actual) = do
+        let goldenFile = goldenRoot </> grammarKey </> fileName
+        exists <- doesFileExist goldenFile
+        if exists
+            then (== actual) <$> readFileUtf8 goldenFile
+            else return False
 
 -- | Guard against stale snapshots: every directory under test/golden/ must
 -- correspond to an existing grammar file.
@@ -125,7 +168,9 @@ acceptAll pgFiles = do
                 putStrLn $ "skipping " ++ pgFile ++ " (listed in knownBrokenGrammars)"
                 return False
             else do
-                generated <- generateArtifacts pgFile
+                -- Snapshots are always produced by the hand-written front
+                -- end; the generated front end must then reproduce them.
+                generated <- generateArtifacts parseGrammarSource pgFile
                 case generated of
                     Left err -> do
                         putStrLn $ "FAILED to generate " ++ pgFile ++ ":\n" ++ err

@@ -10,6 +10,7 @@ module Main (main) where
 
 import Control.Exception (SomeException, evaluate, try)
 import Control.Monad (when)
+import Data.Generics (everywhere, mkT)
 import Data.List (find, group, isInfixOf, isPrefixOf, nub, sort)
 import qualified Data.Map as M
 import Data.Maybe (maybeToList)
@@ -34,13 +35,15 @@ main :: IO ()
 main = do
     pgFiles <- discoverGrammarFiles grammarsDir
     perGrammar <- mapM invariantTestsFor pgFiles
+    astEquality <- mapM astEqualityTestFor pgFiles
     results <- runTestTT $ TestList $
         [ TestLabel "StrQuote" strQuoteTests
         , TestLabel "TokenProcessing" tokenProcessingTests
         , TestLabel "diagnostics" diagnosticsTests
         , TestLabel "pipeline error handling" errorHandlingTests
         , TestLabel "normalization behavior" normalizationTests
-        ] ++ perGrammar
+        , TestLabel "self-hosted front end" selfHostedFrontEndTests
+        ] ++ perGrammar ++ astEquality
     when (errors results + failures results /= 0) exitFailure
 
 -- | Normalize without constructor-name filling, returning the diagnostic on
@@ -440,6 +443,60 @@ testFillConstructorNames = TestCase $ do
     assertBool "anti constructors survive filling"
         ("Anti_Item" `elem` [ c | STSeq c _ <- allSeqs filled ])
     assertEqual "filling is idempotent" filled (fillConstructorNames filled)
+
+--------------------------------------------------------------------------------
+-- Self-hosted front end (the lexer/parser RTK generated from grammar.pg)
+--------------------------------------------------------------------------------
+
+selfHostedFrontEndTests :: Test
+selfHostedFrontEndTests = TestList
+    [ TestLabel "errors carry the position in the message text" $ TestCase $
+        -- ';' missing after the grammar declaration. Until task 7b the
+        -- generated front end has no structured positions; the message text
+        -- itself names line and column.
+        expectDiagnostic "a missing ';'"
+            (parseGrammarSourceGenerated "grammar 'Test'\nFoo = bar;\n") $ \d -> do
+            assertEqual "no structured position yet (task 7b)" Nothing (diagPos d)
+            assertBool ("message names the position: " ++ diagMessage d) $
+                "line 2" `isInfixOf` diagMessage d
+    , TestLabel "lexical errors are diagnostics, not exceptions" $ TestCase $
+        expectDiagnostic "an unlexable character"
+            (parseGrammarSourceGenerated "grammar 'Test';\nA = % ;\n") $ \d ->
+            assertBool ("message names the position: " ++ diagMessage d) $
+                "line 2" `isInfixOf` diagMessage d
+    ]
+
+-- | Both front ends must produce the same 'InitialGrammar' for every grammar
+-- in the corpus, up to source positions: the generated front end does not
+-- capture 'getIRulePos' yet (task 7b), so positions are stripped before
+-- comparing. This catches adapter bugs with far better messages than a
+-- generated-artifact diff. Grammars pinned in 'frontEndDivergentGrammars'
+-- are expected to differ (or be rejected); the test fails once they agree,
+-- so the pin gets dropped.
+astEqualityTestFor :: FilePath -> IO Test
+astEqualityTestFor pgFile = do
+    source <- readFileUtf8 pgFile
+    let grammarKey = takeBaseName pgFile
+        hand = parseGrammarSource source
+        gen  = parseGrammarSourceGenerated source
+    return $ TestLabel (grammarKey ++ " front-end AST equality") $ TestCase $
+        case (lookup grammarKey frontEndDivergentGrammars, hand, gen) of
+            (_, Left d, _) -> assertFailure $
+                "hand-written front end failed on " ++ pgFile ++ ": " ++ show d
+            (Nothing, Right h, Right g) ->
+                assertEqual "hand-written vs generated front end (positions stripped)"
+                    (stripPositions h) (stripPositions g)
+            (Nothing, _, Left d) -> assertFailure $
+                "generated front end failed on " ++ pgFile ++ ": " ++ show d
+            (Just _, _, Left _) -> return () -- rejected: still divergent
+            (Just reason, Right h, Right g) ->
+                when (stripPositions h == stripPositions g) $ assertFailure $
+                    "the front ends now agree on this grammar (pinned because: " ++ reason
+                    ++ ");\ndrop it from frontEndDivergentGrammars in test/TestSupport.hs"
+
+-- | Forget every source position in the parsed grammar.
+stripPositions :: InitialGrammar -> InitialGrammar
+stripPositions = everywhere (mkT (const Nothing :: Maybe SourcePos -> Maybe SourcePos))
 
 --------------------------------------------------------------------------------
 -- Invariants checked against every grammar in test-grammars/

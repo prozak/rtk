@@ -35,10 +35,17 @@ RTK (Rewrite ToolKit) is a tool for generating parser and rewrite facilities fro
 ## Bootstrap Self-Hosting
 
 RTK is **self-hosting** - it can parse and generate parsers for its own grammar language:
-1. Hand-written `Lexer.x` and `Parser.y` parse grammar files
+1. Hand-written `Lexer.x` and `Parser.y` parse grammar files (default front end)
 2. `test-grammars/grammar.pg` describes the grammar language itself
-3. RTK can generate lexer/parser from `grammar.pg`
-4. `compare-bootstrap.sh` compares hand-written vs generated versions
+3. RTK generates lexer/parser from `grammar.pg`; the checked-in snapshot in
+   `test/golden/grammar/` is compiled into rtk and selected with
+   `rtk --use-generated` (AST adapted by `src/generated/ASTAdapter.hs`)
+4. The golden/unit test suites require both front ends to produce identical
+   artifacts and equal ASTs for every grammar in `test-grammars/` (three
+   grammars using hand-parser-only syntax are pinned, see BOOTSTRAP.md)
+5. `compare-bootstrap.sh` compares hand-written vs generated versions textually
+
+See `BOOTSTRAP.md` for the fixed point and the accepted divergences.
 
 ## Typical Workflow
 

@@ -1,5 +1,12 @@
 # Prototype 2: Close the Loop - Implementation Plan
 
+> **Status: ✅ implemented** — see BOOTSTRAP.md and src/generated/README.md
+> for the design as built. It differs from this plan in two ways: the
+> generated modules are compiled directly from the golden snapshot in
+> `test/golden/grammar/` (not from copies under `src/generated/`), and the
+> adapter uses plain pattern matching instead of quasi-quotation (compiling
+> GrammarQQ.hs would pull regex-posix/TH into the build).
+
 ## Goal
 Get the generated parser to successfully parse `test-grammars/grammar.pg` using RTK's `--use-generated` flag.
 
@@ -7,7 +14,7 @@ Get the generated parser to successfully parse `test-grammars/grammar.pg` using 
 - ✅ Prototype 0: Gap analysis complete
 - ✅ Prototype 1: Dual-mode flag infrastructure ready
 - ✅ Token processing refactored for reuse
-- 🔄 Prototype 2: In progress
+- ✅ Prototype 2: Complete
 
 ## Implementation Steps
 

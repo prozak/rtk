@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Self-hosting milestone (Prototype 2 closed): `rtk --use-generated` parses
+  grammar files with the lexer/parser RTK generated from
+  `test-grammars/grammar.pg`. The generated modules are compiled into rtk
+  straight from the checked-in golden snapshot (`test/golden/grammar/`, the
+  bootstrap stage produced by the previous rtk binary, kept current by `make
+  accept-golden`), and `src/generated/ASTAdapter.hs` converts the generated
+  AST to the hand-written `InitialGrammar`; everything after parsing is the
+  same shared pipeline. The golden suite now runs every grammar in
+  `test-grammars/` through BOTH front ends and requires byte-identical
+  artifacts, and the unit suite asserts AST equality (positions stripped)
+  for every grammar. The fixed point holds: `rtk --use-generated
+  test-grammars/grammar.pg out/` regenerates `test/golden/grammar/` exactly.
+  Accepted divergences (documented in BOOTSTRAP.md): errors carry positions
+  in the message text rather than structured diagnostics, `getIRulePos` is
+  not captured (both converge in task 7b), no nested `/* /* */ */` comments
+  (#25), no concatenation of adjacent `"""…"""` blocks. The harness also
+  surfaced two constructs the hand-written parser accepts beyond
+  grammar.pg's own definition of the language — empty alternatives
+  (`Gd = | ExpI ;` in haskell.pg) and redundant parentheses kept as
+  semantic grouping (`(ImportStatement)*` in java.pg, `(A B) C` in t1.pg) —
+  so those three grammars are pinned in the test suites
+  (`frontEndDivergentGrammars`) with a guard that fails once they stop
+  diverging; resolving which front end defines the language is follow-up
+  work
 - Generated parsers, lexers and quasi-quoters report errors with `Either`
   instead of throwing (the deferred "Stage G" of the diagnostics
   migration): generated parsers use `%monad { Either String }`, so

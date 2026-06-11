@@ -8,6 +8,26 @@ This document describes all debugging options available in RTK (Rewrite Toolkit)
 rtk <grammar-file> <output-dir> [OPTIONS]
 ```
 
+## Front-End Selection
+
+### `--use-generated`
+Parse the grammar with RTK's own generated lexer/parser (self-hosting mode)
+instead of the hand-written `Lexer.x`/`Parser.y`. The generated modules are
+compiled from the checked-in snapshot in `test/golden/grammar/` (RTK's output
+for `test-grammars/grammar.pg`); the resulting AST is adapted to the
+hand-written `InitialGrammar` and everything after parsing is the same shared
+pipeline, so the generated files are byte-identical in both modes.
+
+**Example:**
+```bash
+rtk --use-generated test-grammars/grammar.pg test-out
+```
+
+**Notes:** error messages carry the line/column in the message text rather
+than as a structured `FILE:LINE:COL:` prefix, `--debug-tokens` prints nothing
+(there is no separate token stream), and `--debug-stage lex` stops after the
+combined front end.
+
 ## Pipeline Stage Inspection Options
 
 ### `--debug-tokens` / `-t`
