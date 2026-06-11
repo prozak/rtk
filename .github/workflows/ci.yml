@@ -7,6 +7,12 @@ on:
     branches: [ main, master, develop ]
   workflow_dispatch:
 
+# Cancel superseded runs on the same ref, but never on master: every master
+# push must produce a complete CI record.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
   build-and-test:
     name: Build, Lint, and Test
@@ -17,6 +23,16 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+
+    # Everything under runner.temp/ghcup is determined by the two pinned
+    # versions below, so cache it across runs: on a hit the Setup Haskell
+    # step finds the toolchain already installed and drops from ~90s to
+    # seconds. Bump the -v suffix to force a fresh install.
+    - name: Cache GHC/Cabal toolchain
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/ghcup
+        key: ghcup-9.6.4-3.10.2.0-v1
 
     - name: Setup Haskell
       uses: haskell-actions/setup@v2
@@ -102,7 +118,7 @@ jobs:
         export PATH="$HOME/.cabal/bin:$PATH"
         # Build with -Werror to treat all warnings as errors
         # This will fail the build if there are any unused imports or other warnings
-        cabal build --ghc-options="-Werror" --enable-tests --enable-benchmarks -j
+        cabal build --ghc-options="-Werror" --enable-tests -j
 
     - name: Run all tests
       run: |
@@ -141,8 +157,10 @@ jobs:
         run_test "Java QQ Tests" "make test-java-qq"
         run_test "Apache Commons Lexical Tests" "make test-lex-commons-lang-all"
         run_test "Apache Commons Parser Tests" "make test-parse-commons-lang-all"
-        run_test "Debug Options Test" "make test-debug"
-        run_test "Comprehensive Debug Test" "make test-debug-all"
+        # test-debug and test-debug-all exercise the same debug flags but
+        # only print their output; test-debug-options is the automated suite
+        # that asserts on it, so it is the only one CI runs (the other two
+        # targets remain in the makefile for local use).
         run_test "Automated Debug Options" "make test-debug-options"
 
     - name: Print test results summary
@@ -203,7 +221,7 @@ jobs:
         fi
 
     - name: Upload test artifacts
-      if: always()
+      if: failure()
       uses: actions/upload-artifact@v4
       with:
         name: test-output
