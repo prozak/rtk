@@ -141,6 +141,7 @@ $(eval $(call make-test-rule,java,Java,test-grammars/TestBasic.java))
 $(eval $(call make-test-rule,java-simple,JavaSimple,test-grammars/Simple.java))
 $(eval $(call make-test-rule,sandbox,Sandbox,test-grammars/test.sandbox))
 $(eval $(call make-test-rule,haskell,Haskell,Normalize.hs))
+$(eval $(call make-test-rule,p,P,expr.p))
 
 # Additional Java tests using the Java grammar (java.pg) - all share java-main runner
 $(eval $(call make-shared-test-rule,java-minimal,java,Java,test-grammars/java/test-minimal.java))
@@ -190,11 +191,6 @@ test-all-java: test-java test-java-simple test-java-minimal test-java-field test
 # Special cases that don't follow the pattern
 test-t1: build | test-out
 	$(RTK_EXEC) test-grammars/t1.pg test-out
-
-test-p: build test-out/PLexer.hs test-out/PParser.hs | test-out
-	$(CP) test-grammars/p-main.hs test-out
-	(cd test-out && ghc --make p-main.hs -o p-rtk)
-	test-out/p-rtk expr.p
 
 # Java quasi-quotation tests (separate from regular java-main parser driver)
 test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out

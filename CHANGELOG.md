@@ -138,6 +138,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   printed an error
 
 ### Fixed
+- `make test-p` works again: the target had a hand-rolled recipe that
+  compiled the driver with bare `ghc` outside the cabal package environment,
+  failing with `Could not find module 'Data.Generics'` in clean
+  environments. It now uses the generic `make-test-rule` like its sibling
+  targets (`cabal exec -- ghc --make -itest-out ...`); the driver binary is
+  consequently named `test-out/p-main` instead of `test-out/p-rtk`. The
+  compile failure had masked a latent bug in the driver itself:
+  `p-main.hs`'s `subst` bound `e1 = subst id e1 i` etc., self-referential
+  recursive lets that shadow the pattern variables and diverge (`<<loop>>`)
+  on the first fold expression, and it had no base case. The lets now bind
+  fresh names and a catch-all clause terminates the recursion, so the
+  driver prints the substituted AST
 - `'\f'` and `'\v'` escapes in grammar string and `[...]` regex literals now
   reach the generated lexer as bare Alex escapes; previously token
   post-processing (`unBackQuote`) stripped them to the literal letters
