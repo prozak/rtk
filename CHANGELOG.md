@@ -29,6 +29,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   moved from the identifier to the leading dot (a rule's position is where
   the rule starts), aligning it with first-symbol capture; no corpus
   grammar uses that form
+- `--debug-rule RULENAME` is back, this time with a real implementation
+  (it was removed together with the other never-implemented placeholder
+  flags): it traces one rule through the pipeline, printing only that
+  rule's representation after each stage — its mentions in the token
+  stream (with positions), the matching `IRule`s after parsing and after
+  string normalization (making literal-to-`!tok_*` rewrites visible), and
+  the matching rule groups/lexical rules after clause normalization and
+  constructor filling — instead of full-grammar dumps. `--expand-rule`
+  shows a rule's final expanded form; this flag shows its evolution. When
+  the rule is missing at a stage the trace says so and lists up to five
+  case-insensitive near matches (normalization renames things — `Rule_N`,
+  `ListElem_*`, `tok_*`); a rule found at no stage at all fails the run
+  with exit code 1, so typos don't go unnoticed in scripts. Composes with
+  `--debug-stage` (stop early) and works under `--use-generated`, where
+  the token stage is internal to the generated front end and the trace
+  starts after parsing
 - Self-hosting milestone (Prototype 2 closed): `rtk --use-generated` parses
   grammar files with the lexer/parser RTK generated from
   `test-grammars/grammar.pg`. The generated modules are compiled into rtk

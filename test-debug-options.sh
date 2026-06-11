@@ -44,6 +44,60 @@ test_option() {
     fi
 }
 
+# Function to test an option that must fail (non-zero exit) with a pattern
+test_option_fails() {
+    local test_name="$1"
+    local option="$2"
+    local expected_pattern="$3"
+
+    echo -n "Testing $test_name... "
+
+    # Run rtk with the option and capture output (expecting failure)
+    if output=$($RTK_EXEC "$GRAMMAR" "$OUT_DIR" $option 2>&1); then
+        echo -e "${RED}FAIL${NC} - Expected non-zero exit code"
+        ((failed++))
+        return 1
+    fi
+
+    if echo "$output" | grep -q "$expected_pattern"; then
+        echo -e "${GREEN}PASS${NC}"
+        ((passed++))
+        return 0
+    else
+        echo -e "${RED}FAIL${NC} - Expected pattern '$expected_pattern' not found in output"
+        ((failed++))
+        return 1
+    fi
+}
+
+# Function to test an option whose output must contain several patterns
+test_option_multi() {
+    local test_name="$1"
+    local option="$2"
+    shift 2
+
+    echo -n "Testing $test_name... "
+
+    if ! output=$($RTK_EXEC "$GRAMMAR" "$OUT_DIR" $option 2>&1); then
+        echo -e "${RED}FAIL${NC} - Command failed with exit code $?"
+        ((failed++))
+        return 1
+    fi
+
+    local pattern
+    for pattern in "$@"; do
+        if ! echo "$output" | grep -qF "$pattern"; then
+            echo -e "${RED}FAIL${NC} - Expected pattern '$pattern' not found in output"
+            ((failed++))
+            return 1
+        fi
+    done
+
+    echo -e "${GREEN}PASS${NC}"
+    ((passed++))
+    return 0
+}
+
 # Function to test option with file output
 test_option_file() {
     local test_name="$1"
@@ -116,6 +170,24 @@ echo "=== Selective Debug ==="
 # --debug-stage stops the pipeline early and must exit successfully
 test_option "--debug-stage=lex" "--debug-stage=lex" "Stopped after requested debug stage"
 test_option "--debug-stage=parse" "--debug-stage=parse" "Stopped after requested debug stage"
+# --debug-rule traces one rule through the pipeline: one block per stage
+test_option_multi "--debug-rule=Clause" "--debug-rule=Clause" \
+    "RULE TRACE: 'Clause' - Tokens" \
+    "RULE TRACE: 'Clause' - After Parse" \
+    "RULE TRACE: 'Clause' - After String Normalization" \
+    "RULE TRACE: 'Clause' - After Clause Normalization" \
+    "RULE TRACE: 'Clause' - After Constructor Fill"
+# an unknown rule must fail the run and suggest near matches
+test_option_fails "--debug-rule=clause (unknown, suggests)" "--debug-rule=clause" "Near matches"
+test_option_fails "--debug-rule=NoSuchRule (unknown)" "--debug-rule=NoSuchRule" "not found at any pipeline stage"
+# --debug-rule composes with --debug-stage: stop early, exit 0
+test_option_multi "--debug-rule=Clause --debug-stage=parse" "--debug-rule=Clause --debug-stage=parse" \
+    "RULE TRACE: 'Clause' - After Parse" \
+    "Stopped after requested debug stage"
+# under --use-generated the token stage is only a note, the rest works
+test_option_multi "--use-generated --debug-rule=Clause" "--use-generated --debug-rule=Clause" \
+    "internal to the generated front end" \
+    "RULE TRACE: 'Clause' - After Constructor Fill"
 echo ""
 
 echo "=== Output Format ==="

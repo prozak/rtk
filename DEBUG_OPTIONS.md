@@ -164,6 +164,113 @@ rtk test-grammars/java.rtk test-out --list-rules
 
 ## Selective Debug Options
 
+### `--debug-rule=RULENAME`
+Trace a single rule through the transformation pipeline. After each stage
+(tokens, parse, string normalization, clause normalization, constructor
+fill) only that rule's representation is printed instead of a full-grammar
+dump. Where `--expand-rule` shows a rule's *final* expanded form, this flag
+shows its *evolution* — e.g. string normalization rewriting literals into
+`!tok_*` references, or clause normalization adding generated rules to the
+rule's group.
+
+If the rule is missing at some stage, the trace says so and lists up to
+five case-insensitive near matches present at that stage (normalization
+renames things — `Rule_N`, `ListElem_*`, `tok_*`). A rule that matches at
+no stage at all fails the run with exit code 1, so typos are caught in
+scripts. Composes with `--debug-stage` (stop early) and with
+`--use-generated` (the token stage is internal to the generated front end,
+so it is reduced to a note and the trace starts after parsing).
+
+**Example:**
+```bash
+rtk test-grammars/grammar.pg test-out --debug-rule=Clause
+```
+
+**Output (abridged):**
+```
+======================================================================
+  RULE TRACE: 'Clause' - Tokens
+======================================================================
+Mentioned 11 time(s) in the token stream:
+  line 28, column 24: Id "Clause"
+  line 40, column 1: Id "Clause"
+  ...
+
+======================================================================
+  RULE TRACE: 'Clause' - After Parse
+======================================================================
+-- Rule 'Clause' (line 40, column 1)
+IRule
+  { getIDataTypeName = Nothing
+  , getIRuleName = "Clause"
+  , getIClause =
+      IAlt
+        [ ISeq
+            [ IId { getIdStr = "Clause" }
+            , IStrLit "|"
+            , IId { getIdStr = "Clause2" }
+            ]
+        , ISeq [ ILifted IId { getIdStr = "Clause2" } ]
+        ]
+  , ...
+  }
+-- Rule 'Clause2' (line 43, column 1)  [matches via its 'Clause' data type]
+...
+
+======================================================================
+  RULE TRACE: 'Clause' - After String Normalization
+======================================================================
+-- Rule 'Clause' (line 40, column 1)
+IRule
+  { ...
+  , getIClause =
+      IAlt
+        [ ISeq
+            [ IId { getIdStr = "Clause" }
+            , IIgnore IId { getIdStr = "tok__pipe__11" }   -- was IStrLit "|"
+            , IId { getIdStr = "Clause2" }
+            ]
+        , ... ]
+  }
+...
+
+======================================================================
+  RULE TRACE: 'Clause' - After Clause Normalization
+======================================================================
+  Clause (5 rules)
+    - Clause5: 6 alternatives
+    - Clause4: 4 alternatives
+    - Clause3: 3 alternatives
+    - Clause2: 2 alternatives
+    - Clause: 2 alternatives
+SyntaxRuleGroup
+  { getSDataTypeName = "Clause"
+  , getSRules =
+      [ SyntaxRule
+          { getSRuleName = "Clause5"
+          , getSClause =
+              STAltOfSeq
+                { getAltOfSeq =
+                    [ STSeq "Anti_Clause" [ SSId "qq_Clause" ]
+                    , ... ] } }
+      , ... ] }
+
+======================================================================
+  RULE TRACE: 'Clause' - After Constructor Fill
+======================================================================
+  ...same group, with the empty constructor names filled in:
+                    [ STSeq "Anti_Clause" [ SSId "qq_Clause" ]
+                    , STSeq
+                        "Ctr__Clause__0"
+                        [ SSIgnore "tok__lparen__7"
+                        , SSLifted "Clause"
+                        , SSIgnore "tok__rparen__8"
+                        ]
+                    , ... ]
+```
+
+**Use case:** Deep-dive debugging of problematic rules.
+
 ### `--debug-stage=STAGE`
 Stop after a specific stage and dump state.
 
@@ -302,7 +409,7 @@ rtk grammar.rtk out --stats --list-rules --show-rule-graph --unused-rules --chec
 
 ### Deep Debugging a Specific Rule
 ```bash
-rtk grammar.rtk out --expand-rule=myRule
+rtk grammar.rtk out --debug-rule=myRule --expand-rule=myRule
 ```
 
 ## Tips
@@ -316,10 +423,11 @@ rtk grammar.rtk out --expand-rule=myRule
 ## Implementation Status
 
 All options documented above are fully implemented. Earlier placeholder
-options that were advertised but never implemented (`--debug-rule`,
-`--compare-stages`, `--memory-stats`, `--debug-output-dir`, `--debug-log`,
-`--interactive`, and the `json`/`tree` debug formats) have been removed
-from the CLI; they can be reintroduced together with real implementations.
+options that were advertised but never implemented (`--compare-stages`,
+`--memory-stats`, `--debug-output-dir`, `--debug-log`, `--interactive`,
+and the `json`/`tree` debug formats) have been removed from the CLI; they
+can be reintroduced together with real implementations, as `--debug-rule`
+has been.
 
 ## See Also
 
