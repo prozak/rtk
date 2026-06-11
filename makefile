@@ -104,7 +104,7 @@ endef
 $(foreach grammar,$(GRAMMARS),$(eval $(call make-grammar-rule,$(grammar))))
 
 %.hs : %.x
-	cabal exec alex -- $< -o $@
+	cabal exec alex -- -g $< -o $@
 
 %.hs : %.y
 	cabal exec happy -- $< --ghc -ihappy_log.txt -o $@
