@@ -9,9 +9,9 @@
 -- Every grammar is run through BOTH front ends — the hand-written
 -- lexer/parser and the self-hosted one that RTK generated from grammar.pg
 -- (--use-generated) — and both must reproduce the same snapshots
--- byte-for-byte. This is the self-hosting equivalence harness: positions
--- never reach the generated artifacts, so the position-blind generated
--- front end cannot cause artifact divergence on a valid grammar. The
+-- byte-for-byte. This is the self-hosting equivalence harness: source
+-- positions only affect diagnostics, never the generated artifacts, so any
+-- artifact divergence on a valid grammar is a real front-end bug. The
 -- exceptions are the grammars pinned in
 -- TestSupport.frontEndDivergentGrammars (hand-parser-only syntax that
 -- grammar.pg cannot express); those are checked with the hand-written front

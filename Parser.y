@@ -71,7 +71,10 @@ IdList : IdList ',' id              { idStr $3 : $1}
 Rule : id '=' ClauseAlt ';'         { IRule Nothing Nothing (idStr $1) $3 [] (Just (idPos $1)) }
      | id ':' id '=' ClauseAlt ';'  { IRule (Just (idStr $1)) Nothing (idStr $3) $5 [] (Just (idPos $1)) }
      | id '.' id ':' id '=' ClauseAlt ';'  { IRule (Just (idStr $1)) (Just (idStr $3)) (idStr $5) $7 [] (Just (idPos $1)) }
-     | '.' id ':' id '=' ClauseAlt ';'  { IRule Nothing (Just (idStr $2)) (idStr $4) $6 [] (Just (idPos $2)) }
+     -- a rule's position is where the rule starts: for the '.' form that is
+     -- the dot itself, matching the first-symbol positions captured by
+     -- generated parsers
+     | '.' id ':' id '=' ClauseAlt ';'  { IRule Nothing (Just (idStr $2)) (idStr $4) $6 [] (Just (idPos $1)) }
 
 ClauseAlt : ClauseAlt1              { IAlt (reverse $1) }
 

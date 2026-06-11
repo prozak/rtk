@@ -51,6 +51,14 @@ replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 qqShortcuts = M.fromList [ ("a","A"),("b","B"),("c","C"),("d","D"),("e","E"),("f1","F1"),("f2","F2"),("f3","F3"),("f4","F4"),("f5","F5"),("g","G")]
 
+-- A quasi-quote pattern must match an AST parsed from anywhere in a source
+-- file, while the pattern itself was parsed from the quote body - so every
+-- RtkPos position field becomes a wildcard in generated patterns.
+-- (Expressions need no special case: the compile-time position they embed
+-- is equality-transparent.)
+rtkPosWildPat :: RtkPos -> Maybe (TH.Q TH.Pat)
+rtkPosWildPat _ = Just TH.wildP
+
 quoteT1Exp :: Data.Data a => String -> (A -> a) -> String -> TH.ExpQ
 quoteT1Exp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
@@ -66,7 +74,7 @@ quoteT1Pat dummy func s = do
            Left err -> fail err
            Right a -> return a
   let expr = func ast
-  dataToPatQ (const Nothing `Generics.extQ` antiAPat `Generics.extQ` antiBPat `Generics.extQ` antiDPat `Generics.extQ` antiEPat `Generics.extQ` antiF4Pat `Generics.extQ` antiGPat) expr
+  dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiAPat `Generics.extQ` antiBPat `Generics.extQ` antiDPat `Generics.extQ` antiEPat `Generics.extQ` antiF4Pat `Generics.extQ` antiGPat) expr
 
 antiGExp :: G -> Maybe (TH.Q TH.Exp )
 antiGExp ( Anti_G v) = Just $ TH.varE (TH.mkName v)
@@ -133,57 +141,57 @@ antiAPat _ = Nothing
 quoteT1Type s = return TH.ListT
 quoteT1Decs s = return []
 
-getA ( Ctr__A__0 s) = s
+getA ( Ctr__A__0 _ s) = s
 
 a :: QuasiQuoter
 a = QuasiQuoter (quoteT1Exp "tok_A_dummy_19" getA ) (quoteT1Pat "tok_A_dummy_19" getA ) quoteT1Type quoteT1Decs
 
-getB ( Ctr__A__1 s) = s
+getB ( Ctr__A__1 _ s) = s
 
 b :: QuasiQuoter
 b = QuasiQuoter (quoteT1Exp "tok_B_dummy_18" getB ) (quoteT1Pat "tok_B_dummy_18" getB ) quoteT1Type quoteT1Decs
 
-getC ( Ctr__A__2 s) = s
+getC ( Ctr__A__2 _ s) = s
 
 c :: QuasiQuoter
 c = QuasiQuoter (quoteT1Exp "tok_C_dummy_17" getC ) (quoteT1Pat "tok_C_dummy_17" getC ) quoteT1Type quoteT1Decs
 
-getD ( Ctr__A__3 s) = s
+getD ( Ctr__A__3 _ s) = s
 
 d :: QuasiQuoter
 d = QuasiQuoter (quoteT1Exp "tok_D_dummy_16" getD ) (quoteT1Pat "tok_D_dummy_16" getD ) quoteT1Type quoteT1Decs
 
-getE ( Ctr__A__4 s) = s
+getE ( Ctr__A__4 _ s) = s
 
 e :: QuasiQuoter
 e = QuasiQuoter (quoteT1Exp "tok_E_dummy_15" getE ) (quoteT1Pat "tok_E_dummy_15" getE ) quoteT1Type quoteT1Decs
 
-getF1 ( Ctr__A__5 s) = s
+getF1 ( Ctr__A__5 _ s) = s
 
 f1 :: QuasiQuoter
 f1 = QuasiQuoter (quoteT1Exp "tok_F1_dummy_14" getF1 ) (quoteT1Pat "tok_F1_dummy_14" getF1 ) quoteT1Type quoteT1Decs
 
-getF2 ( Ctr__A__6 s) = s
+getF2 ( Ctr__A__6 _ s) = s
 
 f2 :: QuasiQuoter
 f2 = QuasiQuoter (quoteT1Exp "tok_F2_dummy_13" getF2 ) (quoteT1Pat "tok_F2_dummy_13" getF2 ) quoteT1Type quoteT1Decs
 
-getF3 ( Ctr__A__7 s) = s
+getF3 ( Ctr__A__7 _ s) = s
 
 f3 :: QuasiQuoter
 f3 = QuasiQuoter (quoteT1Exp "tok_F3_dummy_12" getF3 ) (quoteT1Pat "tok_F3_dummy_12" getF3 ) quoteT1Type quoteT1Decs
 
-getF4 ( Ctr__A__8 s) = s
+getF4 ( Ctr__A__8 _ s) = s
 
 f4 :: QuasiQuoter
 f4 = QuasiQuoter (quoteT1Exp "tok_F4_dummy_11" getF4 ) (quoteT1Pat "tok_F4_dummy_11" getF4 ) quoteT1Type quoteT1Decs
 
-getF5 ( Ctr__A__9 s) = s
+getF5 ( Ctr__A__9 _ s) = s
 
 f5 :: QuasiQuoter
 f5 = QuasiQuoter (quoteT1Exp "tok_F5_dummy_10" getF5 ) (quoteT1Pat "tok_F5_dummy_10" getF5 ) quoteT1Type quoteT1Decs
 
-getG ( Ctr__A__10 s) = s
+getG ( Ctr__A__10 _ s) = s
 
 g :: QuasiQuoter
 g = QuasiQuoter (quoteT1Exp "tok_G_dummy_9" getG ) (quoteT1Pat "tok_G_dummy_9" getG ) quoteT1Type quoteT1Decs

@@ -51,6 +51,14 @@ replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 qqShortcuts = M.fromList [ ("p","P"),("e","E"),("id","Id"),("op1","Op1"),("op2","Op2")]
 
+-- A quasi-quote pattern must match an AST parsed from anywhere in a source
+-- file, while the pattern itself was parsed from the quote body - so every
+-- RtkPos position field becomes a wildcard in generated patterns.
+-- (Expressions need no special case: the compile-time position they embed
+-- is equality-transparent.)
+rtkPosWildPat :: RtkPos -> Maybe (TH.Q TH.Pat)
+rtkPosWildPat _ = Just TH.wildP
+
 quotePExp :: Data.Data a => String -> (P -> a) -> String -> TH.ExpQ
 quotePExp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
@@ -66,7 +74,7 @@ quotePPat dummy func s = do
            Left err -> fail err
            Right a -> return a
   let expr = func ast
-  dataToPatQ (const Nothing `Generics.extQ` antiPPat `Generics.extQ` antiEPat `Generics.extQ` antiOp1Pat `Generics.extQ` antiOp2Pat `Generics.extQ` antiIdPat) expr
+  dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiPPat `Generics.extQ` antiEPat `Generics.extQ` antiOp1Pat `Generics.extQ` antiOp2Pat `Generics.extQ` antiIdPat) expr
 
 antiIdExp :: Id -> Maybe (TH.Q TH.Exp )
 antiIdExp ( Anti_Id v) = Just $ TH.varE (TH.mkName v)
@@ -123,27 +131,27 @@ antiPPat _ = Nothing
 quotePType s = return TH.ListT
 quotePDecs s = return []
 
-getP ( Ctr__P__0 s) = s
+getP ( Ctr__P__0 _ s) = s
 
 p :: QuasiQuoter
 p = QuasiQuoter (quotePExp "tok_P_dummy_4" getP ) (quotePPat "tok_P_dummy_4" getP ) quotePType quotePDecs
 
-getE ( Ctr__P__1 s) = s
+getE ( Ctr__P__1 _ s) = s
 
 e :: QuasiQuoter
 e = QuasiQuoter (quotePExp "tok_E_dummy_3" getE ) (quotePPat "tok_E_dummy_3" getE ) quotePType quotePDecs
 
-getId ( Ctr__P__2 s) = s
+getId ( Ctr__P__2 _ s) = s
 
 id :: QuasiQuoter
 id = QuasiQuoter (quotePExp "tok_Id_dummy_2" getId ) (quotePPat "tok_Id_dummy_2" getId ) quotePType quotePDecs
 
-getOp1 ( Ctr__P__3 s) = s
+getOp1 ( Ctr__P__3 _ s) = s
 
 op1 :: QuasiQuoter
 op1 = QuasiQuoter (quotePExp "tok_Op1_dummy_1" getOp1 ) (quotePPat "tok_Op1_dummy_1" getOp1 ) quotePType quotePDecs
 
-getOp2 ( Ctr__P__4 s) = s
+getOp2 ( Ctr__P__4 _ s) = s
 
 op2 :: QuasiQuoter
 op2 = QuasiQuoter (quotePExp "tok_Op2_dummy_0" getOp2 ) (quotePPat "tok_Op2_dummy_0" getOp2 ) quotePType quotePDecs

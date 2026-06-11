@@ -51,6 +51,14 @@ replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 qqShortcuts = M.fromList [ ("sandbox","Sandbox")]
 
+-- A quasi-quote pattern must match an AST parsed from anywhere in a source
+-- file, while the pattern itself was parsed from the quote body - so every
+-- RtkPos position field becomes a wildcard in generated patterns.
+-- (Expressions need no special case: the compile-time position they embed
+-- is equality-transparent.)
+rtkPosWildPat :: RtkPos -> Maybe (TH.Q TH.Pat)
+rtkPosWildPat _ = Just TH.wildP
+
 quoteSandboxExp :: Data.Data a => String -> (Sandbox -> a) -> String -> TH.ExpQ
 quoteSandboxExp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
@@ -66,7 +74,7 @@ quoteSandboxPat dummy func s = do
            Left err -> fail err
            Right a -> return a
   let expr = func ast
-  dataToPatQ (const Nothing `Generics.extQ` antiSandboxPat) expr
+  dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiSandboxPat) expr
 
 antiSandboxExp :: Sandbox -> Maybe (TH.Q TH.Exp )
 antiSandboxExp ( Anti_Sandbox v) = Just $ TH.varE (TH.mkName v)
@@ -83,7 +91,7 @@ antiSandboxPat _ = Nothing
 quoteSandboxType s = return TH.ListT
 quoteSandboxDecs s = return []
 
-getSandbox ( Ctr__Sandbox__0 s) = s
+getSandbox ( Ctr__Sandbox__0 _ s) = s
 
 sandbox :: QuasiQuoter
 sandbox = QuasiQuoter (quoteSandboxExp "tok_Sandbox_dummy_0" getSandbox ) (quoteSandboxPat "tok_Sandbox_dummy_0" getSandbox ) quoteSandboxType quoteSandboxDecs

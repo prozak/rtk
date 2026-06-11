@@ -1,6 +1,8 @@
 {
+{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
 module SandboxLexer(scanTokens, alexScanTokens, Token(..), PosToken(..), AlexPosn(..))
 where
+import Data.Data (Data)
 
  }
 %wrapper "monad"
@@ -20,6 +22,11 @@ data Token = EndOfFile |
              Tk__doccomment String |
              Tk__qq_Sandbox String
              deriving (Show)
+
+-- AlexPosn is defined by the alex wrapper, so the Data instance (required by
+-- the parser's RtkPos position type) can only be attached via standalone
+-- deriving - the same solution as the hand-written Lexer.x
+deriving instance Data AlexPosn
 
 -- A token together with the source position where it starts
 data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }

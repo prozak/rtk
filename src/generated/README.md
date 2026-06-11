@@ -49,10 +49,12 @@ Two things the hand-written front end does between lexing and parsing:
    exported `unBackQuote` on the same leaves — the escape logic is not
    duplicated.
 
-Source positions are **not** captured yet (task 7b): `getIRulePos` is
-`Nothing` everywhere. Generated artifacts never embed source positions —
-positions only affect error messages — so this cannot change the generated
-output for a valid grammar.
+3. **Rule positions.** Every generated constructor (except the
+   quasi-quotation-only `Anti_*` ones) stores the position of its first
+   token in a leading `RtkPos` field; the adapter maps the rule
+   constructors' positions into `getIRulePos`, so diagnostics under
+   `--use-generated` point at the same source locations the hand-written
+   front end records.
 
 ## Equivalence guarantees
 
@@ -61,16 +63,17 @@ output for a valid grammar.
   byte-for-byte (three grammars that use hand-parser-only syntax are pinned
   in `TestSupport.frontEndDivergentGrammars` with a still-diverges guard).
 - `cabal test unit` parses every grammar with both front ends and asserts the
-  `InitialGrammar`s are equal after stripping positions (same pins).
+  `InitialGrammar`s are equal, source positions included (same pins).
 - The fixed point: `rtk --use-generated test-grammars/grammar.pg out/`
   regenerates `test/golden/grammar/` exactly — RTK parses its own grammar
   with the parser it generated from that grammar.
 
 ## Known divergences (documented, accepted)
 
-See `BOOTSTRAP.md` for the full list: `Either String` errors with positions
-in the message text (structured positions come with task 7b), no nested
-`/* /* */ */` comments (GitHub issue #25), no concatenation of adjacent
-`"""…"""` blocks, no empty alternatives (`Gd = | ExpI ;` is
-hand-parser-only syntax), and no redundant-parenthesis grouping
-(grammar.pg lifts paren groups, the hand-written parser keeps them).
+See `BOOTSTRAP.md` for the full list: lexer/parser failures are
+`Either String` with positions in the message text (everything after
+parsing carries structured positions), no nested `/* /* */ */` comments
+(GitHub issue #25), no concatenation of adjacent `"""…"""` blocks, no empty
+alternatives (`Gd = | ExpI ;` is hand-parser-only syntax), and no
+redundant-parenthesis grouping (grammar.pg lifts paren groups, the
+hand-written parser keeps them).

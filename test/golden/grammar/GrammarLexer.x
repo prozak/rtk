@@ -1,6 +1,8 @@
 {
+{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
 module GrammarLexer(scanTokens, alexScanTokens, Token(..), PosToken(..), AlexPosn(..))
 where
+import Data.Data (Data)
 
 import Data.List
 import qualified Data.Map as M
@@ -105,6 +107,11 @@ data Token = EndOfFile |
              Tk__qq_ImportsOpt String |
              Tk__qq_Grammar String
              deriving (Show)
+
+-- AlexPosn is defined by the alex wrapper, so the Data instance (required by
+-- the parser's RtkPos position type) can only be attached via standalone
+-- deriving - the same solution as the hand-written Lexer.x
+deriving instance Data AlexPosn
 
 -- A token together with the source position where it starts
 data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }

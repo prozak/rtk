@@ -51,6 +51,14 @@ replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 qqShortcuts = M.fromList [ ("program","Program"),("assignment","Assignment"),("block","Block"),("expression","Expression"),("factor","Factor"),("ifStatement","IfStatement"),("statement","Statement"),("term","Term"),("unusedRule1","UnusedRule1"),("unusedRule2","UnusedRule2"),("whileLoop","WhileLoop")]
 
+-- A quasi-quote pattern must match an AST parsed from anywhere in a source
+-- file, while the pattern itself was parsed from the quote body - so every
+-- RtkPos position field becomes a wildcard in generated patterns.
+-- (Expressions need no special case: the compile-time position they embed
+-- is equality-transparent.)
+rtkPosWildPat :: RtkPos -> Maybe (TH.Q TH.Pat)
+rtkPosWildPat _ = Just TH.wildP
+
 quoteDebugTestExp :: Data.Data a => String -> (Program -> a) -> String -> TH.ExpQ
 quoteDebugTestExp dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
@@ -66,7 +74,7 @@ quoteDebugTestPat dummy func s = do
            Left err -> fail err
            Right a -> return a
   let expr = func ast
-  dataToPatQ (const Nothing `Generics.extQ` antiStatementPat `Generics.extQ` antiAssignmentPat `Generics.extQ` antiExpressionPat `Generics.extQ` antiTermPat `Generics.extQ` antiFactorPat `Generics.extQ` antiIfStatementPat `Generics.extQ` antiWhileLoopPat `Generics.extQ` antiBlockPat `Generics.extQ` antiUnusedRule1Pat) expr
+  dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiStatementPat `Generics.extQ` antiAssignmentPat `Generics.extQ` antiExpressionPat `Generics.extQ` antiTermPat `Generics.extQ` antiFactorPat `Generics.extQ` antiIfStatementPat `Generics.extQ` antiWhileLoopPat `Generics.extQ` antiBlockPat `Generics.extQ` antiUnusedRule1Pat) expr
 
 antiUnusedRule1Exp :: UnusedRule1 -> Maybe (TH.Q TH.Exp )
 antiUnusedRule1Exp ( Anti_UnusedRule1 v) = Just $ TH.varE (TH.mkName v)
@@ -166,57 +174,57 @@ antiStatementPat _ = Nothing
 quoteDebugTestType s = return TH.ListT
 quoteDebugTestDecs s = return []
 
-getProgram ( Ctr__Program__0 s) = s
+getProgram ( Ctr__Program__0 _ s) = s
 
 program :: QuasiQuoter
 program = QuasiQuoter (quoteDebugTestExp "tok_Program_dummy_19" getProgram ) (quoteDebugTestPat "tok_Program_dummy_19" getProgram ) quoteDebugTestType quoteDebugTestDecs
 
-getAssignment ( Ctr__Program__1 s) = s
+getAssignment ( Ctr__Program__1 _ s) = s
 
 assignment :: QuasiQuoter
 assignment = QuasiQuoter (quoteDebugTestExp "tok_Assignment_dummy_18" getAssignment ) (quoteDebugTestPat "tok_Assignment_dummy_18" getAssignment ) quoteDebugTestType quoteDebugTestDecs
 
-getBlock ( Ctr__Program__2 s) = s
+getBlock ( Ctr__Program__2 _ s) = s
 
 block :: QuasiQuoter
 block = QuasiQuoter (quoteDebugTestExp "tok_Block_dummy_17" getBlock ) (quoteDebugTestPat "tok_Block_dummy_17" getBlock ) quoteDebugTestType quoteDebugTestDecs
 
-getExpression ( Ctr__Program__3 s) = s
+getExpression ( Ctr__Program__3 _ s) = s
 
 expression :: QuasiQuoter
 expression = QuasiQuoter (quoteDebugTestExp "tok_Expression_dummy_16" getExpression ) (quoteDebugTestPat "tok_Expression_dummy_16" getExpression ) quoteDebugTestType quoteDebugTestDecs
 
-getFactor ( Ctr__Program__4 s) = s
+getFactor ( Ctr__Program__4 _ s) = s
 
 factor :: QuasiQuoter
 factor = QuasiQuoter (quoteDebugTestExp "tok_Factor_dummy_15" getFactor ) (quoteDebugTestPat "tok_Factor_dummy_15" getFactor ) quoteDebugTestType quoteDebugTestDecs
 
-getIfStatement ( Ctr__Program__5 s) = s
+getIfStatement ( Ctr__Program__5 _ s) = s
 
 ifStatement :: QuasiQuoter
 ifStatement = QuasiQuoter (quoteDebugTestExp "tok_IfStatement_dummy_14" getIfStatement ) (quoteDebugTestPat "tok_IfStatement_dummy_14" getIfStatement ) quoteDebugTestType quoteDebugTestDecs
 
-getStatement ( Ctr__Program__6 s) = s
+getStatement ( Ctr__Program__6 _ s) = s
 
 statement :: QuasiQuoter
 statement = QuasiQuoter (quoteDebugTestExp "tok_Statement_dummy_13" getStatement ) (quoteDebugTestPat "tok_Statement_dummy_13" getStatement ) quoteDebugTestType quoteDebugTestDecs
 
-getTerm ( Ctr__Program__7 s) = s
+getTerm ( Ctr__Program__7 _ s) = s
 
 term :: QuasiQuoter
 term = QuasiQuoter (quoteDebugTestExp "tok_Term_dummy_12" getTerm ) (quoteDebugTestPat "tok_Term_dummy_12" getTerm ) quoteDebugTestType quoteDebugTestDecs
 
-getUnusedRule1 ( Ctr__Program__8 s) = s
+getUnusedRule1 ( Ctr__Program__8 _ s) = s
 
 unusedRule1 :: QuasiQuoter
 unusedRule1 = QuasiQuoter (quoteDebugTestExp "tok_UnusedRule1_dummy_11" getUnusedRule1 ) (quoteDebugTestPat "tok_UnusedRule1_dummy_11" getUnusedRule1 ) quoteDebugTestType quoteDebugTestDecs
 
-getUnusedRule2 ( Ctr__Program__9 s) = s
+getUnusedRule2 ( Ctr__Program__9 _ s) = s
 
 unusedRule2 :: QuasiQuoter
 unusedRule2 = QuasiQuoter (quoteDebugTestExp "tok_UnusedRule2_dummy_10" getUnusedRule2 ) (quoteDebugTestPat "tok_UnusedRule2_dummy_10" getUnusedRule2 ) quoteDebugTestType quoteDebugTestDecs
 
-getWhileLoop ( Ctr__Program__10 s) = s
+getWhileLoop ( Ctr__Program__10 _ s) = s
 
 whileLoop :: QuasiQuoter
 whileLoop = QuasiQuoter (quoteDebugTestExp "tok_WhileLoop_dummy_9" getWhileLoop ) (quoteDebugTestPat "tok_WhileLoop_dummy_9" getWhileLoop ) quoteDebugTestType quoteDebugTestDecs

@@ -1,4 +1,4 @@
-module GenAST (genAST)
+module GenAST (genAST, isAntiConstructor)
     where
 
 import Parser
@@ -8,6 +8,15 @@ import Grammar
 import qualified Data.Map as Map
 import qualified Data.List as List
 import Data.Maybe (mapMaybe)
+
+-- Anti_* constructors are compile-time artifacts: they exist only so a
+-- $Type:var quasi-quote splice has a constructor to reduce to, and they are
+-- replaced by the spliced variable during Template Haskell expansion. They
+-- never describe a source construct, so they are exempt from position
+-- capture (no leading RtkPos field). The Anti_ naming convention is owned by
+-- Normalize.addAntiRuleCached, which builds every such constructor name.
+isAntiConstructor :: ConstructorName -> Bool
+isAntiConstructor = List.isPrefixOf "Anti_"
 
 normalRulesNamed :: [SyntaxRuleGroup] -> [(ID, SyntaxTopClause)]
 normalRulesNamed groups = map (\g -> (getSDataTypeName g, combineClauses $ map getSClause $ getSRules g))
@@ -63,12 +72,32 @@ genData rmap name sequences = do
     ctors <- mapM (genConstructor rmap name) sequences'
     return $ text "data" <+> text name <+> text "=" <+> (joinAlts ctors
                                                          $$ text "deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)")
+             $$ genPosInstance name sequences'
     where sequences' = filter needGenereateAlt sequences
+
+-- Every non-anti constructor stores its source position in its first field,
+-- so projecting a node's position is one pattern match per constructor.
+-- List and Maybe rules are type synonyms and are covered by the generic
+-- [a]/Maybe instances emitted with the RtkPos definitions in GenY.
+genPosInstance :: String -> [STSeq] -> Doc
+genPosInstance name sequences =
+    text "instance RtkPosOf" <+> text name <+> text "where"
+    $$ nest 4 (vcat (map arm sequences))
+    where arm (STSeq constructor clauses) =
+            let wildcards = hsep (replicate (fieldCount clauses) (text "_")) in
+              if isAntiConstructor constructor
+                then text "rtkPosOf" <+> parens (text constructor <+> wildcards) <+> text "= rtkNoPos"
+                else text "rtkPosOf" <+> parens (text constructor <+> text "p" <+> wildcards) <+> text "= p"
+          fieldCount = length . filter isField
+          isField SSId{} = True
+          isField _      = False
 
 genConstructor :: RulesMap -> String -> STSeq -> Either Diagnostic Doc
 genConstructor rmap refType (STSeq constructor clauses) = do
     items <- mapM (genSimpleItem rmap refType) clauses
-    return $ text constructor <+> hsep items
+    let fields | isAntiConstructor constructor = items
+               | otherwise                     = text "RtkPos" : items
+    return $ text constructor <+> hsep fields
 
 genItem :: RulesMap -> String -> SyntaxTopClause -> Either Diagnostic Doc
 genItem rmap refType (STMany _ cl _) = brackets <$> genSimpleItem rmap refType cl

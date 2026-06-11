@@ -38,99 +38,99 @@ tok__plus__2 { L.PosToken _ L.Tk__tok__plus__2 }
 tok__star__4 { L.PosToken _ L.Tk__tok__star__4 }
 tok__rparen__7 { L.PosToken _ L.Tk__tok__rparen__7 }
 tok__lparen__6 { L.PosToken _ L.Tk__tok__lparen__6 }
-number { L.PosToken _ (L.Tk__number $$) }
-identifier { L.PosToken _ (L.Tk__identifier $$) }
-qq_UnusedRule2 { L.PosToken _ (L.Tk__qq_UnusedRule2 $$) }
-qq_UnusedRule1 { L.PosToken _ (L.Tk__qq_UnusedRule1 $$) }
-qq_Block { L.PosToken _ (L.Tk__qq_Block $$) }
-qq_WhileLoop { L.PosToken _ (L.Tk__qq_WhileLoop $$) }
-qq_IfStatement { L.PosToken _ (L.Tk__qq_IfStatement $$) }
-qq_Factor { L.PosToken _ (L.Tk__qq_Factor $$) }
-qq_Term { L.PosToken _ (L.Tk__qq_Term $$) }
-qq_Expression { L.PosToken _ (L.Tk__qq_Expression $$) }
-qq_Assignment { L.PosToken _ (L.Tk__qq_Assignment $$) }
-qq_Statement { L.PosToken _ (L.Tk__qq_Statement $$) }
-qq_Program { L.PosToken _ (L.Tk__qq_Program $$) }
+number { L.PosToken _ (L.Tk__number _) }
+identifier { L.PosToken _ (L.Tk__identifier _) }
+qq_UnusedRule2 { L.PosToken _ (L.Tk__qq_UnusedRule2 _) }
+qq_UnusedRule1 { L.PosToken _ (L.Tk__qq_UnusedRule1 _) }
+qq_Block { L.PosToken _ (L.Tk__qq_Block _) }
+qq_WhileLoop { L.PosToken _ (L.Tk__qq_WhileLoop _) }
+qq_IfStatement { L.PosToken _ (L.Tk__qq_IfStatement _) }
+qq_Factor { L.PosToken _ (L.Tk__qq_Factor _) }
+qq_Term { L.PosToken _ (L.Tk__qq_Term _) }
+qq_Expression { L.PosToken _ (L.Tk__qq_Expression _) }
+qq_Assignment { L.PosToken _ (L.Tk__qq_Assignment _) }
+qq_Statement { L.PosToken _ (L.Tk__qq_Statement _) }
+qq_Program { L.PosToken _ (L.Tk__qq_Program _) }
 
 %%
 
 DebugTest__top : Program rtk__eof { $1 }
 
-Program : tok_Program_dummy_19 Program tok_Program_dummy_19 { Ctr__Program__0 (reverse $2) } |
-          tok_Assignment_dummy_18 Assignment tok_Assignment_dummy_18 { Ctr__Program__1 $2 } |
-          tok_Block_dummy_17 Block tok_Block_dummy_17 { Ctr__Program__2 $2 } |
-          tok_Expression_dummy_16 Expression tok_Expression_dummy_16 { Ctr__Program__3 $2 } |
-          tok_Factor_dummy_15 Factor tok_Factor_dummy_15 { Ctr__Program__4 $2 } |
-          tok_IfStatement_dummy_14 IfStatement tok_IfStatement_dummy_14 { Ctr__Program__5 $2 } |
-          tok_Statement_dummy_13 Statement tok_Statement_dummy_13 { Ctr__Program__6 $2 } |
-          tok_Term_dummy_12 Term tok_Term_dummy_12 { Ctr__Program__7 $2 } |
-          tok_UnusedRule1_dummy_11 UnusedRule1 tok_UnusedRule1_dummy_11 { Ctr__Program__8 $2 } |
-          tok_UnusedRule2_dummy_10 UnusedRule2 tok_UnusedRule2_dummy_10 { Ctr__Program__9 (reverse $2) } |
-          tok_WhileLoop_dummy_9 WhileLoop tok_WhileLoop_dummy_9 { Ctr__Program__10 $2 }
+Program : tok_Program_dummy_19 Program tok_Program_dummy_19 { Ctr__Program__0 (rtkPosOf $1) (reverse $2) } |
+          tok_Assignment_dummy_18 Assignment tok_Assignment_dummy_18 { Ctr__Program__1 (rtkPosOf $1) $2 } |
+          tok_Block_dummy_17 Block tok_Block_dummy_17 { Ctr__Program__2 (rtkPosOf $1) $2 } |
+          tok_Expression_dummy_16 Expression tok_Expression_dummy_16 { Ctr__Program__3 (rtkPosOf $1) $2 } |
+          tok_Factor_dummy_15 Factor tok_Factor_dummy_15 { Ctr__Program__4 (rtkPosOf $1) $2 } |
+          tok_IfStatement_dummy_14 IfStatement tok_IfStatement_dummy_14 { Ctr__Program__5 (rtkPosOf $1) $2 } |
+          tok_Statement_dummy_13 Statement tok_Statement_dummy_13 { Ctr__Program__6 (rtkPosOf $1) $2 } |
+          tok_Term_dummy_12 Term tok_Term_dummy_12 { Ctr__Program__7 (rtkPosOf $1) $2 } |
+          tok_UnusedRule1_dummy_11 UnusedRule1 tok_UnusedRule1_dummy_11 { Ctr__Program__8 (rtkPosOf $1) $2 } |
+          tok_UnusedRule2_dummy_10 UnusedRule2 tok_UnusedRule2_dummy_10 { Ctr__Program__9 (rtkPosOf $1) (reverse $2) } |
+          tok_WhileLoop_dummy_9 WhileLoop tok_WhileLoop_dummy_9 { Ctr__Program__10 (rtkPosOf $1) $2 }
 
 Program : {- empty -} { [] } |
           Program ListElem_Program0 { $2 : $1 }
 
-Assignment : qq_Assignment { Anti_Assignment $1 } |
-             identifier tok__eql__0 Expression tok__semi__1 { Ctr__Assignment__0 $1 $3 }
+Assignment : qq_Assignment { Anti_Assignment (tkVal_qq_Assignment $1) } |
+             identifier tok__eql__0 Expression tok__semi__1 { Ctr__Assignment__0 (rtkPosOf $1) (tkVal_identifier $1) $3 }
 
-Block : qq_Block { Anti_Block $1 } |
-        tok__symbol__11 Rule_7 tok__symbol__12 { Ctr__Block__0 (reverse $2) }
+Block : qq_Block { Anti_Block (tkVal_qq_Block $1) } |
+        tok__symbol__11 Rule_7 tok__symbol__12 { Ctr__Block__0 (rtkPosOf $1) (reverse $2) }
 
-Expression : qq_Expression { Anti_Expression $1 } |
-             Term Rule_1 { Ctr__Expression__0 $1 (reverse $2) }
+Expression : qq_Expression { Anti_Expression (tkVal_qq_Expression $1) } |
+             Term Rule_1 { Ctr__Expression__0 (rtkPosOf $1) $1 (reverse $2) }
 
-Factor : qq_Factor { Anti_Factor $1 } |
-         identifier { Ctr__Factor__0 $1 } |
-         number { Ctr__Factor__1 $1 } |
-         tok__lparen__6 Expression tok__rparen__7 { Ctr__Factor__2 $2 }
+Factor : qq_Factor { Anti_Factor (tkVal_qq_Factor $1) } |
+         identifier { Ctr__Factor__0 (rtkPosOf $1) (tkVal_identifier $1) } |
+         number { Ctr__Factor__1 (rtkPosOf $1) (tkVal_number $1) } |
+         tok__lparen__6 Expression tok__rparen__7 { Ctr__Factor__2 (rtkPosOf $1) $2 }
 
-IfStatement : qq_IfStatement { Anti_IfStatement $1 } |
-              tok_if_8 tok__lparen__6 Expression tok__rparen__7 Statement { Ctr__IfStatement__0 $3 $5 } |
-              tok_if_8 tok__lparen__6 Expression tok__rparen__7 Statement tok_else_9 Statement { Ctr__IfStatement__1 $3 $5 $7 }
+IfStatement : qq_IfStatement { Anti_IfStatement (tkVal_qq_IfStatement $1) } |
+              tok_if_8 tok__lparen__6 Expression tok__rparen__7 Statement { Ctr__IfStatement__0 (rtkPosOf $1) $3 $5 } |
+              tok_if_8 tok__lparen__6 Expression tok__rparen__7 Statement tok_else_9 Statement { Ctr__IfStatement__1 (rtkPosOf $1) $3 $5 $7 }
 
 Rule_1 : {- empty -} { [] } |
          Rule_1 Rule_2 { $2 : $1 }
 
-Rule_2 : Rule_3 Term { Ctr__Rule_2__0 $1 $2 }
+Rule_2 : Rule_3 Term { Ctr__Rule_2__0 (rtkPosOf $1) $1 $2 }
 
-Rule_3 : tok__plus__2 { Ctr__Rule_3__0 } |
-         tok__minus__3 { Ctr__Rule_3__1 }
+Rule_3 : tok__plus__2 { Ctr__Rule_3__0 (rtkPosOf $1) } |
+         tok__minus__3 { Ctr__Rule_3__1 (rtkPosOf $1) }
 
 Rule_4 : {- empty -} { [] } |
          Rule_4 Rule_5 { $2 : $1 }
 
-Rule_5 : Rule_6 Factor { Ctr__Rule_5__0 $1 $2 }
+Rule_5 : Rule_6 Factor { Ctr__Rule_5__0 (rtkPosOf $1) $1 $2 }
 
-Rule_6 : tok__star__4 { Ctr__Rule_6__0 } |
-         tok__symbol__5 { Ctr__Rule_6__1 }
+Rule_6 : tok__star__4 { Ctr__Rule_6__0 (rtkPosOf $1) } |
+         tok__symbol__5 { Ctr__Rule_6__1 (rtkPosOf $1) }
 
 Rule_7 : {- empty -} { [] } |
          Rule_7 Statement { $2 : $1 }
 
-Statement : qq_Statement { Anti_Statement $1 } |
-            Assignment { Ctr__Statement__0 $1 } |
-            IfStatement { Ctr__Statement__1 $1 } |
-            WhileLoop { Ctr__Statement__2 $1 } |
-            Block { Ctr__Statement__3 $1 }
+Statement : qq_Statement { Anti_Statement (tkVal_qq_Statement $1) } |
+            Assignment { Ctr__Statement__0 (rtkPosOf $1) $1 } |
+            IfStatement { Ctr__Statement__1 (rtkPosOf $1) $1 } |
+            WhileLoop { Ctr__Statement__2 (rtkPosOf $1) $1 } |
+            Block { Ctr__Statement__3 (rtkPosOf $1) $1 }
 
-ListElem_Program0 : qq_Program { Anti_Statement $1 } |
+ListElem_Program0 : qq_Program { Anti_Statement (tkVal_qq_Program $1) } |
                     Statement { $1 }
 
-Term : qq_Term { Anti_Term $1 } |
-       Factor Rule_4 { Ctr__Term__0 $1 (reverse $2) }
+Term : qq_Term { Anti_Term (tkVal_qq_Term $1) } |
+       Factor Rule_4 { Ctr__Term__0 (rtkPosOf $1) $1 (reverse $2) }
 
-ListElem_UnusedRule28 : qq_UnusedRule2 { Anti_UnusedRule1 $1 } |
+ListElem_UnusedRule28 : qq_UnusedRule2 { Anti_UnusedRule1 (tkVal_qq_UnusedRule2 $1) } |
                         UnusedRule1 { $1 }
 
-UnusedRule1 : qq_UnusedRule1 { Anti_UnusedRule1 $1 } |
-              tok_unused_13 identifier { Ctr__UnusedRule1__1 $2 }
+UnusedRule1 : qq_UnusedRule1 { Anti_UnusedRule1 (tkVal_qq_UnusedRule1 $1) } |
+              tok_unused_13 identifier { Ctr__UnusedRule1__1 (rtkPosOf $1) (tkVal_identifier $2) }
 
 UnusedRule2 : {- empty -} { [] } |
               UnusedRule2 ListElem_UnusedRule28 { $2 : $1 }
 
-WhileLoop : qq_WhileLoop { Anti_WhileLoop $1 } |
-            tok_while_10 tok__lparen__6 Expression tok__rparen__7 Statement { Ctr__WhileLoop__0 $3 $5 }
+WhileLoop : qq_WhileLoop { Anti_WhileLoop (tkVal_qq_WhileLoop $1) } |
+            tok_while_10 tok__lparen__6 Expression tok__rparen__7 Statement { Ctr__WhileLoop__0 (rtkPosOf $1) $3 $5 }
 
 
 {
@@ -181,63 +181,188 @@ showRtkToken (L.Tk__qq_Assignment v) = "qq_Assignment " ++ show v
 showRtkToken (L.Tk__qq_Statement v) = "qq_Statement " ++ show v
 showRtkToken (L.Tk__qq_Program v) = "qq_Program " ++ show v
 
-data Program = Ctr__Program__0 Program |
-               Ctr__Program__1 Assignment |
-               Ctr__Program__2 Block |
-               Ctr__Program__3 Expression |
-               Ctr__Program__4 Factor |
-               Ctr__Program__5 IfStatement |
-               Ctr__Program__6 Statement |
-               Ctr__Program__7 Term |
-               Ctr__Program__8 UnusedRule1 |
-               Ctr__Program__9 UnusedRule2 |
-               Ctr__Program__10 WhileLoop
+-- Source position of a node: every constructor except the Anti_* splice
+-- artifacts stores the position of its alternative's first symbol in its
+-- first field. Positions are transparent for equality and ordering, so two
+-- ASTs that differ only in source positions (e.g. a quasi-quote parsed at
+-- compile time vs the same construct parsed at run time) compare equal.
+newtype RtkPos = RtkPos L.AlexPosn deriving (Show, Gen.Data, Gen.Typeable)
+instance Eq RtkPos where _ == _ = True
+instance Ord RtkPos where compare _ _ = EQ
+
+-- The position used where no source token exists: empty productions, empty
+-- lists, absent optionals and Anti_* quasi-quote splices
+rtkNoPos :: RtkPos
+rtkNoPos = RtkPos (L.AlexPn 0 0 0)
+
+class RtkPosOf a where
+    rtkPosOf :: a -> RtkPos
+instance RtkPosOf L.PosToken where
+    rtkPosOf (L.PosToken p _) = RtkPos p
+instance RtkPosOf a => RtkPosOf [a] where
+    rtkPosOf (x : _) = rtkPosOf x
+    rtkPosOf []      = rtkNoPos
+instance RtkPosOf a => RtkPosOf (Maybe a) where
+    rtkPosOf (Just x) = rtkPosOf x
+    rtkPosOf Nothing  = rtkNoPos
+-- A Char carries no position; this also covers String token payloads
+instance RtkPosOf Char where
+    rtkPosOf _ = rtkNoPos
+
+-- Recover a token's payload from the whole positioned token: %token
+-- bindings keep the L.PosToken so semantic actions can read its position
+tkVal_number :: L.PosToken -> String
+tkVal_number (L.PosToken _ (L.Tk__number v)) = v
+tkVal_number t = error ("rtk internal error: token number expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_identifier :: L.PosToken -> String
+tkVal_identifier (L.PosToken _ (L.Tk__identifier v)) = v
+tkVal_identifier t = error ("rtk internal error: token identifier expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_UnusedRule2 :: L.PosToken -> String
+tkVal_qq_UnusedRule2 (L.PosToken _ (L.Tk__qq_UnusedRule2 v)) = v
+tkVal_qq_UnusedRule2 t = error ("rtk internal error: token qq_UnusedRule2 expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_UnusedRule1 :: L.PosToken -> String
+tkVal_qq_UnusedRule1 (L.PosToken _ (L.Tk__qq_UnusedRule1 v)) = v
+tkVal_qq_UnusedRule1 t = error ("rtk internal error: token qq_UnusedRule1 expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Block :: L.PosToken -> String
+tkVal_qq_Block (L.PosToken _ (L.Tk__qq_Block v)) = v
+tkVal_qq_Block t = error ("rtk internal error: token qq_Block expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_WhileLoop :: L.PosToken -> String
+tkVal_qq_WhileLoop (L.PosToken _ (L.Tk__qq_WhileLoop v)) = v
+tkVal_qq_WhileLoop t = error ("rtk internal error: token qq_WhileLoop expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_IfStatement :: L.PosToken -> String
+tkVal_qq_IfStatement (L.PosToken _ (L.Tk__qq_IfStatement v)) = v
+tkVal_qq_IfStatement t = error ("rtk internal error: token qq_IfStatement expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Factor :: L.PosToken -> String
+tkVal_qq_Factor (L.PosToken _ (L.Tk__qq_Factor v)) = v
+tkVal_qq_Factor t = error ("rtk internal error: token qq_Factor expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Term :: L.PosToken -> String
+tkVal_qq_Term (L.PosToken _ (L.Tk__qq_Term v)) = v
+tkVal_qq_Term t = error ("rtk internal error: token qq_Term expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Expression :: L.PosToken -> String
+tkVal_qq_Expression (L.PosToken _ (L.Tk__qq_Expression v)) = v
+tkVal_qq_Expression t = error ("rtk internal error: token qq_Expression expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Assignment :: L.PosToken -> String
+tkVal_qq_Assignment (L.PosToken _ (L.Tk__qq_Assignment v)) = v
+tkVal_qq_Assignment t = error ("rtk internal error: token qq_Assignment expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Statement :: L.PosToken -> String
+tkVal_qq_Statement (L.PosToken _ (L.Tk__qq_Statement v)) = v
+tkVal_qq_Statement t = error ("rtk internal error: token qq_Statement expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Program :: L.PosToken -> String
+tkVal_qq_Program (L.PosToken _ (L.Tk__qq_Program v)) = v
+tkVal_qq_Program t = error ("rtk internal error: token qq_Program expected, got " ++ showRtkToken (L.ptToken t))
+
+data Program = Ctr__Program__0 RtkPos Program |
+               Ctr__Program__1 RtkPos Assignment |
+               Ctr__Program__2 RtkPos Block |
+               Ctr__Program__3 RtkPos Expression |
+               Ctr__Program__4 RtkPos Factor |
+               Ctr__Program__5 RtkPos IfStatement |
+               Ctr__Program__6 RtkPos Statement |
+               Ctr__Program__7 RtkPos Term |
+               Ctr__Program__8 RtkPos UnusedRule1 |
+               Ctr__Program__9 RtkPos UnusedRule2 |
+               Ctr__Program__10 RtkPos WhileLoop
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Program where
+    rtkPosOf (Ctr__Program__0 p _) = p
+    rtkPosOf (Ctr__Program__1 p _) = p
+    rtkPosOf (Ctr__Program__2 p _) = p
+    rtkPosOf (Ctr__Program__3 p _) = p
+    rtkPosOf (Ctr__Program__4 p _) = p
+    rtkPosOf (Ctr__Program__5 p _) = p
+    rtkPosOf (Ctr__Program__6 p _) = p
+    rtkPosOf (Ctr__Program__7 p _) = p
+    rtkPosOf (Ctr__Program__8 p _) = p
+    rtkPosOf (Ctr__Program__9 p _) = p
+    rtkPosOf (Ctr__Program__10 p _) = p
 data Assignment = Anti_Assignment String |
-                  Ctr__Assignment__0 String Expression
+                  Ctr__Assignment__0 RtkPos String Expression
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Assignment where
+    rtkPosOf (Anti_Assignment _) = rtkNoPos
+    rtkPosOf (Ctr__Assignment__0 p _ _) = p
 data Block = Anti_Block String |
-             Ctr__Block__0 Rule_7
+             Ctr__Block__0 RtkPos Rule_7
              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Block where
+    rtkPosOf (Anti_Block _) = rtkNoPos
+    rtkPosOf (Ctr__Block__0 p _) = p
 data Expression = Anti_Expression String |
-                  Ctr__Expression__0 Term Rule_1
+                  Ctr__Expression__0 RtkPos Term Rule_1
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Expression where
+    rtkPosOf (Anti_Expression _) = rtkNoPos
+    rtkPosOf (Ctr__Expression__0 p _ _) = p
 data Factor = Anti_Factor String |
-              Ctr__Factor__0 String |
-              Ctr__Factor__1 String |
-              Ctr__Factor__2 Expression
+              Ctr__Factor__0 RtkPos String |
+              Ctr__Factor__1 RtkPos String |
+              Ctr__Factor__2 RtkPos Expression
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Factor where
+    rtkPosOf (Anti_Factor _) = rtkNoPos
+    rtkPosOf (Ctr__Factor__0 p _) = p
+    rtkPosOf (Ctr__Factor__1 p _) = p
+    rtkPosOf (Ctr__Factor__2 p _) = p
 data IfStatement = Anti_IfStatement String |
-                   Ctr__IfStatement__0 Expression Statement |
-                   Ctr__IfStatement__1 Expression Statement Statement
+                   Ctr__IfStatement__0 RtkPos Expression Statement |
+                   Ctr__IfStatement__1 RtkPos Expression Statement Statement
                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf IfStatement where
+    rtkPosOf (Anti_IfStatement _) = rtkNoPos
+    rtkPosOf (Ctr__IfStatement__0 p _ _) = p
+    rtkPosOf (Ctr__IfStatement__1 p _ _ _) = p
 type Rule_1 = [Rule_2]
-data Rule_2 = Ctr__Rule_2__0 Rule_3 Term
+data Rule_2 = Ctr__Rule_2__0 RtkPos Rule_3 Term
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-data Rule_3 = Ctr__Rule_3__0 |
-              Ctr__Rule_3__1
+instance RtkPosOf Rule_2 where
+    rtkPosOf (Ctr__Rule_2__0 p _ _) = p
+data Rule_3 = Ctr__Rule_3__0 RtkPos |
+              Ctr__Rule_3__1 RtkPos
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_3 where
+    rtkPosOf (Ctr__Rule_3__0 p) = p
+    rtkPosOf (Ctr__Rule_3__1 p) = p
 type Rule_4 = [Rule_5]
-data Rule_5 = Ctr__Rule_5__0 Rule_6 Factor
+data Rule_5 = Ctr__Rule_5__0 RtkPos Rule_6 Factor
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-data Rule_6 = Ctr__Rule_6__0 |
-              Ctr__Rule_6__1
+instance RtkPosOf Rule_5 where
+    rtkPosOf (Ctr__Rule_5__0 p _ _) = p
+data Rule_6 = Ctr__Rule_6__0 RtkPos |
+              Ctr__Rule_6__1 RtkPos
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_6 where
+    rtkPosOf (Ctr__Rule_6__0 p) = p
+    rtkPosOf (Ctr__Rule_6__1 p) = p
 type Rule_7 = [Statement]
 data Statement = Anti_Statement String |
-                 Ctr__Statement__0 Assignment |
-                 Ctr__Statement__1 IfStatement |
-                 Ctr__Statement__2 WhileLoop |
-                 Ctr__Statement__3 Block
+                 Ctr__Statement__0 RtkPos Assignment |
+                 Ctr__Statement__1 RtkPos IfStatement |
+                 Ctr__Statement__2 RtkPos WhileLoop |
+                 Ctr__Statement__3 RtkPos Block
                  deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Statement where
+    rtkPosOf (Anti_Statement _) = rtkNoPos
+    rtkPosOf (Ctr__Statement__0 p _) = p
+    rtkPosOf (Ctr__Statement__1 p _) = p
+    rtkPosOf (Ctr__Statement__2 p _) = p
+    rtkPosOf (Ctr__Statement__3 p _) = p
 data Term = Anti_Term String |
-            Ctr__Term__0 Factor Rule_4
+            Ctr__Term__0 RtkPos Factor Rule_4
             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Term where
+    rtkPosOf (Anti_Term _) = rtkNoPos
+    rtkPosOf (Ctr__Term__0 p _ _) = p
 data UnusedRule1 = Anti_UnusedRule1 String |
-                   Ctr__UnusedRule1__1 String
+                   Ctr__UnusedRule1__1 RtkPos String
                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf UnusedRule1 where
+    rtkPosOf (Anti_UnusedRule1 _) = rtkNoPos
+    rtkPosOf (Ctr__UnusedRule1__1 p _) = p
 type UnusedRule2 = [UnusedRule1]
 data WhileLoop = Anti_WhileLoop String |
-                 Ctr__WhileLoop__0 Expression Statement
+                 Ctr__WhileLoop__0 RtkPos Expression Statement
                  deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf WhileLoop where
+    rtkPosOf (Anti_WhileLoop _) = rtkNoPos
+    rtkPosOf (Ctr__WhileLoop__0 p _ _) = p
 }

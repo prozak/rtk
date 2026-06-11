@@ -74,6 +74,14 @@ replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
 
 ?qqShortCutsMapDef
 
+-- A quasi-quote pattern must match an AST parsed from anywhere in a source
+-- file, while the pattern itself was parsed from the quote body - so every
+-- RtkPos position field becomes a wildcard in generated patterns.
+-- (Expressions need no special case: the compile-time position they embed
+-- is equality-transparent.)
+rtkPosWildPat :: RtkPos -> Maybe (TH.Q TH.Pat)
+rtkPosWildPat _ = Just TH.wildP
+
 ?(qqFunProtoGen expType)
 ?(qqFunImplGen expType)
 ?(qqFunProtoGen pat)
@@ -93,7 +101,11 @@ replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
           typeNames = map arQQName antiRules
           antiNameGen typ n = "anti" ++ n ++ typ
           antiTermGen typ = map (antiNameGen typ) typeNames
-          antiExprsGen typ = foldr (\antiTerm res -> [str|?res `Generics.extQ` ?antiTerm|]) "const Nothing" $ antiTermGen typ
+          -- Patterns additionally wildcard every RtkPos field (see
+          -- rtkPosWildPat in the generated module)
+          extBase "Pat" = "const Nothing `Generics.extQ` rtkPosWildPat"
+          extBase _     = "const Nothing"
+          antiExprsGen typ = foldr (\antiTerm res -> [str|?res `Generics.extQ` ?antiTerm|]) (extBase typ) $ antiTermGen typ
           antiFunsGen typ = map (\(AntiRule tdName qqName consName isList) ->
                                         let antiName = antiNameGen typ qqName
                                             varConstructor = case typ of
@@ -165,7 +177,7 @@ replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
                                                getFun = "get" ++ typeName
                                                dataConstructor = constructorFor typeName
                                            in
-                                             [str|?getFun ( ?dataConstructor s) = s
+                                             [str|?getFun ( ?dataConstructor _ s) = s
 
 ?sortFunName :: QuasiQuoter
 ?sortFunName = QuasiQuoter (?(qqFunName expType) ?dummy ?getFun ) (?(qqFunName pat) ?dummy ?getFun ) ?(qqFunName "Type") ?(qqFunName "Decs")
