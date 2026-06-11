@@ -112,6 +112,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lexer-generation errors name the lexical rule they occur in
 
 ### Changed
+- The makefile test pipeline now runs alex with `-g` (the GHC backend), so
+  generated lexers in `test-out/` compile as compact string-encoded tables
+  instead of ~half-a-million-line pattern matches. GHC's compile of the
+  Java lexer drops from minutes to seconds with identical token streams
+  (verified against the `test-lex-java` goldens). The library's own lexers
+  already used `-g` via cabal's preprocessor; this closes the gap for the
+  makefile-driven tests (#27)
 - The `$Type:var` splice alternative is now attached to a minimal set of
   rules of a shared-type group instead of to every rule. The normalizer
   builds the group's lift graph (rule A → rule B when B has an alternative
