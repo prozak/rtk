@@ -13,17 +13,6 @@ import qualified DebugTestLexer as L (Token(..), PosToken(..), AlexPosn(..), ale
 %token
 
 rtk__eof { L.PosToken _ L.EndOfFile }
-tok_Assignment_dummy_18 { L.PosToken _ L.Tk__tok_Assignment_dummy_18 }
-tok_Block_dummy_17 { L.PosToken _ L.Tk__tok_Block_dummy_17 }
-tok_Expression_dummy_16 { L.PosToken _ L.Tk__tok_Expression_dummy_16 }
-tok_Factor_dummy_15 { L.PosToken _ L.Tk__tok_Factor_dummy_15 }
-tok_IfStatement_dummy_14 { L.PosToken _ L.Tk__tok_IfStatement_dummy_14 }
-tok_Program_dummy_19 { L.PosToken _ L.Tk__tok_Program_dummy_19 }
-tok_Statement_dummy_13 { L.PosToken _ L.Tk__tok_Statement_dummy_13 }
-tok_Term_dummy_12 { L.PosToken _ L.Tk__tok_Term_dummy_12 }
-tok_UnusedRule1_dummy_11 { L.PosToken _ L.Tk__tok_UnusedRule1_dummy_11 }
-tok_UnusedRule2_dummy_10 { L.PosToken _ L.Tk__tok_UnusedRule2_dummy_10 }
-tok_WhileLoop_dummy_9 { L.PosToken _ L.Tk__tok_WhileLoop_dummy_9 }
 tok__symbol__12 { L.PosToken _ L.Tk__tok__symbol__12 }
 tok__symbol__11 { L.PosToken _ L.Tk__tok__symbol__11 }
 tok_while_10 { L.PosToken _ L.Tk__tok_while_10 }
@@ -54,19 +43,7 @@ qq_Program { L.PosToken _ (L.Tk__qq_Program _) }
 
 %%
 
-DebugTest__top : Program rtk__eof { $1 }
-
-Program : tok_Program_dummy_19 Program tok_Program_dummy_19 { Ctr__Program__0 (rtkPosOf $1) (reverse $2) } |
-          tok_Assignment_dummy_18 Assignment tok_Assignment_dummy_18 { Ctr__Program__1 (rtkPosOf $1) $2 } |
-          tok_Block_dummy_17 Block tok_Block_dummy_17 { Ctr__Program__2 (rtkPosOf $1) $2 } |
-          tok_Expression_dummy_16 Expression tok_Expression_dummy_16 { Ctr__Program__3 (rtkPosOf $1) $2 } |
-          tok_Factor_dummy_15 Factor tok_Factor_dummy_15 { Ctr__Program__4 (rtkPosOf $1) $2 } |
-          tok_IfStatement_dummy_14 IfStatement tok_IfStatement_dummy_14 { Ctr__Program__5 (rtkPosOf $1) $2 } |
-          tok_Statement_dummy_13 Statement tok_Statement_dummy_13 { Ctr__Program__6 (rtkPosOf $1) $2 } |
-          tok_Term_dummy_12 Term tok_Term_dummy_12 { Ctr__Program__7 (rtkPosOf $1) $2 } |
-          tok_UnusedRule1_dummy_11 UnusedRule1 tok_UnusedRule1_dummy_11 { Ctr__Program__8 (rtkPosOf $1) $2 } |
-          tok_UnusedRule2_dummy_10 UnusedRule2 tok_UnusedRule2_dummy_10 { Ctr__Program__9 (rtkPosOf $1) (reverse $2) } |
-          tok_WhileLoop_dummy_9 WhileLoop tok_WhileLoop_dummy_9 { Ctr__Program__10 (rtkPosOf $1) $2 }
+DebugTest__top : Program rtk__eof { (reverse $1) }
 
 Program : {- empty -} { [] } |
           Program ListElem_Program0 { $2 : $1 }
@@ -142,17 +119,6 @@ parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
 -- Render a token the way it appears in the source, for error messages
 showRtkToken :: L.Token -> String
 showRtkToken L.EndOfFile = "end of input"
-showRtkToken L.Tk__tok_Assignment_dummy_18 = "'tok_Assignment_dummy_18'"
-showRtkToken L.Tk__tok_Block_dummy_17 = "'tok_Block_dummy_17'"
-showRtkToken L.Tk__tok_Expression_dummy_16 = "'tok_Expression_dummy_16'"
-showRtkToken L.Tk__tok_Factor_dummy_15 = "'tok_Factor_dummy_15'"
-showRtkToken L.Tk__tok_IfStatement_dummy_14 = "'tok_IfStatement_dummy_14'"
-showRtkToken L.Tk__tok_Program_dummy_19 = "'tok_Program_dummy_19'"
-showRtkToken L.Tk__tok_Statement_dummy_13 = "'tok_Statement_dummy_13'"
-showRtkToken L.Tk__tok_Term_dummy_12 = "'tok_Term_dummy_12'"
-showRtkToken L.Tk__tok_UnusedRule1_dummy_11 = "'tok_UnusedRule1_dummy_11'"
-showRtkToken L.Tk__tok_UnusedRule2_dummy_10 = "'tok_UnusedRule2_dummy_10'"
-showRtkToken L.Tk__tok_WhileLoop_dummy_9 = "'tok_WhileLoop_dummy_9'"
 showRtkToken L.Tk__tok__symbol__12 = "'}'"
 showRtkToken L.Tk__tok__symbol__11 = "'{'"
 showRtkToken L.Tk__tok_while_10 = "'while'"
@@ -251,30 +217,7 @@ tkVal_qq_Program :: L.PosToken -> String
 tkVal_qq_Program (L.PosToken _ (L.Tk__qq_Program v)) = v
 tkVal_qq_Program t = error ("rtk internal error: token qq_Program expected, got " ++ showRtkToken (L.ptToken t))
 
-data Program = Ctr__Program__0 RtkPos Program |
-               Ctr__Program__1 RtkPos Assignment |
-               Ctr__Program__2 RtkPos Block |
-               Ctr__Program__3 RtkPos Expression |
-               Ctr__Program__4 RtkPos Factor |
-               Ctr__Program__5 RtkPos IfStatement |
-               Ctr__Program__6 RtkPos Statement |
-               Ctr__Program__7 RtkPos Term |
-               Ctr__Program__8 RtkPos UnusedRule1 |
-               Ctr__Program__9 RtkPos UnusedRule2 |
-               Ctr__Program__10 RtkPos WhileLoop
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Program where
-    rtkPosOf (Ctr__Program__0 p _) = p
-    rtkPosOf (Ctr__Program__1 p _) = p
-    rtkPosOf (Ctr__Program__2 p _) = p
-    rtkPosOf (Ctr__Program__3 p _) = p
-    rtkPosOf (Ctr__Program__4 p _) = p
-    rtkPosOf (Ctr__Program__5 p _) = p
-    rtkPosOf (Ctr__Program__6 p _) = p
-    rtkPosOf (Ctr__Program__7 p _) = p
-    rtkPosOf (Ctr__Program__8 p _) = p
-    rtkPosOf (Ctr__Program__9 p _) = p
-    rtkPosOf (Ctr__Program__10 p _) = p
+type Program = [Statement]
 data Assignment = Anti_Assignment String |
                   Ctr__Assignment__0 RtkPos String Expression
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)

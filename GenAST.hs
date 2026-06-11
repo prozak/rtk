@@ -26,7 +26,14 @@ combineClauses :: [SyntaxTopClause] -> SyntaxTopClause
 combineClauses [a] = a
 combineClauses alts = STAltOfSeq $ deduplicateByConstructor $ concat $ map extractSeqs alts
   where extractSeqs (STAltOfSeq seqs) = seqs
-        extractSeqs _ = []
+        -- A multi-rule group is all-alternatives by construction
+        -- (postNormalizeGroup extracts everything else, and addStartGroup
+        -- never injects the wrapper rule into an alias group). Silently
+        -- dropping a repetition/option clause here is what used to emit a
+        -- data declaration whose parser actions still built lists - code
+        -- GHC rejects (issue #34) - so fail loudly if the invariant breaks.
+        extractSeqs c = error $ "rtk internal error: rule group mixes a"
+                                ++ " repetition/option clause with alternatives: " ++ show c
         -- Deduplicate alternatives with the same constructor name (e.g., Anti_Expression)
         -- This is necessary for shared types where the same anti-alternative is added to multiple rules
         deduplicateByConstructor seqs = List.nubBy sameConstructor seqs

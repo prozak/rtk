@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-lex-java accept-lex-java test-all-java test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens test-lex-java accept-lex-java test-all-java test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -82,6 +82,33 @@ test-golden:
 # then review the diff of test/golden/ like any other code change.
 accept-golden:
 	RTK_ACCEPT=1 cabal test golden --test-show-details=direct
+
+# Compile gate for the golden snapshots: run alex and happy over every
+# checked-in test/golden/<grammar>/ Lexer.x/Parser.y pair and typecheck the
+# result with GHC (-fno-code, no object code, seconds per grammar). The
+# golden suite compares text only; this target proves the snapshots are code
+# GHC accepts (the debug-test snapshot was uncompilable for a while with CI
+# green - issue #34). The QQ goldens import Text.Regex.Posix, which rtk's
+# environment deliberately does not provide.
+# TODO(task 8b): add the <Name>QQ.hs goldens once regex-posix is dropped.
+test-compile-goldens: build | test-out
+	@set -e; \
+	for dir in test/golden/*/; do \
+		g=$$(basename "$$dir"); \
+		out="test-out/compile-goldens/$$g"; \
+		$(MKDIR_P) "$$out"; \
+		echo "=== compiling golden snapshot: $$g"; \
+		for x in "$$dir"*.x; do \
+			cabal exec alex -- -g "$$x" -o "$$out/$$(basename "$${x%.x}").hs"; \
+		done; \
+		for y in "$$dir"*.y; do \
+			cabal exec happy -- "$$y" --ghc -o "$$out/$$(basename "$${y%.y}").hs"; \
+		done; \
+		for y in "$$dir"*.y; do \
+			cabal exec -- ghc -fno-code -w -i"$$out" "$$out/$$(basename "$${y%.y}").hs"; \
+		done; \
+	done; \
+	echo "All golden Lexer/Parser snapshots compile."
 
 test-out:
 	$(MKDIR_P) test-out

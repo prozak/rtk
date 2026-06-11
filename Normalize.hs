@@ -224,13 +224,42 @@ isRepetition IPlus{} = True
 isRepetition IOpt{}  = True
 isRepetition _       = False
 
+-- The repeated element of a * or + clause must be a syntax rule: the rule's
+-- value is a list of the element's values, and the element's splice support
+-- (a ListElem proxy whose Anti_ constructor lives in the element's data
+-- type, see addListProxyRule) needs a grammar-owned data declaration to
+-- host that constructor. Terminals have neither: an ignored item (a string
+-- literal or !-clause) produces no value to collect, and a lexical rule
+-- produces a bare token payload with no data declaration. Both used to slip
+-- through to the generators and emit uncompilable Haskell (issue #28), as
+-- did a lifted (,) element, which crashed GenAST. Reject them here, where
+-- the offending rule is still known. The delimiter is unrestricted: it is
+-- matched and dropped, so any clause works there.
+checkRepeatedClause :: IClause -> Normalization SyntaxSimpleClause
+checkRepeatedClause c = do
+  c1 <- checkSimpleClause c
+  case c1 of
+    -- Not rendered via showClause: a string literal is already replaced by
+    -- its internal token name (tok_..._N) at this stage, which would leak
+    -- into the message; the rule context and position locate the clause.
+    SSIgnore _ -> normError $ "repetition of an item that produces no value:"
+                              ++ " the repeated item is a string literal or !-ignored clause,"
+                              ++ " which is matched but dropped;"
+                              ++ " wrap the item in a syntax rule and repeat that rule instead"
+    SSId name | isLexicalRule name ->
+        normError $ "repetition over the lexical rule '" ++ name ++ "' is not supported:"
+                    ++ " wrap it in a syntax rule (Item = " ++ name ++ " ;) and repeat Item"
+                    ++ " to give the list elements a data type"
+    SSLifted _ -> normError "a lifted (,) clause is not supported under *, + or ?"
+    _ -> return c1
+
 checkNormalClause :: IClause -> Normalization SyntaxTopClause
 checkNormalClause (IStar c mc) = do
-  c1 <- checkSimpleClause c
+  c1 <- checkRepeatedClause c
   c2l <- mapM checkSimpleClause (maybeToList mc)
   return $ STMany STStar c1 (listToMaybe c2l)
 checkNormalClause (IPlus c mc) = do
-  c1 <- checkSimpleClause c
+  c1 <- checkRepeatedClause c
   c2l <- mapM checkSimpleClause (maybeToList mc)
   return $ STMany STPlus c1 (listToMaybe c2l)
 checkNormalClause (IOpt c) = do
@@ -540,7 +569,32 @@ postNormalizeGrammar = do
   newRules <- mapM postNormalizeGroup rules
   normSRules %= flip (foldr $ uncurry M.insert) newRules
 
+-- Whether a group's value is a type alias (a list from a top-level
+-- repetition rule, a Maybe from an option rule) rather than a data
+-- declaration with constructors. After postNormalizeGrammar such a group
+-- has exactly one rule; a group with several rules is all-STAltOfSeq.
+isAliasGroup :: SyntaxRuleGroup -> Bool
+isAliasGroup = any (not . isAltOfSeq . getSClause) . getSRules
+  where isAltOfSeq STAltOfSeq{} = True
+        isAltOfSeq _            = False
+
 addStartGroup :: NormalGrammar -> NormalGrammar
+-- The QQ entry-point machinery extends the START group's data declaration:
+-- one wrapper alternative (dummy tokens around a type reference) per public
+-- type, which the per-type quoters parse through and pattern-match on. When
+-- the start group is a type alias (the grammar's first rule is a
+-- repetition, e.g. "Start = Item* ;"), there is no data declaration to
+-- extend: injecting the wrapper rule used to type the start nonterminal
+-- both as a data and as a list, generating a parser GHC rejects, plus a
+-- dummy-token shift/reduce conflict against the empty list (issue #34).
+-- Such a grammar gets no start wrappers, dummy tokens or top-level quoters
+-- at all; the element-level splice machinery (qq_* tokens, Anti_*
+-- alternatives) is untouched. Note the host/target distinction: a group
+-- merely REFERENCED by a wrapper alternative may be an alias, because the
+-- alias is just the field type of the start group's wrapper constructor
+-- (grammar.pg's "RuleList = Rule*" works this way).
+addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = startGroup : _ }
+  | isAliasGroup startGroup = ng
 addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = tokens , getGrammarInfo = info } =
   let proxyRules = getProxyRules info
       (ruleToStartInfo, counter) = foldr
@@ -574,7 +628,18 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
                           $ STAltOfSeq rulesClauses
     in case rules of
       (startRule:restRules) ->
-        ng { getSyntaxRuleGroups = startRule { getSRules = qqRule : getSRules startRule }: restRules,
+        -- The wrapper rule shares the start rule's name, and happy merges
+        -- same-named rule blocks only when they are adjacent in the .y file
+        -- (separated blocks are a hard "Multiple rules for ..." error). The
+        -- start group may hold other rules - list-element proxies of lists
+        -- over the start type, prepended by addRule after the start rule -
+        -- so emit the original start-named rule(s) right after the wrapper
+        -- instead of wherever they ended up in the group.
+        let startName = getSRuleName qqRule
+            (startNamed, others) = L.partition ((== startName) . getSRuleName)
+                                               (getSRules startRule)
+        in
+        ng { getSyntaxRuleGroups = startRule { getSRules = qqRule : startNamed ++ others }: restRules,
              getLexicalRules = newTokens ++ tokens,
              getGrammarInfo = info { getNameCounter = counter, getRuleToStartInfo = ruleToStartInfo }}
       [] -> error "Grammar must have at least one rule group"

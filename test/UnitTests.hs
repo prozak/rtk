@@ -209,6 +209,26 @@ errorHandlingTests = TestList
             assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "lifted" `isInfixOf` diagMessage d && "*" `isInfixOf` diagMessage d
+    , TestLabel "repetition of a value-less item is rejected" $ TestCase $
+        -- 'x' is matched but dropped (string literals normalize to ignored
+        -- tokens), so 'x'* would collect nothing; it used to generate a
+        -- parser that does not compile (issue #28)
+        expectDiagnostic "a string literal under *"
+            (normalizeGrammarSource "grammar 'I28';\nFoo = 'x'* ;\n") $ \d -> do
+            assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
+            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "produces no value" `isInfixOf` diagMessage d
+    , TestLabel "repetition over a lexical rule is rejected" $ TestCase $
+        -- a token payload has no grammar-owned data type to host the list
+        -- element's splice constructor; it used to generate an invalid
+        -- lowercase data declaration (issue #28)
+        expectDiagnostic "a lexical rule under +"
+            (normalizeGrammarSource "grammar 'I28';\nFoo = num+ ;\nnum = [0-9]+ ;\n") $ \d -> do
+            assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
+            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "lexical rule" `isInfixOf` diagMessage d && "num" `isInfixOf` diagMessage d
     , TestLabel "duplicate rule definitions are rejected" $ TestCase $
         -- the error points at the second definition and names the first
         expectDiagnostic "a duplicate rule"
@@ -245,6 +265,7 @@ normalizationTests = TestList
     , TestLabel "optional clauses desugar to an empty alternative" testOptionalDesugars
     , TestLabel "lexical rule type and conversion defaults" testLexicalRuleDefaults
     , TestLabel "start group wraps every public type in dummy tokens" testStartGroup
+    , TestLabel "an alias start group gets no QQ start wrapper" testAliasStartGroup
     , TestLabel "fillConstructorNames fills every constructor and is idempotent" testFillConstructorNames
     ]
 
@@ -413,19 +434,27 @@ testLexicalRuleDefaults = TestCase $ do
 
 testStartGroup :: Test
 testStartGroup = TestCase $ do
-    let g = listGrammar
+    -- a data start group: alias start groups get no wrapper at all
+    -- (see testAliasStartGroup)
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'Mini';"
+                , "Top = Item ;"
+                , "Item = ident ;"
+                , "ident = [a-z]+ ;"
+                ]
         info = getGrammarInfo g
         startInfo = getRuleToStartInfo info
-    assertEqual "start rule is the first user rule" (Just "Program") (getStartRuleName info)
+    assertEqual "start rule is the first user rule" (Just "Top") (getStartRuleName info)
     assertEqual "every public type gets a start entry"
-        ["Item", "Program"] (sort $ M.keys startInfo)
-    -- the synthesized start rule wraps each type between its dummy tokens
-    -- (compared via show because STSeq has no Ord instance)
-    case [ alts | SyntaxRule "Program" (STAltOfSeq alts) <- getSRules (head (getSyntaxRuleGroups g)) ] of
-        [alts] -> assertEqual "wrapper alternatives"
+        ["Item", "Top"] (sort $ M.keys startInfo)
+    -- the synthesized start rule is prepended to the start group and wraps
+    -- each type between its dummy tokens (compared via show because STSeq
+    -- has no Ord instance)
+    case getSRules (head (getSyntaxRuleGroups g)) of
+        SyntaxRule "Top" (STAltOfSeq alts) : _ -> assertEqual "wrapper alternatives"
             (sort [ show (STSeq "" [SSIgnore d, SSId t, SSIgnore d]) | (t, d) <- M.toList startInfo ])
             (sort (map show alts))
-        other -> assertFailure $ "expected one synthesized start rule, got: " ++ show other
+        other -> assertFailure $ "expected the synthesized start rule first, got: " ++ show other
     -- each dummy token is lexed as a keyword spelled like its own name
     mapM_ (\dummy -> case find ((== dummy) . getLRuleName) (getLexicalRules g) of
               Just LexicalRule{getLRuleDataType = t, getLClause = cl} -> do
@@ -433,6 +462,40 @@ testStartGroup = TestCase $ do
                   assertEqual ("dummy token spelling for " ++ dummy) (IStrLit dummy) cl
               other -> assertFailure $ "missing dummy keyword " ++ dummy ++ ": " ++ show other)
           (M.elems startInfo)
+
+-- | A grammar whose START rule is a repetition normalizes to a type-alias
+-- start group (type Start = [Item]). The QQ start-wrapper machinery (dummy
+-- tokens, wrapper alternatives, top-level quoters) must be skipped for such
+-- a grammar: a wrapper alternative needs a constructor in the start group's
+-- data declaration, and an alias has none - injecting it used to generate a
+-- parser that types the start nonterminal both as a data and as a list
+-- (issue #34). The element-level splice machinery survives untouched.
+testAliasStartGroup :: Test
+testAliasStartGroup = TestCase $ do
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'I34';"
+                , "Start = Item* ;"
+                , "Item = 'x' ;"
+                ]
+        info = getGrammarInfo g
+    assertEqual "no start wrapper entries" M.empty (getRuleToStartInfo info)
+    assertEqual "start rule name is still recorded" (Just "Start") (getStartRuleName info)
+    assertEqual "no dummy keyword tokens" []
+        [ n | LexicalRule{getLRuleName = n} <- getLexicalRules g, "_dummy_" `isInfixOf` n ]
+    -- the start group is exactly the user's list rule over the element proxy
+    case getSyntaxRuleGroups g of
+        startGroup : _ -> case getSRules startGroup of
+            [SyntaxRule "Start" (STMany STStar (SSId proxy) Nothing)] ->
+                assertBool ("list proxy survives: " ++ proxy)
+                    ("ListElem_Start" `isPrefixOf` proxy)
+            other -> assertFailure $ "expected only the bare list rule, got: " ++ show other
+        [] -> assertFailure "no rule groups"
+    -- element splices stay wired: the element type keeps its anti rule and
+    -- the $Start:var splice token is still lexed
+    assertEqual "anti rule for the element type"
+        [AntiRule "Item" "Item" "Anti_Item" True] (getAntiRules g)
+    assertBool "qq_Start splice token survives"
+        ("qq_Start" `elem` [ n | LexicalRule{getLRuleName = n} <- getLexicalRules g ])
 
 testFillConstructorNames :: Test
 testFillConstructorNames = TestCase $ do
@@ -575,12 +638,23 @@ invariants grammarKey g = TestList
     , TestLabel "start rule bookkeeping is consistent" $ TestCase $
         case getStartRuleName info of
             Nothing -> assertFailure "start rule name is missing"
-            Just startName -> do
-                assertEqual "start wrapper and original rule"
-                    2 (length [ () | r <- allRules g, getSRuleName r == startName ])
-                assertEqual "start info covers exactly the public types"
-                    (sort (map getSDataTypeName publicGroups))
-                    (sort (M.keys (getRuleToStartInfo info)))
+            -- An alias start group (the grammar's first rule is a
+            -- repetition, e.g. debug-test's "Program = Statement *") gets
+            -- no start wrapper and no start info: there is no data
+            -- declaration for the wrapper constructors to extend
+            -- (see Normalize.addStartGroup, issue #34)
+            Just startName
+              | startGroupIsAlias -> do
+                    assertEqual "only the original rule for an alias start group"
+                        1 (length [ () | r <- allRules g, getSRuleName r == startName ])
+                    assertEqual "no start info for an alias start group"
+                        M.empty (getRuleToStartInfo info)
+              | otherwise -> do
+                    assertEqual "start wrapper and original rule"
+                        2 (length [ () | r <- allRules g, getSRuleName r == startName ])
+                    assertEqual "start info covers exactly the public types"
+                        (sort (map getSDataTypeName publicGroups))
+                        (sort (M.keys (getRuleToStartInfo info)))
     , TestLabel "proxy rules refer to existing groups" $ TestCase $
         assertEqual "unknown proxy rules" [] $
             S.toList (getProxyRules info)
@@ -589,6 +663,11 @@ invariants grammarKey g = TestList
   where
     info = getGrammarInfo g
     publicGroups = filterProxyRules (getProxyRules info) (getSyntaxRuleGroups g)
+    startGroupIsAlias = case getSyntaxRuleGroups g of
+        grp : _ -> any (notAltOfSeq . getSClause) (getSRules grp)
+        []      -> False
+      where notAltOfSeq STAltOfSeq{} = False
+            notAltOfSeq _            = True
     -- tokens that may be referenced from syntax rules: macro rules are inlined
     -- into the lexer spec and Ignore tokens are dropped from the token stream,
     -- so neither may appear in a parser rule

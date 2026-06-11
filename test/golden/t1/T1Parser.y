@@ -55,6 +55,9 @@ A : tok_A_dummy_17 A tok_A_dummy_17 { Ctr__A__0 (rtkPosOf $1) $2 } |
     tok_F5_dummy_8 F5 tok_F5_dummy_8 { Ctr__A__9 (rtkPosOf $1) (reverse $2) } |
     tok_G_dummy_7 G tok_G_dummy_7 { Ctr__A__10 (rtkPosOf $1) $2 }
 
+A : qq_A { Anti_A (tkVal_qq_A $1) } |
+    tok_a_0 { Ctr__A__11 (rtkPosOf $1) }
+
 ListElem_F54 : qq_F5 { Anti_A (tkVal_qq_F5 $1) } |
                A { $1 }
 
@@ -69,9 +72,6 @@ ListElem_F11 : qq_F1 { Anti_A (tkVal_qq_F1 $1) } |
 
 ListElem_C0 : qq_C { Anti_A (tkVal_qq_C $1) } |
               A { $1 }
-
-A : qq_A { Anti_A (tkVal_qq_A $1) } |
-    tok_a_0 { Ctr__A__16 (rtkPosOf $1) }
 
 B : qq_B { Anti_B (tkVal_qq_B $1) } |
     tok_a_0 { Ctr__B__0 (rtkPosOf $1) } |
@@ -225,7 +225,7 @@ data A = Ctr__A__0 RtkPos A |
          Ctr__A__9 RtkPos F5 |
          Ctr__A__10 RtkPos G |
          Anti_A String |
-         Ctr__A__16 RtkPos
+         Ctr__A__11 RtkPos
          deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf A where
     rtkPosOf (Ctr__A__0 p _) = p
@@ -240,7 +240,7 @@ instance RtkPosOf A where
     rtkPosOf (Ctr__A__9 p _) = p
     rtkPosOf (Ctr__A__10 p _) = p
     rtkPosOf (Anti_A _) = rtkNoPos
-    rtkPosOf (Ctr__A__16 p) = p
+    rtkPosOf (Ctr__A__11 p) = p
 data B = Anti_B String |
          Ctr__B__0 RtkPos |
          Ctr__B__1 RtkPos
