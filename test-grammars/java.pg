@@ -27,7 +27,11 @@ Annotation = '@' CompoundName ('(' AnnotationArguments? ')')? ;
 
 AnnotationArguments = AnnotationElement (',' AnnotationElement)* ;
 
-AnnotationElement = (id '=')? Expression ;
+# Explicit alternatives (not (id '=')? Expression) so LALR keeps both items
+# alive after shifting id; otherwise values starting with an identifier, e.g.
+# @Retention(RetentionPolicy.RUNTIME), fail. ConditionalExpression is the JLS
+# ElementValue level; full Expression would make @Foo(a = b) ambiguous.
+AnnotationElement = id '=' ConditionalExpression | ConditionalExpression ;
 
 AnnotationList = Annotation* ;
 
@@ -36,7 +40,7 @@ AnnotationList = Annotation* ;
 # resolve correctly with lookahead (inherent to the grammar design).
 ModifierList = (Modifier | Annotation)* ;
 
-ExtendsList = ('extends' CompoundName (',' CompoundName)*)? ;
+ExtendsList = 'extends' CompoundName (',' CompoundName)* ;
 ImplementsList = 'implements' CompoundName + ~',';
 FieldDeclarationList = FieldDeclaration *;
 
@@ -48,7 +52,7 @@ ClassDeclaration  =
 
 InterfaceDeclaration  =
  ModifierList 'interface' id TypeParameters
- ExtendsList
+ ExtendsList?
  '{'  FieldDeclarationList  '}'  ;
 
 # Annotation declaration (@interface)
@@ -58,9 +62,10 @@ AnnotationDeclaration =
 
 AnnotationTypeElementList = AnnotationTypeElement* ;
 
-AnnotationTypeElement =
- ModifierList Type id '(' ')' ('default' Expression)? ';'
- | FieldDeclaration ;
+# Annotation-type elements reuse FieldDeclaration; the default clause is
+# handled by MemberRest (a dedicated alternative here would race its nullable
+# ModifierList against FieldDeclaration's nullable OptDocComment → r/r).
+AnnotationTypeElement = FieldDeclaration ;
 
 # Enum declaration
 EnumConstant = AnnotationList id ('(' Arglist ')')? ('{' FieldDeclarationList '}')? ;
@@ -124,8 +129,11 @@ MoreTypeSpecifier =
 # MemberRest branches on what follows "Type id":
 # - '(' indicates a method declaration
 # - '[' or '=' or ',' or ';' indicates a variable declaration
+# The optional 'default' clause before ';' is for annotation-type elements
+# (int value() default 5;). Accepting it on ordinary methods too is
+# parser-level tolerance; rejecting it there is a semantic check (javac's job).
 MemberRest =
- '(' ParameterList? ')' SquareBracketsList ( StatementBlock | ';' )
+ '(' ParameterList? ')' SquareBracketsList ( StatementBlock | ('default' Expression)? ';' )
  | SquareBracketsList OptVariableInitializer MoreVariableDeclarators ';' ;
 
 MoreVariableDeclarators = (',' VariableDeclarator)* ;
@@ -310,7 +318,10 @@ Expression : MultiplicativeExpression = UnaryExpression | MultiplicativeExpressi
 
 Expression : CastExpression = '(' Type ')' UnaryExpression ;
 
-PrefixOp = '++' | '--' | '+' | '-' | '~' | '!' ;
+# '~' and '!' live in UnaryExpressionNotPlusMinus (JLS 15.15), not here:
+# keeping them in both derives ~x two ways, and they must stay in
+# UnaryExpressionNotPlusMinus so reference-type casts can be followed by ~/!.
+PrefixOp = '++' | '--' | '+' | '-' ;
 
 PostfixOp = '++' | '--' ;
 

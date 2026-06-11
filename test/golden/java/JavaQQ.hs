@@ -58,7 +58,7 @@ quoteJavaExp dummy func s = do
            Left err -> fail err
            Right a -> return a
   let expr = func ast
-  dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) expr
+  dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) expr
 quoteJavaPat :: Data.Data a => String -> (Java -> a) -> String -> TH.PatQ
 quoteJavaPat dummy func s = do
   s1 <- either fail return (replaceAllPatterns s)
@@ -66,7 +66,7 @@ quoteJavaPat dummy func s = do
            Left err -> fail err
            Right a -> return a
   let expr = func ast
-  dataToPatQ (const Nothing `Generics.extQ` antiJavaPat `Generics.extQ` antiOptDocCommentPat `Generics.extQ` antiTypeDeclarationPat `Generics.extQ` antiRule_2Pat `Generics.extQ` antiCompilationUnitPat `Generics.extQ` antiPackagePat `Generics.extQ` antiImportStatementPat `Generics.extQ` antiDocCommentPat `Generics.extQ` antiAnnotationPat `Generics.extQ` antiAnnotationArgumentsPat `Generics.extQ` antiAnnotationElementPat `Generics.extQ` antiRule_18Pat `Generics.extQ` antiExtendsListPat `Generics.extQ` antiImplementsListPat `Generics.extQ` antiFieldDeclarationPat `Generics.extQ` antiClassDeclarationPat `Generics.extQ` antiInterfaceDeclarationPat `Generics.extQ` antiAnnotationDeclarationPat `Generics.extQ` antiAnnotationTypeElementPat `Generics.extQ` antiEnumConstantPat `Generics.extQ` antiEnumConstantListPat `Generics.extQ` antiEnumDeclarationPat `Generics.extQ` antiNestedTypeDeclarationPat `Generics.extQ` antiRule_44Pat `Generics.extQ` antiMemberDeclarationPat `Generics.extQ` antiPrimitiveTypeKeywordPat `Generics.extQ` antiMemberAfterFirstIdPat `Generics.extQ` antiMoreTypeSpecifierPat `Generics.extQ` antiMemberRestPat `Generics.extQ` antiRule_49Pat `Generics.extQ` antiStatementBlockPat `Generics.extQ` antiVariableDeclaratorListPat `Generics.extQ` antiVariableDeclarationPat `Generics.extQ` antiOptVariableInitializerPat `Generics.extQ` antiVariableDeclaratorPat `Generics.extQ` antiVariableInitializerListPat `Generics.extQ` antiVariableInitializerPat `Generics.extQ` antiStaticInitializerPat `Generics.extQ` antiParameterListPat `Generics.extQ` antiParameterPat `Generics.extQ` antiStatementPat `Generics.extQ` antiOptExpressionPat `Generics.extQ` antiOptIdPat `Generics.extQ` antiStatementWithoutIfPat `Generics.extQ` antiOptElsePartPat `Generics.extQ` antiIfStatementPat `Generics.extQ` antiDoStatementPat `Generics.extQ` antiWhileStatementPat `Generics.extQ` antiForStatementPat `Generics.extQ` antiRule_65Pat `Generics.extQ` antiOptFinallyPat `Generics.extQ` antiTryStatementPat `Generics.extQ` antiRule_68Pat `Generics.extQ` antiSwitchStatementPat `Generics.extQ` antiExpressionPat `Generics.extQ` antiAssignmentOpPat `Generics.extQ` antiEqualityOpPat `Generics.extQ` antiRelationalOpPat `Generics.extQ` antiShiftOpPat `Generics.extQ` antiAdditiveOpPat `Generics.extQ` antiMultiplicativeOpPat `Generics.extQ` antiPrefixOpPat `Generics.extQ` antiPostfixOpPat `Generics.extQ` antiCreationExpressionPat `Generics.extQ` antiLiteralPat `Generics.extQ` antiArglistPat `Generics.extQ` antiTypeArgumentsPat `Generics.extQ` antiTypeArgumentPat `Generics.extQ` antiWildcardTypePat `Generics.extQ` antiTypeParametersPat `Generics.extQ` antiTypeParameterPat `Generics.extQ` antiTypePat `Generics.extQ` antiTypeSpecifierPat `Generics.extQ` antiModifierPat `Generics.extQ` antiCompoundNamePat) expr
+  dataToPatQ (const Nothing `Generics.extQ` antiJavaPat `Generics.extQ` antiOptDocCommentPat `Generics.extQ` antiTypeDeclarationPat `Generics.extQ` antiRule_2Pat `Generics.extQ` antiCompilationUnitPat `Generics.extQ` antiPackagePat `Generics.extQ` antiImportStatementPat `Generics.extQ` antiDocCommentPat `Generics.extQ` antiAnnotationPat `Generics.extQ` antiAnnotationArgumentsPat `Generics.extQ` antiAnnotationElementPat `Generics.extQ` antiRule_16Pat `Generics.extQ` antiExtendsListPat `Generics.extQ` antiImplementsListPat `Generics.extQ` antiFieldDeclarationPat `Generics.extQ` antiClassDeclarationPat `Generics.extQ` antiInterfaceDeclarationPat `Generics.extQ` antiAnnotationDeclarationPat `Generics.extQ` antiAnnotationTypeElementPat `Generics.extQ` antiEnumConstantPat `Generics.extQ` antiEnumConstantListPat `Generics.extQ` antiEnumDeclarationPat `Generics.extQ` antiNestedTypeDeclarationPat `Generics.extQ` antiRule_40Pat `Generics.extQ` antiMemberDeclarationPat `Generics.extQ` antiPrimitiveTypeKeywordPat `Generics.extQ` antiMemberAfterFirstIdPat `Generics.extQ` antiMoreTypeSpecifierPat `Generics.extQ` antiMemberRestPat `Generics.extQ` antiRule_47Pat `Generics.extQ` antiStatementBlockPat `Generics.extQ` antiVariableDeclaratorListPat `Generics.extQ` antiVariableDeclarationPat `Generics.extQ` antiOptVariableInitializerPat `Generics.extQ` antiVariableDeclaratorPat `Generics.extQ` antiVariableInitializerListPat `Generics.extQ` antiVariableInitializerPat `Generics.extQ` antiStaticInitializerPat `Generics.extQ` antiParameterListPat `Generics.extQ` antiParameterPat `Generics.extQ` antiStatementPat `Generics.extQ` antiOptExpressionPat `Generics.extQ` antiOptIdPat `Generics.extQ` antiStatementWithoutIfPat `Generics.extQ` antiOptElsePartPat `Generics.extQ` antiIfStatementPat `Generics.extQ` antiDoStatementPat `Generics.extQ` antiWhileStatementPat `Generics.extQ` antiForStatementPat `Generics.extQ` antiRule_63Pat `Generics.extQ` antiOptFinallyPat `Generics.extQ` antiTryStatementPat `Generics.extQ` antiRule_66Pat `Generics.extQ` antiSwitchStatementPat `Generics.extQ` antiExpressionPat `Generics.extQ` antiAssignmentOpPat `Generics.extQ` antiEqualityOpPat `Generics.extQ` antiRelationalOpPat `Generics.extQ` antiShiftOpPat `Generics.extQ` antiAdditiveOpPat `Generics.extQ` antiMultiplicativeOpPat `Generics.extQ` antiPrefixOpPat `Generics.extQ` antiPostfixOpPat `Generics.extQ` antiCreationExpressionPat `Generics.extQ` antiLiteralPat `Generics.extQ` antiArglistPat `Generics.extQ` antiTypeArgumentsPat `Generics.extQ` antiTypeArgumentPat `Generics.extQ` antiWildcardTypePat `Generics.extQ` antiTypeParametersPat `Generics.extQ` antiTypeParameterPat `Generics.extQ` antiTypePat `Generics.extQ` antiTypeSpecifierPat `Generics.extQ` antiModifierPat `Generics.extQ` antiCompoundNamePat) expr
 
 antiCompoundNameExp :: CompoundName -> Maybe (TH.Q TH.Exp )
 antiCompoundNameExp ( Anti_CompoundName v) = Just $ TH.varE (TH.mkName v)
@@ -178,12 +178,12 @@ antiSwitchStatementExp ( Anti_SwitchStatement v) = Just $ TH.varE (TH.mkName v)
 antiSwitchStatementExp _ = Nothing
 
 
-antiRule_68Exp :: [ Rule_68 ] -> Maybe (TH.Q TH.Exp)
-antiRule_68Exp ((Anti_Rule_68 v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
+antiRule_66Exp :: [ Rule_66 ] -> Maybe (TH.Q TH.Exp)
+antiRule_66Exp ((Anti_Rule_66 v):rest) =
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
-antiRule_68Exp _ = Nothing
+antiRule_66Exp _ = Nothing
 
 
 antiTryStatementExp :: TryStatement -> Maybe (TH.Q TH.Exp )
@@ -196,12 +196,12 @@ antiOptFinallyExp ( Anti_OptFinally v) = Just $ TH.varE (TH.mkName v)
 antiOptFinallyExp _ = Nothing
 
 
-antiRule_65Exp :: [ Rule_65 ] -> Maybe (TH.Q TH.Exp)
-antiRule_65Exp ((Anti_Rule_65 v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
+antiRule_63Exp :: [ Rule_63 ] -> Maybe (TH.Q TH.Exp)
+antiRule_63Exp ((Anti_Rule_63 v):rest) =
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
-antiRule_65Exp _ = Nothing
+antiRule_63Exp _ = Nothing
 
 
 antiForStatementExp :: ForStatement -> Maybe (TH.Q TH.Exp )
@@ -246,7 +246,7 @@ antiOptExpressionExp _ = Nothing
 
 antiStatementExp :: [ Statement ] -> Maybe (TH.Q TH.Exp)
 antiStatementExp ((Anti_Statement v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
 antiStatementExp _ = Nothing
@@ -302,12 +302,12 @@ antiStatementBlockExp ( Anti_StatementBlock v) = Just $ TH.varE (TH.mkName v)
 antiStatementBlockExp _ = Nothing
 
 
-antiRule_49Exp :: [ Rule_49 ] -> Maybe (TH.Q TH.Exp)
-antiRule_49Exp ((Anti_Rule_49 v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
+antiRule_47Exp :: [ Rule_47 ] -> Maybe (TH.Q TH.Exp)
+antiRule_47Exp ((Anti_Rule_47 v):rest) =
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
-antiRule_49Exp _ = Nothing
+antiRule_47Exp _ = Nothing
 
 
 antiMemberRestExp :: MemberRest -> Maybe (TH.Q TH.Exp )
@@ -335,12 +335,12 @@ antiMemberDeclarationExp ( Anti_MemberDeclaration v) = Just $ TH.varE (TH.mkName
 antiMemberDeclarationExp _ = Nothing
 
 
-antiRule_44Exp :: [ Rule_44 ] -> Maybe (TH.Q TH.Exp)
-antiRule_44Exp ((Anti_Rule_44 v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
+antiRule_40Exp :: [ Rule_40 ] -> Maybe (TH.Q TH.Exp)
+antiRule_40Exp ((Anti_Rule_40 v):rest) =
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
-antiRule_44Exp _ = Nothing
+antiRule_40Exp _ = Nothing
 
 
 antiNestedTypeDeclarationExp :: NestedTypeDeclaration -> Maybe (TH.Q TH.Exp )
@@ -365,7 +365,7 @@ antiEnumConstantExp _ = Nothing
 
 antiAnnotationTypeElementExp :: [ AnnotationTypeElement ] -> Maybe (TH.Q TH.Exp)
 antiAnnotationTypeElementExp ((Anti_AnnotationTypeElement v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
 antiAnnotationTypeElementExp _ = Nothing
@@ -388,7 +388,7 @@ antiClassDeclarationExp _ = Nothing
 
 antiFieldDeclarationExp :: [ FieldDeclaration ] -> Maybe (TH.Q TH.Exp)
 antiFieldDeclarationExp ((Anti_FieldDeclaration v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
 antiFieldDeclarationExp _ = Nothing
@@ -404,12 +404,12 @@ antiExtendsListExp ( Anti_ExtendsList v) = Just $ TH.varE (TH.mkName v)
 antiExtendsListExp _ = Nothing
 
 
-antiRule_18Exp :: [ Rule_18 ] -> Maybe (TH.Q TH.Exp)
-antiRule_18Exp ((Anti_Rule_18 v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
+antiRule_16Exp :: [ Rule_16 ] -> Maybe (TH.Q TH.Exp)
+antiRule_16Exp ((Anti_Rule_16 v):rest) =
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
-antiRule_18Exp _ = Nothing
+antiRule_16Exp _ = Nothing
 
 
 antiAnnotationElementExp :: AnnotationElement -> Maybe (TH.Q TH.Exp )
@@ -449,7 +449,7 @@ antiCompilationUnitExp _ = Nothing
 
 antiRule_2Exp :: [ Rule_2 ] -> Maybe (TH.Q TH.Exp)
 antiRule_2Exp ((Anti_Rule_2 v):rest) =
- let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_18Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_44Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_49Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_65Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_68Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
+ let restExp =   dataToExpQ (const Nothing `Generics.extQ` antiJavaExp `Generics.extQ` antiOptDocCommentExp `Generics.extQ` antiTypeDeclarationExp `Generics.extQ` antiRule_2Exp `Generics.extQ` antiCompilationUnitExp `Generics.extQ` antiPackageExp `Generics.extQ` antiImportStatementExp `Generics.extQ` antiDocCommentExp `Generics.extQ` antiAnnotationExp `Generics.extQ` antiAnnotationArgumentsExp `Generics.extQ` antiAnnotationElementExp `Generics.extQ` antiRule_16Exp `Generics.extQ` antiExtendsListExp `Generics.extQ` antiImplementsListExp `Generics.extQ` antiFieldDeclarationExp `Generics.extQ` antiClassDeclarationExp `Generics.extQ` antiInterfaceDeclarationExp `Generics.extQ` antiAnnotationDeclarationExp `Generics.extQ` antiAnnotationTypeElementExp `Generics.extQ` antiEnumConstantExp `Generics.extQ` antiEnumConstantListExp `Generics.extQ` antiEnumDeclarationExp `Generics.extQ` antiNestedTypeDeclarationExp `Generics.extQ` antiRule_40Exp `Generics.extQ` antiMemberDeclarationExp `Generics.extQ` antiPrimitiveTypeKeywordExp `Generics.extQ` antiMemberAfterFirstIdExp `Generics.extQ` antiMoreTypeSpecifierExp `Generics.extQ` antiMemberRestExp `Generics.extQ` antiRule_47Exp `Generics.extQ` antiStatementBlockExp `Generics.extQ` antiVariableDeclaratorListExp `Generics.extQ` antiVariableDeclarationExp `Generics.extQ` antiOptVariableInitializerExp `Generics.extQ` antiVariableDeclaratorExp `Generics.extQ` antiVariableInitializerListExp `Generics.extQ` antiVariableInitializerExp `Generics.extQ` antiStaticInitializerExp `Generics.extQ` antiParameterListExp `Generics.extQ` antiParameterExp `Generics.extQ` antiStatementExp `Generics.extQ` antiOptExpressionExp `Generics.extQ` antiOptIdExp `Generics.extQ` antiStatementWithoutIfExp `Generics.extQ` antiOptElsePartExp `Generics.extQ` antiIfStatementExp `Generics.extQ` antiDoStatementExp `Generics.extQ` antiWhileStatementExp `Generics.extQ` antiForStatementExp `Generics.extQ` antiRule_63Exp `Generics.extQ` antiOptFinallyExp `Generics.extQ` antiTryStatementExp `Generics.extQ` antiRule_66Exp `Generics.extQ` antiSwitchStatementExp `Generics.extQ` antiExpressionExp `Generics.extQ` antiAssignmentOpExp `Generics.extQ` antiEqualityOpExp `Generics.extQ` antiRelationalOpExp `Generics.extQ` antiShiftOpExp `Generics.extQ` antiAdditiveOpExp `Generics.extQ` antiMultiplicativeOpExp `Generics.extQ` antiPrefixOpExp `Generics.extQ` antiPostfixOpExp `Generics.extQ` antiCreationExpressionExp `Generics.extQ` antiLiteralExp `Generics.extQ` antiArglistExp `Generics.extQ` antiTypeArgumentsExp `Generics.extQ` antiTypeArgumentExp `Generics.extQ` antiWildcardTypeExp `Generics.extQ` antiTypeParametersExp `Generics.extQ` antiTypeParameterExp `Generics.extQ` antiTypeExp `Generics.extQ` antiTypeSpecifierExp `Generics.extQ` antiModifierExp `Generics.extQ` antiCompoundNameExp) rest
      lvar = TH.varE $ TH.mkName v
    in Just [| $lvar ++ $restExp |]
 antiRule_2Exp _ = Nothing
@@ -581,9 +581,9 @@ antiSwitchStatementPat ( Anti_SwitchStatement v) = Just $ TH.varP (TH.mkName v)
 antiSwitchStatementPat _ = Nothing
 
 
-antiRule_68Pat :: [ Rule_68 ] -> Maybe (TH.Q TH.Pat)
-antiRule_68Pat [Anti_Rule_68 v] = Just $ TH.varP (TH.mkName v)
-antiRule_68Pat _ = Nothing
+antiRule_66Pat :: [ Rule_66 ] -> Maybe (TH.Q TH.Pat)
+antiRule_66Pat [Anti_Rule_66 v] = Just $ TH.varP (TH.mkName v)
+antiRule_66Pat _ = Nothing
 
 
 antiTryStatementPat :: TryStatement -> Maybe (TH.Q TH.Pat )
@@ -596,9 +596,9 @@ antiOptFinallyPat ( Anti_OptFinally v) = Just $ TH.varP (TH.mkName v)
 antiOptFinallyPat _ = Nothing
 
 
-antiRule_65Pat :: [ Rule_65 ] -> Maybe (TH.Q TH.Pat)
-antiRule_65Pat [Anti_Rule_65 v] = Just $ TH.varP (TH.mkName v)
-antiRule_65Pat _ = Nothing
+antiRule_63Pat :: [ Rule_63 ] -> Maybe (TH.Q TH.Pat)
+antiRule_63Pat [Anti_Rule_63 v] = Just $ TH.varP (TH.mkName v)
+antiRule_63Pat _ = Nothing
 
 
 antiForStatementPat :: ForStatement -> Maybe (TH.Q TH.Pat )
@@ -696,9 +696,9 @@ antiStatementBlockPat ( Anti_StatementBlock v) = Just $ TH.varP (TH.mkName v)
 antiStatementBlockPat _ = Nothing
 
 
-antiRule_49Pat :: [ Rule_49 ] -> Maybe (TH.Q TH.Pat)
-antiRule_49Pat [Anti_Rule_49 v] = Just $ TH.varP (TH.mkName v)
-antiRule_49Pat _ = Nothing
+antiRule_47Pat :: [ Rule_47 ] -> Maybe (TH.Q TH.Pat)
+antiRule_47Pat [Anti_Rule_47 v] = Just $ TH.varP (TH.mkName v)
+antiRule_47Pat _ = Nothing
 
 
 antiMemberRestPat :: MemberRest -> Maybe (TH.Q TH.Pat )
@@ -726,9 +726,9 @@ antiMemberDeclarationPat ( Anti_MemberDeclaration v) = Just $ TH.varP (TH.mkName
 antiMemberDeclarationPat _ = Nothing
 
 
-antiRule_44Pat :: [ Rule_44 ] -> Maybe (TH.Q TH.Pat)
-antiRule_44Pat [Anti_Rule_44 v] = Just $ TH.varP (TH.mkName v)
-antiRule_44Pat _ = Nothing
+antiRule_40Pat :: [ Rule_40 ] -> Maybe (TH.Q TH.Pat)
+antiRule_40Pat [Anti_Rule_40 v] = Just $ TH.varP (TH.mkName v)
+antiRule_40Pat _ = Nothing
 
 
 antiNestedTypeDeclarationPat :: NestedTypeDeclaration -> Maybe (TH.Q TH.Pat )
@@ -786,9 +786,9 @@ antiExtendsListPat ( Anti_ExtendsList v) = Just $ TH.varP (TH.mkName v)
 antiExtendsListPat _ = Nothing
 
 
-antiRule_18Pat :: [ Rule_18 ] -> Maybe (TH.Q TH.Pat)
-antiRule_18Pat [Anti_Rule_18 v] = Just $ TH.varP (TH.mkName v)
-antiRule_18Pat _ = Nothing
+antiRule_16Pat :: [ Rule_16 ] -> Maybe (TH.Q TH.Pat)
+antiRule_16Pat [Anti_Rule_16 v] = Just $ TH.varP (TH.mkName v)
+antiRule_16Pat _ = Nothing
 
 
 antiAnnotationElementPat :: AnnotationElement -> Maybe (TH.Q TH.Pat )
@@ -853,395 +853,395 @@ quoteJavaDecs s = return []
 getJava ( Ctr__Java__0 s) = s
 
 java :: QuasiQuoter
-java = QuasiQuoter (quoteJavaExp "tok_Java_dummy_172" getJava ) (quoteJavaPat "tok_Java_dummy_172" getJava ) quoteJavaType quoteJavaDecs
+java = QuasiQuoter (quoteJavaExp "tok_Java_dummy_170" getJava ) (quoteJavaPat "tok_Java_dummy_170" getJava ) quoteJavaType quoteJavaDecs
 
 getAdditiveOp ( Ctr__Java__1 s) = s
 
 additiveOp :: QuasiQuoter
-additiveOp = QuasiQuoter (quoteJavaExp "tok_AdditiveOp_dummy_171" getAdditiveOp ) (quoteJavaPat "tok_AdditiveOp_dummy_171" getAdditiveOp ) quoteJavaType quoteJavaDecs
+additiveOp = QuasiQuoter (quoteJavaExp "tok_AdditiveOp_dummy_169" getAdditiveOp ) (quoteJavaPat "tok_AdditiveOp_dummy_169" getAdditiveOp ) quoteJavaType quoteJavaDecs
 
 getAnnotation ( Ctr__Java__2 s) = s
 
 annotation :: QuasiQuoter
-annotation = QuasiQuoter (quoteJavaExp "tok_Annotation_dummy_170" getAnnotation ) (quoteJavaPat "tok_Annotation_dummy_170" getAnnotation ) quoteJavaType quoteJavaDecs
+annotation = QuasiQuoter (quoteJavaExp "tok_Annotation_dummy_168" getAnnotation ) (quoteJavaPat "tok_Annotation_dummy_168" getAnnotation ) quoteJavaType quoteJavaDecs
 
 getAnnotationArguments ( Ctr__Java__3 s) = s
 
 annotationArguments :: QuasiQuoter
-annotationArguments = QuasiQuoter (quoteJavaExp "tok_AnnotationArguments_dummy_169" getAnnotationArguments ) (quoteJavaPat "tok_AnnotationArguments_dummy_169" getAnnotationArguments ) quoteJavaType quoteJavaDecs
+annotationArguments = QuasiQuoter (quoteJavaExp "tok_AnnotationArguments_dummy_167" getAnnotationArguments ) (quoteJavaPat "tok_AnnotationArguments_dummy_167" getAnnotationArguments ) quoteJavaType quoteJavaDecs
 
 getAnnotationDeclaration ( Ctr__Java__4 s) = s
 
 annotationDeclaration :: QuasiQuoter
-annotationDeclaration = QuasiQuoter (quoteJavaExp "tok_AnnotationDeclaration_dummy_168" getAnnotationDeclaration ) (quoteJavaPat "tok_AnnotationDeclaration_dummy_168" getAnnotationDeclaration ) quoteJavaType quoteJavaDecs
+annotationDeclaration = QuasiQuoter (quoteJavaExp "tok_AnnotationDeclaration_dummy_166" getAnnotationDeclaration ) (quoteJavaPat "tok_AnnotationDeclaration_dummy_166" getAnnotationDeclaration ) quoteJavaType quoteJavaDecs
 
 getAnnotationElement ( Ctr__Java__5 s) = s
 
 annotationElement :: QuasiQuoter
-annotationElement = QuasiQuoter (quoteJavaExp "tok_AnnotationElement_dummy_167" getAnnotationElement ) (quoteJavaPat "tok_AnnotationElement_dummy_167" getAnnotationElement ) quoteJavaType quoteJavaDecs
+annotationElement = QuasiQuoter (quoteJavaExp "tok_AnnotationElement_dummy_165" getAnnotationElement ) (quoteJavaPat "tok_AnnotationElement_dummy_165" getAnnotationElement ) quoteJavaType quoteJavaDecs
 
 getAnnotationList ( Ctr__Java__6 s) = s
 
 annotationList :: QuasiQuoter
-annotationList = QuasiQuoter (quoteJavaExp "tok_AnnotationList_dummy_166" getAnnotationList ) (quoteJavaPat "tok_AnnotationList_dummy_166" getAnnotationList ) quoteJavaType quoteJavaDecs
+annotationList = QuasiQuoter (quoteJavaExp "tok_AnnotationList_dummy_164" getAnnotationList ) (quoteJavaPat "tok_AnnotationList_dummy_164" getAnnotationList ) quoteJavaType quoteJavaDecs
 
 getAnnotationTypeElement ( Ctr__Java__7 s) = s
 
 annotationTypeElement :: QuasiQuoter
-annotationTypeElement = QuasiQuoter (quoteJavaExp "tok_AnnotationTypeElement_dummy_165" getAnnotationTypeElement ) (quoteJavaPat "tok_AnnotationTypeElement_dummy_165" getAnnotationTypeElement ) quoteJavaType quoteJavaDecs
+annotationTypeElement = QuasiQuoter (quoteJavaExp "tok_AnnotationTypeElement_dummy_163" getAnnotationTypeElement ) (quoteJavaPat "tok_AnnotationTypeElement_dummy_163" getAnnotationTypeElement ) quoteJavaType quoteJavaDecs
 
 getAnnotationTypeElementList ( Ctr__Java__8 s) = s
 
 annotationTypeElementList :: QuasiQuoter
-annotationTypeElementList = QuasiQuoter (quoteJavaExp "tok_AnnotationTypeElementList_dummy_164" getAnnotationTypeElementList ) (quoteJavaPat "tok_AnnotationTypeElementList_dummy_164" getAnnotationTypeElementList ) quoteJavaType quoteJavaDecs
+annotationTypeElementList = QuasiQuoter (quoteJavaExp "tok_AnnotationTypeElementList_dummy_162" getAnnotationTypeElementList ) (quoteJavaPat "tok_AnnotationTypeElementList_dummy_162" getAnnotationTypeElementList ) quoteJavaType quoteJavaDecs
 
 getArglist ( Ctr__Java__9 s) = s
 
 arglist :: QuasiQuoter
-arglist = QuasiQuoter (quoteJavaExp "tok_Arglist_dummy_163" getArglist ) (quoteJavaPat "tok_Arglist_dummy_163" getArglist ) quoteJavaType quoteJavaDecs
+arglist = QuasiQuoter (quoteJavaExp "tok_Arglist_dummy_161" getArglist ) (quoteJavaPat "tok_Arglist_dummy_161" getArglist ) quoteJavaType quoteJavaDecs
 
 getAssignmentOp ( Ctr__Java__10 s) = s
 
 assignmentOp :: QuasiQuoter
-assignmentOp = QuasiQuoter (quoteJavaExp "tok_AssignmentOp_dummy_162" getAssignmentOp ) (quoteJavaPat "tok_AssignmentOp_dummy_162" getAssignmentOp ) quoteJavaType quoteJavaDecs
+assignmentOp = QuasiQuoter (quoteJavaExp "tok_AssignmentOp_dummy_160" getAssignmentOp ) (quoteJavaPat "tok_AssignmentOp_dummy_160" getAssignmentOp ) quoteJavaType quoteJavaDecs
 
 getCatchList ( Ctr__Java__11 s) = s
 
 catchList :: QuasiQuoter
-catchList = QuasiQuoter (quoteJavaExp "tok_CatchList_dummy_161" getCatchList ) (quoteJavaPat "tok_CatchList_dummy_161" getCatchList ) quoteJavaType quoteJavaDecs
+catchList = QuasiQuoter (quoteJavaExp "tok_CatchList_dummy_159" getCatchList ) (quoteJavaPat "tok_CatchList_dummy_159" getCatchList ) quoteJavaType quoteJavaDecs
 
 getClassDeclaration ( Ctr__Java__12 s) = s
 
 classDeclaration :: QuasiQuoter
-classDeclaration = QuasiQuoter (quoteJavaExp "tok_ClassDeclaration_dummy_160" getClassDeclaration ) (quoteJavaPat "tok_ClassDeclaration_dummy_160" getClassDeclaration ) quoteJavaType quoteJavaDecs
+classDeclaration = QuasiQuoter (quoteJavaExp "tok_ClassDeclaration_dummy_158" getClassDeclaration ) (quoteJavaPat "tok_ClassDeclaration_dummy_158" getClassDeclaration ) quoteJavaType quoteJavaDecs
 
 getCompilationUnit ( Ctr__Java__13 s) = s
 
 compilationUnit :: QuasiQuoter
-compilationUnit = QuasiQuoter (quoteJavaExp "tok_CompilationUnit_dummy_159" getCompilationUnit ) (quoteJavaPat "tok_CompilationUnit_dummy_159" getCompilationUnit ) quoteJavaType quoteJavaDecs
+compilationUnit = QuasiQuoter (quoteJavaExp "tok_CompilationUnit_dummy_157" getCompilationUnit ) (quoteJavaPat "tok_CompilationUnit_dummy_157" getCompilationUnit ) quoteJavaType quoteJavaDecs
 
 getCompoundName ( Ctr__Java__14 s) = s
 
 compoundName :: QuasiQuoter
-compoundName = QuasiQuoter (quoteJavaExp "tok_CompoundName_dummy_158" getCompoundName ) (quoteJavaPat "tok_CompoundName_dummy_158" getCompoundName ) quoteJavaType quoteJavaDecs
+compoundName = QuasiQuoter (quoteJavaExp "tok_CompoundName_dummy_156" getCompoundName ) (quoteJavaPat "tok_CompoundName_dummy_156" getCompoundName ) quoteJavaType quoteJavaDecs
 
 getCreationExpression ( Ctr__Java__15 s) = s
 
 creationExpression :: QuasiQuoter
-creationExpression = QuasiQuoter (quoteJavaExp "tok_CreationExpression_dummy_157" getCreationExpression ) (quoteJavaPat "tok_CreationExpression_dummy_157" getCreationExpression ) quoteJavaType quoteJavaDecs
+creationExpression = QuasiQuoter (quoteJavaExp "tok_CreationExpression_dummy_155" getCreationExpression ) (quoteJavaPat "tok_CreationExpression_dummy_155" getCreationExpression ) quoteJavaType quoteJavaDecs
 
 getDoStatement ( Ctr__Java__16 s) = s
 
 doStatement :: QuasiQuoter
-doStatement = QuasiQuoter (quoteJavaExp "tok_DoStatement_dummy_156" getDoStatement ) (quoteJavaPat "tok_DoStatement_dummy_156" getDoStatement ) quoteJavaType quoteJavaDecs
+doStatement = QuasiQuoter (quoteJavaExp "tok_DoStatement_dummy_154" getDoStatement ) (quoteJavaPat "tok_DoStatement_dummy_154" getDoStatement ) quoteJavaType quoteJavaDecs
 
 getDocComment ( Ctr__Java__17 s) = s
 
 docComment :: QuasiQuoter
-docComment = QuasiQuoter (quoteJavaExp "tok_DocComment_dummy_155" getDocComment ) (quoteJavaPat "tok_DocComment_dummy_155" getDocComment ) quoteJavaType quoteJavaDecs
+docComment = QuasiQuoter (quoteJavaExp "tok_DocComment_dummy_153" getDocComment ) (quoteJavaPat "tok_DocComment_dummy_153" getDocComment ) quoteJavaType quoteJavaDecs
 
 getEnumConstant ( Ctr__Java__18 s) = s
 
 enumConstant :: QuasiQuoter
-enumConstant = QuasiQuoter (quoteJavaExp "tok_EnumConstant_dummy_154" getEnumConstant ) (quoteJavaPat "tok_EnumConstant_dummy_154" getEnumConstant ) quoteJavaType quoteJavaDecs
+enumConstant = QuasiQuoter (quoteJavaExp "tok_EnumConstant_dummy_152" getEnumConstant ) (quoteJavaPat "tok_EnumConstant_dummy_152" getEnumConstant ) quoteJavaType quoteJavaDecs
 
 getEnumConstantList ( Ctr__Java__19 s) = s
 
 enumConstantList :: QuasiQuoter
-enumConstantList = QuasiQuoter (quoteJavaExp "tok_EnumConstantList_dummy_153" getEnumConstantList ) (quoteJavaPat "tok_EnumConstantList_dummy_153" getEnumConstantList ) quoteJavaType quoteJavaDecs
+enumConstantList = QuasiQuoter (quoteJavaExp "tok_EnumConstantList_dummy_151" getEnumConstantList ) (quoteJavaPat "tok_EnumConstantList_dummy_151" getEnumConstantList ) quoteJavaType quoteJavaDecs
 
 getEnumDeclaration ( Ctr__Java__20 s) = s
 
 enumDeclaration :: QuasiQuoter
-enumDeclaration = QuasiQuoter (quoteJavaExp "tok_EnumDeclaration_dummy_152" getEnumDeclaration ) (quoteJavaPat "tok_EnumDeclaration_dummy_152" getEnumDeclaration ) quoteJavaType quoteJavaDecs
+enumDeclaration = QuasiQuoter (quoteJavaExp "tok_EnumDeclaration_dummy_150" getEnumDeclaration ) (quoteJavaPat "tok_EnumDeclaration_dummy_150" getEnumDeclaration ) quoteJavaType quoteJavaDecs
 
 getEqualityOp ( Ctr__Java__21 s) = s
 
 equalityOp :: QuasiQuoter
-equalityOp = QuasiQuoter (quoteJavaExp "tok_EqualityOp_dummy_151" getEqualityOp ) (quoteJavaPat "tok_EqualityOp_dummy_151" getEqualityOp ) quoteJavaType quoteJavaDecs
+equalityOp = QuasiQuoter (quoteJavaExp "tok_EqualityOp_dummy_149" getEqualityOp ) (quoteJavaPat "tok_EqualityOp_dummy_149" getEqualityOp ) quoteJavaType quoteJavaDecs
 
 getExpression ( Ctr__Java__22 s) = s
 
 expression :: QuasiQuoter
-expression = QuasiQuoter (quoteJavaExp "tok_Expression_dummy_150" getExpression ) (quoteJavaPat "tok_Expression_dummy_150" getExpression ) quoteJavaType quoteJavaDecs
+expression = QuasiQuoter (quoteJavaExp "tok_Expression_dummy_148" getExpression ) (quoteJavaPat "tok_Expression_dummy_148" getExpression ) quoteJavaType quoteJavaDecs
 
 getExtendsList ( Ctr__Java__23 s) = s
 
 extendsList :: QuasiQuoter
-extendsList = QuasiQuoter (quoteJavaExp "tok_ExtendsList_dummy_149" getExtendsList ) (quoteJavaPat "tok_ExtendsList_dummy_149" getExtendsList ) quoteJavaType quoteJavaDecs
+extendsList = QuasiQuoter (quoteJavaExp "tok_ExtendsList_dummy_147" getExtendsList ) (quoteJavaPat "tok_ExtendsList_dummy_147" getExtendsList ) quoteJavaType quoteJavaDecs
 
 getFieldDeclaration ( Ctr__Java__24 s) = s
 
 fieldDeclaration :: QuasiQuoter
-fieldDeclaration = QuasiQuoter (quoteJavaExp "tok_FieldDeclaration_dummy_148" getFieldDeclaration ) (quoteJavaPat "tok_FieldDeclaration_dummy_148" getFieldDeclaration ) quoteJavaType quoteJavaDecs
+fieldDeclaration = QuasiQuoter (quoteJavaExp "tok_FieldDeclaration_dummy_146" getFieldDeclaration ) (quoteJavaPat "tok_FieldDeclaration_dummy_146" getFieldDeclaration ) quoteJavaType quoteJavaDecs
 
 getFieldDeclarationList ( Ctr__Java__25 s) = s
 
 fieldDeclarationList :: QuasiQuoter
-fieldDeclarationList = QuasiQuoter (quoteJavaExp "tok_FieldDeclarationList_dummy_147" getFieldDeclarationList ) (quoteJavaPat "tok_FieldDeclarationList_dummy_147" getFieldDeclarationList ) quoteJavaType quoteJavaDecs
+fieldDeclarationList = QuasiQuoter (quoteJavaExp "tok_FieldDeclarationList_dummy_145" getFieldDeclarationList ) (quoteJavaPat "tok_FieldDeclarationList_dummy_145" getFieldDeclarationList ) quoteJavaType quoteJavaDecs
 
 getForStatement ( Ctr__Java__26 s) = s
 
 forStatement :: QuasiQuoter
-forStatement = QuasiQuoter (quoteJavaExp "tok_ForStatement_dummy_146" getForStatement ) (quoteJavaPat "tok_ForStatement_dummy_146" getForStatement ) quoteJavaType quoteJavaDecs
+forStatement = QuasiQuoter (quoteJavaExp "tok_ForStatement_dummy_144" getForStatement ) (quoteJavaPat "tok_ForStatement_dummy_144" getForStatement ) quoteJavaType quoteJavaDecs
 
 getIfStatement ( Ctr__Java__27 s) = s
 
 ifStatement :: QuasiQuoter
-ifStatement = QuasiQuoter (quoteJavaExp "tok_IfStatement_dummy_145" getIfStatement ) (quoteJavaPat "tok_IfStatement_dummy_145" getIfStatement ) quoteJavaType quoteJavaDecs
+ifStatement = QuasiQuoter (quoteJavaExp "tok_IfStatement_dummy_143" getIfStatement ) (quoteJavaPat "tok_IfStatement_dummy_143" getIfStatement ) quoteJavaType quoteJavaDecs
 
 getImplementsList ( Ctr__Java__28 s) = s
 
 implementsList :: QuasiQuoter
-implementsList = QuasiQuoter (quoteJavaExp "tok_ImplementsList_dummy_144" getImplementsList ) (quoteJavaPat "tok_ImplementsList_dummy_144" getImplementsList ) quoteJavaType quoteJavaDecs
+implementsList = QuasiQuoter (quoteJavaExp "tok_ImplementsList_dummy_142" getImplementsList ) (quoteJavaPat "tok_ImplementsList_dummy_142" getImplementsList ) quoteJavaType quoteJavaDecs
 
 getImportList ( Ctr__Java__29 s) = s
 
 importList :: QuasiQuoter
-importList = QuasiQuoter (quoteJavaExp "tok_ImportList_dummy_143" getImportList ) (quoteJavaPat "tok_ImportList_dummy_143" getImportList ) quoteJavaType quoteJavaDecs
+importList = QuasiQuoter (quoteJavaExp "tok_ImportList_dummy_141" getImportList ) (quoteJavaPat "tok_ImportList_dummy_141" getImportList ) quoteJavaType quoteJavaDecs
 
 getImportStatement ( Ctr__Java__30 s) = s
 
 importStatement :: QuasiQuoter
-importStatement = QuasiQuoter (quoteJavaExp "tok_ImportStatement_dummy_142" getImportStatement ) (quoteJavaPat "tok_ImportStatement_dummy_142" getImportStatement ) quoteJavaType quoteJavaDecs
+importStatement = QuasiQuoter (quoteJavaExp "tok_ImportStatement_dummy_140" getImportStatement ) (quoteJavaPat "tok_ImportStatement_dummy_140" getImportStatement ) quoteJavaType quoteJavaDecs
 
 getInterfaceDeclaration ( Ctr__Java__31 s) = s
 
 interfaceDeclaration :: QuasiQuoter
-interfaceDeclaration = QuasiQuoter (quoteJavaExp "tok_InterfaceDeclaration_dummy_141" getInterfaceDeclaration ) (quoteJavaPat "tok_InterfaceDeclaration_dummy_141" getInterfaceDeclaration ) quoteJavaType quoteJavaDecs
+interfaceDeclaration = QuasiQuoter (quoteJavaExp "tok_InterfaceDeclaration_dummy_139" getInterfaceDeclaration ) (quoteJavaPat "tok_InterfaceDeclaration_dummy_139" getInterfaceDeclaration ) quoteJavaType quoteJavaDecs
 
 getLiteral ( Ctr__Java__32 s) = s
 
 literal :: QuasiQuoter
-literal = QuasiQuoter (quoteJavaExp "tok_Literal_dummy_140" getLiteral ) (quoteJavaPat "tok_Literal_dummy_140" getLiteral ) quoteJavaType quoteJavaDecs
+literal = QuasiQuoter (quoteJavaExp "tok_Literal_dummy_138" getLiteral ) (quoteJavaPat "tok_Literal_dummy_138" getLiteral ) quoteJavaType quoteJavaDecs
 
 getMemberAfterFirstId ( Ctr__Java__33 s) = s
 
 memberAfterFirstId :: QuasiQuoter
-memberAfterFirstId = QuasiQuoter (quoteJavaExp "tok_MemberAfterFirstId_dummy_139" getMemberAfterFirstId ) (quoteJavaPat "tok_MemberAfterFirstId_dummy_139" getMemberAfterFirstId ) quoteJavaType quoteJavaDecs
+memberAfterFirstId = QuasiQuoter (quoteJavaExp "tok_MemberAfterFirstId_dummy_137" getMemberAfterFirstId ) (quoteJavaPat "tok_MemberAfterFirstId_dummy_137" getMemberAfterFirstId ) quoteJavaType quoteJavaDecs
 
 getMemberDeclaration ( Ctr__Java__34 s) = s
 
 memberDeclaration :: QuasiQuoter
-memberDeclaration = QuasiQuoter (quoteJavaExp "tok_MemberDeclaration_dummy_138" getMemberDeclaration ) (quoteJavaPat "tok_MemberDeclaration_dummy_138" getMemberDeclaration ) quoteJavaType quoteJavaDecs
+memberDeclaration = QuasiQuoter (quoteJavaExp "tok_MemberDeclaration_dummy_136" getMemberDeclaration ) (quoteJavaPat "tok_MemberDeclaration_dummy_136" getMemberDeclaration ) quoteJavaType quoteJavaDecs
 
 getMemberRest ( Ctr__Java__35 s) = s
 
 memberRest :: QuasiQuoter
-memberRest = QuasiQuoter (quoteJavaExp "tok_MemberRest_dummy_137" getMemberRest ) (quoteJavaPat "tok_MemberRest_dummy_137" getMemberRest ) quoteJavaType quoteJavaDecs
+memberRest = QuasiQuoter (quoteJavaExp "tok_MemberRest_dummy_135" getMemberRest ) (quoteJavaPat "tok_MemberRest_dummy_135" getMemberRest ) quoteJavaType quoteJavaDecs
 
 getModifier ( Ctr__Java__36 s) = s
 
 modifier :: QuasiQuoter
-modifier = QuasiQuoter (quoteJavaExp "tok_Modifier_dummy_136" getModifier ) (quoteJavaPat "tok_Modifier_dummy_136" getModifier ) quoteJavaType quoteJavaDecs
+modifier = QuasiQuoter (quoteJavaExp "tok_Modifier_dummy_134" getModifier ) (quoteJavaPat "tok_Modifier_dummy_134" getModifier ) quoteJavaType quoteJavaDecs
 
 getModifierList ( Ctr__Java__37 s) = s
 
 modifierList :: QuasiQuoter
-modifierList = QuasiQuoter (quoteJavaExp "tok_ModifierList_dummy_135" getModifierList ) (quoteJavaPat "tok_ModifierList_dummy_135" getModifierList ) quoteJavaType quoteJavaDecs
+modifierList = QuasiQuoter (quoteJavaExp "tok_ModifierList_dummy_133" getModifierList ) (quoteJavaPat "tok_ModifierList_dummy_133" getModifierList ) quoteJavaType quoteJavaDecs
 
 getMoreTypeSpecifier ( Ctr__Java__38 s) = s
 
 moreTypeSpecifier :: QuasiQuoter
-moreTypeSpecifier = QuasiQuoter (quoteJavaExp "tok_MoreTypeSpecifier_dummy_134" getMoreTypeSpecifier ) (quoteJavaPat "tok_MoreTypeSpecifier_dummy_134" getMoreTypeSpecifier ) quoteJavaType quoteJavaDecs
+moreTypeSpecifier = QuasiQuoter (quoteJavaExp "tok_MoreTypeSpecifier_dummy_132" getMoreTypeSpecifier ) (quoteJavaPat "tok_MoreTypeSpecifier_dummy_132" getMoreTypeSpecifier ) quoteJavaType quoteJavaDecs
 
 getMoreVariableDeclarators ( Ctr__Java__39 s) = s
 
 moreVariableDeclarators :: QuasiQuoter
-moreVariableDeclarators = QuasiQuoter (quoteJavaExp "tok_MoreVariableDeclarators_dummy_133" getMoreVariableDeclarators ) (quoteJavaPat "tok_MoreVariableDeclarators_dummy_133" getMoreVariableDeclarators ) quoteJavaType quoteJavaDecs
+moreVariableDeclarators = QuasiQuoter (quoteJavaExp "tok_MoreVariableDeclarators_dummy_131" getMoreVariableDeclarators ) (quoteJavaPat "tok_MoreVariableDeclarators_dummy_131" getMoreVariableDeclarators ) quoteJavaType quoteJavaDecs
 
 getMultiplicativeOp ( Ctr__Java__40 s) = s
 
 multiplicativeOp :: QuasiQuoter
-multiplicativeOp = QuasiQuoter (quoteJavaExp "tok_MultiplicativeOp_dummy_132" getMultiplicativeOp ) (quoteJavaPat "tok_MultiplicativeOp_dummy_132" getMultiplicativeOp ) quoteJavaType quoteJavaDecs
+multiplicativeOp = QuasiQuoter (quoteJavaExp "tok_MultiplicativeOp_dummy_130" getMultiplicativeOp ) (quoteJavaPat "tok_MultiplicativeOp_dummy_130" getMultiplicativeOp ) quoteJavaType quoteJavaDecs
 
 getNestedTypeDeclaration ( Ctr__Java__41 s) = s
 
 nestedTypeDeclaration :: QuasiQuoter
-nestedTypeDeclaration = QuasiQuoter (quoteJavaExp "tok_NestedTypeDeclaration_dummy_131" getNestedTypeDeclaration ) (quoteJavaPat "tok_NestedTypeDeclaration_dummy_131" getNestedTypeDeclaration ) quoteJavaType quoteJavaDecs
+nestedTypeDeclaration = QuasiQuoter (quoteJavaExp "tok_NestedTypeDeclaration_dummy_129" getNestedTypeDeclaration ) (quoteJavaPat "tok_NestedTypeDeclaration_dummy_129" getNestedTypeDeclaration ) quoteJavaType quoteJavaDecs
 
 getOptDocComment ( Ctr__Java__42 s) = s
 
 optDocComment :: QuasiQuoter
-optDocComment = QuasiQuoter (quoteJavaExp "tok_OptDocComment_dummy_130" getOptDocComment ) (quoteJavaPat "tok_OptDocComment_dummy_130" getOptDocComment ) quoteJavaType quoteJavaDecs
+optDocComment = QuasiQuoter (quoteJavaExp "tok_OptDocComment_dummy_128" getOptDocComment ) (quoteJavaPat "tok_OptDocComment_dummy_128" getOptDocComment ) quoteJavaType quoteJavaDecs
 
 getOptElsePart ( Ctr__Java__43 s) = s
 
 optElsePart :: QuasiQuoter
-optElsePart = QuasiQuoter (quoteJavaExp "tok_OptElsePart_dummy_129" getOptElsePart ) (quoteJavaPat "tok_OptElsePart_dummy_129" getOptElsePart ) quoteJavaType quoteJavaDecs
+optElsePart = QuasiQuoter (quoteJavaExp "tok_OptElsePart_dummy_127" getOptElsePart ) (quoteJavaPat "tok_OptElsePart_dummy_127" getOptElsePart ) quoteJavaType quoteJavaDecs
 
 getOptExpression ( Ctr__Java__44 s) = s
 
 optExpression :: QuasiQuoter
-optExpression = QuasiQuoter (quoteJavaExp "tok_OptExpression_dummy_128" getOptExpression ) (quoteJavaPat "tok_OptExpression_dummy_128" getOptExpression ) quoteJavaType quoteJavaDecs
+optExpression = QuasiQuoter (quoteJavaExp "tok_OptExpression_dummy_126" getOptExpression ) (quoteJavaPat "tok_OptExpression_dummy_126" getOptExpression ) quoteJavaType quoteJavaDecs
 
 getOptFinally ( Ctr__Java__45 s) = s
 
 optFinally :: QuasiQuoter
-optFinally = QuasiQuoter (quoteJavaExp "tok_OptFinally_dummy_127" getOptFinally ) (quoteJavaPat "tok_OptFinally_dummy_127" getOptFinally ) quoteJavaType quoteJavaDecs
+optFinally = QuasiQuoter (quoteJavaExp "tok_OptFinally_dummy_125" getOptFinally ) (quoteJavaPat "tok_OptFinally_dummy_125" getOptFinally ) quoteJavaType quoteJavaDecs
 
 getOptId ( Ctr__Java__46 s) = s
 
 optId :: QuasiQuoter
-optId = QuasiQuoter (quoteJavaExp "tok_OptId_dummy_126" getOptId ) (quoteJavaPat "tok_OptId_dummy_126" getOptId ) quoteJavaType quoteJavaDecs
+optId = QuasiQuoter (quoteJavaExp "tok_OptId_dummy_124" getOptId ) (quoteJavaPat "tok_OptId_dummy_124" getOptId ) quoteJavaType quoteJavaDecs
 
 getOptVariableInitializer ( Ctr__Java__47 s) = s
 
 optVariableInitializer :: QuasiQuoter
-optVariableInitializer = QuasiQuoter (quoteJavaExp "tok_OptVariableInitializer_dummy_125" getOptVariableInitializer ) (quoteJavaPat "tok_OptVariableInitializer_dummy_125" getOptVariableInitializer ) quoteJavaType quoteJavaDecs
+optVariableInitializer = QuasiQuoter (quoteJavaExp "tok_OptVariableInitializer_dummy_123" getOptVariableInitializer ) (quoteJavaPat "tok_OptVariableInitializer_dummy_123" getOptVariableInitializer ) quoteJavaType quoteJavaDecs
 
 getPackage ( Ctr__Java__48 s) = s
 
 package :: QuasiQuoter
-package = QuasiQuoter (quoteJavaExp "tok_Package_dummy_124" getPackage ) (quoteJavaPat "tok_Package_dummy_124" getPackage ) quoteJavaType quoteJavaDecs
+package = QuasiQuoter (quoteJavaExp "tok_Package_dummy_122" getPackage ) (quoteJavaPat "tok_Package_dummy_122" getPackage ) quoteJavaType quoteJavaDecs
 
 getParameter ( Ctr__Java__49 s) = s
 
 parameter :: QuasiQuoter
-parameter = QuasiQuoter (quoteJavaExp "tok_Parameter_dummy_123" getParameter ) (quoteJavaPat "tok_Parameter_dummy_123" getParameter ) quoteJavaType quoteJavaDecs
+parameter = QuasiQuoter (quoteJavaExp "tok_Parameter_dummy_121" getParameter ) (quoteJavaPat "tok_Parameter_dummy_121" getParameter ) quoteJavaType quoteJavaDecs
 
 getParameterList ( Ctr__Java__50 s) = s
 
 parameterList :: QuasiQuoter
-parameterList = QuasiQuoter (quoteJavaExp "tok_ParameterList_dummy_122" getParameterList ) (quoteJavaPat "tok_ParameterList_dummy_122" getParameterList ) quoteJavaType quoteJavaDecs
+parameterList = QuasiQuoter (quoteJavaExp "tok_ParameterList_dummy_120" getParameterList ) (quoteJavaPat "tok_ParameterList_dummy_120" getParameterList ) quoteJavaType quoteJavaDecs
 
 getPostfixOp ( Ctr__Java__51 s) = s
 
 postfixOp :: QuasiQuoter
-postfixOp = QuasiQuoter (quoteJavaExp "tok_PostfixOp_dummy_121" getPostfixOp ) (quoteJavaPat "tok_PostfixOp_dummy_121" getPostfixOp ) quoteJavaType quoteJavaDecs
+postfixOp = QuasiQuoter (quoteJavaExp "tok_PostfixOp_dummy_119" getPostfixOp ) (quoteJavaPat "tok_PostfixOp_dummy_119" getPostfixOp ) quoteJavaType quoteJavaDecs
 
 getPrefixOp ( Ctr__Java__52 s) = s
 
 prefixOp :: QuasiQuoter
-prefixOp = QuasiQuoter (quoteJavaExp "tok_PrefixOp_dummy_120" getPrefixOp ) (quoteJavaPat "tok_PrefixOp_dummy_120" getPrefixOp ) quoteJavaType quoteJavaDecs
+prefixOp = QuasiQuoter (quoteJavaExp "tok_PrefixOp_dummy_118" getPrefixOp ) (quoteJavaPat "tok_PrefixOp_dummy_118" getPrefixOp ) quoteJavaType quoteJavaDecs
 
 getPrimitiveTypeKeyword ( Ctr__Java__53 s) = s
 
 primitiveTypeKeyword :: QuasiQuoter
-primitiveTypeKeyword = QuasiQuoter (quoteJavaExp "tok_PrimitiveTypeKeyword_dummy_119" getPrimitiveTypeKeyword ) (quoteJavaPat "tok_PrimitiveTypeKeyword_dummy_119" getPrimitiveTypeKeyword ) quoteJavaType quoteJavaDecs
+primitiveTypeKeyword = QuasiQuoter (quoteJavaExp "tok_PrimitiveTypeKeyword_dummy_117" getPrimitiveTypeKeyword ) (quoteJavaPat "tok_PrimitiveTypeKeyword_dummy_117" getPrimitiveTypeKeyword ) quoteJavaType quoteJavaDecs
 
 getRelationalOp ( Ctr__Java__54 s) = s
 
 relationalOp :: QuasiQuoter
-relationalOp = QuasiQuoter (quoteJavaExp "tok_RelationalOp_dummy_118" getRelationalOp ) (quoteJavaPat "tok_RelationalOp_dummy_118" getRelationalOp ) quoteJavaType quoteJavaDecs
+relationalOp = QuasiQuoter (quoteJavaExp "tok_RelationalOp_dummy_116" getRelationalOp ) (quoteJavaPat "tok_RelationalOp_dummy_116" getRelationalOp ) quoteJavaType quoteJavaDecs
 
 getShiftOp ( Ctr__Java__55 s) = s
 
 shiftOp :: QuasiQuoter
-shiftOp = QuasiQuoter (quoteJavaExp "tok_ShiftOp_dummy_117" getShiftOp ) (quoteJavaPat "tok_ShiftOp_dummy_117" getShiftOp ) quoteJavaType quoteJavaDecs
+shiftOp = QuasiQuoter (quoteJavaExp "tok_ShiftOp_dummy_115" getShiftOp ) (quoteJavaPat "tok_ShiftOp_dummy_115" getShiftOp ) quoteJavaType quoteJavaDecs
 
 getSquareBracketsList ( Ctr__Java__56 s) = s
 
 squareBracketsList :: QuasiQuoter
-squareBracketsList = QuasiQuoter (quoteJavaExp "tok_SquareBracketsList_dummy_116" getSquareBracketsList ) (quoteJavaPat "tok_SquareBracketsList_dummy_116" getSquareBracketsList ) quoteJavaType quoteJavaDecs
+squareBracketsList = QuasiQuoter (quoteJavaExp "tok_SquareBracketsList_dummy_114" getSquareBracketsList ) (quoteJavaPat "tok_SquareBracketsList_dummy_114" getSquareBracketsList ) quoteJavaType quoteJavaDecs
 
 getStatement ( Ctr__Java__57 s) = s
 
 statement :: QuasiQuoter
-statement = QuasiQuoter (quoteJavaExp "tok_Statement_dummy_115" getStatement ) (quoteJavaPat "tok_Statement_dummy_115" getStatement ) quoteJavaType quoteJavaDecs
+statement = QuasiQuoter (quoteJavaExp "tok_Statement_dummy_113" getStatement ) (quoteJavaPat "tok_Statement_dummy_113" getStatement ) quoteJavaType quoteJavaDecs
 
 getStatementBlock ( Ctr__Java__58 s) = s
 
 statementBlock :: QuasiQuoter
-statementBlock = QuasiQuoter (quoteJavaExp "tok_StatementBlock_dummy_114" getStatementBlock ) (quoteJavaPat "tok_StatementBlock_dummy_114" getStatementBlock ) quoteJavaType quoteJavaDecs
+statementBlock = QuasiQuoter (quoteJavaExp "tok_StatementBlock_dummy_112" getStatementBlock ) (quoteJavaPat "tok_StatementBlock_dummy_112" getStatementBlock ) quoteJavaType quoteJavaDecs
 
 getStatementList ( Ctr__Java__59 s) = s
 
 statementList :: QuasiQuoter
-statementList = QuasiQuoter (quoteJavaExp "tok_StatementList_dummy_113" getStatementList ) (quoteJavaPat "tok_StatementList_dummy_113" getStatementList ) quoteJavaType quoteJavaDecs
+statementList = QuasiQuoter (quoteJavaExp "tok_StatementList_dummy_111" getStatementList ) (quoteJavaPat "tok_StatementList_dummy_111" getStatementList ) quoteJavaType quoteJavaDecs
 
 getStatementWithoutIf ( Ctr__Java__60 s) = s
 
 statementWithoutIf :: QuasiQuoter
-statementWithoutIf = QuasiQuoter (quoteJavaExp "tok_StatementWithoutIf_dummy_112" getStatementWithoutIf ) (quoteJavaPat "tok_StatementWithoutIf_dummy_112" getStatementWithoutIf ) quoteJavaType quoteJavaDecs
+statementWithoutIf = QuasiQuoter (quoteJavaExp "tok_StatementWithoutIf_dummy_110" getStatementWithoutIf ) (quoteJavaPat "tok_StatementWithoutIf_dummy_110" getStatementWithoutIf ) quoteJavaType quoteJavaDecs
 
 getStaticInitializer ( Ctr__Java__61 s) = s
 
 staticInitializer :: QuasiQuoter
-staticInitializer = QuasiQuoter (quoteJavaExp "tok_StaticInitializer_dummy_111" getStaticInitializer ) (quoteJavaPat "tok_StaticInitializer_dummy_111" getStaticInitializer ) quoteJavaType quoteJavaDecs
+staticInitializer = QuasiQuoter (quoteJavaExp "tok_StaticInitializer_dummy_109" getStaticInitializer ) (quoteJavaPat "tok_StaticInitializer_dummy_109" getStaticInitializer ) quoteJavaType quoteJavaDecs
 
 getSwitchCaseList ( Ctr__Java__62 s) = s
 
 switchCaseList :: QuasiQuoter
-switchCaseList = QuasiQuoter (quoteJavaExp "tok_SwitchCaseList_dummy_110" getSwitchCaseList ) (quoteJavaPat "tok_SwitchCaseList_dummy_110" getSwitchCaseList ) quoteJavaType quoteJavaDecs
+switchCaseList = QuasiQuoter (quoteJavaExp "tok_SwitchCaseList_dummy_108" getSwitchCaseList ) (quoteJavaPat "tok_SwitchCaseList_dummy_108" getSwitchCaseList ) quoteJavaType quoteJavaDecs
 
 getSwitchStatement ( Ctr__Java__63 s) = s
 
 switchStatement :: QuasiQuoter
-switchStatement = QuasiQuoter (quoteJavaExp "tok_SwitchStatement_dummy_109" getSwitchStatement ) (quoteJavaPat "tok_SwitchStatement_dummy_109" getSwitchStatement ) quoteJavaType quoteJavaDecs
+switchStatement = QuasiQuoter (quoteJavaExp "tok_SwitchStatement_dummy_107" getSwitchStatement ) (quoteJavaPat "tok_SwitchStatement_dummy_107" getSwitchStatement ) quoteJavaType quoteJavaDecs
 
 getTryStatement ( Ctr__Java__64 s) = s
 
 tryStatement :: QuasiQuoter
-tryStatement = QuasiQuoter (quoteJavaExp "tok_TryStatement_dummy_108" getTryStatement ) (quoteJavaPat "tok_TryStatement_dummy_108" getTryStatement ) quoteJavaType quoteJavaDecs
+tryStatement = QuasiQuoter (quoteJavaExp "tok_TryStatement_dummy_106" getTryStatement ) (quoteJavaPat "tok_TryStatement_dummy_106" getTryStatement ) quoteJavaType quoteJavaDecs
 
 getType ( Ctr__Java__65 s) = s
 
 __type :: QuasiQuoter
-__type = QuasiQuoter (quoteJavaExp "tok_Type_dummy_107" getType ) (quoteJavaPat "tok_Type_dummy_107" getType ) quoteJavaType quoteJavaDecs
+__type = QuasiQuoter (quoteJavaExp "tok_Type_dummy_105" getType ) (quoteJavaPat "tok_Type_dummy_105" getType ) quoteJavaType quoteJavaDecs
 
 getTypeArgument ( Ctr__Java__66 s) = s
 
 typeArgument :: QuasiQuoter
-typeArgument = QuasiQuoter (quoteJavaExp "tok_TypeArgument_dummy_106" getTypeArgument ) (quoteJavaPat "tok_TypeArgument_dummy_106" getTypeArgument ) quoteJavaType quoteJavaDecs
+typeArgument = QuasiQuoter (quoteJavaExp "tok_TypeArgument_dummy_104" getTypeArgument ) (quoteJavaPat "tok_TypeArgument_dummy_104" getTypeArgument ) quoteJavaType quoteJavaDecs
 
 getTypeArguments ( Ctr__Java__67 s) = s
 
 typeArguments :: QuasiQuoter
-typeArguments = QuasiQuoter (quoteJavaExp "tok_TypeArguments_dummy_105" getTypeArguments ) (quoteJavaPat "tok_TypeArguments_dummy_105" getTypeArguments ) quoteJavaType quoteJavaDecs
+typeArguments = QuasiQuoter (quoteJavaExp "tok_TypeArguments_dummy_103" getTypeArguments ) (quoteJavaPat "tok_TypeArguments_dummy_103" getTypeArguments ) quoteJavaType quoteJavaDecs
 
 getTypeDeclaration ( Ctr__Java__68 s) = s
 
 typeDeclaration :: QuasiQuoter
-typeDeclaration = QuasiQuoter (quoteJavaExp "tok_TypeDeclaration_dummy_104" getTypeDeclaration ) (quoteJavaPat "tok_TypeDeclaration_dummy_104" getTypeDeclaration ) quoteJavaType quoteJavaDecs
+typeDeclaration = QuasiQuoter (quoteJavaExp "tok_TypeDeclaration_dummy_102" getTypeDeclaration ) (quoteJavaPat "tok_TypeDeclaration_dummy_102" getTypeDeclaration ) quoteJavaType quoteJavaDecs
 
 getTypeParameter ( Ctr__Java__69 s) = s
 
 typeParameter :: QuasiQuoter
-typeParameter = QuasiQuoter (quoteJavaExp "tok_TypeParameter_dummy_103" getTypeParameter ) (quoteJavaPat "tok_TypeParameter_dummy_103" getTypeParameter ) quoteJavaType quoteJavaDecs
+typeParameter = QuasiQuoter (quoteJavaExp "tok_TypeParameter_dummy_101" getTypeParameter ) (quoteJavaPat "tok_TypeParameter_dummy_101" getTypeParameter ) quoteJavaType quoteJavaDecs
 
 getTypeParameters ( Ctr__Java__70 s) = s
 
 typeParameters :: QuasiQuoter
-typeParameters = QuasiQuoter (quoteJavaExp "tok_TypeParameters_dummy_102" getTypeParameters ) (quoteJavaPat "tok_TypeParameters_dummy_102" getTypeParameters ) quoteJavaType quoteJavaDecs
+typeParameters = QuasiQuoter (quoteJavaExp "tok_TypeParameters_dummy_100" getTypeParameters ) (quoteJavaPat "tok_TypeParameters_dummy_100" getTypeParameters ) quoteJavaType quoteJavaDecs
 
 getTypeSpecifier ( Ctr__Java__71 s) = s
 
 typeSpecifier :: QuasiQuoter
-typeSpecifier = QuasiQuoter (quoteJavaExp "tok_TypeSpecifier_dummy_101" getTypeSpecifier ) (quoteJavaPat "tok_TypeSpecifier_dummy_101" getTypeSpecifier ) quoteJavaType quoteJavaDecs
+typeSpecifier = QuasiQuoter (quoteJavaExp "tok_TypeSpecifier_dummy_99" getTypeSpecifier ) (quoteJavaPat "tok_TypeSpecifier_dummy_99" getTypeSpecifier ) quoteJavaType quoteJavaDecs
 
 getVariableDeclaration ( Ctr__Java__72 s) = s
 
 variableDeclaration :: QuasiQuoter
-variableDeclaration = QuasiQuoter (quoteJavaExp "tok_VariableDeclaration_dummy_100" getVariableDeclaration ) (quoteJavaPat "tok_VariableDeclaration_dummy_100" getVariableDeclaration ) quoteJavaType quoteJavaDecs
+variableDeclaration = QuasiQuoter (quoteJavaExp "tok_VariableDeclaration_dummy_98" getVariableDeclaration ) (quoteJavaPat "tok_VariableDeclaration_dummy_98" getVariableDeclaration ) quoteJavaType quoteJavaDecs
 
 getVariableDeclarator ( Ctr__Java__73 s) = s
 
 variableDeclarator :: QuasiQuoter
-variableDeclarator = QuasiQuoter (quoteJavaExp "tok_VariableDeclarator_dummy_99" getVariableDeclarator ) (quoteJavaPat "tok_VariableDeclarator_dummy_99" getVariableDeclarator ) quoteJavaType quoteJavaDecs
+variableDeclarator = QuasiQuoter (quoteJavaExp "tok_VariableDeclarator_dummy_97" getVariableDeclarator ) (quoteJavaPat "tok_VariableDeclarator_dummy_97" getVariableDeclarator ) quoteJavaType quoteJavaDecs
 
 getVariableDeclaratorList ( Ctr__Java__74 s) = s
 
 variableDeclaratorList :: QuasiQuoter
-variableDeclaratorList = QuasiQuoter (quoteJavaExp "tok_VariableDeclaratorList_dummy_98" getVariableDeclaratorList ) (quoteJavaPat "tok_VariableDeclaratorList_dummy_98" getVariableDeclaratorList ) quoteJavaType quoteJavaDecs
+variableDeclaratorList = QuasiQuoter (quoteJavaExp "tok_VariableDeclaratorList_dummy_96" getVariableDeclaratorList ) (quoteJavaPat "tok_VariableDeclaratorList_dummy_96" getVariableDeclaratorList ) quoteJavaType quoteJavaDecs
 
 getVariableInitializer ( Ctr__Java__75 s) = s
 
 variableInitializer :: QuasiQuoter
-variableInitializer = QuasiQuoter (quoteJavaExp "tok_VariableInitializer_dummy_97" getVariableInitializer ) (quoteJavaPat "tok_VariableInitializer_dummy_97" getVariableInitializer ) quoteJavaType quoteJavaDecs
+variableInitializer = QuasiQuoter (quoteJavaExp "tok_VariableInitializer_dummy_95" getVariableInitializer ) (quoteJavaPat "tok_VariableInitializer_dummy_95" getVariableInitializer ) quoteJavaType quoteJavaDecs
 
 getVariableInitializerList ( Ctr__Java__76 s) = s
 
 variableInitializerList :: QuasiQuoter
-variableInitializerList = QuasiQuoter (quoteJavaExp "tok_VariableInitializerList_dummy_96" getVariableInitializerList ) (quoteJavaPat "tok_VariableInitializerList_dummy_96" getVariableInitializerList ) quoteJavaType quoteJavaDecs
+variableInitializerList = QuasiQuoter (quoteJavaExp "tok_VariableInitializerList_dummy_94" getVariableInitializerList ) (quoteJavaPat "tok_VariableInitializerList_dummy_94" getVariableInitializerList ) quoteJavaType quoteJavaDecs
 
 getWhileStatement ( Ctr__Java__77 s) = s
 
 whileStatement :: QuasiQuoter
-whileStatement = QuasiQuoter (quoteJavaExp "tok_WhileStatement_dummy_95" getWhileStatement ) (quoteJavaPat "tok_WhileStatement_dummy_95" getWhileStatement ) quoteJavaType quoteJavaDecs
+whileStatement = QuasiQuoter (quoteJavaExp "tok_WhileStatement_dummy_93" getWhileStatement ) (quoteJavaPat "tok_WhileStatement_dummy_93" getWhileStatement ) quoteJavaType quoteJavaDecs
 
 getWildcardType ( Ctr__Java__78 s) = s
 
 wildcardType :: QuasiQuoter
-wildcardType = QuasiQuoter (quoteJavaExp "tok_WildcardType_dummy_94" getWildcardType ) (quoteJavaPat "tok_WildcardType_dummy_94" getWildcardType ) quoteJavaType quoteJavaDecs
+wildcardType = QuasiQuoter (quoteJavaExp "tok_WildcardType_dummy_92" getWildcardType ) (quoteJavaPat "tok_WildcardType_dummy_92" getWildcardType ) quoteJavaType quoteJavaDecs
 

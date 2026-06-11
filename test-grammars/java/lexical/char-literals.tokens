@@ -1,67 +1,67 @@
 Tk__tok_class_12
 Tk__id "CharLiterals"
 Tk__tok__symbol__13
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "simple"
 Tk__tok__eql__9
 Tk__char "'a'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "digit"
 Tk__tok__eql__9
 Tk__char "'7'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "space"
 Tk__tok__eql__9
 Tk__char "' '"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "newline"
 Tk__tok__eql__9
 Tk__char "'\\n'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "tab"
 Tk__tok__eql__9
 Tk__char "'\\t'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "backslash"
 Tk__tok__eql__9
 Tk__char "'\\\\'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "quote"
 Tk__tok__eql__9
 Tk__char "'\\''"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "doubleQuote"
 Tk__tok__eql__9
 Tk__char "'\"'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "nul"
 Tk__tok__eql__9
 Tk__char "'\\0'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "octal2"
 Tk__tok__eql__9
 Tk__char "'\\12'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "octal3"
 Tk__tok__eql__9
 Tk__char "'\\101'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "octalMax"
 Tk__tok__eql__9
 Tk__char "'\\377'"
 Tk__tok__semi__1
-Tk__tok_char_22
+Tk__tok_char_21
 Tk__id "unicode"
 Tk__tok__eql__9
 Tk__char "'\\u0041'"

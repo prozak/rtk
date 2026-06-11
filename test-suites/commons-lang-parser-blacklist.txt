@@ -5,7 +5,7 @@
 # - Anonymous inner classes
 # - Enhanced for-each with colon
 #
-# Total: 250 files blacklisted, 9 files passing
+# Total: 245 files blacklisted, 14 files passing
 # As grammar support is added, remove files from this list
 
 org/apache/commons/lang3/AnnotationUtils.java
@@ -59,12 +59,9 @@ org/apache/commons/lang3/builder/AbstractSupplier.java
 org/apache/commons/lang3/builder/CompareToBuilder.java
 org/apache/commons/lang3/builder/Diff.java
 org/apache/commons/lang3/builder/DiffBuilder.java
-org/apache/commons/lang3/builder/DiffExclude.java
 org/apache/commons/lang3/builder/DiffResult.java
 org/apache/commons/lang3/builder/EqualsBuilder.java
-org/apache/commons/lang3/builder/EqualsExclude.java
 org/apache/commons/lang3/builder/HashCodeBuilder.java
-org/apache/commons/lang3/builder/HashCodeExclude.java
 org/apache/commons/lang3/builder/IDKey.java
 org/apache/commons/lang3/builder/MultilineRecursiveToStringStyle.java
 org/apache/commons/lang3/builder/RecursiveToStringStyle.java
@@ -73,9 +70,7 @@ org/apache/commons/lang3/builder/ReflectionDiffBuilder.java
 org/apache/commons/lang3/builder/ReflectionToStringBuilder.java
 org/apache/commons/lang3/builder/StandardToStringStyle.java
 org/apache/commons/lang3/builder/ToStringBuilder.java
-org/apache/commons/lang3/builder/ToStringExclude.java
 org/apache/commons/lang3/builder/ToStringStyle.java
-org/apache/commons/lang3/builder/ToStringSummary.java
 org/apache/commons/lang3/builder/package-info.java
 org/apache/commons/lang3/compare/ComparableUtils.java
 org/apache/commons/lang3/compare/ObjectToStringComparator.java

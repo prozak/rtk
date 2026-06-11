@@ -1,12 +1,12 @@
 Tk__tok_class_12
 Tk__id "Operators"
 Tk__tok__symbol__13
-Tk__tok_void_28
+Tk__tok_void_27
 Tk__id "m"
 Tk__tok__lparen__6
 Tk__tok__rparen__7
 Tk__tok__symbol__13
-Tk__tok_int_24
+Tk__tok_int_23
 Tk__id "a"
 Tk__tok__eql__9
 Tk__integerLiteral "1"
@@ -65,7 +65,7 @@ Tk__id "a"
 Tk__tok__symbol__eql__51
 Tk__integerLiteral "1"
 Tk__tok__semi__1
-Tk__tok_int_24
+Tk__tok_int_23
 Tk__id "b"
 Tk__tok__eql__9
 Tk__id "a"
@@ -83,7 +83,7 @@ Tk__tok__symbol__60
 Tk__tok__tilde__78
 Tk__id "a"
 Tk__tok__semi__1
-Tk__tok_boolean_20
+Tk__tok_boolean_19
 Tk__id "c"
 Tk__tok__eql__9
 Tk__id "a"
@@ -110,7 +110,7 @@ Tk__id "a"
 Tk__tok__exclamation__eql__63
 Tk__id "b"
 Tk__tok__semi__1
-Tk__tok_boolean_20
+Tk__tok_boolean_19
 Tk__id "d"
 Tk__tok__eql__9
 Tk__tok__exclamation__79
@@ -128,7 +128,7 @@ Tk__tok__semi__1
 Tk__tok__minus__minus__77
 Tk__id "a"
 Tk__tok__semi__1
-Tk__tok_int_24
+Tk__tok_int_23
 Tk__id "e"
 Tk__tok__eql__9
 Tk__id "c"
