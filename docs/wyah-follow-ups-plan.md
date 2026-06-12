@@ -1,4 +1,4 @@
-# Plan: Write You a Haskell tutorial — follow-up task blobs (W1–W5)
+# Plan: Write You a Haskell tutorial — follow-up task blobs (W1–W6)
 
 Status: PLANNED (follow-ups to the WYAH tutorial, PR #92).
 
@@ -11,11 +11,13 @@ the generated quasi-quoters. 110 checks run under
 README records the grammar design rules and the RTK findings that came out
 of building it.
 
-This file sketches the follow-ups as five self-contained task blobs, written
+This file sketches the follow-ups as six self-contained task blobs, written
 to be pasted into a fresh session as the task description. W1 and W2 are RTK
-features the tutorial exposed (W2 is the second half of issue #95); W3–W5
+features the tutorial exposed (W2 is the second half of issue #95); W3–W6
 are tutorial-side. They are independent of each other except where noted;
-W4 benefits from W1 but does not require it.
+W4 benefits from W1 but does not require it, and W6 reads best after W3
+closes the chapter-12 gap (it can land before, marking that section as
+"lite").
 
 Invariants every task must preserve:
 
@@ -253,6 +255,73 @@ upgrade it.
   poly, proto), `:load tests/fib.poly` extends the session, `:quit`/`:q`
   exit; piped-stdin behavior (used by the test suites) unchanged.
 
+---
+
+## Task W6 — The teaching page: "Write You a Haskell, with RTK"
+
+### TL;DR
+
+A narrative tutorial document that mirrors the original's chapter arc —
+parsing, lambda calculus, type systems, evaluation, Hindley-Milner,
+ProtoHaskell — but teaches the RTK way at every step: write a `.pg`
+grammar, generate the front end, then write each semantic pass as
+quasi-quote patterns over concrete syntax. The reader finishes able to
+build their own language front end with RTK. All the material exists (the
+four checked-in languages, the README's design rules); this task is the
+prose, the per-section runnable checkpoints, and the exercises.
+
+### Where things stand
+
+- `tutorials/write-you-a-haskell/README.md` is a *map* (status table,
+  per-language summaries, design rules, findings) — reference material,
+  not a lesson. The grammars and drivers carry section comments that
+  already explain the why at each step.
+- The original tutorial (https://github.com/sdiehl/write-you-a-haskell)
+  provides the chapter structure readers may arrive from.
+
+### Constraints (decide nothing here — these are fixed)
+
+- The original's prose is Stephen Diehl's copyrighted work. The page
+  mirrors structure and topic order only, in entirely original wording;
+  per chapter, LINK to the original section instead of quoting it. Do not
+  copy or lightly rewrite its text or its code listings; our own
+  checked-in code is the only source for excerpts. Check the original
+  repository's license before borrowing anything beyond chapter titles.
+
+### The work
+
+- Format decision early: single `tutorials/write-you-a-haskell/TUTORIAL.md`
+  with chapter anchors (recommended to start; split into `book/` pages only
+  if it outgrows one file). Linked from the tutorial README and
+  `tutorials/README.md`.
+- Per-chapter sections, each ending in a runnable checkpoint the reader can
+  execute (`make test-lc`, a REPL transcript to reproduce, …):
+  ch. 3 — grammars replace parser combinators (walk `lc.pg` line by line:
+  ladder, lifts, `@shortcuts`, why it is conflict-free); ch. 4 — semantics
+  as QQ patterns (`eval`, capture-avoiding `subst`, SYB one-layer
+  recursion); ch. 5–6 — a second nonterminal family, building types by
+  splicing, one evaluator with two strategies; ch. 7 — desugaring as QQ
+  rewrites and algorithm W over the generated AST; ch. 8–12 — ADTs,
+  renamer, case (and the explicit-brace decision, pointing at issue #95 /
+  task W2; mark pattern compilation per task W3 status).
+- Interleave the RTK lessons the project produced where the reader first
+  needs them (anti-token placement, wrapper types, pattern synonyms,
+  position transparency) — migrating, not duplicating, the README's
+  "design rules" section: the README keeps the reference list and links to
+  the teaching page for the worked explanations.
+- Exercises with checked answers, e.g.: add a `<` comparison operator to
+  `lc` end-to-end (grammar line, eval case, test); add a `Pair` library and
+  `swap` to `proto`; make `if` desugar to a `case` on a user-defined Bool.
+
+### Acceptance
+
+- `TUTORIAL.md` exists, linked from both READMEs; every code excerpt is
+  verbatim from checked-in files (cite `file:line` ranges next to each
+  excerpt so drift is detectable); every checkpoint command works against
+  the tree it documents.
+- A parity table maps original chapters to sections, marking what is
+  intentionally different (no NanoParsec, explicit braces) and why.
+- No prose or code from the original tutorial is reproduced.
 ---
 
 ## Smaller items (no blob; fix opportunistically or bundle)
