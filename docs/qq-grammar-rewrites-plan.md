@@ -1,16 +1,18 @@
 # Plan: grammar rewrites with RTK's own QQ — migrating the pipeline off `InitialGrammar`
 
-Status: PLANNED (follow-up to the default-front-end flip, PR #112).
+Status: 8b DONE; 8a, 8c, 8d PLANNED (follow-up to the default-front-end
+flip, PR #112).
 
 The flip made grammar.pg authoritative and the generated front end the
 default, but the pipeline still computes over the original hand-written data
 structures: `ASTAdapter.convertGrammar` converts the generated AST (the
 `Ctr__*` constructors from `GrammarParser`) into `Syntax.InitialGrammar`
 immediately after parsing, and `Normalize`/`GenX`/`GenY`/`GenQ` operate on
-`InitialGrammar`/`NormalGrammar`. `GrammarQQ.hs` is not compiled into rtk at
-all (`rtk.cabal` keeps it out to avoid `regex-posix` + TH in the build), so
-rewrites cannot be written as `[rule| … |]` / `[cl| … |]` quasi-quoted
-patterns inside rtk itself.
+`InitialGrammar`/`NormalGrammar`. `GrammarQQ.hs` is now compiled into rtk
+(task 8b), but its quoters produce the *generated* AST types, not the
+`InitialGrammar`/`NormalGrammar` the pipeline computes over — so rewrites
+still cannot be written as `[rule| … |]` / `[cl| … |]` quasi-quoted patterns
+inside the pipeline until 8c migrates it.
 
 This file sketches that migration as four self-contained task blobs (8a–8d).
 Each blob is written to be pasted into a fresh session as the task
@@ -102,6 +104,13 @@ self-describing) and parsed identically by the reference parser.
 ---
 
 ## Task 8b — Compile GrammarQQ into rtk (build prerequisite)
+
+**Status: DONE.** Step 1 (the regex drop) landed with the asm.pg tutorial
+work, which hit the regex scanner's newline bug for real; the rest landed
+as its own change: `GrammarQQ` is compiled in the `generated-frontend`
+component (template-haskell is its only extra dependency), `cabal test
+unit` smoke-tests `[clause| … |]` quotes and `Anti_*` splices in both
+contexts, and the `*QQ.hs` goldens are part of `make test-compile-goldens`.
 
 ### TL;DR
 
