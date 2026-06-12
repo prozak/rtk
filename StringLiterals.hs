@@ -1,7 +1,9 @@
+{-# LANGUAGE QuasiQuotes #-}
 module StringLiterals (normalizeStringLiterals)
     where
 
 import qualified GrammarParser as GP
+import GrammarQQ (clause)
 
 import Frontend (mapGrammarRules, ruleName, strLitText)
 import Syntax (isLexicalRule)
@@ -58,12 +60,16 @@ addStrLit str = do
       return tokName
     Just tokName -> return tokName
 
--- A string literal in a syntax rule becomes an ignored reference to a shared
--- keyword token; the replacement keeps the literal's source position, so
--- later normalization diagnostics still point at the literal.
+-- A string literal in a syntax rule - the quasi-quoted pattern is "a clause
+-- that is just a string literal" - becomes an ignored reference to a shared
+-- keyword token. The replacement is built by hand, not quoted: it must keep
+-- the literal's source position so later normalization diagnostics still
+-- point at the literal, and a quote would embed its own compile-time
+-- position instead.
 normalizeClause :: GP.Clause -> StringLiteralsNormalization GP.Clause
-normalizeClause (GP.Lit p s) = do
+normalizeClause c@[clause| $StrLit:s |] = do
   tokName <- addStrLit (strLitText s)
+  let p = GP.rtkPosOf c
   return $ GP.Ignored p (GP.Ref p (GP.Ident p tokName))
 normalizeClause c = return c
 
