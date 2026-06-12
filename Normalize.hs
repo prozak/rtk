@@ -1,10 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
 -- | Clause normalization: from the parsed grammar (the GENERATED AST,
 -- 'GP.Grammar') down to the 'NormalGrammar' the code generators consume.
 module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
 import qualified GrammarParser as GP
+import GrammarQQ (clause)
 
 import Syntax
 import Diagnostics (Diagnostic(..), SourcePos, showSourcePos)
@@ -102,8 +104,8 @@ saveProxyRuleName ruleName0 = do
   return ()
 
 addRule :: ID -> ID -> SyntaxTopClause -> Normalization ()
-addRule tdName ruleName0 clause = do
-  let doAdd rs = Just $ (SyntaxRule ruleName0 clause) : (maybe [] id rs)
+addRule tdName ruleName0 clause0 = do
+  let doAdd rs = Just $ (SyntaxRule ruleName0 clause0) : (maybe [] id rs)
   normSRules %= M.alter doAdd tdName
   return ()
 
@@ -162,14 +164,14 @@ addAntiRuleCached tdName isList = do
       return constr
 
 addRuleWithQQ :: ID -> ID -> SyntaxTopClause -> Normalization ()
-addRuleWithQQ tdName ruleName0 clause = do
-  case clause of
+addRuleWithQQ tdName ruleName0 clause0 = do
+  case clause0 of
     STAltOfSeq altseqs ->
         case L.find (\(STSeq _ ssc) -> case ssc of
                                          (SSLifted _ : _) -> True
                                          _ -> False)
                     altseqs of
-          Just _ -> addRule tdName ruleName0 clause
+          Just _ -> addRule tdName ruleName0 clause0
           Nothing -> qqAdd altseqs
     STMany opType (SSId rule) mcl -> do
                 -- For list rules, look up the actual type data name for the element rule
@@ -178,7 +180,7 @@ addRuleWithQQ tdName ruleName0 clause = do
                 let elemTypeName = M.findWithDefault rule rule typeMap
                 newRule <- addListProxyRule elemTypeName rule ruleName0
                 addRule tdName ruleName0 $ STMany opType (SSId newRule) mcl
-    _ -> addRule tdName ruleName0 clause
+    _ -> addRule tdName ruleName0 clause0
   where qqAdd altseqs = do
           -- The QQ machinery (lexical rule, anti rule) is created at the first
           -- eligible rule of the type, as before; but the splice alternative
@@ -194,7 +196,7 @@ addRuleWithQQ tdName ruleName0 clause = do
           let attachHere = S.member ruleName0 $ M.findWithDefault S.empty tdName attachMap
           if attachHere
             then addRule tdName ruleName0 $ STAltOfSeq (STSeq constr [SSId qqLexRule] : altseqs)
-            else addRule tdName ruleName0 clause
+            else addRule tdName ruleName0 clause0
 
 addListProxyRule :: ID -> ID -> ID -> Normalization ID
 addListProxyRule tdName elemRuleName listName = do
@@ -253,6 +255,13 @@ isSymmacroOption _             = False
 -- - 'c?' becomes an alternation with an empty alternative - since the
 -- generated AST cannot represent empty sequences (the old removeOpts
 -- pre-pass rewrote them on the retired IClause representation).
+--
+-- Repetition and option shapes are matched with rtk's own quasi-quoter
+-- ([clause| $cl1 * ~ $cl2 |] is the shape in grammar syntax; see Frontend's
+-- module notes for the metavariable convention). The constructor spelling
+-- stays where it reads better: wildcard tests like GP.Lifted{}, and arms
+-- that bind a scalar Name, which the quoter cannot (grammar.pg's Name
+-- splices are list-shaped, registered by IdList).
 --------------------------------------------------------------------------------
 
 -- A clause in rule (or parenthesized-group) position: an alternation of
@@ -277,11 +286,11 @@ checkSingleAlt alt = case seqElems alt of
 
 checkSoleElement :: GP.Clause -> Normalization SyntaxTopClause
 checkSoleElement c = case c of
-  GP.Star _ el        -> STMany STStar <$> checkRepeated el <*> pure Nothing
-  GP.StarDelim _ el d -> STMany STStar <$> checkRepeated el <*> (Just <$> checkSimple d)
-  GP.Plus _ el        -> STMany STPlus <$> checkRepeated el <*> pure Nothing
-  GP.PlusDelim _ el d -> STMany STPlus <$> checkRepeated el <*> (Just <$> checkSimple d)
-  GP.Opt _ el         -> desugarOpt el
+  [clause| $cl1 *        |] -> STMany STStar <$> checkRepeated cl1 <*> pure Nothing
+  [clause| $cl1 * ~ $cl2 |] -> STMany STStar <$> checkRepeated cl1 <*> (Just <$> checkSimple cl2)
+  [clause| $cl1 +        |] -> STMany STPlus <$> checkRepeated cl1 <*> pure Nothing
+  [clause| $cl1 + ~ $cl2 |] -> STMany STPlus <$> checkRepeated cl1 <*> (Just <$> checkSimple cl2)
+  [clause| $cl1 ?        |] -> desugarOpt cl1
   GP.Lifted{}         -> checkLiftedAlone c
   GP.Ignored{}        -> checkIgnoredAlone c
   GP.Ref _ n          -> return $ STAltOfSeq [STSeq "" [SSId (nameText n)]]
@@ -599,11 +608,11 @@ synthesizeTypeCovers rules
     -- addRuleWithQQ/addListProxyRule). A non-reference element is extracted
     -- into a fresh proxy group of its own and can never hit the start group.
     topRepetitionElemType r = case ruleClause r of
-        GP.Star _ c         -> elemType c
-        GP.StarDelim _ c _  -> elemType c
-        GP.Plus _ c         -> elemType c
-        GP.PlusDelim _ c _  -> elemType c
-        _                   -> Nothing
+        [clause| $cl1 *                  |] -> elemType cl1
+        [clause| $cl1 * ~ $Clause:_delim |] -> elemType cl1
+        [clause| $cl1 +                  |] -> elemType cl1
+        [clause| $cl1 + ~ $Clause:_delim |] -> elemType cl1
+        _                                   -> Nothing
       where elemType (GP.Ref _ n) = Just (M.findWithDefault (nameText n) (nameText n) typeOfName)
             elemType _            = Nothing
 
@@ -686,9 +695,9 @@ computeQQAttachPoints rules = M.fromList $ map attachFor groups
     -- checkClause/desugarOpt.
     topAlts :: GP.Clause -> [[GP.Clause]]
     topAlts c = case c of
-                  GP.Alt{}    -> map seqElems (altElems c)
-                  GP.Opt _ c1 -> [[], [c1]]
-                  _           -> [seqElems c]
+                  GP.Alt{}           -> map seqElems (altElems c)
+                  [clause| $cl1 ? |] -> [[], [cl1]]
+                  _                  -> [seqElems c]
 
     -- The non-nullable core of an alternative: Just n for a nonterminal
     -- whose value passes through (a plain or lifted reference), Nothing for
