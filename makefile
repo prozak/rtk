@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens test-wyah-tutorial test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens test-wyah-tutorial test-lex-java accept-lex-java test-all-java test-i14-qq test-java-rewrite test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -225,6 +225,14 @@ test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
 	$(CP) test-grammars/java-qq-test.hs test-out
 	cabal exec -- ghc --make -itest-out test-out/java-qq-test.hs -o test-out/java-qq-test
 	test-out/java-qq-test
+
+# The user-facing rewrite recipe (task 8d): QQ patterns as match arms of an
+# ordinary function, applied everywhere with SYB - see "Rewriting parsed
+# Java" in docs/java-quasi-quotation-tests.md, which this test exercises.
+test-java-rewrite: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
+	$(CP) test-grammars/java-rewrite-test.hs test-out
+	cabal exec -- ghc --make -itest-out test-out/java-rewrite-test.hs -o test-out/java-rewrite-test
+	test-out/java-rewrite-test
 
 # Quasi-quotation against covered pure types (issue #14): i14.pg's 'Shape'
 # and 'Label' exist only through rule annotations; the synthesized cover

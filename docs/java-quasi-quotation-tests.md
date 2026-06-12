@@ -50,14 +50,19 @@ let stmt1 = [statement| return; |]
 let block1 = [statementBlock| { return x; } |]
 ```
 
-### What's Not Supported
+### Pattern Matching and Splicing
 
-**Pattern Matching** and **Anti-Quotation (Splicing)** are not currently functional for the Java grammar:
+Pattern matching and anti-quotation (splicing), which used to fail with
+parse errors for hierarchical grammars, work since the shared-type +
+attach-point machinery landed (see `Normalize.computeQQAttachPoints` and
+the summary block at the end of `java-qq-test.hs`). The metavariable
+must name the type explicitly: `$Expression:x`.
 
-- ❌ Pattern matching: `case expr of [expression| $e1 + $e2 |] -> ...` fails with parse errors
-- ❌ Anti-quotation: `let e = [expression| x |] in [expression| $e + 1 |]` fails with parse errors
+- ✅ Pattern matching: `case expr of [expression| $Expression:l + $Expression:r |] -> ...`
+- ✅ Splicing: `let e = [expression| x |] in [expression| $Expression:e + 1 |]`
 
-Only **construction** mode works: directly building AST nodes from Java syntax literals.
+Parts 2, 3 and 5 of `java-qq-test.hs` exercise both, and the rewrite
+recipe below builds on them.
 
 ## Building and Running Tests
 
@@ -74,10 +79,11 @@ This will generate:
 ### Run the quasi-quotation tests:
 ```bash
 make test-java-qq
+make test-java-rewrite   # the rewrite recipe (QQ patterns + SYB) below
 ```
 
 This will:
-1. Copy `java-qq-test.hs` to test-out
+1. Copy `java-qq-test.hs` (resp. `java-rewrite-test.hs`) to test-out
 2. Compile it with the generated Java parser modules
 3. Run the quasi-quotation tests
 
@@ -135,7 +141,7 @@ make test-all-java
 
 ## Quasi-Quotation Features
 
-### Supported: Construction
+### Construction
 Build AST nodes directly from Java syntax:
 ```haskell
 let expr = [expression| x + y * z |]
@@ -143,23 +149,108 @@ let stmt = [statement| return x; |]
 let block = [statementBlock| { x = 1; return x; } |]
 ```
 
-### Not Supported: Anti-Quotation and Pattern Matching
-
-**Anti-Quotation (Splicing)**: Not functional - produces parse errors
+### Anti-Quotation (Splicing)
+A `$Type:name` metavariable in an expression quote splices a Haskell
+variable of that AST type into the quoted syntax:
 ```haskell
--- This does NOT work for Java grammar:
 let e1 = [expression| a |]
-let e2 = [expression| $e1 + b |]  -- Parse error
+let e2 = [expression| $Expression:e1 + b |]
 ```
 
-**Pattern Matching**: Not functional - produces parse errors
+### Pattern Matching
+The same metavariables in a pattern quote bind sub-trees; every source
+position in the pattern is a wildcard, so patterns written in a quote
+match ASTs parsed from anywhere:
 ```haskell
--- This does NOT work for Java grammar:
 case expr of
-    [expression| $e1 + $e2 |] -> ...  -- Parse error
+    [expression| $Expression:l + $Expression:r |] -> ...  -- binds l and r
 ```
 
-Only construction mode is currently supported for the Java quasi-quoter.
+## Rewriting parsed Java (QQ patterns + SYB)
+
+The pieces above combine into the rewrite recipe — the reason the toolkit
+is called a *rewrite* toolkit. A rewrite is an ordinary function whose
+match arms are quasi-quoted patterns and whose results are quasi-quoted
+expressions; SYB applies it to every node of any AST value. No rtk-specific
+API is involved: the generated parser derives `Data` for every AST type
+(your project already depends on `syb` for it), so `Data.Generics` is the
+traversal library, and the quasi-quoter contributes only the arms.
+
+The worked example, exercised by `make test-java-rewrite`
+(`test-grammars/java-rewrite-test.hs`): turn comparisons against `null`
+into Yoda style, everywhere in a block.
+
+```haskell
+import Data.Generics (everywhere, everything, mkT, mkQ)
+
+-- one arm per shape, Java on both sides; everything else passes through
+yoda :: JP.Expression -> JP.Expression
+yoda [J.expression| $Expression:x == null |] = [J.expression| null == $Expression:x |]
+yoda [J.expression| $Expression:x != null |] = [J.expression| null != $Expression:x |]
+yoda e = e
+
+-- bottom-up over ANY value containing expressions: a block, a method,
+-- a whole compilation unit
+rewritten = everywhere (mkT yoda) body
+```
+
+Because positions are equality-transparent, the expected result can be
+written as a quote too, and the test is two quotes and a traversal:
+
+```haskell
+body      = [J.statementBlock| { if (name == null) { return defaultName; } ... } |]
+expected  = [J.statementBlock| { if (null == name) { return defaultName; } ... } |]
+-- everywhere (mkT yoda) body == expected
+```
+
+The same patterns drive queries with `everything`/`mkQ` — e.g. counting
+the comparisons the pass would rewrite (deliberately unused metavariables
+are spelled with a leading underscore, `$Expression:_x`, to stay clean
+under `-Wunused-matches`):
+
+```haskell
+pendingNullChecks [J.expression| $Expression:_x == null |] = 1
+pendingNullChecks [J.expression| $Expression:_x != null |] = 1
+pendingNullChecks _ = 0
+
+everything (+) (0 `mkQ` pendingNullChecks) body  -- 2 before, 0 after
+```
+
+To rewrite several AST types in one pass, chain per-type functions with
+`extT` (`everywhere (mkT onExpr `extT` onStmt)`) — rtk's own pipeline does
+exactly this over its grammar AST (`cleanGrammarTokens` in
+`src/generated/Frontend.hs`), and since task 8d the pipeline's own
+clause-shape matches are QQ patterns (`Frontend.altElems`,
+`StringLiterals.normalizeClause`, `Normalize.checkSoleElement`). For a
+larger, end-to-end example, the write-you-a-haskell tutorial's evaluator
+(`tutorials/write-you-a-haskell/lc-main.hs`) implements capture-avoiding
+substitution and free-variable analysis this way: QQ arms for the binder
+cases, `gmapT`/`gmapQ` generic recursion for everything else.
+
+### Where patterns match (the chain-position rule)
+
+In a hierarchical grammar the splice alternative sits at one rule of each
+shared-type group — for `Expression` that is `PrimaryNoPostfix`, the
+bottom of the precedence chain (see `Normalize.computeQQAttachPoints`).
+A pattern metavariable therefore matches scrutinees whose corresponding
+operand parses at that chain position: identifiers, literals, method
+calls, parenthesized expressions. An operand produced higher in the chain
+(say the `a + b` in `a + b == null`) does not reach the attach point, so
+the pattern passes it by — matches simply fail, nothing breaks. When a
+rewrite must catch every operand shape, parenthesize at the call site or
+match on the printed form; `java-rewrite-test.hs` asserts both sides of
+this boundary.
+
+### Scalar vs. list metavariables
+
+`$Type:x` binds a single node when the type's splice is scalar and a
+whole list when the splice was registered by a list rule (`Type*`) — in
+pattern context a list metavariable binds the entire remaining list, in
+expression context it prepends a list. A type whose splice is list-shaped
+cannot bind a lone (scalar) occurrence: the metavariable then matches
+nothing and GHC reports the variable as unbound. Check the generated
+`JavaQQ.hs`: `anti<Type>Pat` taking `[Type]` means list-shaped,
+`Type` means scalar.
 
 ## Extending Tests
 
@@ -182,7 +273,8 @@ Based on the Java grammar (partial list):
 - `[modifier| public |]` - Access modifiers
 - `[literal| "hello" |]` - Literals
 
-**Note**: Pattern matching is not currently supported for the Java grammar.
+All of them work in expression and pattern context alike (see "Rewriting
+parsed Java" above for patterns in anger).
 
 ## References
 
