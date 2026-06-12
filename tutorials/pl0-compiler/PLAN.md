@@ -16,6 +16,9 @@ make the compiler real (1 before 2, matching pl0c, whose checks predate its
 code generator), 3–5 follow the series' extension parts one post at a time,
 6 is the RTK-flavored payoff the C original cannot express. Task 7 is core
 RTK work surfaced by this tutorial (and by c-compiler), independent of 1–6.
+Task 8 is the documentation track — a walkthrough page mirroring the
+original series — startable now for parts 1–3 and growing a section as
+each feature task lands.
 
 Invariants every task must preserve:
 
@@ -32,6 +35,10 @@ Invariants every task must preserve:
   sign-in-continuation one.
 - `README.md` (layout table, status line, roadmap) updated in the same
   commit as the feature it describes.
+- Once `TUTORIAL.md` exists (task 8): a task that changes the language,
+  the pipeline, or the test harness updates the corresponding walkthrough
+  section in the same commit — its code snippets are copied from the
+  working files and must stay current.
 
 ---
 
@@ -285,6 +292,86 @@ Fix RTK so both shapes coexist, then collapse the workarounds.
 Out of scope here: mixed list patterns (`begin $stmts ; x := 1 end` as a
 pattern) — that is a separate, harder feature; construction already
 supports the mixed form.
+
+---
+
+## Task 8 — `TUTORIAL.md`: the original series, retold with RTK
+
+### TL;DR
+
+A walkthrough page that mimics Brian Callahan's series part by part — the
+same journey (pick a language, build a lexer, build a parser, test it,
+generate code, extend the language), but at every step the reader does it
+with RTK instead of hand-written C. The audience is someone reading (or
+having read) the original who wants to see what each part collapses into
+when a grammar file generates the front end and quasi-quotation drives the
+passes. The working files in this directory ARE the tutorial's code: every
+snippet on the page is copied from `pl0.pg` / `Main.hs` / `TestQQ.hs` /
+`tests/`, so the page cannot drift from reality without the invariant
+above catching it.
+
+### Ground rules
+
+- Original prose only. Mirror the structure and the pedagogical beats, do
+  not reproduce the original's text; open every section with a link to the
+  corresponding post (`https://briancallahan.net/blog/2021MMDD.html`) and
+  open the page with a clear "this follows, and assumes you may be
+  reading, Callahan's series" attribution.
+- Honest accounting: where the original's part is mostly *gone* (the
+  ~370-line lexer.c becomes the six lexical lines at the bottom of
+  `pl0.pg`), say so and show what replaced it; where RTK genuinely differs
+  (multi-pass with an AST instead of single-pass emission; LALR instead of
+  recursive descent — the dangling-else discussion becomes a conflict
+  discussion), teach the difference instead of hiding it.
+
+### Shape of the page (section ↔ original part)
+
+1. *Planning* (part 1, 2021-08-14): same language choice (PL/0, same EBNF),
+   different plan — grammar first, passes against the generated AST. State
+   the multi-pass deviation up front.
+2. *A lexer* (part 2, 2021-08-15): the lexical section of `pl0.pg` —
+   `ident`, `Integer: number` (typed token payloads), `Ignore:` rules for
+   whitespace and `{ ... }` comments, keywords appearing for free from the
+   string literals in syntax rules. Show `pl0 --lex-only` and a positioned
+   lexical error next to the original's hand-rolled equivalents.
+3. *A parser* (part 3, 2021-08-16): EBNF → `.pg` translation as a
+   teaching sequence — the `Expression`/`Term`/`Factor` chain with
+   `,`-lifted pass-throughs (one AST type, transparent parens),
+   `StatementOpt = Statement? ;` as Wirth's `[ statement ]` made literal,
+   `@shortcuts`, separated lists (`+ ~ ','`). End where the original ends:
+   a validator. Include the sign-in-continuation story as the fidelity
+   payoff (`-a + +b` is invalid PL/0, and the grammar rejects it because
+   the EBNF does).
+4. *Testing* (part 4, 2021-08-17): `tests/valid` / `tests/invalid`,
+   `run_tests.sh`'s positioned-diagnostic contract.
+5. *A code generator* (part 5, 2021-08-18): until task 2 lands, this
+   section walks `TestQQ.hs`'s miniature `cg*` functions — QQ patterns as
+   the code generator's dispatch — and points at `PLAN.md`; task 2 then
+   rewrites it around `Codegen.hs`.
+6. *Extensions* (parts 6–8): stubs linking the original posts and the
+   matching PLAN tasks, filled in by tasks 3–5 as they land.
+7. *What the original can't do*: closes with the QQ rewrite-rule optimizer
+   demo (today from `TestQQ.hs`; task 6 upgrades it to the real pass).
+
+### Steps
+
+1. Write `TUTORIAL.md` covering sections 1–5 against today's code (5 in
+   its interim, TestQQ-based form), with the parts 6–8 stubs.
+2. Link it from `README.md` (top, next to the status line) and from the
+   tutorial's entry in `tutorials/README.md`.
+3. Verify every snippet against the working files (copy, don't retype);
+   where a snippet shows command output (errors, AST fragments, test-run
+   transcripts), generate it by running the command.
+
+### Acceptance
+
+- A reader following only `TUTORIAL.md` and the original posts can go
+  from an empty directory to the passing `make test` state of parts 1–3
+  without reading any other file in this repository.
+- Every quoted grammar/Haskell snippet is byte-identical to the working
+  files; every quoted command transcript reproduces.
+- No sentence of the original series is reproduced; each section links
+  its source post.
 
 ---
 
