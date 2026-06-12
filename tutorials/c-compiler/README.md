@@ -146,9 +146,13 @@ Following the blog series, one stage at a time:
 9. function calls (System V calling convention)
 10. global variables
 
-(The original stretch goal — `asm.pg`, building assembly via QQ instead of
-strings — is done.) A possible later step, following the book rather than
-the blog: a third grammar for a TACKY-style IR between C and assembly.
+Each stage — plus the RTK-side follow-ups this PoC surfaced (both antiquote
+shapes per type, mixed list patterns, vendoring the official suite, named
+constructors, a companion tutorial retelling the blog series with RTK,
+extraction to a separate repository) — is written up as a self-contained
+task blob in
+[`docs/c-compiler-tutorial-plan.md`](../../docs/c-compiler-tutorial-plan.md);
+pick the next one from there.
 
 This directory deliberately depends on the parent checkout only through
 `cabal exec`; giving it its own `.cabal` file (depending on alex/happy/ghc
