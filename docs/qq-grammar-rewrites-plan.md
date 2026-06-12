@@ -1,9 +1,12 @@
 # Plan: grammar rewrites with RTK's own QQ — migrating the pipeline off `InitialGrammar`
 
 Status: 8a DONE (named constructors — leading-label syntax `Add: Expr '+'
-Term`, grammar.pg fully labeled, `ASTAdapter` free of `Ctr__*` references);
-8b DONE (GrammarQQ compiled into rtk); 8c, 8d PLANNED (follow-up to the
-default-front-end flip, PR #112).
+Term`, grammar.pg fully labeled); 8b DONE (GrammarQQ compiled into rtk);
+8c DONE (pipeline consumes the generated AST directly: `InitialGrammar`/
+`IRule`/`IClause` retired, the AST adapter replaced by
+`src/generated/Frontend.hs`, the reference `Parser.y` ported to construct
+generated-AST values — option B; full reference-front-end retirement,
+option A, remains a separate later sign-off); 8d PLANNED.
 
 The flip made grammar.pg authoritative and the generated front end the
 default, but the pipeline still computes over the original hand-written data

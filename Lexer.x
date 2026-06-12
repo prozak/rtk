@@ -43,12 +43,16 @@ tokens:-
     "$"                 { simple  Dollar }
     ")"                 { simple  RParen }
     "("                 { simple  LParen }
-    $squote ([^'\\] | \\ .)* $squote   { simple1 $ StrLit . (reverse.drop 1.reverse.drop 1) }
-    "[" ([^\]]|"\]")* "]"      { simple1 $ RegExpLit . (reverse.drop 1.reverse.drop 1) }
+    -- Literal tokens keep the FULL match (delimiters and escape pairs
+    -- intact), exactly like the generated lexer: the shared
+    -- Frontend.cleanGrammarTokens pass strips delimiters and processes
+    -- escapes on the parsed AST, so the cleanup logic exists only once.
+    $squote ([^'\\] | \\ .)* $squote   { simple1 StrLit }
+    "[" ([^\]]|"\]")* "]"      { simple1 RegExpLit }
     "*"                 { simple Star }
     "+"                 { simple Plus }
     $alpha $alphaDigit* { simple1 Id }
-    $dq $dq $dq ($notdq|$dq $notdq | $dq $dq $notdq | [\n])* $dq $dq $dq { simple1 $ BigStr . (reverse.(drop 3).reverse.(drop 3))} 
+    $dq $dq $dq ($notdq|$dq $notdq | $dq $dq $notdq | [\n])* $dq $dq $dq { simple1 BigStr }
     .                                       { rtkError }
 
 {

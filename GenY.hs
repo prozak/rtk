@@ -2,6 +2,8 @@
 module GenY (genY)
     where
 
+import qualified GrammarParser as GP
+
 import Syntax
 import Diagnostics (Diagnostic)
 import Text.PrettyPrint hiding ((<>))
@@ -160,8 +162,8 @@ genShowToken LexicalRule{ getLRuleName = name, getLRuleDataType = dtn, getLClaus
         "Ignore"  -> empty
         "Keyword" -> (text "showRtkToken L." <> text (tokenName name)) <+> text "=" <+> text (show (keywordText cl))
         _         -> (text "showRtkToken (L." <> text (tokenName name)) <+> text "v) =" <+> text (show (name ++ " ")) <+> text "++ show v"
-    where keywordText (IStrLit s) = "'" ++ s ++ "'"
-          keywordText _           = name
+    where keywordText (GP.Lit _ (GP.Str _ s)) = "'" ++ s ++ "'"
+          keywordText _                       = name
 genShowToken (MacroRule _ _) = empty
 
 genRule :: ListRuleSet -> PayloadTokenSet -> SyntaxRule -> Doc

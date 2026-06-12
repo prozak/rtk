@@ -1,78 +1,27 @@
--- | The core data types of the grammar-processing pipeline: the parsed
--- grammar ('InitialGrammar' and its clauses), the normalized grammar
--- ('NormalGrammar' and friends) that the code generators consume, and the
--- pure helpers over them.
+-- | The normalized-grammar data types: 'NormalGrammar' and friends, the
+-- representation the code generators ('GenX', 'GenY', 'GenAST', 'GenQ')
+-- consume, plus the pure helpers over them.
 --
--- These types used to live in the footer of the hand-written @Parser.y@.
--- They are owned by the pipeline, not by any particular front end: both the
--- hand-written parser and the generated one (via @ASTAdapter@) produce an
--- 'InitialGrammar', and everything downstream is front-end agnostic.
+-- The parsed-grammar half of the pipeline has no types of its own anymore:
+-- since task 8c the front half computes directly over the GENERATED AST
+-- ('GrammarParser''s @Grammar@\/@Rule@\/@Clause@, compiled from the
+-- @test/golden/grammar/@ snapshot; helpers in "Frontend"). The historic
+-- @InitialGrammar@\/@IRule@\/@IClause@ types are retired. The one place the
+-- generated AST threads into THIS module is 'LClause': lexical rules keep
+-- their clause unnormalized so 'GenX' can translate it to an Alex
+-- specification.
 module Syntax where
 
 import Data.Char (isLower)
 import Data.Data (Data)
-import Data.List (intercalate)
 import qualified Data.Map as M
 import qualified Data.Set as S
 
-import Diagnostics (SourcePos)
-
-data InitialGrammar = InitialGrammar { getIGrammarName :: String, getImports :: String, getIRules :: [IRule] }
-                 deriving (Eq, Show, Data)
-
-data IRule = IRule { getIDataTypeName :: (Maybe String),
-                     getIDataFunc :: (Maybe String),
-                     getIRuleName :: String,
-                     getIClause :: IClause,
-                     getIRuleOptions :: [IOption],
-                     getIRulePos :: (Maybe SourcePos)}
-                  deriving (Eq, Show, Data)
-
-data IOption = OShortcuts [ID] | OSymmacro
-                  deriving (Eq, Show, Data)
-
-addRuleOptions :: [IOption] -> IRule -> IRule
-addRuleOptions opts rule = rule{ getIRuleOptions = opts ++ (getIRuleOptions rule)}
+import qualified GrammarParser as GP
 
 type ConstructorName = String
 
 type ID = String
-
-data IClause = IId { getIdStr :: ID }
-             | IStrLit String
-             | IDot
-             | IRegExpLit String
-             | IStar IClause (Maybe IClause)
-             | IPlus IClause (Maybe IClause)
-             | IAlt [IClause]
-             | ISeq [IClause]
-             | IOpt IClause
-             | ILifted IClause
-             | IIgnore IClause
-             -- | A named alternative ("Star: Clause5 '*'"): the user-chosen
-             -- constructor name for one alternative of a rule. Appears only
-             -- at the alternative level (directly under 'IAlt', or as a
-             -- rule's whole clause), wrapping the alternative's sequence.
-             | ICtor ConstructorName IClause
-              deriving (Eq, Show, Data)
-
--- Render a clause the way it appears in the grammar source, for error messages
-showClause :: IClause -> String
-showClause (IId name)      = name
-showClause (IStrLit s)     = "'" ++ s ++ "'"
-showClause IDot            = "."
-showClause (IRegExpLit s)  = "[" ++ s ++ "]"
-showClause (IStar c md)    = showClause c ++ "*" ++ showDelim md
-showClause (IPlus c md)    = showClause c ++ "+" ++ showDelim md
-showClause (IAlt cs)       = "(" ++ intercalate " | " (map showClause cs) ++ ")"
-showClause (ISeq cs)       = unwords (map showClause cs)
-showClause (IOpt c)        = showClause c ++ "?"
-showClause (ILifted c)     = "," ++ showClause c
-showClause (IIgnore c)     = "!" ++ showClause c
-showClause (ICtor n c)     = n ++ ": " ++ showClause c
-
-showDelim :: Maybe IClause -> String
-showDelim = maybe "" (\d -> " ~ " ++ showClause d)
 
 -- | The first line of every generated artifact (lexer spec, parser spec,
 -- quasi-quoter module). The banner names the grammar, not the grammar file:
@@ -142,7 +91,12 @@ data LexicalRule = LexicalRule { getLRuleDataType :: String,
                    | MacroRule { getLRuleName :: String, getLClause :: LClause}
                    deriving (Eq, Show, Data)
 
-type LClause = IClause
+-- | A lexical rule's clause stays unnormalized all the way to 'GenX': it is
+-- the generated front end's clause type (token text already cleaned by
+-- @Frontend.cleanGrammarTokens@). Synthesized rules (keyword tokens, QQ
+-- splice tokens, start-wrapper dummies) build their clauses with
+-- 'GP.rtkNoPos' positions.
+type LClause = GP.Clause
 
 isLexicalRule :: String -> Bool
 isLexicalRule [] = False

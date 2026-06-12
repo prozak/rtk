@@ -17,13 +17,17 @@ RTK (Rewrite ToolKit) is a tool for generating parser and rewrite facilities fro
 ## Key Components
 
 ### Core Modules
-- `Syntax.hs` - The pipeline's core data types (`InitialGrammar`, `IClause`,
-  `NormalGrammar`, ...) shared by both front ends
-- `Grammar.hs` - Grammar data structures and AST definitions
+- `Syntax.hs` - The normalized-grammar data types (`NormalGrammar` and
+  friends) the code generators consume. The parsed-grammar representation is
+  the GENERATED AST itself (`GrammarParser`'s types, compiled from
+  `test/golden/grammar/`); helpers over it live in
+  `src/generated/Frontend.hs`
+- `Grammar.hs` - Helpers over the normalized grammar
 - `Lexer.x` - Hand-written reference lexer for grammar files (Alex spec)
-- `Parser.y` - Hand-written reference parser for grammar files (Happy spec)
-- `src/generated/ASTAdapter.hs` - adapts the generated front end's AST
-  (compiled from `test/golden/grammar/`) to `InitialGrammar`
+- `Parser.y` - Hand-written reference parser for grammar files (Happy spec);
+  its actions construct generated-AST values
+- `src/generated/Frontend.hs` - front-end entry points, the shared
+  token-text cleanup, and accessors over the generated AST
 - `Normalize.hs` - Grammar normalization and transformation
 - `GenAST.hs`, `GenQ.hs`, `GenX.hs`, `GenY.hs` - Code generators
 
@@ -44,8 +48,9 @@ RTK generated from its own grammar description:
    language; changes to the language land there (plus regenerated goldens)
    first
 2. The default front end is RTK's own output for `grammar.pg`: the checked-in
-   snapshot in `test/golden/grammar/` is compiled into rtk (AST adapted by
-   `src/generated/ASTAdapter.hs`); `make accept-golden` advances the snapshot
+   snapshot in `test/golden/grammar/` is compiled into rtk, and the pipeline
+   computes directly over the generated AST (helpers in
+   `src/generated/Frontend.hs`); `make accept-golden` advances the snapshot
 3. Hand-written `Lexer.x` and `Parser.y` are the reference oracle, selected
    with `rtk --use-handwritten`; they follow grammar.pg and change only to
    keep the equivalence harness green

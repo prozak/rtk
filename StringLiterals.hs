@@ -1,7 +1,10 @@
 module StringLiterals (normalizeStringLiterals)
     where
 
-import Syntax
+import qualified GrammarParser as GP
+
+import Frontend (mapGrammarRules, ruleName, strLitText)
+import Syntax (isLexicalRule)
 import Data.Char
 import Data.Generics
 import qualified Data.Map as Map
@@ -55,24 +58,45 @@ addStrLit str = do
       return tokName
     Just tokName -> return tokName
 
-normalizeClause :: IClause -> StringLiteralsNormalization IClause
-normalizeClause (IStrLit str) = do
-  tokName <- addStrLit str
-  return $ IIgnore (IId tokName)
+-- A string literal in a syntax rule becomes an ignored reference to a shared
+-- keyword token; the replacement keeps the literal's source position, so
+-- later normalization diagnostics still point at the literal.
+normalizeClause :: GP.Clause -> StringLiteralsNormalization GP.Clause
+normalizeClause (GP.Lit p s) = do
+  tokName <- addStrLit (strLitText s)
+  return $ GP.Ignored p (GP.Ref p (GP.Ident p tokName))
 normalizeClause c = return c
 
-normalizeRule :: IRule -> StringLiteralsNormalization IRule
-normalizeRule r@IRule{getIRuleName=rn, getIClause=cl} | not (isLexicalRule rn) = do
-  newCl <- everywhereM (mkM normalizeClause) cl
-  return r{getIClause = newCl}
-normalizeRule r = return r
+normalizeRule :: GP.Rule -> StringLiteralsNormalization GP.Rule
+normalizeRule r@GP.Anti_Rule{}               = return r
+normalizeRule r | isLexicalRule (ruleName r) = return r
+normalizeRule (GP.RuleWithOptions p opts r)  = GP.RuleWithOptions p opts <$> normalizeRule r
+normalizeRule (GP.RuleSimple p n c)          = GP.RuleSimple p n <$> normalizeClauseTree c
+normalizeRule (GP.RuleTyped p t n c)         = GP.RuleTyped p t n <$> normalizeClauseTree c
+normalizeRule (GP.RuleTypedFunc p t f n c)   = GP.RuleTypedFunc p t f n <$> normalizeClauseTree c
+normalizeRule (GP.RuleFunc p f n c)          = GP.RuleFunc p f n <$> normalizeClauseTree c
 
-doSLNM :: InitialGrammar -> StringLiteralsNormalization InitialGrammar
-doSLNM grammar = do
-  newGr <- everywhereM (mkM normalizeRule) grammar
-  return newGr
+normalizeClauseTree :: GP.Clause -> StringLiteralsNormalization GP.Clause
+normalizeClauseTree = everywhereM (mkM normalizeClause)
 
-normalizeStringLiterals :: InitialGrammar -> InitialGrammar
-normalizeStringLiterals grammar = let (InitialGrammar nm imports rules, StringLiteralsNormalizationState m _) = runState (doSLNM grammar) (StringLiteralsNormalizationState Map.empty 0)
-                                      slRules sm = map (\ (k, v) -> IRule (Just "Keyword") (Just "id") v (IStrLit k) [] Nothing) $ Map.toList sm
-                                  in InitialGrammar nm imports (rules ++ slRules m)
+doSLNM :: GP.Grammar -> StringLiteralsNormalization GP.Grammar
+doSLNM (GP.GrammarDef p n rules)         = GP.GrammarDef p n <$> mapM normalizeRule rules
+doSLNM (GP.GrammarImports p n imp rules) = GP.GrammarImports p n imp <$> mapM normalizeRule rules
+doSLNM g                                 = return g
+
+-- | Replace every string literal in the syntax rules by an ignored keyword
+-- token (one shared token per distinct literal) and append the synthesized
+-- keyword rules - Keyword-typed lexical rules whose clause is the literal.
+normalizeStringLiterals :: GP.Grammar -> GP.Grammar
+normalizeStringLiterals grammar =
+    let (grammar1, StringLiteralsNormalizationState m _) =
+            runState (doSLNM grammar) (StringLiteralsNormalizationState Map.empty 0)
+        slRules sm = map (uncurry keywordRule) $ Map.toList sm
+    in mapGrammarRules (++ slRules m) grammar1
+
+keywordRule :: String -> String -> GP.Rule
+keywordRule lit tokName =
+    GP.RuleTypedFunc np (ident "Keyword") (ident "id") (ident tokName)
+                     (GP.Lit np (GP.Str np lit))
+  where np    = GP.rtkNoPos
+        ident = GP.Ident np

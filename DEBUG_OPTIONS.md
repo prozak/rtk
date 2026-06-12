@@ -13,10 +13,10 @@ rtk <grammar-file> <output-dir> [OPTIONS]
 By default RTK parses grammars with its **self-hosted front end**: the
 lexer/parser RTK generated from `test-grammars/grammar.pg` (the authoritative
 definition of the grammar language), compiled from the checked-in snapshot in
-`test/golden/grammar/`. The resulting AST is adapted to the pipeline's
-`InitialGrammar` and everything after parsing is the same shared pipeline, so
-the generated files are byte-identical whichever front end parsed the
-grammar. See `BOOTSTRAP.md`.
+`test/golden/grammar/`. The pipeline computes directly over that generated
+AST (the reference front end builds the very same AST), and everything after
+parsing is the same shared pipeline, so the generated files are
+byte-identical whichever front end parsed the grammar. See `BOOTSTRAP.md`.
 
 ### `--use-generated`
 Explicitly select the self-hosted front end. This is the default, so the flag
@@ -52,7 +52,7 @@ rtk test-grammars/java.rtk test-out --debug-tokens
 **Output:** Pretty-printed list of tokens with counts.
 
 ### `--debug-parse` / `-p`
-Print the InitialGrammar structure after parsing.
+Print the parsed grammar (the generated AST) after parsing.
 
 **Example:**
 ```bash
@@ -211,22 +211,19 @@ Mentioned 12 time(s) in the token stream:
   RULE TRACE: 'Clause' - After Parse
 ======================================================================
 -- Rule 'Clause' (line 46, column 1)
-IRule
-  { getIDataTypeName = Nothing
-  , getIRuleName = "Clause"
-  , getIClause =
-      IAlt
-        [ ICtor
-            "Alt"
-            (ISeq
-               [ IId { getIdStr = "Clause" }
-               , IStrLit "|"
-               , IId { getIdStr = "Clause1" }
-               ])
-        , ISeq [ ILifted IId { getIdStr = "Clause1" } ]
-        ]
-  , ...
-  }
+RuleWithOptions
+  (RtkPos (AlexPn ...))
+  [ Shortcuts (RtkPos ...) [ Ident (RtkPos ...) "cl" ] ]
+  (RuleSimple
+     (RtkPos ...)
+     (Ident (RtkPos ...) "Clause")
+     (Alt
+        (RtkPos ...)
+        (Labeled (RtkPos ...) (Ident (RtkPos ...) "Alt")
+           (Seq (RtkPos ...)
+              (Seq (RtkPos ...) (Ref ... "Clause") (Lit ... "|"))
+              (Ref ... "Clause1")))
+        (Lifted (RtkPos ...) (Ref ... "Clause1"))))
 -- Rule 'Clause1' (line 53, column 1)  [matches via its 'Clause' data type]
 ...
 
@@ -234,19 +231,15 @@ IRule
   RULE TRACE: 'Clause' - After String Normalization
 ======================================================================
 -- Rule 'Clause' (line 46, column 1)
-IRule
-  { ...
-  , getIClause =
-      IAlt
-        [ ICtor
-            "Alt"
-            (ISeq
-               [ IId { getIdStr = "Clause" }
-               , IIgnore IId { getIdStr = "tok__pipe__11" }   -- was IStrLit "|"
-               , IId { getIdStr = "Clause1" }
-               ])
-        , ... ]
-  }
+...
+     (Alt
+        (RtkPos ...)
+        (Labeled ... "Alt"
+           (Seq ...
+              (Seq ... (Ref ... "Clause")
+                       (Ignored ... (Ref ... "tok__pipe__11")))  -- was Lit "|"
+              (Ref ... "Clause1")))
+        ...)
 ...
 
 ======================================================================
