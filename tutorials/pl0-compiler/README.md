@@ -113,6 +113,9 @@ description. In dependency order:
    single-pass C original structurally cannot have
 7. (core RTK) scalar and list antiquotes for one type — lifts the
    `$stmts` whole-list-binder limitation both tutorials design around
+8. `TUTORIAL.md`: the original series retold with RTK, part by part —
+   original prose, sections linking each source post, every snippet
+   copied from the working files (startable now for parts 1-3)
 
 This directory deliberately depends on the parent checkout only through
 `cabal exec`; giving it its own `.cabal` file is all it takes to move it to
