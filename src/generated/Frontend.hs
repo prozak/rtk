@@ -1,3 +1,4 @@
+{-# LANGUAGE QuasiQuotes #-}
 -- | The front-end surface of the pipeline. Since task 8c the pipeline
 -- computes directly over the GENERATED AST ('GrammarParser''s types, compiled
 -- from the @test/golden/grammar/@ snapshot): there is no separate
@@ -26,6 +27,14 @@
 -- so diagnostics can point at the offending clause, not just the rule
 -- header. Positions are equality-transparent ('GP.RtkPos'), which is why the
 -- AST-equality harness projects them explicitly via 'sourcePosOf'.
+--
+-- Clause-shape matches here and in the later pipeline stages are written
+-- with rtk's own generated quasi-quoter where that reads better than the
+-- constructor spelling (task 8d): a @[clause| ... |]@ pattern is the clause
+-- shape in grammar syntax, with @$cl...@ metavariables binding sub-clauses
+-- (the names resolve through grammar.pg's @\@shortcuts@ table, so they must
+-- start with a declared shortcut such as @cl@, or use the explicit
+-- @$Clause:name@ form) and every position wildcarded.
 module Frontend
     ( -- * Parsing entry points (the generated front end)
       parseWithGenerated
@@ -62,6 +71,7 @@ import Data.List (intercalate)
 
 import qualified GrammarLexer as GL
 import qualified GrammarParser as GP
+import GrammarQQ (clause)
 
 import Diagnostics (Diagnostic, SourcePos(..), diagnosticFromPositioned)
 import TokenProcessing (unBackQuote)
@@ -186,13 +196,13 @@ rulePos r                          = sourcePosOf (GP.rtkPosOf r)
 -- The right operand of each node is a single alternative, never another
 -- alternation (parenthesized alternations stay as elements).
 altElems :: GP.Clause -> [GP.Clause]
-altElems (GP.Alt _ l r) = altElems l ++ [r]
-altElems c              = [c]
+altElems [clause| $cl1 | $cl2 |] = altElems cl1 ++ [cl2]
+altElems c                       = [c]
 
 -- | Flatten the left-recursive juxtaposition spine of one alternative.
 seqElems :: GP.Clause -> [GP.Clause]
-seqElems (GP.Seq _ l r) = seqElems l ++ [r]
-seqElems c              = [c]
+seqElems [clause| $cl1 $cl2 |] = seqElems cl1 ++ [cl2]
+seqElems c                     = [c]
 
 nameText :: GP.Name -> String
 nameText (GP.Ident _ s)   = s
