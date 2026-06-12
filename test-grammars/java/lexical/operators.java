@@ -20,5 +20,10 @@ class Operators {
         ++a;
         --a;
         int e = c ? a : b;
+        Runnable r = () -> m();
+        IntUnaryOperator f = x -> x - 1;
+        Supplier<Operators> s = Operators::new;
+        IntPredicate p = Operators::odd;
+        boolean g = a-- > b;
     }
 }
