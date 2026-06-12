@@ -49,6 +49,11 @@ data IClause = IId { getIdStr :: ID }
              | IOpt IClause
              | ILifted IClause
              | IIgnore IClause
+             -- | A named alternative ("Star: Clause5 '*'"): the user-chosen
+             -- constructor name for one alternative of a rule. Appears only
+             -- at the alternative level (directly under 'IAlt', or as a
+             -- rule's whole clause), wrapping the alternative's sequence.
+             | ICtor ConstructorName IClause
               deriving (Eq, Show, Data)
 
 -- Render a clause the way it appears in the grammar source, for error messages
@@ -64,6 +69,7 @@ showClause (ISeq cs)       = unwords (map showClause cs)
 showClause (IOpt c)        = showClause c ++ "?"
 showClause (ILifted c)     = "," ++ showClause c
 showClause (IIgnore c)     = "!" ++ showClause c
+showClause (ICtor n c)     = n ++ ": " ++ showClause c
 
 showDelim :: Maybe IClause -> String
 showDelim = maybe "" (\d -> " ~ " ++ showClause d)

@@ -37,8 +37,10 @@ quasi-quoters need no regex packages anymore, only `template-haskell`, so
 rtk's own code and tests can quote grammar fragments against the generated
 AST — `cabal test unit` smoke-tests `[clause| … |]` quotes and `Anti_*`
 splices in-tree. The adapter itself stays plain total pattern matching on
-the generated constructors (`Ctr__…`), which is deterministic and
-dependency-free; the golden snapshot pins those constructor names.
+the generated constructors, which is deterministic and dependency-free.
+grammar.pg names every constructor-producing alternative (`RuleSimple`,
+`Star`, `Labeled`, …), so those matches are stable prose names rather than
+positional `Ctr__<Rule>__<index>` ones; the golden snapshot pins them.
 
 ## What the adapter must replicate
 

@@ -31,15 +31,18 @@ main = do
     file <- getGrammarFileName
     content <- readFile file
     let grm = either (errorWithoutStackTrace . renderError) id $ scanTokens content >>= parseGrammar
-    let [grammar|grammar $StrLit:str ; $importsOpt|] = [grammar|grammar 'test' ;|]
-    let [rule|Rule = $cl1 | $clause2 | $clause3 | $clause4 ;|] = [rule| Rule = id '=' Clause ';' 
+    let [grammar|grammar $StrLit:str ; $ruleList|] = [grammar|grammar 'test' ;|]
+    let [rule|Rule = $cl1 | $clause2 | $clause3 | $clause4 ;|] = [rule| Rule = id '=' Clause ';'
                                                                       | id ':' id '=' Clause ';'
                                                                       | id '.' id ':' id '=' Clause ';'
                                                                       | '.' id ':' id '=' Clause ';' ;|]
-    --putStrLn $ show cl1
-    --putStrLn $ show clause3
-    --putStrLn $ show str
-    let [grammar|grammar $StrLit:nm ; $importsOpt $ruleList|] = grm
-    putStrLn $ show importsOpt
---    putStrLn $ ppShow [ruleList| $ruleList_rl1 RuleAAA = $Clause:cl1; |]
+    -- A named alternative round-trips through a quote: the 'Mk:' label
+    -- parses at quoter compile time and the pattern's metavariable binds the
+    -- whole labeled clause at run time.
+    let [rule|R = $clNamed ;|] = [rule|R = Mk: id '=' Clause ';' ;|]
+    putStrLn $ show clNamed
+    -- grammar.pg itself carries an imports block; project the grammar name
+    -- out of the generated AST's named constructor
+    let GrammarImports _ nm imports rules = grm
+    putStrLn $ show nm
     return 0

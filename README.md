@@ -82,6 +82,31 @@ Int:    num = [0-9]+ ;
 Ignore: ws  = [ \t\n]+ ;
 ```
 
+### Named constructors
+
+By default the constructor generated for an alternative is positional
+(`Ctr__<Rule>__<index>`), so inserting or reordering alternatives silently
+renames constructors. An alternative may opt in to a stable name with a
+leading label:
+
+```
+Expr = Add: Expr '+' Term
+     | Sub: Expr '-' Term
+     | Term ;
+```
+
+generates `data Expr = Add RtkPos Expr Term | Sub RtkPos Expr Term |
+Ctr__Expr__0 RtkPos Term | ...` — code and quasi-quote patterns written
+against `Add`/`Sub` survive grammar edits. The label binds tighter than `|`
+and names exactly one alternative; it also works inside parenthesized
+groups (`(Pair: key '=' value)*` names the extracted group's constructor).
+Unlabeled alternatives keep their generated names. Explicit names must
+start with an uppercase letter, must be unique across the whole grammar
+(all constructors share one generated module), must avoid the reserved
+`Ctr__`/`Anti_` prefixes, and cannot name a lifted (`,Rule`) alternative —
+it passes a value through and produces no constructor. rtk rejects each of
+these with a positioned diagnostic.
+
 See `test-grammars/grammar.pg` for the grammar language described in itself —
 that file is the authoritative definition of the grammar language: rtk parses
 your grammar with the parser it generated from it (self-hosting).

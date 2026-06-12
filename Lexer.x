@@ -9,7 +9,10 @@ import Diagnostics (Diagnostic, diagnosticFromPositioned, renderDiagnostic)
 
 $digit = 0-9
 $alpha = [a-zA-Z]
-$alphaDigit = [a-zA-Z0-9]
+-- grammar.pg's id rule is [a-zA-Z][A-Za-z0-9_]*: underscores continue an
+-- identifier. The reference lexer follows the spec (it used to reject '_',
+-- a divergence the generated front end never had).
+$alphaDigit = [a-zA-Z0-9_]
 $dq     = "
 $squote     = '
 $notsq = [^']

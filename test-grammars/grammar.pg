@@ -10,58 +10,71 @@ import qualified Data.Map as M
 """
 
 /*
-Grammar rules section. These rules are started with capital letter
+Grammar rules section. These rules are started with capital letter.
+
+An alternative may carry a constructor name: 'Star: Clause5 '*'' makes the
+generated AST constructor for that alternative 'Star' instead of the
+positional default 'Ctr__<Rule>__<index>'. Every constructor-producing
+alternative below is named, so the generated front end's AST reads like
+prose and survives alternative reordering. Lifted (,Rule1) alternatives
+pass another rule's value through, produce no constructor, and therefore
+carry no name.
 */
 
-/* a */
-
-Grammar = 'grammar' StrLit ';' ImportsOpt RuleList ;
-
-ImportsOpt = ('imports' bigstr)? ;
+Grammar = GrammarDef: 'grammar' StrLit ';' RuleList
+        | GrammarImports: 'grammar' StrLit ';' 'imports' bigstr RuleList ;
 
 RuleList = Rule *;
 
 @shortcuts(r)
-Rule = OptionList Rule1
+Rule = RuleWithOptions: OptionList Rule1
      | ,Rule1 ;
 
-Rule: Rule1 = Name '=' Clause ';' 
-            | Name ':' Name '=' Clause ';'
-            | Name '.' Name ':' Name '=' Clause ';'
-            | '.' Name ':' Name '=' Clause ';' ;
+Rule: Rule1 = RuleSimple: Name '=' Clause ';'
+            | RuleTyped: Name ':' Name '=' Clause ';'
+            | RuleTypedFunc: Name '.' Name ':' Name '=' Clause ';'
+            | RuleFunc: '.' Name ':' Name '=' Clause ';' ;
 
 OptionList = Option+ ;
 
-Option = '@shortcuts' '(' IdList ')' | '@symmacro' ;
+Option = Shortcuts: '@shortcuts' '(' IdList ')'
+       | Symmacro: '@symmacro' ;
 
 IdList = Name* ~ ',' ;
 
 @shortcuts(cl)
-Clause = Clause '|' Clause2
-         | ,Clause2;
+Clause = Alt: Clause '|' Clause1
+       | ,Clause1 ;
 
-Clause: Clause2 = Clause2 Clause3
-                  | ,Clause3 ;
+# The constructor-name label itself: it binds tighter than '|' and scopes
+# over the whole juxtaposition sequence (one alternative). The bare ':'
+# token cannot collide with the rule-header forms above because clauses are
+# fenced off by '=' ... ';'.
+Clause: Clause1 = Labeled: Name ':' Clause2
+                | ,Clause2 ;
 
-Clause: Clause3 = ',' Clause4 
-                | '!' Clause4
+Clause: Clause2 = Seq: Clause2 Clause3
+                | ,Clause3 ;
+
+Clause: Clause3 = Lifted: ',' Clause4
+                | Ignored: '!' Clause4
                 | ,Clause4 ;
 
-Clause: Clause4 = Clause5 '*' OptDelim
-                | Clause5 '+' OptDelim
-                | Clause5 '?'
+Clause: Clause4 = Star: Clause5 '*'
+                | StarDelim: Clause5 '*' '~' Clause5
+                | Plus: Clause5 '+'
+                | PlusDelim: Clause5 '+' '~' Clause5
+                | Opt: Clause5 '?'
                 | ,Clause5 ;
 
 Clause: Clause5 = '(' ,Clause ')'
-                | Name
-                | StrLit
-                | '.'
-                | regexplit ;
+                | Ref: Name
+                | Lit: StrLit
+                | Dot: '.'
+                | Regex: regexplit ;
 
-OptDelim = ('~' Clause5)? ;
-
-StrLit = str ;
-Name = id ;
+StrLit = Str: str ;
+Name = Ident: id ;
 
 /*
 Lexical rules section. These rules are started with regular letter
@@ -90,4 +103,3 @@ regexplit = '[' ([^\]] | '\\]')* ']' ;
 Ignore: ws = [ \t\n]+ ;
 Ignore: comment = '#' .* [\n] ;
 Ignore: comment1 = '/*' ([^\*]|[\*][^\/]|[\n])* '*/';
-

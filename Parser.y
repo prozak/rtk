@@ -74,8 +74,17 @@ Rule : id '=' ClauseAlt ';'         { IRule Nothing Nothing (idStr $1) $3 [] (Ju
 
 ClauseAlt : ClauseAlt1              { mkAlt (reverse $1) }
 
-ClauseAlt1 : ClauseAlt1 '|' ClauseSeq   { $3 : $1 }
-           | ClauseSeq                  { [$1] }
+ClauseAlt1 : ClauseAlt1 '|' ClauseSeqL  { $3 : $1 }
+           | ClauseSeqL                 { [$1] }
+
+-- A named alternative: "Star: Clause5 '*'" names the alternative's AST
+-- constructor. The label binds tighter than '|' and scopes over the whole
+-- sequence, mirroring grammar.pg's Clause1 rule. No conflict with the
+-- 'Type ':' Name '='' rule-header forms: ':' never follows a clause symbol
+-- (clauses are fenced off by '=' ... ';'), so on ':' the parser always
+-- shifts toward the label.
+ClauseSeqL : id ':' ClauseSeq           { ICtor (idStr $1) $3 }
+           | ClauseSeq                  { $1 }
 
 ClauseSeq : ClauseSeq1              { mkSeq (reverse $1) }
 

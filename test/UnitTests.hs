@@ -13,7 +13,7 @@ import Control.Exception (SomeException, evaluate, try)
 import Control.Monad (when)
 import Data.List (find, group, isInfixOf, isPrefixOf, nub, sort)
 import qualified Data.Map as M
-import Data.Maybe (maybeToList)
+import Data.Maybe (listToMaybe, maybeToList)
 import qualified Data.Set as S
 import System.Exit (exitFailure)
 import System.FilePath (takeBaseName)
@@ -44,6 +44,7 @@ main = do
         , TestLabel "diagnostics" diagnosticsTests
         , TestLabel "pipeline error handling" errorHandlingTests
         , TestLabel "normalization behavior" normalizationTests
+        , TestLabel "named constructors" namedConstructorTests
         , TestLabel "self-hosted front end" selfHostedFrontEndTests
         , TestLabel "compiled-in quasi-quoter (GrammarQQ)" grammarQQTests
         ] ++ perGrammar ++ astEquality
@@ -675,6 +676,185 @@ testFillConstructorNames = TestCase $ do
     assertBool "anti constructors survive filling"
         ("Anti_Item" `elem` [ c | STSeq c _ <- allSeqs filled ])
     assertEqual "filling is idempotent" filled (fillConstructorNames filled)
+
+--------------------------------------------------------------------------------
+-- Named constructors ("Label: ..." alternative labels)
+--------------------------------------------------------------------------------
+
+namedConstructorTests :: Test
+namedConstructorTests = TestList
+    [ TestLabel "a label names the alternative's constructor; unnamed ones keep generated names" testCtorLabelOverride
+    , TestLabel "the named constructor reaches the generated artifacts" testCtorLabelArtifacts
+    , TestLabel "a label inside a parenthesized group names the proxy's constructor" testCtorLabelInGroup
+    , TestLabel "a labeled sole repetition gets a constructor instead of a list alias" testCtorLabelForcesConstructor
+    , TestLabel "both front ends parse labels into the same ICtor shape" testCtorLabelFrontEndEquality
+    , TestLabel "a lowercase label is rejected" $ TestCase $
+        expectDiagnostic "a lowercase constructor name"
+            (normalizeGrammarSource "grammar 'X';\nFoo = bad: aa ;\naa = [a]+ ;\n") $ \d -> do
+            assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
+            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "must start with an uppercase letter" `isInfixOf` diagMessage d
+                && "bad" `isInfixOf` diagMessage d
+    , TestLabel "the reserved Ctr__ prefix is rejected" $ TestCase $
+        expectDiagnostic "a Ctr__ constructor name"
+            (normalizeGrammarSource "grammar 'X';\nFoo = Ctr__Foo__0: aa ;\naa = [a]+ ;\n") $ \d -> do
+            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "reserved prefix 'Ctr__'" `isInfixOf` diagMessage d
+    , TestLabel "the reserved Anti_ prefix is rejected" $ TestCase $
+        expectDiagnostic "an Anti_ constructor name"
+            (normalizeGrammarSource "grammar 'X';\nFoo = Anti_Foo: aa ;\naa = [a]+ ;\n") $ \d -> do
+            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "reserved prefix 'Anti_'" `isInfixOf` diagMessage d
+    , TestLabel "duplicate explicit names are rejected across the whole grammar" $ TestCase $
+        -- the two rules even have different types: constructor names share
+        -- one generated Haskell module, so the clash is global
+        expectDiagnostic "a duplicate constructor name"
+            (normalizeGrammarSource
+                "grammar 'X';\nFoo = Mk: aa ;\nBar = Mk: bb ;\naa = [a]+ ;\nbb = [b]+ ;\n") $ \d -> do
+            assertEqual "context names the second rule" (Just "in rule 'Bar'") (diagContext d)
+            assertEqual "position of 'Bar'" (Just (SourcePos 3 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "already used in rule 'Foo'" `isInfixOf` diagMessage d
+                && "line 2, column 1" `isInfixOf` diagMessage d
+    , TestLabel "duplicate explicit names within one rule are rejected" $ TestCase $
+        expectDiagnostic "a duplicate constructor name in one rule"
+            (normalizeGrammarSource "grammar 'X';\nFoo = Mk: aa | Mk: bb ;\naa = [a]+ ;\nbb = [b]+ ;\n") $ \d ->
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "already used in rule 'Foo'" `isInfixOf` diagMessage d
+    , TestLabel "a label in a lexical rule is rejected" $ TestCase $
+        expectDiagnostic "a label in a lexical rule"
+            (normalizeGrammarSource "grammar 'X';\nFoo = tok ;\ntok = Mk: [a]+ ;\n") $ \d -> do
+            assertEqual "context names the lexical rule" (Just "in rule 'tok'") (diagContext d)
+            assertEqual "position of 'tok'" (Just (SourcePos 3 1)) (diagPos d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "lexical rule" `isInfixOf` diagMessage d
+    , TestLabel "a label on a lifted alternative is rejected" $ TestCase $
+        -- a lifted alternative passes a value through and produces no
+        -- constructor; silently dropping the name would be worse
+        expectDiagnostic "a label on a lifted alternative"
+            (normalizeGrammarSource "grammar 'X';\nFoo = Mk: ,Bar | aa ;\nBar = bb ;\naa = [a]+ ;\nbb = [b]+ ;\n") $ \d -> do
+            assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "produces no constructor" `isInfixOf` diagMessage d
+                && "Mk" `isInfixOf` diagMessage d
+    ]
+
+-- | The user's name wins for the labeled alternatives; the unlabeled one is
+-- still filled with a generated positional name, and the splice (Anti_)
+-- machinery is unaffected.
+testCtorLabelOverride :: Test
+testCtorLabelOverride = TestCase $
+    case normalizeGrammarSource namedExprGrammar of
+        Left d  -> assertFailure $ "normalization failed: " ++ show d
+        Right g -> assertEqual "constructors of the Expr group"
+            (Just ["Anti_Expr", "Add", "Neg", "Ctr__Expr__0"])
+            (lookupCtors "Expr" g)
+  where
+    lookupCtors t g = listToMaybe
+        [ [ c | SyntaxRule _ (STAltOfSeq alts) <- getSRules grp, STSeq c _ <- alts ]
+        | grp <- getSyntaxRuleGroups g, getSDataTypeName grp == t ]
+
+namedExprGrammar :: String
+namedExprGrammar = unlines
+    [ "grammar 'Named';"
+    , "Top = Expr ;"
+    , "Expr = Add: Term '+' Term"
+    , "     | Neg: '-' Term"
+    , "     | Term ;"
+    , "Term = num ;"
+    , "Int: num = [0-9]+ ;"
+    ]
+
+-- | End to end: the names appear in the generated parser's data declaration
+-- and semantic actions, with the leading RtkPos field like any generated
+-- constructor.
+testCtorLabelArtifacts :: Test
+testCtorLabelArtifacts = TestCase $
+    case normalizeGrammarSource namedExprGrammar >>= artifactsFor of
+        Left d -> assertFailure $ "generation failed: " ++ show d
+        Right artifacts -> case lookup "NamedParser.y" artifacts of
+            Nothing -> assertFailure "no NamedParser.y artifact generated"
+            Just y -> do
+                assertBool "data declaration carries the named constructors"
+                    ("Add RtkPos Term Term" `isInfixOf` y && "Neg RtkPos Term" `isInfixOf` y)
+                assertBool "the unnamed alternative keeps a generated name"
+                    ("Ctr__Expr__0 RtkPos Term" `isInfixOf` y)
+                assertBool "semantic actions build the named constructor"
+                    ("{ Add (rtkPosOf $1) $1 $3 }" `isInfixOf` y)
+                assertBool "the named constructors have position projections"
+                    ("rtkPosOf (Add p _ _) = p" `isInfixOf` y)
+
+-- | A label inside a parenthesized group names the constructor of the
+-- anonymous rule the group is extracted into - here under a repetition, so
+-- the label also flows through the list-element proxy machinery.
+testCtorLabelInGroup :: Test
+testCtorLabelInGroup = TestCase $ do
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'Grp';"
+                , "S = (Pair: aa bb)+ ;"
+                , "aa = [a]+ ;"
+                , "bb = [b]+ ;"
+                ]
+    assertEqual "the extracted group's alternative carries the user's name"
+        [STSeq "Pair" [SSId "aa", SSId "bb"]]
+        [ alt | SyntaxRule rn (STAltOfSeq alts) <- allRules g
+              , "Rule_" `isPrefixOf` rn, alt@(STSeq "Pair" _) <- alts ]
+
+-- | A label always produces a constructor: a sole "L: Item*" alternative
+-- yields a data declaration whose constructor wraps the (proxied) list,
+-- where the unlabeled spelling would have made the rule a bare list alias.
+testCtorLabelForcesConstructor :: Test
+testCtorLabelForcesConstructor = TestCase $ do
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'Lst';"
+                , "Top = S ;"
+                , "S = Wrap: Item* ;"
+                , "Item = aa ;"
+                , "aa = [a]+ ;"
+                ]
+    case [ alts | SyntaxRule "S" (STAltOfSeq alts) <- allRules g ] of
+        [alts] -> assertBool ("expected a Wrap constructor over a proxy, got: " ++ show alts) $
+            not $ null [ () | STSeq "Wrap" [SSId proxy] <- alts, "Rule_" `isPrefixOf` proxy ]
+        other -> assertFailure $ "expected S to be a data group, got: " ++ show other
+
+-- | Both front ends must represent labels identically: as an 'ICtor' node
+-- wrapping the alternative's sequence. Checked structurally against the
+-- expected shape AND between the two front ends, for a plain labeled
+-- alternative, a labeled group as a whole alternative (which merges into
+-- the enclosing alternation like any group), and a labeled group in element
+-- position (which stays a nested single-alternative alternation). The label
+-- 'Mk_1' also pins identifier lexing parity: grammar.pg's id rule allows
+-- underscores, which the reference lexer used to reject.
+testCtorLabelFrontEndEquality :: Test
+testCtorLabelFrontEndEquality = TestCase $ do
+    let src = unlines
+            [ "grammar 'Eq';"
+            , "S = Mk_1: aa bb | cc ;"
+            , "T = (L: aa) ;"
+            , "U = aa (M: bb) ;"
+            , "aa = [a]+ ;"
+            , "bb = [b]+ ;"
+            , "cc = [c]+ ;"
+            ]
+    case (parseGrammarSource src, parseGrammarSourceGenerated src) of
+        (Right h, Right g) -> do
+            assertEqual "hand-written vs generated front end (positions included)" h g
+            let clauseOf n = getIClause <$> find ((== n) . getIRuleName) (getIRules h)
+            assertEqual "labeled alternative shape"
+                (Just (IAlt [ ICtor "Mk_1" (ISeq [IId "aa", IId "bb"])
+                            , ISeq [IId "cc"] ]))
+                (clauseOf "S")
+            assertEqual "labeled group as the whole alternative merges into the alternation"
+                (Just (IAlt [ICtor "L" (ISeq [IId "aa"])]))
+                (clauseOf "T")
+            assertEqual "labeled group in element position stays nested"
+                (Just (IAlt [ISeq [IId "aa", IAlt [ICtor "M" (ISeq [IId "bb"])]]]))
+                (clauseOf "U")
+        (Left d, _) -> assertFailure $ "hand-written front end failed: " ++ show d
+        (_, Left d) -> assertFailure $ "generated front end failed: " ++ show d
 
 --------------------------------------------------------------------------------
 -- Self-hosted front end (the lexer/parser RTK generated from grammar.pg)
