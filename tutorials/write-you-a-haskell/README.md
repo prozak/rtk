@@ -37,6 +37,10 @@ Chapter 3's content (writing a parser combinator library) is replaced by
 RTK itself; its calculator example is subsumed by `lc.pg`. Chapters 13+
 of the tutorial were never written.
 
+Follow-up work (layout via issue #95, full chapter-12 pattern compilation,
+a native backend through the asm grammar, QQ ergonomics, REPL upgrades) is
+sketched as pasteable task blobs in `docs/wyah-follow-ups-plan.md`.
+
 ## The lc language (chapters 3-4)
 
 `lc.pg` defines an untyped lambda calculus with the surface
