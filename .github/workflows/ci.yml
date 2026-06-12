@@ -6,6 +6,13 @@ on:
     # push, pre-merge, like a PR would (superseded runs on the same ref are
     # cancelled by the concurrency group below).
     branches: [ main, master, develop, 'claude/**' ]
+    # Docs-only pushes skip the whole battery. A push event lists every file
+    # it changed, and one non-ignored file brings the full run back, so
+    # pushes touching code+docs still run. Trade-off: a docs-only push
+    # reports no check runs for its sha at all.
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   pull_request:
     branches: [ main, master, develop ]
   workflow_dispatch:
@@ -16,16 +23,35 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
+# Every job below carries the same `if:` (GitHub has no workflow-level if):
+# same-repo PRs already get a push-event run for every head sha (claude/**
+# and the protected branches are all in the push trigger), and check runs
+# attach to the PR by sha, so the pull_request-event twin of that run is
+# pure duplication and every job skips it. Fork PRs produce no in-repo push
+# events and keep their pull_request run. A job skipped by its `if:` still
+# reports a "skipped" check run, which branch protection counts as
+# satisfied - unlike a workflow-level filter, which would leave required
+# checks hanging as "Expected".
+#
+# The old single test job is split into three parallel ones - core, corpus,
+# tutorials - so wall clock is max() of the slices, not their sum. Each job
+# restores the same toolchain / cabal-store / dist-newstyle caches and
+# rebuilds warm; only core and corpus keep a test-out cache, each under its
+# own key (their test-out contents differ, and a key shared across jobs
+# would be saved by whichever job finished first and never updated again,
+# permanently starving the other job).
+
 jobs:
-  build-and-test:
-    name: Build, Lint, and Test
+  core:
+    name: Core (lint, suites, QQ)
     runs-on: ubuntu-latest
+    # Skip the duplicate pull_request run for same-repo PRs (see top note).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
+    # No submodules: the commons-lang corpus is only used by the corpus job.
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
 
     # Everything under runner.temp/ghcup is determined by the two pinned
     # versions below, so cache it across runs: on a hit the Setup Haskell
@@ -54,6 +80,9 @@ jobs:
     - name: Put pinned GHC/Cabal on PATH
       run: echo "${{ runner.temp }}/ghcup/.ghcup/bin" >> "$GITHUB_PATH"
 
+    # Shared with the corpus and tutorials jobs (same key). The store is
+    # content-addressed, so whichever job saves first the content is
+    # equivalent; the losers of the save race just log a warning.
     - name: Cache Cabal packages
       uses: actions/cache@v4
       with:
@@ -73,7 +102,9 @@ jobs:
     # GHC picked them up as (unlisted) home modules shadowing the library,
     # and -Wmissing-home-modules failed the -Werror build. The content-
     # addressed ~/.cabal/store above is safe to share across layouts;
-    # dist-newstyle is not.
+    # dist-newstyle is not. Also shared across core/corpus/tutorials: the
+    # jobs build with slightly different flags (-Werror here), so the warm
+    # rebuild after a restore costs ~1 min, not a full build.
     - name: Cache project build directory
       uses: actions/cache@v4
       with:
@@ -81,19 +112,23 @@ jobs:
         key: ${{ runner.os }}-dist-newstyle-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
 
     # Cache generated lexers/parsers and compiled test binaries. The key must
-    # hash every input that influences what RTK generates: all root *.hs/*.x/*.y
-    # sources (the rtk binary is built from exactly these, including the
-    # generators GenX/GenY/GenQ/GenAST), the cabal file, the grammars, the
-    # makefile, and this workflow (GHC/tool versions). No restore-keys fallback:
-    # a partially matching cache would restore outputs from older sources, and
-    # the timestamp refresh below would then stop Make from ever regenerating
+    # hash every input that influences what RTK generates: all sources the
+    # rtk binary is built from (root *.hs/*.x/*.y, src/, and the compiled-in
+    # test/golden/grammar snapshot - including the generators
+    # GenX/GenY/GenQ/GenAST), the cabal file, the grammars, the makefile, and
+    # this workflow (GHC/tool versions). Suffixed with the job id: core and
+    # corpus build different test-out contents, and an exactly-hit key is
+    # never re-saved, so a shared key would forever serve whichever job's
+    # contents got saved first. No restore-keys fallback: a partially
+    # matching cache would restore outputs from older sources, and the
+    # timestamp refresh below would then stop Make from ever regenerating
     # them. Exact match or regenerate from scratch.
     - name: Cache test outputs
       id: cache-test-out
       uses: actions/cache@v4
       with:
         path: test-out
-        key: v3-${{ runner.os }}-test-out-${{ hashFiles('*.hs', 'app/*.hs', '*.x', '*.y', 'rtk.cabal', 'test-grammars/**', 'makefile', '.github/workflows/ci.yml') }}
+        key: v4-${{ runner.os }}-test-out-${{ github.job }}-${{ hashFiles('*.hs', 'app/*.hs', 'src/**/*.hs', 'test/golden/grammar/**', '*.x', '*.y', 'rtk.cabal', 'test-grammars/**', 'makefile', '.github/workflows/ci.yml') }}
 
     - name: Update timestamps on cached test outputs
       run: |
@@ -116,6 +151,8 @@ jobs:
     - name: Install build tools (Alex and Happy)
       run: cabal install alex-3.5.4.2 happy-2.2 --installdir=$HOME/.cabal/bin --overwrite-policy=always --install-method=copy
 
+    # The lint gate for the whole battery lives in this job only; corpus and
+    # tutorials do a plain warm build of the same sources.
     - name: Build project with linting (treat warnings as errors)
       run: |
         export PATH="$HOME/.cabal/bin:$PATH"
@@ -123,7 +160,7 @@ jobs:
         # This will fail the build if there are any unused imports or other warnings
         cabal build --ghc-options="-Werror" --enable-tests -j
 
-    - name: Run all tests
+    - name: Run core tests
       run: |
         export PATH="$HOME/.cabal/bin:$PATH"
 
@@ -150,7 +187,8 @@ jobs:
           fi
         }
 
-        # Run all tests (continue even if some fail)
+        # Run this job's slice (continue even if some fail; the summary step
+        # below fails the job on any failure).
         # `make test` runs the cabal test suites: unit tests (normalization
         # invariants etc.) and golden tests of the generated .x/.y/QQ output.
         run_test "Cabal Test Suites" "make test"
@@ -159,8 +197,6 @@ jobs:
         # accept (the debug-test snapshot once sat green while uncompilable).
         run_test "Golden Compile Gate" "make test-compile-goldens"
         run_test "Base Grammar Test" "make test-grammar"
-        run_test "Java Test Suite" "make test-all-java"
-        run_test "Java Lexer Golden Tests" "make test-lex-java"
         run_test "Java QQ Tests" "make test-java-qq"
         # The user-facing rewrite recipe (task 8d): QQ patterns + SYB over
         # parsed Java, per docs/java-quasi-quotation-tests.md.
@@ -169,18 +205,179 @@ jobs:
         # annotations (the synthesized cover rule, issue #14).
         run_test "Issue 14 QQ Tests" "make test-i14-qq"
         run_test "P QQ Pattern Matching Tests" "make test-p"
-        run_test "C Compiler Tutorial" "make -C tutorials/c-compiler test"
-        run_test "Write You a Haskell Tutorial" "make -C tutorials/write-you-a-haskell test"
-        run_test "Lets Build a Compiler Tutorial" "make -C tutorials/lets-build-a-compiler test"
-        run_test "PL/0 Compiler Tutorial" "make -C tutorials/pl0-compiler test"
-        run_test "Lisp Interpreter Tutorial" "make -C tutorials/lisp-interpreter test"
-        run_test "Apache Commons Lexical Tests" "make test-lex-commons-lang-all"
-        run_test "Apache Commons Parser Tests" "make test-parse-commons-lang-all"
         # test-debug and test-debug-all exercise the same debug flags but
         # only print their output; test-debug-options is the automated suite
         # that asserts on it, so it is the only one CI runs (the other two
         # targets remain in the makefile for local use).
         run_test "Automated Debug Options" "make test-debug-options"
+
+    - name: Print test results summary
+      if: always()
+      run: |
+        results_file="test-results.txt"
+
+        echo ""
+        echo "=========================================="
+        echo "           TEST RESULTS SUMMARY"
+        echo "=========================================="
+        echo ""
+        printf "%-30s | %s\n" "TEST NAME" "RESULT"
+        printf "%-30s-+--------\n" "------------------------------"
+
+        # Track if any test failed
+        any_failed=0
+
+        while IFS='|' read -r test_name result; do
+          if [ "$result" = "PASS" ]; then
+            printf "%-30s | ✓ %s\n" "$test_name" "$result"
+          else
+            printf "%-30s | ✗ %s\n" "$test_name" "$result"
+            any_failed=1
+          fi
+        done < "$results_file"
+
+        echo ""
+        echo "=========================================="
+
+        # Exit with failure if any test failed
+        if [ $any_failed -eq 1 ]; then
+          echo "❌ One or more tests failed!"
+          exit 1
+        else
+          echo "✅ All tests passed!"
+          exit 0
+        fi
+
+    # Artifact names are unique per run; suffix with the job so core and
+    # corpus can both upload on failure (v4 errors on duplicate names).
+    - name: Upload test artifacts
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-output-core
+        path: |
+          test-out/
+          happy_log.txt
+        if-no-files-found: ignore
+
+  corpus:
+    name: Corpus (Java + commons-lang)
+    runs-on: ubuntu-latest
+    # Skip the duplicate pull_request run for same-repo PRs (see top note).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        # The commons-lang corpus is a submodule; only this job sweeps it.
+        submodules: 'recursive'
+
+    # Toolchain / cabal-store / dist-newstyle caches: same keys as the core
+    # job, see there for the rationale on each.
+    - name: Cache GHC/Cabal toolchain
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/ghcup
+        key: ghcup-9.6.4-3.10.2.0-v1
+
+    - name: Setup Haskell
+      uses: haskell-actions/setup@v2
+      with:
+        ghc-version: '9.6.4'
+        cabal-version: '3.10.2.0'
+        enable-stack: false
+      env:
+        GHCUP_INSTALL_BASE_PREFIX: ${{ runner.temp }}/ghcup
+
+    - name: Put pinned GHC/Cabal on PATH
+      run: echo "${{ runner.temp }}/ghcup/.ghcup/bin" >> "$GITHUB_PATH"
+
+    - name: Cache Cabal packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cabal/packages
+          ~/.cabal/store
+        key: ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
+        restore-keys: |
+          ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
+          ${{ runner.os }}-cabal-
+
+    - name: Cache project build directory
+      uses: actions/cache@v4
+      with:
+        path: dist-newstyle
+        key: ${{ runner.os }}-dist-newstyle-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
+
+    # Same shape as the core job's test-out cache (see there); own key via
+    # the job-id suffix - this job's test-out holds java-main and the
+    # generated Java lexer/parser it is built from.
+    - name: Cache test outputs
+      id: cache-test-out
+      uses: actions/cache@v4
+      with:
+        path: test-out
+        key: v4-${{ runner.os }}-test-out-${{ github.job }}-${{ hashFiles('*.hs', 'app/*.hs', 'src/**/*.hs', 'test/golden/grammar/**', '*.x', '*.y', 'rtk.cabal', 'test-grammars/**', 'makefile', '.github/workflows/ci.yml') }}
+
+    - name: Update timestamps on cached test outputs
+      run: |
+        # Refresh timestamps so Make sees cached outputs as newer than the
+        # checked-out sources. Safe only because the cache key above is an
+        # exact hash of all generator inputs: a hit means the outputs were
+        # produced from identical sources.
+        if [ -d test-out ]; then
+          echo "Updating timestamps on cached test-out files..."
+          find test-out -type f -exec touch {} +
+        fi
+
+    - name: Update Cabal package list
+      run: cabal update
+
+    - name: Install build tools (Alex and Happy)
+      run: cabal install alex-3.5.4.2 happy-2.2 --installdir=$HOME/.cabal/bin --overwrite-policy=always --install-method=copy
+
+    # Plain build (the -Werror lint gate is the core job's): exactly the
+    # command every make target re-runs, so the restored dist-newstyle stays
+    # warm for them.
+    - name: Build project
+      run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+        cabal build -j
+
+    - name: Run corpus tests
+      run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+
+        # Create results file
+        results_file="test-results.txt"
+        > "$results_file"
+
+        # Function to run a test and capture result
+        run_test() {
+          local test_name="$1"
+          local test_command="$2"
+
+          echo ""
+          echo "=========================================="
+          echo "Running: $test_name"
+          echo "=========================================="
+
+          if eval "$test_command"; then
+            echo "$test_name|PASS" >> "$results_file"
+            echo "✓ $test_name: PASSED"
+          else
+            echo "$test_name|FAIL" >> "$results_file"
+            echo "✗ $test_name: FAILED"
+          fi
+        }
+
+        # Run this job's slice (continue even if some fail; the summary step
+        # below fails the job on any failure).
+        run_test "Java Test Suite" "make test-all-java"
+        run_test "Java Lexer Golden Tests" "make test-lex-java"
+        run_test "Apache Commons Lexical Tests" "make test-lex-commons-lang-all"
+        run_test "Apache Commons Parser Tests" "make test-parse-commons-lang-all"
 
     - name: Print test results summary
       if: always()
@@ -243,11 +440,84 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: test-output
+        name: test-output-corpus
         path: |
           test-out/
           happy_log.txt
         if-no-files-found: ignore
+
+  tutorials:
+    name: Tutorials
+    runs-on: ubuntu-latest
+    # Skip the duplicate pull_request run for same-repo PRs (see top note).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Toolchain / cabal-store / dist-newstyle caches: same keys as the core
+    # job, see there for the rationale on each. No test-out cache: the
+    # tutorials build under tutorials/*/ and cache nothing across runs (as
+    # before the job split).
+    - name: Cache GHC/Cabal toolchain
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/ghcup
+        key: ghcup-9.6.4-3.10.2.0-v1
+
+    - name: Setup Haskell
+      uses: haskell-actions/setup@v2
+      with:
+        ghc-version: '9.6.4'
+        cabal-version: '3.10.2.0'
+        enable-stack: false
+      env:
+        GHCUP_INSTALL_BASE_PREFIX: ${{ runner.temp }}/ghcup
+
+    - name: Put pinned GHC/Cabal on PATH
+      run: echo "${{ runner.temp }}/ghcup/.ghcup/bin" >> "$GITHUB_PATH"
+
+    - name: Cache Cabal packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cabal/packages
+          ~/.cabal/store
+        key: ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
+        restore-keys: |
+          ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
+          ${{ runner.os }}-cabal-
+
+    - name: Cache project build directory
+      uses: actions/cache@v4
+      with:
+        path: dist-newstyle
+        key: ${{ runner.os }}-dist-newstyle-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
+
+    - name: Update Cabal package list
+      run: cabal update
+
+    - name: Install build tools (Alex and Happy)
+      run: cabal install alex-3.5.4.2 happy-2.2 --installdir=$HOME/.cabal/bin --overwrite-policy=always --install-method=copy
+
+    # Plain build (the -Werror lint gate is the core job's): the tutorial
+    # Makefiles take rtk, alex, happy, and ghc from this project via
+    # `cabal exec`, so rtk must be built first.
+    - name: Build project
+      run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+        cabal build -j
+
+    # All five tutorials (c-compiler, write-you-a-haskell,
+    # lets-build-a-compiler, pl0-compiler, lisp-interpreter), fail-fast; the
+    # job status is the gate. The c-compiler tutorial and core's test-p are
+    # the only tests that compile and RUN quasi-quotation in pattern /
+    # antiquote mode (see CLAUDE.md), so this job must stay required.
+    - name: Run tutorial test suites
+      run: |
+        export PATH="$HOME/.cabal/bin:$PATH"
+        make tutorials
 
   # Early-warning canary: build and run the cabal test suites once with the
   # current GHC series the runner image ships, vs the pinned toolchain above.
@@ -266,6 +536,8 @@ jobs:
   ghc-latest:
     name: GHC 9.14 early warning
     runs-on: ubuntu-latest
+    # Skip the duplicate pull_request run for same-repo PRs (see top note).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
     - name: Checkout repository
