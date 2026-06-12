@@ -34,7 +34,8 @@ Invariants every task must preserve:
   quoter-name collisions, `$sym :` spacing).
 - Per stage: extend the grammar(s) → regenerate → extend `TestQQ.hs` for
   every new sort/quoter you rely on → extend the passes → local tests →
-  official suite. One commit per stage.
+  official suite → extend the companion tutorial page for the stage (task
+  R6, once it exists). One commit per stage.
 
 ---
 
@@ -346,6 +347,59 @@ test, official suite), and a pointer README left behind in `tutorials/`.
 Decide whether to preserve history (`git filter-repo`) or start fresh.
 Blocked on the owner's call for timing; everything before this keeps the
 in-repo layout working.
+
+## Task R6 — The companion tutorial: Sandler's series, retold with RTK
+
+### TL;DR
+
+Write the page(s) that mimic the original blog series but teach building
+the same compiler with RTK — for each blog part, what you *don't* have to
+write (lexer, parser, AST types, the AST-walking boilerplate) and what you
+write instead (grammar rules, QQ patterns, splices). The working code under
+`tutorials/c-compiler/` is the source of truth; the page narrates it. This
+doubles as RTK's missing user-facing tutorial: a reader who finishes it has
+seen lexical rules, syntax rules, shortcuts, quoters, antiquote patterns,
+splices, list splices, and a second grammar as an output language — all on
+a real program.
+
+### Shape
+
+- `tutorials/c-compiler/tutorial/` with one page per stage, mirroring the
+  blog's one-post-per-part structure: `00-setup.md` (toolchain, building
+  RTK, the compiler-driver contract and test suite), `01-integers.md`
+  (stage 1), then `02-unary.md` … `10-globals.md` as the C tasks land.
+  An index in the directory plus a link from the tutorial README. Inside
+  the extractable directory on purpose (task R5 takes it along).
+- Each page opens with a link to the corresponding blog part and assumes
+  the reader has it (or the book) at hand: the page teaches the *RTK
+  delta*, not compilers from scratch.
+
+### Content rules
+
+- Every snippet comes from (or is verified against) the live code —
+  `c.pg`/`asm.pg` rules, `Codegen.hs` QQ patterns, `Emit.hs`, real test
+  invocations with real output. When a stage changes earlier code, the
+  page shows the diff the way the blog does ("our grammar grows by...").
+- Side-by-side moments at each blog/RTK fork: the blog's hand-written
+  lexer table vs the lexical-rules section of c.pg; the blog's AST data
+  declarations vs "rtk generated these, here's what they look like"; the
+  blog's `generate_exp` string concatenation vs the `[asmItems| ... |]`
+  splice.
+- Be honest where RTK costs something: the conventions and limitations
+  already catalogued in `tutorials/c-compiler/README.md` (antiquote
+  shapes, token payloads, `$sym :` spacing, Prelude collisions) appear in
+  the page at the moment the reader would trip over them, not as an
+  appendix.
+
+### Acceptance
+
+- `00-setup.md` + `01-integers.md` cover everything currently
+  implemented: a newcomer with a Haskell toolchain can go from cloning the
+  repo to passing official stage 1 using only the pages.
+- Snippets match the checked-in code at the commit that lands them
+  (reviewed per stage; the per-stage checklist at the top of this plan
+  keeps later stages extending the tutorial).
+- The tutorial README links the pages; `tutorials/README.md` mentions them.
 
 ---
 

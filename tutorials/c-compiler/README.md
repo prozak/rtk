@@ -148,8 +148,9 @@ Following the blog series, one stage at a time:
 
 Each stage — plus the RTK-side follow-ups this PoC surfaced (both antiquote
 shapes per type, mixed list patterns, vendoring the official suite, named
-constructors, extraction to a separate repository) — is written up as a
-self-contained task blob in
+constructors, a companion tutorial retelling the blog series with RTK,
+extraction to a separate repository) — is written up as a self-contained
+task blob in
 [`docs/c-compiler-tutorial-plan.md`](../../docs/c-compiler-tutorial-plan.md);
 pick the next one from there.
 
