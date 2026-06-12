@@ -85,7 +85,11 @@ grammar 'Java';
 # Statement to StatementBlock (JLS 14.20): 'try try { } catch ...' is no
 # longer derivable, so the clauses' owner is always explicit. See
 # TryStatement. The cast-vs-paren decision one token AFTER ')' is
-# conflict-free; see CastExpression.
+# conflict-free; see CastExpression. Lambda expressions and method
+# references add ZERO conflicts: '->' and '::' are fresh tokens that no
+# reduce lookahead contains, so every lambda head and reference form is
+# decided by a plain shift - see the NOTEs at AssignmentExpression and
+# PostfixExpression.
 # ============================================================================
 
 Java = CompilationUnit ;
@@ -496,8 +500,58 @@ SwitchStatement =
 # UPDATED: All expression rules now use shared "Expression" type for QQ support
 Expression : Expression = AssignmentExpression ;
 
+# Lambda expressions (JLS 15.27) sit alongside the assignment alternative,
+# exactly where the JLS puts them. Every form is decided by a plain shift of
+# a token no competing interpretation claims:
+#  - 'id ->': '->' directly follows the shifted id. No reduce ever has '->'
+#    in its lookahead - the token only ever follows a lambda head - so the
+#    name interpretation of the id (epsilon-starting CompoundNameTail) is
+#    untouched on every other lookahead.
+#  - '( )': ')' directly after the operand-position '(' had NO action before
+#    (an empty parenthesized expression does not exist), so the empty
+#    parameter list is a fresh shift.
+#  - '( id , id ... )': two or more INFERRED parameters. The ',' after the
+#    first id commits to the parameter list - inside an operand-position
+#    '(' no expression continues with ',' (argument lists live behind a
+#    call's own '(', a different automaton state), so the shift is
+#    conflict-free. Only plain identifiers are derivable: TYPED parameter
+#    lists ('(Foo a, Bar b) -> e') would need the full type-vs-expression
+#    cover machinery in yet another position and are NOT supported (see
+#    KNOWN LIMITATION below).
+#  - '( Expression ) ->': the SINGLE parenthesized parameter '(x) -> e'
+#    rides the cast machinery: the parser already parses '(' Expression ')'
+#    and decides cast-vs-paren one token after ')' (see CastExpression);
+#    '->' joins that decision point as a third, conflict-free outcome. That
+#    the parenthesized Expression is a bare identifier is a semantic check
+#    (javac's job), like rejecting 'default' on ordinary methods: '(a+b)->e'
+#    parses here and javac would reject it.
+#
+# The body swallows everything an Expression can ('x -> y + 1' puts the sum
+# in the body, JLS-correct: the body extends as far right as possible), and
+# a '{' after '->' starts a statement block - no Expression starts with '{',
+# so the two body forms never compete.
+#
+# In a conditional, the TRUE branch is a full Expression and accepts a
+# lambda ('cond ? x -> a : y'); the FALSE branch is a ConditionalExpression
+# and does not - JLS 15.25 puts LambdaExpression in the false branch too,
+# but spelling it there would let the bare '? :' chain rederive itself; the
+# parenthesized form '(y -> b)' covers it. Annotation element values
+# (ConditionalExpression, see AnnotationElement) correctly exclude lambdas.
+#
+# KNOWN LIMITATION: a lambda directly under a CAST ('(Runnable) () -> f()')
+# does not parse - the cast operand (UnaryExpressionNotPlusMinus) cannot
+# derive a lambda, and lifting lambdas into it would put 'id ->' behind
+# every cast head. Parenthesizing the lambda works: '(Runnable) (() -> f())'.
+# Typed parameter lists are out for the same cover-grammar cost, see above.
 Expression : AssignmentExpression =
- ConditionalExpression (AssignmentOp AssignmentExpression)? ;
+ ConditionalExpression (AssignmentOp AssignmentExpression)?
+ | id '->' LambdaBody
+ | '(' ')' '->' LambdaBody
+ | '(' id (',' id)+ ')' '->' LambdaBody
+ | '(' Expression ')' '->' LambdaBody ;
+
+# JLS 15.27.2: an expression body or a block body; '{' decides.
+LambdaBody = Expression | StatementBlock ;
 
 # COMMENTED OUT - CAUSES LEFT RECURSION:
  # | Expression (/*NumericExpressionEnd
@@ -636,13 +690,28 @@ Expression : UnaryExpressionNotPlusMinus =
 # shift keeps the name unreduced - and parses through the PrimaryNoPostfix
 # alternative anchored on 'id CompoundNameTail' instead; see the NOTE
 # there.
+#
+# The '::' alternatives are method references (JLS 15.13): 'Foo::bar',
+# 'this::handle', 'obj.field::m', 'f()::m', '(expr)::m', and the
+# constructor form 'Foo::new'. '::' is a fresh token no other rule
+# mentions, so the shift is unambiguous, and after it the id/'new' split is
+# a plain token choice. A bare name base reduces CompoundName -> ... ->
+# PostfixExpression on lookahead '::' before the shift - '::' competes with
+# nothing there (the greedy family-3 '.'-shift only fires on '.'). Lexing:
+# maximal munch keeps '::' one token (never two ':') and '->' one token
+# (never '-' '>'), while 'a-->b' still lexes as 'a' '--' '>' 'b' ('--'
+# matches the input, '->' does not). NOT covered (rare): array-type refs
+# ('String[]::new'), 'super::m', and explicit type arguments on the
+# reference ('Foo::<T>bar').
 Expression : PostfixExpression =
  PrimaryNoPostfix
  | PostfixExpression PostfixOp
  | PostfixExpression '.' id
  | PostfixExpression '.' id '(' Arglist ')'
  | PostfixExpression '.' NonEmptyTypeArguments id '(' Arglist ')'
- | PostfixExpression '[' Expression ']' ;
+ | PostfixExpression '[' Expression ']'
+ | PostfixExpression '::' id
+ | PostfixExpression '::' 'new' ;
 
 # The 'CompoundName '[' Expression ']'' alternative anchors array access on
 # the unreduced name (JLS ArrayAccess: Name [ Expression ]). It must sit here

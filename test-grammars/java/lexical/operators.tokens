@@ -10,134 +10,178 @@ Tk__tok_int_24
 Tk__id "a"
 Tk__tok__eql__10
 Tk__integerLiteral "1"
-Tk__tok__plus__77
+Tk__tok__plus__78
 Tk__integerLiteral "2"
-Tk__tok__minus__78
+Tk__tok__minus__79
 Tk__integerLiteral "3"
 Tk__tok__star__5
 Tk__integerLiteral "4"
-Tk__tok__symbol__79
-Tk__integerLiteral "5"
 Tk__tok__symbol__80
+Tk__integerLiteral "5"
+Tk__tok__symbol__81
 Tk__integerLiteral "6"
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__plus__eql__53
+Tk__tok__plus__eql__54
 Tk__integerLiteral "1"
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__minus__eql__54
+Tk__tok__minus__eql__55
 Tk__integerLiteral "1"
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__star__eql__55
+Tk__tok__star__eql__56
 Tk__integerLiteral "2"
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__symbol__eql__56
+Tk__tok__symbol__eql__57
 Tk__integerLiteral "2"
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__symbol__eql__60
+Tk__tok__symbol__eql__61
 Tk__integerLiteral "2"
-Tk__tok__semi__1
-Tk__id "a"
-Tk__tok__symbol__symbol__eql__61
-Tk__integerLiteral "1"
 Tk__tok__semi__1
 Tk__id "a"
 Tk__tok__symbol__symbol__eql__62
 Tk__integerLiteral "1"
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__symbol__symbol__symbol__eql__63
+Tk__tok__symbol__symbol__eql__63
 Tk__integerLiteral "1"
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__symbol__eql__58
-Tk__integerLiteral "1"
-Tk__tok__semi__1
-Tk__id "a"
-Tk__tok__pipe__eql__57
+Tk__tok__symbol__symbol__symbol__eql__64
 Tk__integerLiteral "1"
 Tk__tok__semi__1
 Tk__id "a"
 Tk__tok__symbol__eql__59
 Tk__integerLiteral "1"
 Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__pipe__eql__58
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__id "a"
+Tk__tok__symbol__eql__60
+Tk__integerLiteral "1"
+Tk__tok__semi__1
 Tk__tok_int_24
 Tk__id "b"
 Tk__tok__eql__10
 Tk__id "a"
-Tk__tok__symbol__symbol__76
+Tk__tok__symbol__symbol__77
 Tk__integerLiteral "1"
 Tk__tok__pipe__48
 Tk__id "a"
-Tk__tok__symbol__72
-Tk__tok__symbol__72
+Tk__tok__symbol__73
+Tk__tok__symbol__73
 Tk__integerLiteral "2"
-Tk__tok__symbol__68
+Tk__tok__symbol__69
 Tk__id "a"
-Tk__tok__symbol__72
-Tk__tok__symbol__72
-Tk__tok__symbol__72
+Tk__tok__symbol__73
+Tk__tok__symbol__73
+Tk__tok__symbol__73
 Tk__integerLiteral "3"
-Tk__tok__symbol__67
-Tk__tok__tilde__83
+Tk__tok__symbol__68
+Tk__tok__tilde__84
 Tk__id "a"
 Tk__tok__semi__1
 Tk__tok_boolean_20
 Tk__id "c"
 Tk__tok__eql__10
 Tk__id "a"
-Tk__tok__symbol__71
-Tk__id "b"
-Tk__tok__pipe__pipe__65
-Tk__id "a"
 Tk__tok__symbol__72
 Tk__id "b"
-Tk__tok__symbol__symbol__66
+Tk__tok__pipe__pipe__66
 Tk__id "a"
-Tk__tok__symbol__eql__73
+Tk__tok__symbol__73
 Tk__id "b"
-Tk__tok__pipe__48
+Tk__tok__symbol__symbol__67
 Tk__id "a"
 Tk__tok__symbol__eql__74
 Tk__id "b"
+Tk__tok__pipe__48
+Tk__id "a"
+Tk__tok__symbol__eql__75
+Tk__id "b"
+Tk__tok__symbol__69
+Tk__id "a"
+Tk__tok__eql__eql__70
+Tk__id "b"
 Tk__tok__symbol__68
 Tk__id "a"
-Tk__tok__eql__eql__69
-Tk__id "b"
-Tk__tok__symbol__67
-Tk__id "a"
-Tk__tok__exclamation__eql__70
+Tk__tok__exclamation__eql__71
 Tk__id "b"
 Tk__tok__semi__1
 Tk__tok_boolean_20
 Tk__id "d"
 Tk__tok__eql__10
-Tk__tok__exclamation__84
+Tk__tok__exclamation__85
 Tk__id "c"
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__plus__plus__81
+Tk__tok__plus__plus__82
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__minus__minus__82
+Tk__tok__minus__minus__83
 Tk__tok__semi__1
-Tk__tok__plus__plus__81
+Tk__tok__plus__plus__82
 Tk__id "a"
 Tk__tok__semi__1
-Tk__tok__minus__minus__82
+Tk__tok__minus__minus__83
 Tk__id "a"
 Tk__tok__semi__1
 Tk__tok_int_24
 Tk__id "e"
 Tk__tok__eql__10
 Tk__id "c"
-Tk__tok__symbol__64
+Tk__tok__symbol__65
 Tk__id "a"
 Tk__tok__colon__37
+Tk__id "b"
+Tk__tok__semi__1
+Tk__id "Runnable"
+Tk__id "r"
+Tk__tok__eql__10
+Tk__tok__lparen__7
+Tk__tok__rparen__8
+Tk__tok__minus__symbol__53
+Tk__id "m"
+Tk__tok__lparen__7
+Tk__tok__rparen__8
+Tk__tok__semi__1
+Tk__id "IntUnaryOperator"
+Tk__id "f"
+Tk__tok__eql__10
+Tk__id "x"
+Tk__tok__minus__symbol__53
+Tk__id "x"
+Tk__tok__minus__79
+Tk__integerLiteral "1"
+Tk__tok__semi__1
+Tk__id "Supplier"
+Tk__tok__symbol__72
+Tk__id "Operators"
+Tk__tok__symbol__73
+Tk__id "s"
+Tk__tok__eql__10
+Tk__id "Operators"
+Tk__tok__colon__colon__86
+Tk__tok_new_87
+Tk__tok__semi__1
+Tk__id "IntPredicate"
+Tk__id "p"
+Tk__tok__eql__10
+Tk__id "Operators"
+Tk__tok__colon__colon__86
+Tk__id "odd"
+Tk__tok__semi__1
+Tk__tok_boolean_20
+Tk__id "g"
+Tk__tok__eql__10
+Tk__id "a"
+Tk__tok__minus__minus__83
+Tk__tok__symbol__73
 Tk__id "b"
 Tk__tok__semi__1
 Tk__tok__symbol__15
