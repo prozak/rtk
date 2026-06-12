@@ -28,6 +28,9 @@ make test
 
 ## Roadmap
 
+Each milestone is broken into a pasteable session-task blob in
+[`TASKS.md`](TASKS.md).
+
 | Milestone | Tutorial parts | Deliverable |
 |-----------|----------------|-------------|
 | 0 (this)  | 2-4 | calc grammar + QQ interpreter + idiom verification |
