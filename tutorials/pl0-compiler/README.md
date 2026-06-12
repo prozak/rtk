@@ -96,21 +96,23 @@ positionally (`begin $s1 ; $s2 end`) or through the list constructor.
 
 ## Roadmap
 
-Following the blog series:
+[`PLAN.md`](PLAN.md) breaks the remaining work into self-contained task
+blobs, each written to be pasted into a fresh session as the task
+description. In dependency order:
 
-4. testing infrastructure (partly here already: `tests/`, `run_tests.sh`)
-5. a C code generator — as a separate pass over the AST via QQ patterns;
-   candidate: build the output with the assembly-grammar approach from
-   `../c-compiler` instead of strings
-6. I/O statements (`writeInt`, `readInt into`, ...)
-7. arrays (`size`, indexing)
-8. strings, `forward` declarations, `exit`, `and`/`or`/`not`, `mod`
-
-Semantic checks (symbol table, assignment/call target validation, the
-depth-1 nesting rule of the reference compiler
-[`pl0c`](https://github.com/ibara/pl0c)) slot in before code generation;
-generated AST nodes carry source positions (`RtkPos`/`rtkPosOf`), so those
-diagnostics can name lines like the parser's do.
+1. semantic analysis (`Check.hs`): pl0c's check set with line-numbered
+   diagnostics via the AST's `RtkPos` positions
+2. the C code generator (series part 5): `pl0 file.pl0` → C → `cc` →
+   runnable binary, with `run_tests.sh` executing every valid program
+3. I/O statements (part 6): `writeInt`, `readInt into`, ... — sample
+   programs gain `.expected` outputs
+4. arrays (part 7): `size` declarations, indexing, array/scalar checks
+5. strings, `forward`, `exit`, `and`/`or`/`not`, `mod` (part 8) —
+   pl0c feature parity
+6. an optimizer pass (`-O`): QQ rewrite rules + SYB, the pass the
+   single-pass C original structurally cannot have
+7. (core RTK) scalar and list antiquotes for one type — lifts the
+   `$stmts` whole-list-binder limitation both tutorials design around
 
 This directory deliberately depends on the parent checkout only through
 `cabal exec`; giving it its own `.cabal` file is all it takes to move it to
