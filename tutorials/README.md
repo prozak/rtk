@@ -22,3 +22,10 @@ separate repository with minimal surgery.
   type checking, algorithm W, evaluation - pattern-matches concrete syntax
   via the generated quasi-quoters. Each language ships a test suite and a
   REPL.
+- [`lets-build-a-compiler/`](lets-build-a-compiler/) — an implementation of
+  Jack Crenshaw's ["Let's Build a Compiler"](https://compilers.iecc.com/crenshaw/)
+  tutorial: the hand-rolled recursive descent parser the tutorial spends most
+  of its chapters on is replaced by an RTK grammar, and the compiler passes
+  work on the generated AST through quasi-quotation patterns and splices.
+  Currently at milestone 0 (the parts 2-4 expression language plus a
+  QQ-pattern interpreter).
