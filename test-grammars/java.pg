@@ -280,9 +280,21 @@ VariableDeclaratorList = VariableDeclarator (',' VariableDeclarator)* ;
 # 1. Local variable declarations inside method bodies (via Statement)
 # 2. For loops (via ForStatement)
 # Note: Field-level variable declarations use MemberDeclaration above
+#
+# The modified alternative carries a NON-EMPTY modifier list - deliberately
+# not Parameter's nullable ParamModifierList: at statement start the parser
+# already weighs "Type vs Expression" after an identifier, and a nullable
+# prefix would force an epsilon-reduce decision BEFORE that identifier is
+# shifted, sending 'Foo x;' down the expression path. 'final' and '@' cannot
+# start an expression, so the modified alternative is keyword-anchored and
+# the unmodified one keeps today's exact automaton.
 VariableDeclaration  =
  Type VariableDeclaratorList
-   ';'  ;
+   ';'
+ | LocalModifierList1 Type VariableDeclaratorList ';' ;
+
+# Local variable modifiers (JLS 14.4 VariableModifier), at least one.
+LocalModifierList1 = ('final' | Annotation)+ ;
 
 OptVariableInitializer = ('=' VariableInitializer)? ;
 
@@ -301,8 +313,20 @@ StaticInitializer  =
 ParameterList  =
 Parameter (',' Parameter)* ;
 
+# Parameter modifiers (JLS 8.4.1 VariableModifier: 'final' and annotations).
+# The NULLABLE prefix is safe here because parameter positions (after '(' or
+# ',' in a parameter list, and in 'catch (...)') have no competing expression
+# interpretation: the epsilon-reduce of the empty list on a type-start token
+# is the state's only action. Do NOT reuse this at statement level, where a
+# nullable prefix would break 'Foo x;' - see the NOTE at VariableDeclaration.
+ParamModifierList = ('final' | Annotation)* ;
+
+# '...' (varargs, JLS 8.4.1) is one lexer token: Alex's maximal munch prefers
+# it over '.', and no float literal can follow '..'. That only the LAST
+# parameter may be variadic is a semantic check (javac's job): the parser
+# accepts the ellipsis on any parameter, including a catch parameter.
 Parameter  =
-Type id Dims ;
+ParamModifierList Type ('...')? id Dims ;
 
 StatementList = Statement *;
 

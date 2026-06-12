@@ -1,31 +1,24 @@
 # Blacklist for full parsing tests (main sources)
 # These files use features not yet supported by the grammar, chiefly:
-# - 'final' (and annotations) on method parameters
 # - generic method calls / nested generics in expressions
 # - class literals (Foo.class), lambda expressions (->), method
 #   references (::), anonymous inner classes, enhanced for (:)
+# - a doc comment directly before 'package' (package-info.java)
 #
-# Total: 232 files blacklisted, 27 files passing
+# Total: 206 files blacklisted, 53 files passing
 # As grammar support is added, remove files from this list
 
 org/apache/commons/lang3/AnnotationUtils.java
 org/apache/commons/lang3/AppendableJoiner.java
 org/apache/commons/lang3/ArchUtils.java
-org/apache/commons/lang3/ArrayFill.java
-org/apache/commons/lang3/ArraySorter.java
 org/apache/commons/lang3/ArrayUtils.java
-org/apache/commons/lang3/BitField.java
 org/apache/commons/lang3/BooleanUtils.java
 org/apache/commons/lang3/CachedRandomBits.java
-org/apache/commons/lang3/CharEncoding.java
 org/apache/commons/lang3/CharRange.java
 org/apache/commons/lang3/CharSequenceUtils.java
 org/apache/commons/lang3/CharSet.java
 org/apache/commons/lang3/CharSetUtils.java
 org/apache/commons/lang3/CharUtils.java
-org/apache/commons/lang3/Charsets.java
-org/apache/commons/lang3/ClassLoaderUtils.java
-org/apache/commons/lang3/ClassPathUtils.java
 org/apache/commons/lang3/ClassUtils.java
 org/apache/commons/lang3/Conversion.java
 org/apache/commons/lang3/DoubleRange.java
@@ -41,7 +34,6 @@ org/apache/commons/lang3/ObjectUtils.java
 org/apache/commons/lang3/RandomStringUtils.java
 org/apache/commons/lang3/RandomUtils.java
 org/apache/commons/lang3/Range.java
-org/apache/commons/lang3/RegExUtils.java
 org/apache/commons/lang3/RuntimeEnvironment.java
 org/apache/commons/lang3/SerializationException.java
 org/apache/commons/lang3/SerializationUtils.java
@@ -62,13 +54,10 @@ org/apache/commons/lang3/builder/DiffBuilder.java
 org/apache/commons/lang3/builder/DiffResult.java
 org/apache/commons/lang3/builder/EqualsBuilder.java
 org/apache/commons/lang3/builder/HashCodeBuilder.java
-org/apache/commons/lang3/builder/IDKey.java
 org/apache/commons/lang3/builder/MultilineRecursiveToStringStyle.java
 org/apache/commons/lang3/builder/RecursiveToStringStyle.java
-org/apache/commons/lang3/builder/Reflection.java
 org/apache/commons/lang3/builder/ReflectionDiffBuilder.java
 org/apache/commons/lang3/builder/ReflectionToStringBuilder.java
-org/apache/commons/lang3/builder/StandardToStringStyle.java
 org/apache/commons/lang3/builder/ToStringBuilder.java
 org/apache/commons/lang3/builder/ToStringStyle.java
 org/apache/commons/lang3/builder/package-info.java
@@ -158,7 +147,6 @@ org/apache/commons/lang3/function/FailableToIntBiFunction.java
 org/apache/commons/lang3/function/FailableToIntFunction.java
 org/apache/commons/lang3/function/FailableToLongBiFunction.java
 org/apache/commons/lang3/function/FailableToLongFunction.java
-org/apache/commons/lang3/function/Functions.java
 org/apache/commons/lang3/function/MethodInvokers.java
 org/apache/commons/lang3/function/Predicates.java
 org/apache/commons/lang3/function/Suppliers.java
@@ -166,7 +154,6 @@ org/apache/commons/lang3/function/TriConsumer.java
 org/apache/commons/lang3/function/TriFunction.java
 org/apache/commons/lang3/function/package-info.java
 org/apache/commons/lang3/math/Fraction.java
-org/apache/commons/lang3/math/IEEE754rUtils.java
 org/apache/commons/lang3/math/NumberUtils.java
 org/apache/commons/lang3/math/package-info.java
 org/apache/commons/lang3/mutable/Mutable.java
@@ -180,22 +167,17 @@ org/apache/commons/lang3/mutable/MutableObject.java
 org/apache/commons/lang3/mutable/MutableShort.java
 org/apache/commons/lang3/mutable/package-info.java
 org/apache/commons/lang3/package-info.java
-org/apache/commons/lang3/reflect/AccessibleObjects.java
 org/apache/commons/lang3/reflect/ConstructorUtils.java
 org/apache/commons/lang3/reflect/FieldUtils.java
-org/apache/commons/lang3/reflect/InheritanceUtils.java
 org/apache/commons/lang3/reflect/MemberUtils.java
 org/apache/commons/lang3/reflect/MethodUtils.java
 org/apache/commons/lang3/reflect/TypeLiteral.java
 org/apache/commons/lang3/reflect/TypeUtils.java
 org/apache/commons/lang3/reflect/package-info.java
-org/apache/commons/lang3/stream/IntStreams.java
 org/apache/commons/lang3/stream/LangCollectors.java
 org/apache/commons/lang3/stream/Streams.java
 org/apache/commons/lang3/stream/package-info.java
-org/apache/commons/lang3/text/CompositeFormat.java
 org/apache/commons/lang3/text/ExtendedMessageFormat.java
-org/apache/commons/lang3/text/FormattableUtils.java
 org/apache/commons/lang3/text/StrBuilder.java
 org/apache/commons/lang3/text/StrLookup.java
 org/apache/commons/lang3/text/StrMatcher.java
@@ -204,29 +186,21 @@ org/apache/commons/lang3/text/StrTokenizer.java
 org/apache/commons/lang3/text/WordUtils.java
 org/apache/commons/lang3/text/package-info.java
 org/apache/commons/lang3/text/translate/AggregateTranslator.java
-org/apache/commons/lang3/text/translate/CharSequenceTranslator.java
-org/apache/commons/lang3/text/translate/CodePointTranslator.java
 org/apache/commons/lang3/text/translate/EntityArrays.java
 org/apache/commons/lang3/text/translate/JavaUnicodeEscaper.java
 org/apache/commons/lang3/text/translate/LookupTranslator.java
 org/apache/commons/lang3/text/translate/NumericEntityEscaper.java
 org/apache/commons/lang3/text/translate/NumericEntityUnescaper.java
-org/apache/commons/lang3/text/translate/OctalUnescaper.java
 org/apache/commons/lang3/text/translate/UnicodeEscaper.java
-org/apache/commons/lang3/text/translate/UnicodeUnescaper.java
-org/apache/commons/lang3/text/translate/UnicodeUnpairedSurrogateRemover.java
 org/apache/commons/lang3/text/translate/package-info.java
 org/apache/commons/lang3/time/AbstractFormatCache.java
 org/apache/commons/lang3/time/CalendarUtils.java
-org/apache/commons/lang3/time/DateFormatUtils.java
 org/apache/commons/lang3/time/DateUtils.java
 org/apache/commons/lang3/time/DurationFormatUtils.java
 org/apache/commons/lang3/time/DurationUtils.java
 org/apache/commons/lang3/time/FastDateFormat.java
 org/apache/commons/lang3/time/FastDateParser.java
 org/apache/commons/lang3/time/FastDatePrinter.java
-org/apache/commons/lang3/time/FastTimeZone.java
-org/apache/commons/lang3/time/GmtTimeZone.java
 org/apache/commons/lang3/time/StopWatch.java
 org/apache/commons/lang3/time/TimeZones.java
 org/apache/commons/lang3/time/package-info.java
