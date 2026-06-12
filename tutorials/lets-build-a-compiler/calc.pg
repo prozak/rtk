@@ -1,0 +1,64 @@
+grammar 'Calc';
+
+# Milestone 0 of "Let's Build a Compiler" (Jack Crenshaw, 1988-1995,
+# https://compilers.iecc.com/crenshaw/): the expression/assignment language
+# that parts 2-4 of the tutorial hand-build in Pascal, as one RTK grammar.
+# TestQQ.hs plays the role of part 4 (an interpreter): it evaluates this
+# language by quasi-quotation pattern matching over the generated AST.
+#
+# The grammar doubles as the idiom checklist for the TINY grammar of
+# milestone 1 (tutorial parts 5-12), so every construct TINY will rely on
+# appears here once: a precedence cascade, typed tokens, separated lists,
+# and both anti-quote shapes (scalar and list).
+
+# Prog will become TINY's real 'PROGRAM ... END' '.' rule in milestone 1;
+# for now a calc program is just a statement list.
+Prog = StmtList ;
+
+# NOTE: StmtList must be normalized BEFORE Stmt: RTK allows one anti-quote
+# shape per AST type (scalar or list), and statement anti-quotes should be
+# the list shape ($body binds/splices a whole [Stmt]).
+@shortcuts(body)
+StmtList = Stmt+ ~ ';' ;
+
+@shortcuts(s)
+Stmt = Var '=' Expr
+     | 'print' '(' ExprList ')' ;
+
+# Crenshaw's part 2-3 expressions as a precedence cascade in the
+# grammar.pg idiom: every level shares the Expr type and chains down via a
+# ,-lifted pass-through, so no per-level wrapper constructors exist and a
+# QQ pattern like [expr| $e1 + $e2 |] matches any addition node directly.
+# (Splice-token placement is handled by RTK's unit-production cover
+# analysis; see Normalize.hs.)
+@shortcuts(e)
+Expr = Expr '+' Term
+     | Expr '-' Term
+     | ,Term ;
+
+Expr: Term = Term '*' Factor
+           | Term '/' Factor
+           | ,Factor ;
+
+Expr: Factor = '(' ,Expr ')'
+             | '-' Factor
+             | Lit
+             | Var ;
+
+# Declared after the Expr cascade, so expression anti-quotes keep the
+# scalar shape: $e1 is one Expr, and print($e1, $e2) is a fixed
+# two-argument pattern.
+ExprList = Expr+ ~ ',' ;
+
+Lit = num ;
+Var = id ;
+
+# ----------------------------------------------------------------------------
+# Lexical rules
+# ----------------------------------------------------------------------------
+
+Int: num = [0-9]+ ;
+id = [a-z][a-z0-9_]* ;
+Ignore: ws = [ \t\n\r]+ ;
+# Crenshaw's TINY uses curly-brace comments (part 12)
+Ignore: comment = '{' ([^}\n] | [\n])* '}' ;
