@@ -67,9 +67,18 @@ enforced by the harness above, and full textual identity was never the goal.)
 1. Edit `test-grammars/grammar.pg` — the spec.
 2. `make accept-golden` and review the diff of `test/golden/` (this also
    advances the bootstrap stage that the default front end is compiled from).
-3. Update the hand-written `Lexer.x` / `Parser.y` so the reference follows the
+3. If the change alters the generated AST's shape or constructor names,
+   update `src/generated/ASTAdapter.hs` to match and rebuild — the adapter
+   is compiled against the snapshot. grammar.pg names every
+   constructor-producing alternative (`RuleSimple`, `Star`, `Labeled`, …),
+   so the adapter's pattern matches are stable prose names: reordering or
+   inserting alternatives does not rename constructors. A change to the
+   label syntax itself is two-phase: the checked-in stage must be able to
+   parse the new grammar.pg before `accept-golden` can run (bootstrap via
+   `rtk --use-handwritten` when it cannot).
+4. Update the hand-written `Lexer.x` / `Parser.y` so the reference follows the
    spec and the equivalence harness is green again.
-4. `cabal test` — both suites must pass.
+5. `cabal test` — both suites must pass.
 
 ## Error reporting parity
 

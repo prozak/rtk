@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Named constructors (task 8a): an alternative may carry a leading label —
+  `Expr = Add: Expr '+' Term | Term ;` — that names its generated AST
+  constructor (`Add RtkPos Expr Term`) instead of the positional
+  `Ctr__<Rule>__<index>` default, so code and quasi-quote patterns written
+  against generated ASTs survive alternative reordering and insertion. The
+  label binds tighter than `|`, scopes over one alternative's sequence, and
+  works inside parenthesized groups (naming the extracted group's
+  constructor, including under repetition through the list-proxy
+  machinery). Unlabeled alternatives keep today's generated names
+  byte-for-byte. Misuse is rejected with positioned diagnostics: names
+  must start uppercase, the generated-name prefixes `Ctr__`/`Anti_` are
+  reserved, explicit names must be unique across the whole grammar (all
+  constructors share one generated Haskell module, and the shared-type
+  constructor deduplication in GenAST would otherwise silently merge
+  duplicates), and lifted (`,Rule`) alternatives — which produce no
+  constructor — cannot be named, nor can anything in a lexical rule.
+  Surface syntax chosen over a trailing `@ctor(Name)` annotation after
+  proving LALR feasibility: the labeled grammar.pg's generated parser has
+  0 happy conflicts (as before) and the reference `Parser.y` keeps exactly
+  its 4 pre-existing state-6 reduce/reduce conflicts
 - The generated quasi-quoter for RTK's own grammar language (`GrammarQQ`) is
   compiled into rtk, beside `GrammarLexer`/`GrammarParser` in the snapshot
   front-end component — possible since 0.11 made generated quasi-quoters
@@ -39,6 +59,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (wired into CI) runs Norvig's own test cases plus the examples, and the
   tutorial's README is a section-by-section walkthrough against the
   original essay
+
+### Changed
+- grammar.pg names every constructor-producing alternative (`RuleSimple`,
+  `Star`, `Labeled`, `Ref`, ...), so the generated grammar front end's AST
+  reads like prose and `src/generated/ASTAdapter.hs` no longer references
+  any positional `Ctr__*` constructor — the ergonomics prerequisite for
+  retiring `InitialGrammar` (task 8c). The two `?`-rules whose
+  empty/present alternatives are synthesized (and therefore unnameable) —
+  `ImportsOpt` and `OptDelim` — are restructured away: the imports block is
+  inlined into `Grammar`'s two alternatives (`GrammarDef`/`GrammarImports`)
+  and the `~` delimiter into `Star`/`StarDelim`/`Plus`/`PlusDelim`. The
+  accepted language is unchanged; only grammar.pg's own AST shape moved
+
+### Fixed
+- The reference lexer (`Lexer.x`) now accepts underscores in identifiers,
+  as grammar.pg's `id = [a-zA-Z][A-Za-z0-9_]*` has always specified; it
+  used to stop at the first `_` with a lexical error while the generated
+  (default) front end accepted the name — an invisible front-end
+  divergence until label names like `Mk_1` exercised it
 
 ## [0.11] - 2026-06-12
 

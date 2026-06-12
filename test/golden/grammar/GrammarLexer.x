@@ -15,30 +15,28 @@ $dq = "
 $ndq = [^\"]
 $backslash = [\\]
 
-tokens :- "tok_Clause_dummy_14" { simple Tk__tok_Clause_dummy_14 }
-          "tok_Grammar_dummy_15" { simple Tk__tok_Grammar_dummy_15 }
-          "tok_IdList_dummy_13" { simple Tk__tok_IdList_dummy_13 }
-          "tok_ImportsOpt_dummy_12" { simple Tk__tok_ImportsOpt_dummy_12 }
-          "tok_Name_dummy_11" { simple Tk__tok_Name_dummy_11 }
-          "tok_OptDelim_dummy_10" { simple Tk__tok_OptDelim_dummy_10 }
-          "tok_Option_dummy_9" { simple Tk__tok_Option_dummy_9 }
-          "tok_OptionList_dummy_8" { simple Tk__tok_OptionList_dummy_8 }
-          "tok_Rule_dummy_7" { simple Tk__tok_Rule_dummy_7 }
-          "tok_RuleList_dummy_6" { simple Tk__tok_RuleList_dummy_6 }
-          "tok_StrLit_dummy_5" { simple Tk__tok_StrLit_dummy_5 }
-          "~" { simple Tk__tok__tilde__16 }
+tokens :- "tok_Clause_dummy_10" { simple Tk__tok_Clause_dummy_10 }
+          "tok_Grammar_dummy_11" { simple Tk__tok_Grammar_dummy_11 }
+          "tok_IdList_dummy_9" { simple Tk__tok_IdList_dummy_9 }
+          "tok_Name_dummy_8" { simple Tk__tok_Name_dummy_8 }
+          "tok_Option_dummy_7" { simple Tk__tok_Option_dummy_7 }
+          "tok_OptionList_dummy_6" { simple Tk__tok_OptionList_dummy_6 }
+          "tok_Rule_dummy_5" { simple Tk__tok_Rule_dummy_5 }
+          "tok_RuleList_dummy_4" { simple Tk__tok_RuleList_dummy_4 }
+          "tok_StrLit_dummy_3" { simple Tk__tok_StrLit_dummy_3 }
+          "~" { simple Tk__tok__tilde__14 }
           "|" { simple Tk__tok__pipe__11 }
           "imports" { simple Tk__tok_imports_2 }
           "grammar" { simple Tk__tok_grammar_0 }
           "@symmacro" { simple Tk__tok__symbol_symmacro_9 }
           "@shortcuts" { simple Tk__tok__symbol_shortcuts_6 }
-          "?" { simple Tk__tok__symbol__15 }
+          "?" { simple Tk__tok__symbol__16 }
           "=" { simple Tk__tok__eql__3 }
           ";" { simple Tk__tok__semi__1 }
           ":" { simple Tk__tok__colon__4 }
           "." { simple Tk__tok__dot__5 }
           "," { simple Tk__tok__coma__10 }
-          "+" { simple Tk__tok__plus__14 }
+          "+" { simple Tk__tok__plus__15 }
           "*" { simple Tk__tok__star__13 }
           ")" { simple Tk__tok__rparen__8 }
           "(" { simple Tk__tok__lparen__7 }
@@ -52,43 +50,39 @@ tokens :- "tok_Clause_dummy_14" { simple Tk__tok_Clause_dummy_14 }
           ([a-zA-Z]  [A-Za-z0-9_]*) { simple1 $  Tk__id . (id) }
           ("$"  "Name"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Name . ((tail . dropWhile (/= ':'))) }
           ("$"  "StrLit"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_StrLit . ((tail . dropWhile (/= ':'))) }
-          ("$"  "OptDelim"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_OptDelim . ((tail . dropWhile (/= ':'))) }
           ("$"  "Clause"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Clause . ((tail . dropWhile (/= ':'))) }
           ("$"  "IdList"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_IdList . ((tail . dropWhile (/= ':'))) }
           ("$"  "Option"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Option . ((tail . dropWhile (/= ':'))) }
           ("$"  "OptionList"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_OptionList . ((tail . dropWhile (/= ':'))) }
           ("$"  "Rule"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Rule . ((tail . dropWhile (/= ':'))) }
           ("$"  "RuleList"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_RuleList . ((tail . dropWhile (/= ':'))) }
-          ("$"  "ImportsOpt"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_ImportsOpt . ((tail . dropWhile (/= ':'))) }
           ("$"  "Grammar"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Grammar . ((tail . dropWhile (/= ':'))) }
           . { rtkError }
 
 {
 data Token = EndOfFile |
-             Tk__tok_Clause_dummy_14 |
-             Tk__tok_Grammar_dummy_15 |
-             Tk__tok_IdList_dummy_13 |
-             Tk__tok_ImportsOpt_dummy_12 |
-             Tk__tok_Name_dummy_11 |
-             Tk__tok_OptDelim_dummy_10 |
-             Tk__tok_Option_dummy_9 |
-             Tk__tok_OptionList_dummy_8 |
-             Tk__tok_Rule_dummy_7 |
-             Tk__tok_RuleList_dummy_6 |
-             Tk__tok_StrLit_dummy_5 |
-             Tk__tok__tilde__16 |
+             Tk__tok_Clause_dummy_10 |
+             Tk__tok_Grammar_dummy_11 |
+             Tk__tok_IdList_dummy_9 |
+             Tk__tok_Name_dummy_8 |
+             Tk__tok_Option_dummy_7 |
+             Tk__tok_OptionList_dummy_6 |
+             Tk__tok_Rule_dummy_5 |
+             Tk__tok_RuleList_dummy_4 |
+             Tk__tok_StrLit_dummy_3 |
+             Tk__tok__tilde__14 |
              Tk__tok__pipe__11 |
              Tk__tok_imports_2 |
              Tk__tok_grammar_0 |
              Tk__tok__symbol_symmacro_9 |
              Tk__tok__symbol_shortcuts_6 |
-             Tk__tok__symbol__15 |
+             Tk__tok__symbol__16 |
              Tk__tok__eql__3 |
              Tk__tok__semi__1 |
              Tk__tok__colon__4 |
              Tk__tok__dot__5 |
              Tk__tok__coma__10 |
-             Tk__tok__plus__14 |
+             Tk__tok__plus__15 |
              Tk__tok__star__13 |
              Tk__tok__rparen__8 |
              Tk__tok__lparen__7 |
@@ -99,14 +93,12 @@ data Token = EndOfFile |
              Tk__id String |
              Tk__qq_Name String |
              Tk__qq_StrLit String |
-             Tk__qq_OptDelim String |
              Tk__qq_Clause String |
              Tk__qq_IdList String |
              Tk__qq_Option String |
              Tk__qq_OptionList String |
              Tk__qq_Rule String |
              Tk__qq_RuleList String |
-             Tk__qq_ImportsOpt String |
              Tk__qq_Grammar String
              deriving (Show)
 

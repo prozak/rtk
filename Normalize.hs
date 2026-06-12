@@ -4,7 +4,9 @@ module Normalize(normalizeTopLevelClauses, fillConstructorNames)
 
 import Syntax
 import Diagnostics (Diagnostic(..), showSourcePos)
-import Grammar (isNotIgnored)
+import Grammar (isClauseSeqLifted, isNotIgnored)
+import Data.Char (isUpper)
+import Control.Monad (foldM, foldM_)
 import Data.Generics
 import Data.Maybe
 import qualified Data.Map as M
@@ -12,8 +14,12 @@ import qualified Data.List as L
 import qualified Data.Set as S
 import Control.Lens
 
-import Control.Monad.State.Strict hiding (lift)
-import Control.Monad.State.Strict (lift)
+-- explicit import list: mtl 2.2 re-exports all of Control.Monad from this
+-- module while mtl >= 2.3 (GHC 9.6's toolchain) does not, so an open import
+-- makes the Control.Monad import above unused on one compiler and required
+-- on the other - either way fatal under -Werror
+import Control.Monad.State.Strict (State, StateT, gets, lift, modify,
+                                   runState, runStateT)
 
 -- In the normal form top level clause of the non-lexical rule can be the following:
 -- 1. simple_clause *
@@ -296,10 +302,14 @@ checkNormalClause (IIgnore c) = do
     _ -> normError $ "ignore (!) cannot be applied to: " ++ showClause c
 checkNormalClause (IId idName) = do
   return $ STAltOfSeq [STSeq "" [SSId idName]]
+checkNormalClause (ICtor n c) = do
+  s <- checkNamedClauseSeq n c
+  return $ STAltOfSeq [s]
 checkNormalClause c = normError $ "this clause cannot be used in a syntax rule: " ++ showClause c
                                   ++ " (regular expressions and '.' are only allowed in lexical rules)"
 
 checkNormalClauseSeq :: IClause -> Normalization STSeq
+checkNormalClauseSeq (ICtor n c) = checkNamedClauseSeq n c
 checkNormalClauseSeq (ISeq cs) = do
   cs1 <- mapM checkSimpleClause cs
   checkLiftedInSeq cs cs1
@@ -307,6 +317,24 @@ checkNormalClauseSeq (ISeq cs) = do
 checkNormalClauseSeq ic = do
   c1 <- checkSimpleClause ic
   return $ STSeq "" [c1]
+
+-- A named alternative ("Star: Clause5 '*'"): the body normalizes exactly
+-- like the same alternative would unlabeled, and the user's name replaces
+-- the generated Ctr__ one. Note this means a label always produces a
+-- constructor: a sole "R = L: A* ;" alternative is a data declaration whose
+-- L wraps the (proxied) list, where the unlabeled spelling would have made
+-- R a bare list alias. Only a lifted (,) alternative cannot be named - it
+-- passes another rule's value through and produces no constructor, so a
+-- name on it would silently vanish (GenY ignores names on lifted
+-- alternatives, GenAST filters them from the data declaration).
+checkNamedClauseSeq :: ConstructorName -> IClause -> Normalization STSeq
+checkNamedClauseSeq n c = do
+  STSeq _ cs1 <- checkNormalClauseSeq c
+  if isClauseSeqLifted cs1
+    then normError $ "the lifted (,) alternative '" ++ showClause c
+                     ++ "' passes another rule's value through and produces no constructor,"
+                     ++ " so it cannot be named '" ++ n ++ "': remove the label or the ','"
+    else return $ STSeq n cs1
 
 -- A lifted (,) clause must be the only non-ignored clause of its sequence.
 -- Check it here, where the offending rule is still known, instead of failing
@@ -365,6 +393,56 @@ checkDuplicateRuleNames = go M.empty
     firstDefinedAt r = case getIRulePos r of
       Just pos -> " (first definition at " ++ showSourcePos pos ++ ")"
       Nothing  -> ""
+
+-- Explicit constructor names ("Name: ..." alternative labels) are validated
+-- up front, while the offending rule and its position are still known:
+--
+--   * the name must be constructor-shaped (start with an uppercase letter;
+--     the lexer already restricts it to [A-Za-z0-9_]*);
+--   * the generated-name conventions are reserved: 'Ctr__' (Normalize fills
+--     unnamed alternatives with such names) and 'Anti_' (the quasi-quotation
+--     splice constructors built by addAntiRuleCached);
+--   * explicit names must be unique across the WHOLE grammar, not just their
+--     own rule: all constructors land in one generated Haskell module, and a
+--     duplicate within a shared-type group would additionally be merged
+--     silently by GenAST's constructor-name deduplication (which exists for
+--     the Anti_ alternatives), dropping one of the user's alternatives;
+--   * lexical rules carry no AST constructors, so labels there are rejected
+--     rather than silently ignored.
+checkCtorLabels :: [IRule] -> Normalization ()
+checkCtorLabels = foldM_ checkRule M.empty
+  where
+    checkRule seen r = do
+      currentRule .= Just r
+      foldM (checkName r) seen (ctorLabels (getIClause r))
+    ctorLabels :: IClause -> [ConstructorName]
+    ctorLabels = everything (++) ([] `mkQ` label)
+      where label (ICtor n _) = [n]
+            label _           = []
+    checkName r seen n
+      | isLexicalRule (getIRuleName r) =
+          normError $ "a constructor name ('" ++ n ++ ":') cannot appear in a lexical rule:"
+                      ++ " tokens carry no AST constructors"
+      | not (startsUpper n) =
+          normError $ "constructor name '" ++ n ++ "' must start with an uppercase letter"
+      | "Ctr__" `L.isPrefixOf` n =
+          normError $ "constructor name '" ++ n ++ "' uses the reserved prefix 'Ctr__'"
+                      ++ " (rtk generates such names for unnamed alternatives)"
+      | "Anti_" `L.isPrefixOf` n =
+          normError $ "constructor name '" ++ n ++ "' uses the reserved prefix 'Anti_'"
+                      ++ " (rtk generates such names for quasi-quotation splices)"
+      | Just firstUse <- M.lookup n seen =
+          normError $ "constructor name '" ++ n ++ "' is already used"
+                      ++ inRule firstUse
+                      ++ ": explicit constructor names must be unique across the grammar"
+                      ++ " (all constructors share one generated Haskell module)"
+      | otherwise = return $ M.insert n r seen
+    startsUpper (ch : _) = isUpper ch
+    startsUpper []       = False
+    inRule r = " in rule '" ++ getIRuleName r ++ "'"
+               ++ case getIRulePos r of
+                    Just pos -> " (at " ++ showSourcePos pos ++ ")"
+                    Nothing  -> ""
 
 -- Every bare-name reference inside a clause.
 allIdRefs :: IClause -> [ID]
@@ -535,6 +613,7 @@ computeQQAttachPoints grammar = M.fromList $ map attachFor groups
       ISeq cs      -> all (clauseNullable env) cs
       ILifted c1   -> clauseNullable env c1
       IIgnore c1   -> clauseNullable env c1
+      ICtor _ c1   -> clauseNullable env c1
     isNullable = clauseNullable nullableRules
 
     -- The alternatives a clause normalizes to, mirroring checkNormalClause:
@@ -642,6 +721,7 @@ doNM :: InitialGrammar -> Normalization ()
 doNM grammar = do
   let grammar0 = everywhereBut (False `mkQ` (isLexicalRule . getIRuleName)) (mkT removeOpts) grammar
   checkDuplicateRuleNames $ getIRules grammar0
+  checkCtorLabels $ getIRules grammar0
   mapM_ (\r -> do currentRule .= Just r
                   normalizeRule r)
         $ getIRules grammar0

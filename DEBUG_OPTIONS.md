@@ -202,45 +202,49 @@ rtk test-grammars/grammar.pg test-out --debug-rule=Clause
 ======================================================================
   RULE TRACE: 'Clause' - Tokens
 ======================================================================
-Mentioned 11 time(s) in the token stream:
-  line 28, column 24: Id "Clause"
-  line 40, column 1: Id "Clause"
+Mentioned 12 time(s) in the token stream:
+  line 33, column 36: Id "Clause"
+  line 46, column 1: Id "Clause"
   ...
 
 ======================================================================
   RULE TRACE: 'Clause' - After Parse
 ======================================================================
--- Rule 'Clause' (line 40, column 1)
+-- Rule 'Clause' (line 46, column 1)
 IRule
   { getIDataTypeName = Nothing
   , getIRuleName = "Clause"
   , getIClause =
       IAlt
-        [ ISeq
-            [ IId { getIdStr = "Clause" }
-            , IStrLit "|"
-            , IId { getIdStr = "Clause2" }
-            ]
-        , ISeq [ ILifted IId { getIdStr = "Clause2" } ]
+        [ ICtor
+            "Alt"
+            (ISeq
+               [ IId { getIdStr = "Clause" }
+               , IStrLit "|"
+               , IId { getIdStr = "Clause1" }
+               ])
+        , ISeq [ ILifted IId { getIdStr = "Clause1" } ]
         ]
   , ...
   }
--- Rule 'Clause2' (line 43, column 1)  [matches via its 'Clause' data type]
+-- Rule 'Clause1' (line 53, column 1)  [matches via its 'Clause' data type]
 ...
 
 ======================================================================
   RULE TRACE: 'Clause' - After String Normalization
 ======================================================================
--- Rule 'Clause' (line 40, column 1)
+-- Rule 'Clause' (line 46, column 1)
 IRule
   { ...
   , getIClause =
       IAlt
-        [ ISeq
-            [ IId { getIdStr = "Clause" }
-            , IIgnore IId { getIdStr = "tok__pipe__11" }   -- was IStrLit "|"
-            , IId { getIdStr = "Clause2" }
-            ]
+        [ ICtor
+            "Alt"
+            (ISeq
+               [ IId { getIdStr = "Clause" }
+               , IIgnore IId { getIdStr = "tok__pipe__11" }   -- was IStrLit "|"
+               , IId { getIdStr = "Clause1" }
+               ])
         , ... ]
   }
 ...
@@ -248,11 +252,12 @@ IRule
 ======================================================================
   RULE TRACE: 'Clause' - After Clause Normalization
 ======================================================================
-  Clause (5 rules)
+  Clause (6 rules)
     - Clause5: 6 alternatives
-    - Clause4: 4 alternatives
+    - Clause4: 6 alternatives
     - Clause3: 3 alternatives
     - Clause2: 2 alternatives
+    - Clause1: 2 alternatives
     - Clause: 2 alternatives
 SyntaxRuleGroup
   { getSDataTypeName = "Clause"
@@ -269,7 +274,8 @@ SyntaxRuleGroup
 ======================================================================
   RULE TRACE: 'Clause' - After Constructor Fill
 ======================================================================
-  ...same group, with the empty constructor names filled in:
+  ...same group; named alternatives keep their labels and the unnamed
+  (here: lifted) ones get generated names filled in:
                     [ STSeq "Anti_Clause" [ SSId "qq_Clause" ]
                     , STSeq
                         "Ctr__Clause__0"
@@ -277,6 +283,8 @@ SyntaxRuleGroup
                         , SSLifted "Clause"
                         , SSIgnore "tok__rparen__8"
                         ]
+                    , STSeq "Ref" [ SSId "Name" ]
+                    , STSeq "Lit" [ SSId "StrLit" ]
                     , ... ]
 ```
 
