@@ -1,0 +1,23 @@
+grammar 'I14';
+
+# Issue #14 fixture: 'Shape' and 'Label' are pure type groups - they exist
+# only through rule annotations, no rule carries the type's name. rtk
+# synthesizes the lifted cover rule for each demanded one
+# (Shape = ,Circle | ,Square ; Label = ,Note ;), exactly what authors
+# otherwise write by hand (java.pg's
+# "Expression : Expression = AssignmentExpression ;").
+
+# A plain reference to the bare type name
+Start = Shape Items ;
+
+Shape : Circle = 'circle' num ;
+Shape : Square = 'square' num ;
+
+# The original issue shape: a list over the bare type name
+Items = Shape* ~ ',' ;
+
+# Never referenced by name: only the QQ start wrapper demands its cover
+Label : Note = 'note' num ;
+
+num = [0-9]+ ;
+Ignore: ws = [ \t\n]+ ;

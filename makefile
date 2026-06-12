@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens test-lex-java accept-lex-java test-all-java test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens test-lex-java accept-lex-java test-all-java test-i14-qq test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -224,6 +224,15 @@ test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
 	$(CP) test-grammars/java-qq-test.hs test-out
 	cabal exec -- ghc --make -itest-out test-out/java-qq-test.hs -o test-out/java-qq-test
 	test-out/java-qq-test
+
+# Quasi-quotation against covered pure types (issue #14): i14.pg's 'Shape'
+# and 'Label' exist only through rule annotations; the synthesized cover
+# rules give them top-level quoters and $Type:var splices like any
+# hand-written type-named rule.
+test-i14-qq: build test-out/I14Lexer.hs test-out/I14Parser.hs | test-out
+	$(CP) test-grammars/i14-qq-test.hs test-out
+	cabal exec -- ghc --make -itest-out test-out/i14-qq-test.hs -o test-out/i14-qq-test
+	test-out/i14-qq-test
 
 # Test debug options - uses grammar.pg as test subject
 test-debug: build | test-out

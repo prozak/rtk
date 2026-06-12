@@ -116,13 +116,32 @@ genSimpleItem rmap refType (SSId idName) = text <$> findRuleDataTypeName rmap re
 genSimpleItem _    _       (SSIgnore _) = Right empty
 genSimpleItem _    _       (SSLifted _) = error "lifted rules are not yet implemented"
 
--- A reference to an unknown rule is a user error (a typo'd rule name); name
--- both the unknown rule and the type that references it.
+-- A reference to an unknown rule is a user error; name both the unknown
+-- rule and the type that references it. A bare type name resolves only via
+-- a rule of the same name - hand-written, or the cover rtk synthesizes for
+-- a type declared by syntax rule annotations (Normalize.synthesizeTypeCovers,
+-- issue #14). What remains here is a name that is no rule and no such type:
+-- a typo, or a lexical rule's value type ("T : tok = ..." declares the
+-- token payload's Haskell type, not a referable syntax type), which the
+-- rules map knows as a type and deserves the more specific message.
 findRuleDataTypeName :: RulesMap -> String -> ID -> Either Diagnostic ID
 findRuleDataTypeName rmap refType idName = case Map.lookup idName rmap of
-                                 Just r -> Right r
-                                 _      -> Left $ Diagnostic Nothing (Just ("in type '" ++ refType ++ "'"))
-                                                  ("reference to unknown rule '" ++ idName ++ "'")
+    Just r -> Right r
+    _      -> Left $ Diagnostic Nothing (Just ("in type '" ++ refType ++ "'")) message
+  where
+    message
+      | idName `elem` Map.elems rmap =
+          "reference to '" ++ idName ++ "', which is a type but not a rule:"
+          ++ " a type can be referenced by its bare name only when a rule of"
+          ++ " that name exists or some syntax rule declares the type ('"
+          ++ idName ++ " : SomeRule = ...', for which rtk synthesizes the"
+          ++ " cover rule '" ++ idName ++ "' automatically); a lexical rule's"
+          ++ " value type declares no such rule - reference the lexical rule"
+          ++ " itself instead"
+      | otherwise =
+          "reference to unknown rule '" ++ idName ++ "' (no rule of that name"
+          ++ " exists, and no syntax rule declares it as its type via '"
+          ++ idName ++ " : SomeRule = ...')"
 
 joinAlts :: [Doc] -> Doc
 joinAlts alts = vcat $ punctuate (text " |") alts

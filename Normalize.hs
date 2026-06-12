@@ -366,6 +366,107 @@ checkDuplicateRuleNames = go M.empty
       Just pos -> " (first definition at " ++ showSourcePos pos ++ ")"
       Nothing  -> ""
 
+-- Every bare-name reference inside a clause.
+allIdRefs :: IClause -> [ID]
+allIdRefs = everything (++) ([] `mkQ` idRef)
+  where idRef (IId n) = [n]
+        idRef _       = []
+
+-- A declared type may exist only through rule annotations ("T : Rule = ..."),
+-- with no rule named T - a "pure type group". A reference to such a bare type
+-- name would reach the generators as a reference to the nonexistent rule T
+-- and die in GenAST.findRuleDataTypeName (issue #14). The reference can be
+-- the author's (a plain "S = T ;" or a list element "T* ~ ','") or one the
+-- QQ machinery generates itself: the start wrapper added by addStartGroup
+-- references every public group's type name, so a data-start grammar fails
+-- on a pure type group even when the author never mentions the bare name.
+--
+-- Synthesize the cover rule that authors write by hand (java.pg's
+-- "Expression : Expression = AssignmentExpression ;"), in its lifted form:
+--
+--     T : T = ,r1 | ,r2 | ... ;     -- one alternative per rule annotated T
+--
+-- A lifted alternative passes the annotated rule's value through, so the
+-- cover adds a nonterminal for T without adding an AST constructor. It is
+-- synthesized on the InitialGrammar, before any normalization bookkeeping,
+-- so it flows through buildRuleToTypeMap and computeQQAttachPoints exactly
+-- like a hand-written cover: its alternatives are unit edges r_i -> T, the
+-- annotated rules therefore cover the always-demanded T, and a $T:var
+-- splice climbs to T through the cover from whatever attach point the
+-- greedy cover picks.
+--
+-- Synthesis is demand-driven: a cover appears only when something will
+-- reference T - a bare-name reference in some syntax rule, or the QQ start
+-- wrapper. The wrapper exists only for a data start group (an alias start
+-- group skips the QQ entry-point machinery, see addStartGroup), so that
+-- demand is predicted here with the same group-shape rules normalization
+-- applies: the start group ends up an alias exactly when it keeps a single
+-- rule whose top-level clause is a repetition - no second user rule of the
+-- start type, no synthesized cover joining the group, and no list-element
+-- proxy added into it by a repetition over a start-typed element. Grammars
+-- that demand no cover are returned untouched, output byte for byte.
+synthesizeTypeCovers :: InitialGrammar -> InitialGrammar
+synthesizeTypeCovers grammar
+  | null covers = grammar
+  | otherwise   = grammar { getIRules = getIRules grammar ++ covers }
+  where
+    rules     = getIRules grammar
+    synRules  = [ r | r <- rules, not (isLexicalRule (getIRuleName r)) ]
+    ruleNames = S.fromList (map getIRuleName rules)
+    ruleTypeOf r = maybe (getIRuleName r) Prelude.id (getIDataTypeName r)
+    typeOfName = M.fromList [ (getIRuleName r, ruleTypeOf r) | r <- synRules ]
+
+    -- declared types and each type's annotated rules, in declaration order
+    declaredTypes = L.nub [ t | r <- synRules, Just t <- [getIDataTypeName r] ]
+    rulesOfType t = [ getIRuleName r | r <- synRules, getIDataTypeName r == Just t ]
+    pureTypes = [ t | t <- declaredTypes, not (t `S.member` ruleNames) ]
+
+    referenced = S.fromList $ concatMap (allIdRefs . getIClause) synRules
+    demanded
+      | aliasStart = [ t | t <- pureTypes, t `S.member` referenced ]
+      | otherwise  = pureTypes   -- the start wrapper references every type
+
+    covers = map coverRule demanded
+    coverRule t = IRule { getIDataTypeName = Just t
+                        , getIDataFunc     = Nothing
+                        , getIRuleName     = t
+                        , getIClause       = IAlt [ ILifted (IId r) | r <- rulesOfType t ]
+                        , getIRuleOptions  = []
+                        , getIRulePos      = Nothing }
+
+    aliasStart = case synRules of
+      []              -> True   -- no wrappers (normalization rejects the grammar first)
+      (firstRule : _) ->
+        let firstID = ruleTypeOf firstRule
+        in case [ r | r <- synRules, ruleTypeOf r == firstID ] of
+             -- a cover joins the group when the start type is itself a
+             -- referenced pure type
+             [r] -> isTopRepetition (getIClause r)
+                    && not (firstID `elem` pureTypes && firstID `S.member` referenced)
+                    && all ((/= Just firstID) . topRepetitionElemType) synRules
+             _   -> False
+
+    isTopRepetition c = case unwrapSingleton c of
+      IStar{} -> True
+      IPlus{} -> True
+      _       -> False
+
+    -- The type of the element a top-level repetition rule collects: such a
+    -- rule gets a ListElem proxy added into the ELEMENT type's group (see
+    -- addRuleWithQQ/addListProxyRule). A non-reference element is extracted
+    -- into a fresh proxy group of its own and can never hit the start group.
+    topRepetitionElemType r = case unwrapSingleton (getIClause r) of
+        IStar c _ -> elemType c
+        IPlus c _ -> elemType c
+        _         -> Nothing
+      where elemType (IId e) = Just (M.findWithDefault e e typeOfName)
+            elemType _       = Nothing
+
+    -- mirrors checkNormalClause's singleton unwrapping
+    unwrapSingleton (IAlt [c]) = unwrapSingleton c
+    unwrapSingleton (ISeq [c]) = unwrapSingleton c
+    unwrapSingleton c          = c
+
 -- Decide, for every data type, which of its rules receive the $Type:var
 -- splice alternative ("attach points"). A type declared by a single rule
 -- keeps today's behavior: the rule itself is the attach point.
@@ -474,11 +575,6 @@ computeQQAttachPoints grammar = M.fromList $ map attachFor groups
     altLeadsLifted c            = liftedIdHead c
     liftedIdHead (ILifted (IId _)) = True
     liftedIdHead _                 = False
-
-    allIdRefs :: IClause -> [ID]
-    allIdRefs = everything (++) ([] `mkQ` idRef)
-      where idRef (IId n) = [n]
-            idRef _       = []
 
     attachFor (t, [r]) = (t, S.singleton (getIRuleName r))
     attachFor (t, rs)  = (t, picked)
@@ -645,7 +741,8 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
       [] -> error "Grammar must have at least one rule group"
 
 normalizeTopLevelClauses :: InitialGrammar -> Either Diagnostic NormalGrammar
-normalizeTopLevelClauses grammar =
+normalizeTopLevelClauses grammar0 =
+  let grammar = synthesizeTypeCovers grammar0 in
   case getIRules grammar of
     [] -> Left $ Diagnostic Nothing Nothing $
                    "grammar '" ++ getIGrammarName grammar ++ "' contains no rules"

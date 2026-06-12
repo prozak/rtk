@@ -244,6 +244,22 @@ errorHandlingTests = TestList
             assertEqual "context names the referencing type" (Just "in type 'Foo'") (diagContext d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "unknown rule" `isInfixOf` diagMessage d && "Nope" `isInfixOf` diagMessage d
+                -- the fallback names the type-named-rule convention that
+                -- cover synthesis (issue #14) builds on
+                && "Nope : SomeRule = ..." `isInfixOf` diagMessage d
+    , TestLabel "a lexical value type is not referable, and the error says why" $ TestCase $
+        -- 'Thing : num = ...' declares the token payload's Haskell type, not
+        -- a syntax type: no cover rule can be synthesized from it (issue
+        -- #14), and the diagnostic explains the convention instead of the
+        -- bare "unknown rule"
+        expectDiagnostic "a lexical value type reference"
+            (normalizeGrammarSource "grammar 'X';\nFoo = Thing;\nThing : num = [0-9]+ ;\n"
+                >>= artifactsFor) $ \d -> do
+            assertEqual "context names the referencing type" (Just "in type 'Foo'") (diagContext d)
+            assertBool ("unexpected message: " ++ diagMessage d) $
+                "a type but not a rule" `isInfixOf` diagMessage d
+                && "Thing : SomeRule = ..." `isInfixOf` diagMessage d
+                && "lexical rule" `isInfixOf` diagMessage d
     ]
 
 -- | Force the whole grammar value so lazy errors surface where we expect them.
@@ -259,6 +275,10 @@ normalizationTests = TestList
     [ TestLabel "string literals become shared ignored keyword tokens" testStringLiterals
     , TestLabel "list rules get an element proxy with QQ splicing support" testListProxy
     , TestLabel "QQ anti machinery is created once per shared type" testAntiRuleSharing
+    , TestLabel "a referenced pure type group gets a synthesized cover rule" testTypeCoverSynthesis
+    , TestLabel "a bare type as a list element resolves through the cover" testTypeCoverListElement
+    , TestLabel "the start wrapper demands covers for unreferenced pure types" testTypeCoverWrapperDemand
+    , TestLabel "no cover is synthesized for an unreferenced pure type (alias start)" testTypeCoverOnDemand
     , TestLabel "a precedence chain gets one splice alternative, at its bottom" testChainAttachment
     , TestLabel "splice attachment falls back to eligible rules when nothing covers" testAttachFallbackNoCover
     , TestLabel "shortcuts are recorded against the rule's type" testShortcuts
@@ -335,11 +355,125 @@ testAntiRuleSharing = TestCase $ do
     assertEqual "one QQ lexical token per type"
         ["qq_Expr", "qq_Top"]
         (sort [ n | LexicalRule{getLRuleName = n} <- getLexicalRules g, "qq_" `isPrefixOf` n ])
-    -- both rules of the shared type accept the same splice alternative
+    -- 'Expr' is a pure type group ("Top = Expr ;" references it but no rule
+    -- carries the name), so rtk synthesizes the cover "Expr = ,Add | ,Mul"
+    -- and the splice alternative sits only on the greedy attach point (Add,
+    -- first by declaration); a $Expr:var splice climbs to Expr through the
+    -- cover's unit production instead of every rule carrying a conflicting
+    -- reduce item of its own
     let antiAltsOf name = [ alt | SyntaxRule rn (STAltOfSeq alts) <- allRules g, rn == name
                                 , alt@(STSeq "Anti_Expr" _) <- alts ]
-    assertEqual "Add accepts $Expr: splices" [STSeq "Anti_Expr" [SSId "qq_Expr"]] (antiAltsOf "Add")
-    assertEqual "Mul accepts $Expr: splices" [STSeq "Anti_Expr" [SSId "qq_Expr"]] (antiAltsOf "Mul")
+    assertEqual "Add (the attach point) accepts $Expr: splices"
+        [STSeq "Anti_Expr" [SSId "qq_Expr"]] (antiAltsOf "Add")
+    assertEqual "Mul reaches splices through the cover instead" [] (antiAltsOf "Mul")
+    assertEqual "the synthesized cover carries no splice alternative" [] (antiAltsOf "Expr")
+
+-- | Issue #14: a declared type may exist only through rule annotations (a
+-- "pure type group" - no rule is named after the type). Referencing the
+-- bare type name used to fail generation with "reference to unknown rule";
+-- rtk now synthesizes the cover rule that authors write by hand, in lifted
+-- form ("Thing = ,A | ,B"), so the type has a nonterminal and the lifted
+-- alternatives pass the annotated rules' values through without adding an
+-- AST constructor. The cover integrates with the splice attach machinery:
+-- its alternatives are ordinary unit-production edges, so the splice
+-- alternative lands on an annotated rule and a $Thing:var splice climbs to
+-- Thing through the cover.
+testTypeCoverSynthesis :: Test
+testTypeCoverSynthesis = TestCase $ do
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'I14';"
+                , "Start = Thing ;"
+                , "Thing : A = aa ;"
+                , "Thing : B = bb ;"
+                , "aa = [a]+ ;"
+                , "bb = [b]+ ;"
+                ]
+    -- the synthesized cover: one lifted alternative per annotated rule, in
+    -- declaration order
+    case [ alts | SyntaxRule "Thing" (STAltOfSeq alts) <- allRules g ] of
+        [alts] -> assertEqual "lifted unit production per annotated rule"
+            [STSeq "" [SSLifted "A"], STSeq "" [SSLifted "B"]] alts
+        other -> assertFailure $ "expected one synthesized cover rule 'Thing', got: " ++ show other
+    assertEqual "the cover is grouped under its type" ["Thing"]
+        [ getSDataTypeName grp | grp <- getSyntaxRuleGroups g
+                               , "Thing" `elem` map getSRuleName (getSRules grp) ]
+    -- the covered group is an ordinary public data group: the start wrapper
+    -- includes it, so it gets a top-level quoter like a hand-written type
+    assertBool "the start wrapper covers Thing"
+        ("Thing" `M.member` getRuleToStartInfo (getGrammarInfo g))
+    -- splice integration: the alternative sits on the attach point A; the
+    -- all-lifted cover itself carries none
+    let antiAltsOf name = [ alt | SyntaxRule rn (STAltOfSeq alts) <- allRules g, rn == name
+                                , alt@(STSeq "Anti_Thing" _) <- alts ]
+    assertEqual "A (the attach point) accepts $Thing: splices"
+        [STSeq "Anti_Thing" [SSId "qq_Thing"]] (antiAltsOf "A")
+    assertEqual "B reaches splices through the cover instead" [] (antiAltsOf "B")
+    assertEqual "the cover has no splice alternative of its own" [] (antiAltsOf "Thing")
+
+-- | The original issue #14 shape: a list over the bare type name
+-- ("Items = Thing* ~ ','"). The element resolves through the synthesized
+-- cover - the list's element proxy is grouped under the type and lifts the
+-- cover rule as its real-element alternative.
+testTypeCoverListElement :: Test
+testTypeCoverListElement = TestCase $ do
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'I14';"
+                , "Start = Items ;"
+                , "Items = Thing* ~ ',' ;"
+                , "Thing : Leaf = num ;"
+                , "num = [0-9]+ ;"
+                ]
+    assertEqual "lifted cover over the single annotated rule"
+        [[STSeq "" [SSLifted "Leaf"]]]
+        [ alts | SyntaxRule "Thing" (STAltOfSeq alts) <- allRules g ]
+    proxyName <- case [ r | r <- allRules g, getSRuleName r == "Items"
+                          , STMany{} <- [getSClause r] ] of
+        [SyntaxRule _ (STMany STStar (SSId proxy) (Just _))] -> return proxy
+        other -> fail $ "expected Items to stay a star rule over a proxy, got: " ++ show other
+    assertEqual "the list proxy is grouped under the covered type" ["Thing"]
+        [ getSDataTypeName grp | grp <- getSyntaxRuleGroups g
+                               , proxyName `elem` map getSRuleName (getSRules grp) ]
+    case find ((== proxyName) . getSRuleName) (allRules g) of
+        Just (SyntaxRule _ (STAltOfSeq [STSeq "Anti_Thing" [SSId "qq_Items"],
+                                        STSeq "" [SSLifted lifted]])) ->
+            assertEqual "the proxy's real element is the cover" "Thing" lifted
+        other -> assertFailure $ "unexpected proxy rule shape: " ++ show other
+
+-- | The QQ start wrapper references every public type by name, so a
+-- data-start grammar demands a cover even for a pure type the author never
+-- references; generation used to fail on the wrapper's dangling reference
+-- alone. The covered type then gets a top-level quoter like any other.
+testTypeCoverWrapperDemand :: Test
+testTypeCoverWrapperDemand = TestCase $ do
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'I14';"
+                , "Start = Item ;"
+                , "Item = ident ;"
+                , "Thing : Leaf = ident ;"
+                , "ident = [a-z]+ ;"
+                ]
+    assertEqual "cover synthesized for the wrapper-demanded type"
+        [[STSeq "" [SSLifted "Leaf"]]]
+        [ alts | SyntaxRule "Thing" (STAltOfSeq alts) <- allRules g ]
+    assertBool "the start wrapper covers Thing"
+        ("Thing" `M.member` getRuleToStartInfo (getGrammarInfo g))
+
+-- | Synthesis is demand-driven. An alias start group generates no QQ start
+-- wrapper, so a pure type that nothing references demands no cover and the
+-- grammar's output stays exactly as before - no unused-nonterminal noise.
+-- This is the issue #14 retest's I14B reproducer, which already generated.
+testTypeCoverOnDemand :: Test
+testTypeCoverOnDemand = TestCase $ do
+    let g = normalizeNoFill $ unlines
+                [ "grammar 'I14B';"
+                , "Items = Item* ~ ',' ;"
+                , "Thing : Item = num ;"
+                , "num = [0-9]+ ;"
+                ]
+    assertEqual "no cover rule synthesized" []
+        [ r | r <- allRules g, getSRuleName r == "Thing" ]
+    assertEqual "alias start group keeps no wrapper entries"
+        M.empty (getRuleToStartInfo (getGrammarInfo g))
 
 -- | In a shared-type group whose rules form a unit-production chain
 -- (java.pg's Expression hierarchy in miniature), only the bottom rule of
