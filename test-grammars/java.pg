@@ -1,10 +1,10 @@
 grammar 'Java';
 
 # ============================================================================
-# LALR conflict inventory (happy: 17 shift/reduce, 0 reduce/reduce)
+# LALR conflict inventory (happy: 13 shift/reduce, 0 reduce/reduce)
 # ============================================================================
 # Every remaining conflict is a shift/reduce whose default resolution (shift)
-# is the correct Java reading. They fall into seven families; the items
+# is the correct Java reading. They fall into six families; the items
 # identify the automaton state (happy -i state numbers move with every
 # grammar change, the items do not):
 #
@@ -15,16 +15,7 @@ grammar 'Java';
 #    this if and hand the 'else' to an enclosing one. Shifting is the JLS
 #    14.5 rule. See IfStatement.
 #
-# 2. catch/finally attach to the nearest try - 1 state, 4 conflicts:
-#    'catch', 'finally' and their splice tokens qq_CatchList, qq_OptFinally,
-#    against reduce OptFinally -> empty. Items:
-#        TryStatement -> 'try' Statement CatchList . OptFinally
-#        CatchList -> CatchList . ('catch' '(' Parameter ')' Statement)
-#    In 'try try { } catch (E e) { } finally { }' each clause could extend
-#    the inner try (shift) or close it and attach to the outer one (reduce).
-#    Java attaches both to the nearest try.
-#
-# 3. Member id vs empty TypeParameters - 2 states (a type body after
+# 2. Member id vs empty TypeParameters - 2 states (a type body after
 #    ModifierList, and the MemberDeclaration QQ entry), 1 conflict each on
 #    id, against reduce TypeParameters -> empty. Items:
 #        MemberDeclaration -> . id MemberAfterFirstId
@@ -34,7 +25,7 @@ grammar 'Java';
 #    (reduce). No input is lost: id MemberAfterFirstId derives everything
 #    the empty-TypeParameters generic alternative would.
 #
-# 4. Greedy CompoundName '.' - 1 state, 1 conflict on '.', against reduce
+# 3. Greedy CompoundName '.' - 1 state, 1 conflict on '.', against reduce
 #    CompoundName -> id CompoundNameTail . Item:
 #        CompoundNameTail -> CompoundNameTail . ('.' id)
 #    'a.b.c' extends the unreduced name instead of reducing 'a' early and
@@ -48,7 +39,7 @@ grammar 'Java';
 #    type positions (package, throws, extends, after 'new', ...) parse the
 #    name in a twin state without them and without the conflict.
 #
-# 5. Bracket-list shifts on '[' - 5 states, 1 conflict each:
+# 4. Bracket-list shifts on '[' - 5 states, 1 conflict each:
 #      - after CompoundName in an expression, at statement start, and in a
 #        cast head (reduce: the call-parens option ('(' Arglist ')')? ->
 #        empty, i.e. commit to the bare name as a complete primary). Items:
@@ -64,9 +55,9 @@ grammar 'Java';
 #    access/sizing) or greedily extends the dims list; no input is lost.
 #    See the NOTEs at Dims and PrimaryNoPostfix.
 #
-# 6. '<' commits to type arguments - 2 states, 1 conflict each on '<':
+# 5. '<' commits to type arguments - 2 states, 1 conflict each on '<':
 #    after CompoundName at statement start and in a cast head (reduce: bare-
-#    name primary, as in family 5). Standard for LALR Java parsers; see the
+#    name primary, as in family 4). Standard for LALR Java parsers; see the
 #    NOTE at TypeArguments. Only the cast-head state loses real input
 #    ('(a < b)' as a parenthesized primary, see KNOWN LIMITATION at
 #    CastExpression); the other rejects only semantically invalid Java
@@ -81,7 +72,7 @@ grammar 'Java';
 #    operator, an operand start reduces RelationalOp). See the NOTEs at
 #    RelationalExpression and ShiftOp.
 #
-# 7. QQ bootstrap dummy bracket - 1 state, 1 conflict. The quasi-quoter
+# 6. QQ bootstrap dummy bracket - 1 state, 1 conflict. The quasi-quoter
 #    wraps a quote body in a per-rule dummy-token pair, and the whole-file
 #    entry 'Java -> DUMMY . Java DUMMY' lets a second opening DUMMY (shift)
 #    compete with deriving an empty CompilationUnit ((Package)? -> empty)
@@ -89,8 +80,12 @@ grammar 'Java';
 #    [java| |] quote is affected (it fails to parse); any non-empty quote
 #    has a real token after the opening DUMMY.
 #
-# The cast-vs-paren decision one token AFTER ')' is conflict-free; see
-# CastExpression.
+# A seventh family - catch/finally attaching to the nearest try, 1 state,
+# 4 conflicts - dissolved when try/catch/finally bodies were tightened from
+# Statement to StatementBlock (JLS 14.20): 'try try { } catch ...' is no
+# longer derivable, so the clauses' owner is always explicit. See
+# TryStatement. The cast-vs-paren decision one token AFTER ')' is
+# conflict-free; see CastExpression.
 # ============================================================================
 
 Java = CompilationUnit ;
@@ -115,7 +110,7 @@ ImportStatement  =
 # Import names have their own LEFT-recursive spelling instead of reusing
 # CompoundName: the on-demand form would need CompoundName reduced on
 # lookahead '.' (to then shift '.' '*'), but that reduce loses to the greedy
-# name-extension shift (family 4), which made the star branch unreachable
+# name-extension shift (family 3), which made the star branch unreachable
 # ('import a.b.*;' never parsed). Left recursion keeps both '.'
 # continuations in one item set, so the token AFTER each '.' (id vs '*')
 # picks the branch - no early commitment, no conflict.
@@ -339,16 +334,17 @@ Parameter (',' Parameter)* ;
 
 # Parameter modifiers (JLS 8.4.1 VariableModifier: 'final' and annotations).
 # The NULLABLE prefix is safe here because parameter positions (after '(' or
-# ',' in a parameter list, and in 'catch (...)') have no competing expression
-# interpretation: the epsilon-reduce of the empty list on a type-start token
-# is the state's only action. Do NOT reuse this at statement level, where a
-# nullable prefix would break 'Foo x;' - see the NOTE at VariableDeclaration.
+# ',' in a parameter list, in 'catch (...)', and in a resource spec) have no
+# competing expression interpretation: the epsilon-reduce of the empty list
+# on a type-start token is the state's only action. Do NOT reuse this at
+# statement level or inside 'for (', where a nullable prefix would break
+# 'Foo x;' - see the NOTEs at VariableDeclaration and ForEachHeader.
 ParamModifierList = ('final' | Annotation)* ;
 
 # '...' (varargs, JLS 8.4.1) is one lexer token: Alex's maximal munch prefers
 # it over '.', and no float literal can follow '..'. That only the LAST
 # parameter may be variadic is a semantic check (javac's job): the parser
-# accepts the ellipsis on any parameter, including a catch parameter.
+# accepts the ellipsis on any method parameter.
 Parameter  =
 ParamModifierList Type ('...')? id Dims ;
 
@@ -366,6 +362,13 @@ OptId = id?;
 # keyword at statement start the next token decides ('(' starts the
 # invocation; '.' and the operator/closer tokens reduce the keyword to the
 # expression primary).
+#
+# 'assert' (JLS 14.10): the keyword anchors the statement, and after the
+# first Expression the next token decides the optional detail message (':'
+# shifts, ';' reduces the option empty). ':' is already an expression
+# follower ('case' labels, the conditional's middle operand), so no new
+# conflict. Spelling 'assert' in a rule makes it a keyword token: code using
+# 'assert' as an identifier stops parsing - correct for Java 1.4+.
 Statement =
 VariableDeclaration
  |  'return'  OptExpression  ';'
@@ -379,6 +382,7 @@ VariableDeclaration
  |  SwitchStatement
  |  'synchronized'  '(' Expression  ')' Statement
  |  'throw' Expression ';'
+ |  'assert' Expression (':' Expression)? ';'
  |  id  ':' Statement
  |  'break'  OptId  ';'
  |  'continue'  OptId  ';'
@@ -411,16 +415,69 @@ ForStatement =
  'for'  '('  ( VariableDeclaration  |  ( Expression  ';'  )  |  ';'  )
  OptExpression  ';'
  OptExpression
- ')' Statement  ;
+ ')' Statement
+ | 'for'  '(' ForEachHeader  ')' Statement  ;
 
-CatchList = (  'catch'  '(' Parameter  ')' Statement)* ;
+# Enhanced-for header (JLS 14.14.2). The loop variable is spelled INLINE as
+# 'Type id', NOT through VariableDeclarator: its nullable declarator Dims and
+# optional initializer belong to classic declarators only - reusing it would
+# let 'for (int i = 0 : xs)' parse and put a never-fillable initializer in
+# the AST. Sharing the Type prefix with VariableDeclaration keeps the classic
+# and for-each items in ONE item set after 'for (': following 'Type id' the
+# next token decides conflict-free - ':' commits to for-each, while '=' ','
+# ';' '[' continue the classic declarator.
+#
+# The modified alternative mirrors VariableDeclaration's two-alternative
+# trick rather than reusing Parameter's nullable ParamModifierList: inside
+# 'for (' the same Type-vs-Expression weighing as at statement start is in
+# progress, and a nullable modifier prefix would demand an epsilon-reduce
+# BEFORE the first identifier is shifted - a shift/reduce that happy resolves
+# toward the expression/declaration shift, making every UNmodified for-each
+# ('for (String s : list)') unparseable. 'final' and '@' cannot start an
+# expression, so the modified alternative is keyword-anchored and the
+# unmodified one leaves the classic automaton untouched.
+ForEachHeader =
+ Type id ':' Expression
+ | LocalModifierList1 Type id ':' Expression ;
 
-OptFinally = ('finally' Statement)?;
+CatchList = (  'catch'  '(' CatchParameter  ')' StatementBlock)* ;
 
+# Catch parameter (JLS 14.20 CatchFormalParameter): the type may be a union,
+# 'Type | Type | ...' - multi-catch. Inside 'catch (...)' a '|' has no
+# expression reading, so the union list is conflict-free. This is a separate
+# rule rather than a widening of Parameter so method parameters do not
+# silently accept '|'; conversely no '...' or declarator dims here (JLS:
+# CatchType is a class type). The nullable ParamModifierList is safe for the
+# same reason as in Parameter: after 'catch (' no expression interpretation
+# competes with the type.
+CatchParameter = ParamModifierList Type ('|' Type)* id ;
+
+OptFinally = ('finally' StatementBlock)?;
+
+# Try statement (JLS 14.20): the try/catch/finally bodies are BLOCKS, not
+# bare statements. Besides being what the JLS says, the tightening dissolves
+# the old catch/finally-attachment conflict family ('try try { } catch ...'
+# could extend either try; with mandatory braces the nesting is explicit),
+# and it frees '(' directly after 'try' to unambiguously open a resource
+# specification (JLS 14.20.3): 'try' is followed by '(' (resources) or '{'
+# (body), nothing else.
 TryStatement =
- 'try' Statement
+ 'try' (ResourceSpec)? StatementBlock
   CatchList
   OptFinally  ;
+
+# The trailing ';' before ')' is optional (JLS 14.20.3). Both ';'
+# continuations - separator before another Resource, trailing before ')' -
+# share the shift, and the token after the ';' picks the branch.
+ResourceSpec = '(' Resource (';' Resource)* (';')? ')' ;
+
+# A resource (JLS 14.20.3): one declarator with a REQUIRED initializer.
+# Spelled inline like ForEachHeader, and with Parameter's nullable
+# ParamModifierList, which is safe here: after 'try (' or a ';' inside the
+# spec, only a resource declaration can start, so the epsilon-reduce of the
+# empty modifier list on a type-start token is the state's only action.
+# (Java 9's bare-variable resource, 'try (existingVar)', is not covered.)
+Resource = ParamModifierList Type id '=' Expression ;
 
 SwitchCaseList = ((  'case' Expression  ':'  )
  |  (  'default'  ':'  )
@@ -545,7 +602,7 @@ Expression : MultiplicativeExpression = UnaryExpression | MultiplicativeExpressi
 # conditions (if/while/for) and argument lists there is no cast context, so
 # 'if (a < b)' and 'f(a < b)' are unaffected.
 #
-# The '[' and '<' shifts inside the cast head are families 5 and 6 of the
+# The '[' and '<' shifts inside the cast head are families 4 and 5 of the
 # conflict inventory at the top of this file. The cast-vs-paren decision
 # after ')' is conflict-FREE: operand-start tokens can never follow a
 # complete parenthesized expression, so the lookahead sets are disjoint.
@@ -575,7 +632,7 @@ Expression : UnaryExpressionNotPlusMinus =
 # The NonEmptyTypeArguments alternative is the explicit-type-argument call
 # on a non-name base: this.<T>m(), f().<T>m(). After the shifted '.' the
 # tokens id and '<' are distinct, so it adds no conflict. A NAME base
-# (Collections.<String>emptyList()) never reaches it - the greedy family-4
+# (Collections.<String>emptyList()) never reaches it - the greedy family-3
 # shift keeps the name unreduced - and parses through the PrimaryNoPostfix
 # alternative anchored on 'id CompoundNameTail' instead; see the NOTE
 # there.
@@ -600,7 +657,7 @@ Expression : PostfixExpression =
 #
 # The class-literal, qualified-this and explicit-type-argument-call
 # alternatives anchor on the UNREDUCED name spelling 'id CompoundNameTail',
-# NOT on CompoundName: the greedy name-extension shift (family 4) means a
+# NOT on CompoundName: the greedy name-extension shift (family 3) means a
 # complete CompoundName is never reduced on lookahead '.', so a
 # 'CompoundName '.' X' alternative could never be reached - the import-star
 # lesson (see ImportName), expression edition. Spelling the shared
@@ -639,7 +696,7 @@ Arglist = (Expression (',' Expression)*)? ;
 # NOTE: '<' is both the type-argument opener (List<String>) and the
 # comparison operator (x < y). Wherever a CompoundName can be followed by
 # either, the parser shifts '<' into NonEmptyTypeArguments (standard for
-# Java parsers); see family 6 of the conflict inventory at the top of this
+# Java parsers); see family 5 of the conflict inventory at the top of this
 # file for the two states where this surfaces.
 TypeArguments = NonEmptyTypeArguments? ;
 
