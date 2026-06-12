@@ -2,7 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, develop ]
+    # claude/** are session work branches: they get the full battery on every
+    # push, pre-merge, like a PR would (superseded runs on the same ref are
+    # cancelled by the concurrency group below).
+    branches: [ main, master, develop, 'claude/**' ]
   pull_request:
     branches: [ main, master, develop ]
   workflow_dispatch:
@@ -238,3 +241,84 @@ jobs:
           test-out/
           happy_log.txt
         if-no-files-found: ignore
+
+  # Early-warning canary: build and run the cabal test suites once with the
+  # current GHC series the runner image ships, vs the pinned toolchain above.
+  # New GHC releases promote warnings into -Wall or turn them on by default
+  # (the incomplete-record-selectors promotion went unseen here until the
+  # runner's stock GHC leaked into a build), and the pinned primary job is
+  # blind to those until its pin moves. Deliberately cheap - no make
+  # pipeline, no commons corpus, just cabal build -Werror + cabal test. The
+  # primary job stays authoritative; new warnings surfaced here get fixed
+  # portably (no -Wno-*) or reported, never suppressed.
+  #
+  # rtk's version bounds cap at the GHC series the package is actually
+  # tested with (PVP), so this job relaxes rtk's OWN bounds on the boot
+  # libraries that ship inside the newer GHC. Third-party dependency bounds
+  # stay fully enforced.
+  ghc-latest:
+    name: GHC 9.14 early warning
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    # Same pattern as the primary job's toolchain cache, own key. Bump the
+    # -v suffix to force a fresh install.
+    - name: Cache GHC/Cabal toolchain
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/ghcup
+        key: ghcup-9.14.1-3.16.1.0-v1
+
+    - name: Setup Haskell
+      uses: haskell-actions/setup@v2
+      with:
+        ghc-version: '9.14.1'
+        cabal-version: '3.16.1.0'
+        enable-stack: false
+      env:
+        GHCUP_INSTALL_BASE_PREFIX: ${{ runner.temp }}/ghcup
+
+    # See the primary job: the custom prefix needs an explicit PATH entry,
+    # or builds fall back to whatever GHC the image puts on PATH.
+    - name: Put pinned GHC/Cabal on PATH
+      run: echo "${{ runner.temp }}/ghcup/.ghcup/bin" >> "$GITHUB_PATH"
+
+    # Own keys (suffixed with the GHC version) so this job never races the
+    # primary job's cache entries. Both the classic ~/.cabal and the XDG
+    # locations are listed; which one is live depends on the cabal version.
+    - name: Cache Cabal packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cabal/packages
+          ~/.cabal/store
+          ~/.cache/cabal/packages
+          ~/.local/state/cabal/store
+        key: ${{ runner.os }}-cabal-ghc-9.14.1-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
+        restore-keys: |
+          ${{ runner.os }}-cabal-ghc-9.14.1-
+
+    - name: Cache project build directory
+      uses: actions/cache@v4
+      with:
+        path: dist-newstyle
+        key: ${{ runner.os }}-dist-newstyle-ghc-9.14.1-${{ hashFiles('**/*.cabal', '**/cabal.project', 'cabal.project.freeze') }}
+
+    - name: Update Cabal package list
+      run: cabal update
+
+    - name: Build with -Werror
+      run: >
+        cabal build -j --enable-tests --ghc-options=-Werror
+        --allow-newer=rtk:base,rtk:template-haskell,rtk:containers,rtk:time
+
+    # Identical flags so the build above is reused instead of re-planned.
+    - name: Run cabal test suites
+      run: >
+        cabal test --test-show-details=direct --ghc-options=-Werror
+        --allow-newer=rtk:base,rtk:template-haskell,rtk:containers,rtk:time

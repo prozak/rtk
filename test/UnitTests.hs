@@ -616,8 +616,8 @@ testStartGroup = TestCase $ do
     -- the synthesized start rule is prepended to the start group and wraps
     -- each type between its dummy tokens (compared via show because STSeq
     -- has no Ord instance)
-    case getSRules (head (getSyntaxRuleGroups g)) of
-        SyntaxRule "Top" (STAltOfSeq alts) : _ -> assertEqual "wrapper alternatives"
+    case map getSRules (getSyntaxRuleGroups g) of
+        (SyntaxRule "Top" (STAltOfSeq alts) : _) : _ -> assertEqual "wrapper alternatives"
             (sort [ show (STSeq "" [SSIgnore d, SSId t, SSIgnore d]) | (t, d) <- M.toList startInfo ])
             (sort (map show alts))
         other -> assertFailure $ "expected the synthesized start rule first, got: " ++ show other
@@ -888,7 +888,7 @@ ambiguousConstructors g =
            | grp <- getSyntaxRuleGroups g, r <- getSRules grp ]
 
 duplicates :: Ord a => [a] -> [a]
-duplicates = map head . filter ((> 1) . length) . group . sort
+duplicates xs = [ x | x : _ : _ <- group (sort xs) ]
 
 removeAll :: Eq a => [a] -> [a] -> [a]
 removeAll xs banned = [ x | x <- xs, x `notElem` banned ]

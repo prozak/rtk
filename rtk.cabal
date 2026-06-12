@@ -1,6 +1,6 @@
 Cabal-Version:       2.4
 Name:                rtk
-Version:             0.10
+Version:             0.11
 Synopsis:            Parser and rewrite facility generator from grammar specifications
 Description:         RTK (Rewrite ToolKit) generates Alex lexer and Happy parser
                      files from grammar specifications. It supports quasi-quotation
@@ -50,6 +50,13 @@ Common warnings
 Library generated-frontend
   Import:            warnings
   ghc-options:       -Wno-unused-matches
+  -- The snapshot's splice-token actions use 'tail', which GHC >= 9.8 warns
+  -- about on every use (-Wx-partial, on by default). Same policy as
+  -- -Wno-unused-matches above: generated code, not edited to placate the
+  -- linter. Guarded because older GHCs would warn about the unrecognised
+  -- flag (fatal under -Werror).
+  if impl(ghc >= 9.8)
+    ghc-options:     -Wno-x-partial
   Hs-Source-Dirs:    test/golden/grammar
   Exposed-Modules:
                      GrammarLexer,
