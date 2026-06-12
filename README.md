@@ -58,6 +58,13 @@ generated modules:
 build-depends: base, array, syb, containers, template-haskell
 ```
 
+The quasi-quoter is also the rewrite facility: quasi-quoted patterns as
+match arms plus SYB's `everywhere`/`everything` rewrite and query parsed
+ASTs with no further API — see "Rewriting parsed Java" in
+[docs/java-quasi-quotation-tests.md](docs/java-quasi-quotation-tests.md)
+for the worked recipe (rtk's own pipeline and the
+write-you-a-haskell tutorial use the same shape).
+
 ## Grammar Format
 
 Grammar files use a simple specification format. Each file starts with a

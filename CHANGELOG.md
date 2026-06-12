@@ -38,7 +38,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   itself, still with the rule named as context
 
 ### Added
-- Named constructors (task 8a): an alternative may carry a leading label —
+- Rewrites as quasi-quoted patterns (task 8d) — the headline: the "rewrite
+  toolkit" finally means it. Every generated `<Name>QQ` now comes with a
+  documented, tested rewrite recipe ("Rewriting parsed Java" in
+  docs/java-quasi-quotation-tests.md, exercised by `make
+  test-java-rewrite`): a rewrite is an ordinary function whose match arms
+  are quasi-quoted patterns and whose results are quasi-quoted
+  expressions, applied to every node of any AST value with SYB's
+  `everywhere`/`extT` — the packages generated code already depends on, so
+  there is no new API surface and no change to generated artifacts. The
+  same patterns drive queries via `everything`/`mkQ`. rtk eats this
+  cooking: its own pipeline now matches clause shapes with its own
+  compiled-in quoter — `Frontend.altElems`/`seqElems` flatten the `'|'`
+  and juxtaposition spines by matching `[clause| $cl1 | $cl2 |]` /
+  `[clause| $cl1 $cl2 |]`, `StringLiterals` picks string literals out of
+  syntax rules with `[clause| $StrLit:s |]`, and `Normalize`'s
+  repetition/option shaping matches `[clause| $cl1 * ~ $cl2 |]`-style
+  patterns — each conversion landed golden-neutral (artifacts
+  byte-identical, bootstrap fixed point intact). Steps where the
+  constructor spelling reads better (wildcard tests, scalar-`Name`
+  binders, state-threading plumbing) deliberately stay plain; the
+  conversion record and the discovered pattern-matching boundaries live
+  in docs/qq-grammar-rewrites-plan.md §8d
   `Expr = Add: Expr '+' Term | Term ;` — that names its generated AST
   constructor (`Add RtkPos Expr Term`) instead of the positional
   `Ctr__<Rule>__<index>` default, so code and quasi-quote patterns written

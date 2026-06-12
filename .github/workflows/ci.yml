@@ -162,6 +162,9 @@ jobs:
         run_test "Java Test Suite" "make test-all-java"
         run_test "Java Lexer Golden Tests" "make test-lex-java"
         run_test "Java QQ Tests" "make test-java-qq"
+        # The user-facing rewrite recipe (task 8d): QQ patterns + SYB over
+        # parsed Java, per docs/java-quasi-quotation-tests.md.
+        run_test "Java QQ Rewrite Recipe" "make test-java-rewrite"
         # Quoters and splices against a type that exists only through rule
         # annotations (the synthesized cover rule, issue #14).
         run_test "Issue 14 QQ Tests" "make test-i14-qq"

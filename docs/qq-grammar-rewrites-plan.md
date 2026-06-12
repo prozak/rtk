@@ -6,7 +6,10 @@ Term`, grammar.pg fully labeled); 8b DONE (GrammarQQ compiled into rtk);
 `IRule`/`IClause` retired, the AST adapter replaced by
 `src/generated/Frontend.hs`, the reference `Parser.y` ported to construct
 generated-AST values — option B; full reference-front-end retirement,
-option A, remains a separate later sign-off); 8d PLANNED.
+option A, remains a separate later sign-off); 8d DONE (three pipeline
+steps converted to QQ-pattern matching, each landed golden-neutral; the
+user-facing half shipped as a documented recipe rather than an exported
+helper — see the record at the end of the Task 8d section).
 
 The flip made grammar.pg authoritative and the generated front end the
 default, but the pipeline still computes over the original hand-written data
@@ -271,6 +274,73 @@ rewrite hook.
 - At least two normalization steps run as QQ rewrites with byte-identical
   goldens; a documented, tested recipe (or API) exists for user grammars.
 - Fixed point + full battery green.
+
+### 8d record (what landed, what was declined, and why)
+
+Converted, one golden-neutral commit each (no snapshot touched; goldens
+byte-identical and the bootstrap fixed point checked per commit):
+
+- `Frontend.altElems`/`seqElems`: the Alt/Seq spine flatteners are now the
+  laws they implement — `[clause| $cl1 | $cl2 |]` and
+  `[clause| $cl1 $cl2 |]`.
+- `StringLiterals.normalizeClause`: the everywhereM walk selects its
+  target with `[clause| $StrLit:s |]` ("a clause that is just a string
+  literal"). The REPLACEMENT stays hand-built: it must reuse the
+  literal's source position (recovered via `rtkPosOf` from the matched
+  clause) so later diagnostics still point at the literal — a quoted
+  expression would embed its compile-time position instead.
+- `Normalize`'s repetition/option shaping: `checkSoleElement`'s
+  rule-shaping arms, `topAlts`'s option arm and
+  `synthesizeTypeCovers.topRepetitionElemType` match
+  `[clause| $cl1 * ~ $cl2 |]`-style patterns. Deliberately-unused binders
+  use the explicit `$Clause:_delim` form (shortcut metavariables cannot
+  start with `_`, and `-Wunused-matches` applies to QQ binders).
+
+Declined, per the honesty clause (the constructor spelling reads better
+or QQ cannot express the step):
+
+- `cleanGrammarTokens`: token-text edits plus position preservation —
+  neither is expressible in a quote.
+- `fillConstructorNames`: walks `NormalGrammar` (`STSeq`), a
+  representation the quoters do not produce.
+- Wildcard shape tests (`isStarPlus`, `eligibleClause`, `GP.Lifted{}`
+  arms) and `clauseNullable`'s table: `GP.Star{}`-style wildcards already
+  read best; QQ arms would only add unused metavariables.
+- Anything binding a scalar `Name` (`allIdRefs`, `ctorLabels`,
+  `checkSimple`'s lifted-ref arm): grammar.pg's `Name` splices are
+  list-shaped — `IdList = Name* ~ ','` registers `Anti_Name` first, and
+  the per-type anti-rule cache keeps the list flavor — so a scalar
+  `$Name:n` pattern binds nothing (the metavariable becomes a literal
+  `Anti_Name` sub-pattern; using `n` is a compile error). Making scalar
+  and list anti functions coexist per type would be a GenQ feature
+  (golden-churning), out of 8d's refactoring scope.
+- The doc's original `removeOpts` sketch (`[cl| $c ? |] → [cl| ( | $c ) |]`):
+  the pre-pass no longer exists and the generated AST cannot represent
+  the empty alternative; the MATCH side lives on in `checkSoleElement`'s
+  `[clause| $cl1 ? |]` arm, the construction side stays `desugarOpt`.
+
+Constraint discovered for future arms: literal-text patterns
+(`[clause| 'x' |]`) never match pipeline values — quote-time ASTs keep
+token delimiters because `cleanGrammarTokens` runs in
+`parseWithGenerated`, after the generated parser, not in the quote path.
+Metavariable and structural patterns are unaffected. (User grammars are
+immune: their token processing is the lexer rules' own `func`s, applied
+identically in both paths.)
+
+User-facing half — design call: a documented recipe, not an exported
+`rewrite<Name>` helper. `everywhere`/`extT`/`everything` from syb (which
+generated code already depends on for its `Data` instances) IS the
+rewrite API; a generated wrapper would rename a one-liner, churn every
+`*QQ.hs` golden plus a two-phase bootstrap accept, and add API surface
+without removing any of the actual learning content — which is how to
+write the match arms. That content now lives in "Rewriting parsed Java"
+in docs/java-quasi-quotation-tests.md (including the chain-position rule
+for where patterns match and the scalar-vs-list metavariable rule),
+exercised end to end by `make test-java-rewrite`
+(test-grammars/java-rewrite-test.hs, wired into CI), with the
+write-you-a-haskell evaluator (tutorials/write-you-a-haskell/lc-main.hs)
+cited as the larger real-world proof and rtk's own converted pipeline
+steps as the in-tree one.
 
 ---
 
