@@ -10,7 +10,7 @@
 module Syntax where
 
 import Data.Char (isLower)
-import Data.Data (Data, Typeable)
+import Data.Data (Data)
 import Data.List (intercalate)
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -18,7 +18,7 @@ import qualified Data.Set as S
 import Diagnostics (SourcePos)
 
 data InitialGrammar = InitialGrammar { getIGrammarName :: String, getImports :: String, getIRules :: [IRule] }
-                 deriving (Eq, Show, Typeable, Data)
+                 deriving (Eq, Show, Data)
 
 data IRule = IRule { getIDataTypeName :: (Maybe String),
                      getIDataFunc :: (Maybe String),
@@ -26,10 +26,10 @@ data IRule = IRule { getIDataTypeName :: (Maybe String),
                      getIClause :: IClause,
                      getIRuleOptions :: [IOption],
                      getIRulePos :: (Maybe SourcePos)}
-                  deriving (Eq, Show, Typeable, Data)
+                  deriving (Eq, Show, Data)
 
 data IOption = OShortcuts [ID] | OSymmacro
-                  deriving (Eq, Show, Typeable, Data)
+                  deriving (Eq, Show, Data)
 
 addRuleOptions :: [IOption] -> IRule -> IRule
 addRuleOptions opts rule = rule{ getIRuleOptions = opts ++ (getIRuleOptions rule)}
@@ -49,7 +49,7 @@ data IClause = IId { getIdStr :: ID }
              | IOpt IClause
              | ILifted IClause
              | IIgnore IClause
-              deriving (Eq, Show, Typeable, Data)
+              deriving (Eq, Show, Data)
 
 -- Render a clause the way it appears in the grammar source, for error messages
 showClause :: IClause -> String
@@ -86,14 +86,14 @@ data GrammarInfo =
      getNameCounter :: Int,
      getProxyRules :: S.Set String
   }
-  deriving (Eq, Show, Typeable, Data)
+  deriving (Eq, Show, Data)
 
 data AntiRule = AntiRule { arTypeName :: ID,
                            arQQName :: ID,
                            arConstr :: ID ,
                            arIsList :: Bool
                          }
-                     deriving (Eq, Show, Typeable, Data)
+                     deriving (Eq, Show, Data)
 
 data NormalGrammar = NormalGrammar { getNGrammarName :: String,
                                      getSyntaxRuleGroups :: [SyntaxRuleGroup],
@@ -102,39 +102,39 @@ data NormalGrammar = NormalGrammar { getNGrammarName :: String,
                                      getShortcuts :: [(String, String)],
                                      getNImports :: String,
                                      getGrammarInfo :: GrammarInfo }
-                     deriving (Eq, Show, Typeable, Data)
+                     deriving (Eq, Show, Data)
 
 data SyntaxRuleGroup = SyntaxRuleGroup { getSDataTypeName :: ID,
                                          getSRules :: [SyntaxRule]}
-                       deriving (Eq, Show, Typeable, Data)
+                       deriving (Eq, Show, Data)
 
 data SyntaxRule = SyntaxRule { getSRuleName :: ID,
                                getSClause :: SyntaxTopClause}
-                       deriving (Eq, Show, Typeable, Data)
+                       deriving (Eq, Show, Data)
 
 data STManyOp = STStar
               | STPlus
-                deriving (Eq, Show, Typeable, Data)
+                deriving (Eq, Show, Data)
 
 data STSeq = STSeq ConstructorName [SyntaxSimpleClause]
-             deriving (Eq, Show, Typeable, Data)
+             deriving (Eq, Show, Data)
 
 data SyntaxTopClause = STMany STManyOp SyntaxSimpleClause (Maybe SyntaxSimpleClause)
                      | STOpt SyntaxSimpleClause
                      | STAltOfSeq { getAltOfSeq :: [STSeq] } -- alternative of sequences
-                       deriving (Eq, Show, Typeable, Data)
+                       deriving (Eq, Show, Data)
 
 data SyntaxSimpleClause = SSId ID
                         | SSLifted ID
                         | SSIgnore ID
-                          deriving (Eq, Show, Typeable, Data)
+                          deriving (Eq, Show, Data)
 
 data LexicalRule = LexicalRule { getLRuleDataType :: String,
                                  getLRuleFunc :: String,
                                  getLRuleName :: String,
                                  getLClause :: LClause}
                    | MacroRule { getLRuleName :: String, getLClause :: LClause}
-                   deriving (Eq, Show, Typeable, Data)
+                   deriving (Eq, Show, Data)
 
 type LClause = IClause
 

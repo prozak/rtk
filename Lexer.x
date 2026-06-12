@@ -1,7 +1,7 @@
 {
 module Lexer where
 
-import Data.Data (Data, Typeable)
+import Data.Data (Data)
 import Diagnostics (Diagnostic, diagnosticFromPositioned, renderDiagnostic)
 }
 
@@ -101,7 +101,7 @@ data Token = Grammar
     | Shortcuts
     | Symmacro
     | EndOfFile
-      deriving (Eq, Show, Typeable, Data)
+      deriving (Eq, Show, Data)
 
 -- AlexPosn is defined by the alex wrapper, so a Data instance can only be
 -- attached via standalone deriving; profiling deep-forces token lists
@@ -110,7 +110,7 @@ deriving instance Data AlexPosn
 
 -- A token together with the source position where it starts
 data PosToken = PosToken { ptPos :: AlexPosn, ptToken :: Token }
-                deriving (Eq, Show, Typeable, Data)
+                deriving (Eq, Show, Data)
 
 -- Lex the input into a token stream, returning a structured diagnostic on a
 -- lexical error. The returned list always ends with an EndOfFile token that

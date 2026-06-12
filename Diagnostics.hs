@@ -16,11 +16,11 @@ module Diagnostics
     , diagnosticFromPositioned
     ) where
 
-import Data.Data (Data, Typeable)
+import Data.Data (Data)
 
 -- | Position in the grammar source file (line and column, both 1-based).
 data SourcePos = SourcePos { srcLine :: Int, srcColumn :: Int }
-                 deriving (Eq, Ord, Show, Typeable, Data)
+                 deriving (Eq, Ord, Show, Data)
 
 showSourcePos :: SourcePos -> String
 showSourcePos (SourcePos line col) = "line " ++ show line ++ ", column " ++ show col
@@ -34,7 +34,7 @@ data Diagnostic = Diagnostic
   { diagPos     :: Maybe SourcePos
   , diagContext :: Maybe String    -- ^ e.g. @"in rule 'Foo'"@
   , diagMessage :: String
-  } deriving (Eq, Show, Data, Typeable)
+  } deriving (Eq, Show, Data)
 
 -- | Render a diagnostic in GNU one-line style:
 --
