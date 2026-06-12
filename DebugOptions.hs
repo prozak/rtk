@@ -1,17 +1,11 @@
 module DebugOptions
     ( DebugOptions(..)
-    , DebugFormat(..)
     , DebugStage(..)
     , parseOptions
     , defaultDebugOptions
     ) where
 
 import Options.Applicative
-
--- | Output format for debug information
-data DebugFormat = FormatPretty
-                 | FormatCompact
-                 deriving (Eq, Show)
 
 -- | Compilation stages for selective debugging
 data DebugStage = StageLex
@@ -64,7 +58,6 @@ data DebugOptions = DebugOptions
     , expandRule :: Maybe String
 
     -- Output format
-    , debugFormat :: DebugFormat
     , debugColor :: Bool
 
     -- Performance profiling
@@ -96,7 +89,6 @@ defaultDebugOptions file dir = DebugOptions
     , checkLeftRecursion = False
     , suggestShortcuts = False
     , expandRule = Nothing
-    , debugFormat = FormatPretty
     , debugColor = True
     , profileStages = False
     }
@@ -110,12 +102,6 @@ parseStage "clause-norm" = Just StageClauseNorm
 parseStage "fill-names" = Just StageFillNames
 parseStage "gen" = Just StageGen
 parseStage _ = Nothing
-
--- | Parse debug format from string
-parseFormat :: String -> Maybe DebugFormat
-parseFormat "pretty" = Just FormatPretty
-parseFormat "compact" = Just FormatCompact
-parseFormat _ = Nothing
 
 -- | Command-line parser for debug options
 debugOptionsParser :: Parser DebugOptions
@@ -212,11 +198,6 @@ debugOptionsParser = DebugOptions
        <> help "Show fully expanded form of a rule" ))
 
     -- Output format
-    <*> option (maybeReader parseFormat)
-        ( long "debug-format"
-       <> metavar "FORMAT"
-       <> value FormatPretty
-       <> help "Output format (pretty|compact)" )
     <*> switch
         ( long "debug-color"
        <> help "Enable colored output (default: enabled)" )

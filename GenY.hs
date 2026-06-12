@@ -51,7 +51,8 @@ genY g@(NormalGrammar name srules lex_rules _ _ _ _) = do
           lexDoc = vcat (combineAlt (text "rtk__eof") (text "L.PosToken _ L.EndOfFile")
                          : map genToken (removeSymmacros lex_rules))
           nl = text ""
-          header = "{\n\
+          header = provenanceBanner name ++ "\n\
+                   \{\n\
                    \{-# LANGUAGE DeriveDataTypeable #-}\n\
                    \module " ++ name ++ "Parser where\n\
                    \import qualified Data.Generics as Gen\n\

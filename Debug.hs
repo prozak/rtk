@@ -86,11 +86,11 @@ withColor useColor color text = do
 -- Debug output formatting
 -------------------------------------------------------------------------------
 
--- | Output debug information with optional formatting
+-- | Output debug information under a section header
 debugOutput :: DebugOptions -> String -> String -> IO ()
 debugOutput opts title content = do
     debugSection opts title
-    putStrLn $ formatContent (debugFormat opts) content
+    putStrLn content
     putStrLn ""
 
 -- | Print a section header
@@ -106,11 +106,6 @@ debugSubSection :: DebugOptions -> String -> IO ()
 debugSubSection opts title = do
     withColor (debugColor opts) Yellow $ "-- " ++ title ++ "\n"
 
--- | Format content according to debug format option
-formatContent :: DebugFormat -> String -> String
-formatContent FormatPretty s = s
-formatContent FormatCompact s = filter (/= '\n') s
-
 -------------------------------------------------------------------------------
 -- Pipeline stage debugging
 -------------------------------------------------------------------------------
@@ -121,9 +116,7 @@ printTokens opts tokens = do
     debugSection opts "LEXER OUTPUT - TOKENS"
     putStrLn $ "Total tokens: " ++ show (length tokens)
     putStrLn ""
-    case debugFormat opts of
-        FormatPretty -> putStrLn $ ppShow tokens
-        FormatCompact -> putStrLn $ show tokens
+    putStrLn $ ppShow tokens
 
 -- | Debug initial grammar (after parsing)
 printInitialGrammar :: DebugOptions -> InitialGrammar -> IO ()
@@ -132,9 +125,7 @@ printInitialGrammar opts grammar = do
     putStrLn $ "Grammar name: " ++ getIGrammarName grammar
     putStrLn $ "Number of rules: " ++ show (length $ getIRules grammar)
     putStrLn ""
-    case debugFormat opts of
-        FormatPretty -> putStrLn $ ppShow grammar
-        FormatCompact -> putStrLn $ show grammar
+    putStrLn $ ppShow grammar
 
 -- | Debug normalized grammar
 printNormalGrammar :: DebugOptions -> String -> NormalGrammar -> IO ()
@@ -145,9 +136,7 @@ printNormalGrammar opts title grammar = do
     putStrLn $ "Lexical rules: " ++ show (length $ getLexicalRules grammar)
     putStrLn $ "Anti-rules (QQ): " ++ show (length $ getAntiRules grammar)
     putStrLn ""
-    case debugFormat opts of
-        FormatPretty -> putStrLn $ ppShow grammar
-        FormatCompact -> putStrLn $ show grammar
+    putStrLn $ ppShow grammar
 
 -- | Debug comparison between two values
 printComparison :: (Show a, Eq a) => DebugOptions -> String -> a -> String -> a -> IO ()
@@ -223,9 +212,7 @@ traceRuleInitial opts ruleName stage grammar = do
         debugSubSection opts $
             "Rule '" ++ getIRuleName rule ++ "' ("
             ++ maybe "no position" showSourcePos (getIRulePos rule) ++ ")"
-        case debugFormat opts of
-            FormatPretty -> putStrLn $ ppShow rule
-            FormatCompact -> putStrLn $ show rule
+        putStrLn $ ppShow rule
         putStrLn ""
 
 -- | NormalGrammar-stage view of a rule trace (after clause-norm, after
@@ -262,8 +249,7 @@ traceRuleNormal opts ruleName stage grammar = do
         printDetail rule
     printDetail :: Show a => a -> IO ()
     printDetail x = do
-        when (debugFormat opts == FormatPretty) $
-            putStrLn $ ppShow x
+        putStrLn $ ppShow x
         putStrLn ""
 
 -- | Report a rule missing at one stage, with near matches: normalization

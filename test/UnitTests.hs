@@ -102,6 +102,7 @@ tokenProcessingTests = TestList
         assertEqual "" (map at [StrLit "'", BigStr "a\nb"])
                        (processTokens (map at [StrLit "\\'", BigStr "a", BigStr "b"]))
     , TestLabel "a '\\f' keyword survives to the generated lexer" testFormFeedReachesLexer
+    , TestLabel "a backslash in a character class is emitted Alex-escaped" testBackslashClassEscaped
     ]
 
 -- | End-to-end: a '\f' keyword must reach the generated Alex spec as the bare
@@ -118,6 +119,37 @@ testFormFeedReachesLexer = TestCase $
                     ("\\f" `isInfixOf` lexerSpec)
                 assertBool "\\f is not emitted as a quoted string literal"
                     (not ("\"\\f\"" `isInfixOf` lexerSpec))
+
+-- | End-to-end (issue #95): a literal backslash in a regex character class
+-- must reach the generated Alex spec escaped ([\\]). It used to pass through
+-- raw, where Alex set syntax reads a lone backslash as an escape, so users
+-- needed the [\x5C] hex spelling. The \n \t \r \f \v pairs that token
+-- post-processing preserves must keep passing through bare - including
+-- directly after an escaped literal backslash.
+testBackslashClassEscaped :: Test
+testBackslashClassEscaped = TestCase $
+    case normalizeGrammarSource src >>= artifactsFor of
+        Left d -> assertFailure $ "generation failed: " ++ show d
+        Right artifacts -> case lookup "BsLexer.x" artifacts of
+            Nothing -> assertFailure "no BsLexer.x artifact generated"
+            Just lexerSpec -> do
+                assertBool "literal backslash class is emitted as [\\\\]"
+                    ("[\\\\]" `isInfixOf` lexerSpec)
+                assertBool "preserved control-character pairs stay bare in classes"
+                    ("[\\ \\t\\n]+" `isInfixOf` lexerSpec)
+                assertBool "negated class mixing both kinds keeps each one intact"
+                    ("[^\\\"\\\\\\n\\r]" `isInfixOf` lexerSpec)
+  where
+    -- the backslash class must end its source line: the grammar lexer reads
+    -- '\]' as an escape pair, so [\\] followed by another ']' on the same
+    -- line would mis-lex (see the backslash macro comment in java.pg)
+    src = unlines
+        [ "grammar 'Bs';"
+        , "S = cls tab nq ;"
+        , "cls = 'x' [\\\\] ;"
+        , "tab = [ \\t\\n]+ ;"
+        , "nq = [^\\\"\\\\\\n\\r] ;"
+        ]
 
 -- | Wrap a token at a dummy position; token processing ignores positions.
 at :: Token -> PosToken
