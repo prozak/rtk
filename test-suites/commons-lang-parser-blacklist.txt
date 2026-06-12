@@ -1,11 +1,13 @@
 # Blacklist for full parsing tests (main sources)
 # These files use features not yet supported by the grammar, chiefly:
-# - generic method calls / nested generics in expressions
-# - class literals (Foo.class), lambda expressions (->), method
-#   references (::), anonymous inner classes, enhanced for (:)
+# - lambda expressions (->), method references (::), class literals
+#   (Foo.class), anonymous inner classes, enhanced for (:)
+# - explicit constructor invocations (super(...) / this(...))
+# - the diamond operator (new HashMap<>())
 # - a doc comment directly before 'package' (package-info.java)
+# - generic methods with a void/primitive return type (<T> void m(...))
 #
-# Total: 206 files blacklisted, 53 files passing
+# Total: 186 files blacklisted, 73 files passing
 # As grammar support is added, remove files from this list
 
 org/apache/commons/lang3/AnnotationUtils.java
@@ -14,7 +16,6 @@ org/apache/commons/lang3/ArchUtils.java
 org/apache/commons/lang3/ArrayUtils.java
 org/apache/commons/lang3/BooleanUtils.java
 org/apache/commons/lang3/CachedRandomBits.java
-org/apache/commons/lang3/CharRange.java
 org/apache/commons/lang3/CharSequenceUtils.java
 org/apache/commons/lang3/CharSet.java
 org/apache/commons/lang3/CharSetUtils.java
@@ -47,8 +48,6 @@ org/apache/commons/lang3/ThreadUtils.java
 org/apache/commons/lang3/Validate.java
 org/apache/commons/lang3/arch/Processor.java
 org/apache/commons/lang3/arch/package-info.java
-org/apache/commons/lang3/builder/AbstractSupplier.java
-org/apache/commons/lang3/builder/CompareToBuilder.java
 org/apache/commons/lang3/builder/Diff.java
 org/apache/commons/lang3/builder/DiffBuilder.java
 org/apache/commons/lang3/builder/DiffResult.java
@@ -62,28 +61,22 @@ org/apache/commons/lang3/builder/ToStringBuilder.java
 org/apache/commons/lang3/builder/ToStringStyle.java
 org/apache/commons/lang3/builder/package-info.java
 org/apache/commons/lang3/compare/ComparableUtils.java
-org/apache/commons/lang3/compare/ObjectToStringComparator.java
 org/apache/commons/lang3/compare/package-info.java
 org/apache/commons/lang3/concurrent/AbstractCircuitBreaker.java
 org/apache/commons/lang3/concurrent/AbstractConcurrentInitializer.java
-org/apache/commons/lang3/concurrent/AbstractFutureProxy.java
 org/apache/commons/lang3/concurrent/AtomicInitializer.java
 org/apache/commons/lang3/concurrent/AtomicSafeInitializer.java
 org/apache/commons/lang3/concurrent/BackgroundInitializer.java
-org/apache/commons/lang3/concurrent/BasicThreadFactory.java
 org/apache/commons/lang3/concurrent/CallableBackgroundInitializer.java
 org/apache/commons/lang3/concurrent/CircuitBreakingException.java
 org/apache/commons/lang3/concurrent/ConcurrentException.java
-org/apache/commons/lang3/concurrent/ConcurrentInitializer.java
 org/apache/commons/lang3/concurrent/ConcurrentRuntimeException.java
 org/apache/commons/lang3/concurrent/ConcurrentUtils.java
-org/apache/commons/lang3/concurrent/ConstantInitializer.java
 org/apache/commons/lang3/concurrent/EventCountCircuitBreaker.java
 org/apache/commons/lang3/concurrent/FutureTasks.java
 org/apache/commons/lang3/concurrent/LazyInitializer.java
 org/apache/commons/lang3/concurrent/Memoizer.java
 org/apache/commons/lang3/concurrent/MultiBackgroundInitializer.java
-org/apache/commons/lang3/concurrent/ThresholdCircuitBreaker.java
 org/apache/commons/lang3/concurrent/TimedSemaphore.java
 org/apache/commons/lang3/concurrent/UncheckedExecutionException.java
 org/apache/commons/lang3/concurrent/UncheckedFuture.java
@@ -99,7 +92,6 @@ org/apache/commons/lang3/exception/CloneFailedException.java
 org/apache/commons/lang3/exception/ContextedException.java
 org/apache/commons/lang3/exception/ContextedRuntimeException.java
 org/apache/commons/lang3/exception/DefaultExceptionContext.java
-org/apache/commons/lang3/exception/ExceptionContext.java
 org/apache/commons/lang3/exception/ExceptionUtils.java
 org/apache/commons/lang3/exception/UncheckedException.java
 org/apache/commons/lang3/exception/UncheckedIllegalAccessException.java
@@ -153,18 +145,9 @@ org/apache/commons/lang3/function/Suppliers.java
 org/apache/commons/lang3/function/TriConsumer.java
 org/apache/commons/lang3/function/TriFunction.java
 org/apache/commons/lang3/function/package-info.java
-org/apache/commons/lang3/math/Fraction.java
 org/apache/commons/lang3/math/NumberUtils.java
 org/apache/commons/lang3/math/package-info.java
 org/apache/commons/lang3/mutable/Mutable.java
-org/apache/commons/lang3/mutable/MutableBoolean.java
-org/apache/commons/lang3/mutable/MutableByte.java
-org/apache/commons/lang3/mutable/MutableDouble.java
-org/apache/commons/lang3/mutable/MutableFloat.java
-org/apache/commons/lang3/mutable/MutableInt.java
-org/apache/commons/lang3/mutable/MutableLong.java
-org/apache/commons/lang3/mutable/MutableObject.java
-org/apache/commons/lang3/mutable/MutableShort.java
 org/apache/commons/lang3/mutable/package-info.java
 org/apache/commons/lang3/package-info.java
 org/apache/commons/lang3/reflect/ConstructorUtils.java
@@ -209,7 +192,6 @@ org/apache/commons/lang3/tuple/ImmutableTriple.java
 org/apache/commons/lang3/tuple/MutablePair.java
 org/apache/commons/lang3/tuple/MutableTriple.java
 org/apache/commons/lang3/tuple/Pair.java
-org/apache/commons/lang3/tuple/Triple.java
 org/apache/commons/lang3/tuple/package-info.java
 org/apache/commons/lang3/util/FluentBitSet.java
 org/apache/commons/lang3/util/IterableStringTokenizer.java

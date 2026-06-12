@@ -1,11 +1,13 @@
 # Blacklist for full parsing tests (test sources)
 # These files use features not yet supported by the grammar, chiefly:
-# - generic method calls / nested generics in expressions
-# - class literals (Foo.class), lambda expressions (->), method
-#   references (::), anonymous inner classes, enhanced for (:)
+# - lambda expressions (->), method references (::), class literals
+#   (Foo.class), anonymous inner classes, enhanced for (:)
 # - array initializers in 'new' (new int[] {...})
+# - the diamond operator (new HashMap<>())
+# - explicit constructor invocations (super(...) / this(...))
+# - generic method calls (Collections.<String>emptyList())
 #
-# Total: 205 files blacklisted, 62 files passing
+# Total: 200 files blacklisted, 67 files passing
 # As grammar support is added, remove files from this list
 
 org/apache/commons/lang3/AnnotationUtilsTest.java
@@ -109,8 +111,6 @@ org/apache/commons/lang3/concurrent/FutureTasksTest.java
 org/apache/commons/lang3/concurrent/LazyInitializerAnonClassTest.java
 org/apache/commons/lang3/concurrent/LazyInitializerCloserTest.java
 org/apache/commons/lang3/concurrent/LazyInitializerFailableCloserTest.java
-org/apache/commons/lang3/concurrent/LazyInitializerSimpleTest.java
-org/apache/commons/lang3/concurrent/LazyInitializerSingleInstanceTest.java
 org/apache/commons/lang3/concurrent/LazyInitializerSupplierTest.java
 org/apache/commons/lang3/concurrent/MemoizerComputableTest.java
 org/apache/commons/lang3/concurrent/MemoizerFunctionTest.java
@@ -127,7 +127,6 @@ org/apache/commons/lang3/exception/ContextedExceptionTest.java
 org/apache/commons/lang3/exception/ContextedRuntimeExceptionTest.java
 org/apache/commons/lang3/exception/CustomCheckedException.java
 org/apache/commons/lang3/exception/CustomUncheckedException.java
-org/apache/commons/lang3/exception/DefaultExceptionContextTest.java
 org/apache/commons/lang3/exception/ExceptionUtilsTest.java
 org/apache/commons/lang3/function/AnnotationTestFixture.java
 org/apache/commons/lang3/function/BooleanConsumerTest.java
@@ -171,9 +170,7 @@ org/apache/commons/lang3/reflect/MethodUtilsTest.java
 org/apache/commons/lang3/reflect/TypeLiteralTest.java
 org/apache/commons/lang3/reflect/TypeUtilsTest.java
 org/apache/commons/lang3/reflect/testbed/Annotated.java
-org/apache/commons/lang3/reflect/testbed/GenericParent.java
 org/apache/commons/lang3/reflect/testbed/PrivatelyShadowedChild.java
-org/apache/commons/lang3/reflect/testbed/StringParameterizedChild.java
 org/apache/commons/lang3/stream/FailableStreamTest.java
 org/apache/commons/lang3/stream/IntStreamsTest.java
 org/apache/commons/lang3/stream/LangCollectorsTest.java
