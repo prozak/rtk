@@ -1,6 +1,6 @@
-Tk__tok_class_13
+Tk__tok_class_15
 Tk__id "StringLiterals"
-Tk__tok__symbol__14
+Tk__tok__symbol__11
 Tk__id "String"
 Tk__id "empty"
 Tk__tok__eql__10
@@ -31,5 +31,5 @@ Tk__id "unicode"
 Tk__tok__eql__10
 Tk__string "\"\\u0041BC\""
 Tk__tok__semi__1
-Tk__tok__symbol__15
+Tk__tok__symbol__12
 EndOfFile

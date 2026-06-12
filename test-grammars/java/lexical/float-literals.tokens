@@ -1,6 +1,6 @@
-Tk__tok_class_13
+Tk__tok_class_15
 Tk__id "FloatLiterals"
-Tk__tok__symbol__14
+Tk__tok__symbol__11
 Tk__tok_double_27
 Tk__id "plain"
 Tk__tok__eql__10
@@ -81,5 +81,5 @@ Tk__id "underscore"
 Tk__tok__eql__10
 Tk__floatLiteral "1_000.000_1"
 Tk__tok__semi__1
-Tk__tok__symbol__15
+Tk__tok__symbol__12
 EndOfFile

@@ -1,106 +1,32 @@
 # Blacklist for full parsing tests (test sources)
 # These files use features not yet supported by the grammar, chiefly:
-# - anonymous inner classes (new Foo() { ... })
-# - array initializers in annotation values (@Foo({A, B})) and in array
-#   creation (new int[] {1, 2})
-# - generic methods with a void/primitive return type (<T> void m(...))
-# - a lambda directly under a cast ((Predicate<T>) t -> ...)
+# - array class literals (String[].class) and array-constructor method
+#   references (TimeUnit[]::new)
+# - lambdas with typed or modified parameter lists, under casts, and in a
+#   conditional's false branch
+# - comma-separated statement-expression lists in a for-update (i++, t += 1)
+# - the 'volatile' modifier
+# - type annotations in a generic return type (<T> @Nonnull T m())
+# - an empty enum body (enum E { })
 #
-# Total: 95 files blacklisted, 172 files passing
+# Total: 18 files blacklisted, 249 files passing
 # As grammar support is added, remove files from this list
 
 org/apache/commons/lang3/AnnotationUtilsTest.java
-org/apache/commons/lang3/AppendableJoinerTest.java
-org/apache/commons/lang3/ArrayUtilsAddTest.java
-org/apache/commons/lang3/ArrayUtilsInsertTest.java
-org/apache/commons/lang3/ArrayUtilsRemoveMultipleTest.java
-org/apache/commons/lang3/ArrayUtilsRemoveTest.java
 org/apache/commons/lang3/ArrayUtilsTest.java
-org/apache/commons/lang3/BooleanUtilsTest.java
-org/apache/commons/lang3/CachedRandomBitsTest.java
-org/apache/commons/lang3/CharSequenceUtilsTest.java
-org/apache/commons/lang3/CharSetTest.java
-org/apache/commons/lang3/ClassLoaderUtilsTest.java
 org/apache/commons/lang3/ClassUtilsTest.java
-org/apache/commons/lang3/ConversionTest.java
 org/apache/commons/lang3/EnumUtilsTest.java
-org/apache/commons/lang3/FunctionsTest.java
-org/apache/commons/lang3/LocaleUtilsTest.java
 org/apache/commons/lang3/ObjectUtilsTest.java
-org/apache/commons/lang3/RandomStringUtilsTest.java
-org/apache/commons/lang3/RangeTest.java
-org/apache/commons/lang3/RuntimeEnvironmentTest.java
-org/apache/commons/lang3/SerializationUtilsTest.java
-org/apache/commons/lang3/StringUtilsContainsTest.java
-org/apache/commons/lang3/StringUtilsEqualsIndexOfTest.java
 org/apache/commons/lang3/StringUtilsTest.java
-org/apache/commons/lang3/StringUtilsTrimStripTest.java
-org/apache/commons/lang3/StringUtilsValueOfTest.java
-org/apache/commons/lang3/SystemPropertiesTest.java
-org/apache/commons/lang3/ValidateTest.java
-org/apache/commons/lang3/builder/DefaultToStringStyleTest.java
-org/apache/commons/lang3/builder/DiffBuilderTest.java
-org/apache/commons/lang3/builder/EqualsBuilderReflectJreImplementationTest.java
 org/apache/commons/lang3/builder/JsonToStringStyleTest.java
-org/apache/commons/lang3/builder/MultiLineToStringStyleTest.java
-org/apache/commons/lang3/builder/MultilineRecursiveToStringStyleTest.java
-org/apache/commons/lang3/builder/NoClassNameToStringStyleTest.java
-org/apache/commons/lang3/builder/NoFieldNamesToStringStyleTest.java
-org/apache/commons/lang3/builder/RecursiveToStringStyleTest.java
-org/apache/commons/lang3/builder/ReflectionDiffBuilderTest.java
-org/apache/commons/lang3/builder/ReflectionToStringBuilderExcludeTest.java
-org/apache/commons/lang3/builder/ReflectionToStringBuilderIncludeTest.java
-org/apache/commons/lang3/builder/ShortPrefixToStringStyleTest.java
-org/apache/commons/lang3/builder/SimpleToStringStyleTest.java
-org/apache/commons/lang3/builder/StandardToStringStyleTest.java
-org/apache/commons/lang3/builder/TestClassBuilder.java
-org/apache/commons/lang3/builder/ToStringBuilderTest.java
-org/apache/commons/lang3/concurrent/AtomicInitializerNonObjectTest.java
-org/apache/commons/lang3/concurrent/AtomicInitializerObjectTest.java
-org/apache/commons/lang3/concurrent/AtomicSafeInitializerSupplierTest.java
-org/apache/commons/lang3/concurrent/AtomicSafeInitializerTest.java
 org/apache/commons/lang3/concurrent/BackgroundInitializerSupplierTest.java
-org/apache/commons/lang3/concurrent/BackgroundInitializerTest.java
 org/apache/commons/lang3/concurrent/EventCountCircuitBreakerTest.java
-org/apache/commons/lang3/concurrent/LazyInitializerAnonClassTest.java
 org/apache/commons/lang3/concurrent/MultiBackgroundInitializerSupplierTest.java
 org/apache/commons/lang3/concurrent/MultiBackgroundInitializerTest.java
 org/apache/commons/lang3/concurrent/TimedSemaphoreTest.java
-org/apache/commons/lang3/concurrent/UncheckedFutureTest.java
-org/apache/commons/lang3/concurrent/locks/LockingVisitorsTest.java
-org/apache/commons/lang3/event/EventListenerSupportTest.java
-org/apache/commons/lang3/event/EventUtilsTest.java
-org/apache/commons/lang3/exception/ContextedRuntimeExceptionTest.java
-org/apache/commons/lang3/exception/ExceptionUtilsTest.java
-org/apache/commons/lang3/function/AnnotationTestFixture.java
-org/apache/commons/lang3/function/ByteSupplierTest.java
-org/apache/commons/lang3/function/FailableTest.java
 org/apache/commons/lang3/function/MethodFixtures.java
 org/apache/commons/lang3/function/Objects.java
-org/apache/commons/lang3/math/FractionTest.java
 org/apache/commons/lang3/reflect/ConstructorUtilsTest.java
-org/apache/commons/lang3/reflect/FieldUtilsTest.java
 org/apache/commons/lang3/reflect/MethodUtilsTest.java
-org/apache/commons/lang3/reflect/TypeLiteralTest.java
 org/apache/commons/lang3/reflect/TypeUtilsTest.java
-org/apache/commons/lang3/reflect/testbed/Annotated.java
-org/apache/commons/lang3/reflect/testbed/PrivatelyShadowedChild.java
-org/apache/commons/lang3/stream/FailableStreamTest.java
-org/apache/commons/lang3/stream/IntStreamsTest.java
-org/apache/commons/lang3/stream/LangCollectorsTest.java
-org/apache/commons/lang3/text/CompositeFormatTest.java
-org/apache/commons/lang3/text/ExtendedMessageFormatTest.java
-org/apache/commons/lang3/text/StrBuilderAppendInsertTest.java
-org/apache/commons/lang3/text/StrBuilderTest.java
-org/apache/commons/lang3/text/StrSubstitutorTest.java
-org/apache/commons/lang3/text/StrTokenizerTest.java
-org/apache/commons/lang3/text/WordUtilsTest.java
-org/apache/commons/lang3/text/translate/LookupTranslatorTest.java
-org/apache/commons/lang3/time/DurationFormatUtilsTest.java
-org/apache/commons/lang3/time/DurationUtilsTest.java
-org/apache/commons/lang3/time/FastDateFormatTest.java
 org/apache/commons/lang3/time/FastDateParserTest.java
-org/apache/commons/lang3/time/FastDateParser_TimeZoneStrategyTest.java
-org/apache/commons/lang3/tuple/PairTest.java
-org/apache/commons/lang3/util/FluentBitSetTest.java
-org/apache/commons/lang3/util/IterableStringTokenizerTest.java

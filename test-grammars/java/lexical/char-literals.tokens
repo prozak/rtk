@@ -1,6 +1,6 @@
-Tk__tok_class_13
+Tk__tok_class_15
 Tk__id "CharLiterals"
-Tk__tok__symbol__14
+Tk__tok__symbol__11
 Tk__tok_char_22
 Tk__id "simple"
 Tk__tok__eql__10
@@ -66,5 +66,5 @@ Tk__id "unicode"
 Tk__tok__eql__10
 Tk__char "'\\u0041'"
 Tk__tok__semi__1
-Tk__tok__symbol__15
+Tk__tok__symbol__12
 EndOfFile
