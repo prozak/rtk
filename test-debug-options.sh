@@ -221,8 +221,17 @@ test_option_multi "--debug-rule=Clause --debug-stage=parse" "--debug-rule=Clause
 echo ""
 
 echo "=== Output Format ==="
-test_option "--debug-format=pretty --stats" "--debug-format=pretty --stats" "GRAMMAR STATISTICS"
-test_option "--debug-format=compact --stats" "--debug-format=compact --stats" "GRAMMAR STATISTICS"
+test_option "--debug-color --stats" "--debug-color --stats" "GRAMMAR STATISTICS"
+# --debug-format was removed (its only real format is the pretty default);
+# the option must be rejected rather than silently accepted
+echo -n "Testing --debug-format is gone... "
+if $RTK_EXEC "$GRAMMAR" "$OUT_DIR" --debug-format=compact --stats > /dev/null 2>&1; then
+    echo -e "${RED}FAIL${NC} - removed option was accepted"
+    ((failed++))
+else
+    echo -e "${GREEN}PASS${NC}"
+    ((passed++))
+fi
 echo ""
 
 echo "=== Performance Profiling ==="

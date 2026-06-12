@@ -2,7 +2,7 @@ import Lexer
 import Parser (parse)
 import Syntax
 import ASTAdapter (parseWithGenerated, scanTokensGenerated)
-import Diagnostics (Diagnostic, renderDiagnostic)
+import Diagnostics (Diagnostic (..), renderDiagnostic)
 import TokenProcessing
 import StringLiterals
 import Normalize
@@ -15,7 +15,8 @@ import Control.Monad (when)
 import Data.Data (Data)
 import Data.IORef (newIORef, readIORef, writeIORef)
 import Data.Maybe (catMaybes, isJust)
-import Control.Exception (evaluate)
+import Control.Exception (IOException, evaluate, try)
+import System.Directory (createDirectoryIfMissing)
 import System.IO (hPutStrLn, stderr)
 import System.Exit (exitSuccess, exitWith, ExitCode (ExitFailure))
 
@@ -203,9 +204,19 @@ main = do
     let specDumpRequested = any id [debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts]
     when (not (validateGrammar opts) || specDumpRequested) $ do
         let dir = outputDir opts
-        writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
-        writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
-        writeFile (dir ++ "/" ++ grammar_name ++ "QQ.hs") q_content
+        -- A missing output directory is created on the fly; any remaining
+        -- IO failure (no permission, a file where the directory should be)
+        -- is rendered as a one-line diagnostic instead of escaping as an
+        -- uncaught IOException
+        written <- try $ do
+            createDirectoryIfMissing True dir
+            writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
+            writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
+            writeFile (dir ++ "/" ++ grammar_name ++ "QQ.hs") q_content
+        case written of
+            Left e -> orDie opts $ Left $ Diagnostic Nothing Nothing $
+                "cannot write generated files: " ++ show (e :: IOException)
+            Right () -> return ()
 
     -- Show timing profile if requested
     when (profileStages opts) $ do

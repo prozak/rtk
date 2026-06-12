@@ -27,17 +27,11 @@ help:
 	@echo "Available grammar tests: $(GRAMMAR_TARGETS)"
 
 # ============================================================================
-# Platform-specific configuration
+# Tool configuration
 # ============================================================================
+# (A Windows_NT branch used to live here, pointing at the long-dead cabal-v1
+# dist/build path; this makefile supports Unix-like systems only.)
 
-ifeq ($(OS), Windows_NT)
-CP=copy
-RM=rmdir
-RM_OPT=/s /q
-MKDIR_P=mkdir
-BIN_PATH=dist/build/rtk/rtk.exe
-RTK_EXEC=$(BIN_PATH)
-else
 CP=cp
 RM=rm
 RM_OPT=-rf
@@ -45,7 +39,6 @@ MKDIR_P=mkdir -p
 # Find the binary dynamically to support multiple platforms
 BIN_PATH=$(shell find dist-newstyle -name rtk -type f -path '*/build/rtk/rtk' 2>/dev/null | head -n 1)
 RTK_EXEC=cabal exec rtk --
-endif
 
 # ============================================================================
 # Build targets

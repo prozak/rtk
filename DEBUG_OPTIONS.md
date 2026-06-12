@@ -350,17 +350,11 @@ rtk test-grammars/java.rtk test-out --expand-rule=classDeclaration
 
 ## Output Format Options
 
-### `--debug-format=FORMAT`
-Set output format for debug information.
-
-**Formats:**
-- `pretty` - Multi-line pretty-printed (default)
-- `compact` - Single-line compact format
-
-**Example:**
-```bash
-rtk test-grammars/java.rtk test-out --debug-tokens --debug-format=compact
-```
+Debug output is always pretty-printed. (An earlier `--debug-format` option
+offered a `compact` mode that merely stripped newlines into an unreadable
+single line, and at one point advertised never-implemented `json`/`tree`
+modes that silently fell back to pretty; the option was removed rather than
+kept as a one-value choice.)
 
 ### `--debug-color`
 Enable colored output for better readability (enabled by default).
@@ -436,9 +430,9 @@ rtk grammar.rtk out --debug-rule=myRule --expand-rule=myRule
 All options documented above are fully implemented. Earlier placeholder
 options that were advertised but never implemented (`--compare-stages`,
 `--memory-stats`, `--debug-output-dir`, `--debug-log`, `--interactive`,
-and the `json`/`tree` debug formats) have been removed from the CLI; they
-can be reintroduced together with real implementations, as `--debug-rule`
-has been.
+and the whole `--debug-format` option with its `json`/`tree`/`compact`
+formats) have been removed from the CLI; they can be reintroduced together
+with real implementations, as `--debug-rule` has been.
 
 ## See Also
 

@@ -79,7 +79,6 @@ Library
                      GenX,
                      GenY,
                      Normalize,
-                     PrintGrammar,
                      StrQuote,
                      StringLiterals,
                      DebugOptions,
@@ -111,7 +110,9 @@ Executable rtk
   Import:            warnings
   Main-is:           main.hs
   Hs-Source-Dirs:    app
-  Build-Depends:     base >= 4.17 && < 4.19, rtk
+  Build-Depends:     base      >= 4.17 && < 4.19,
+                     directory >= 1.3  && < 1.4,
+                     rtk
   ghc-options:       -rtsopts
 
 -- In-process tests of the generation pipeline (lex/parse/normalize/generate).

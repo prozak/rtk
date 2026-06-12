@@ -114,7 +114,10 @@ genItem _ _ (STAltOfSeq _) = error "STAltOfSeq not supported in genItem"
 genSimpleItem :: RulesMap -> String -> SyntaxSimpleClause -> Either Diagnostic Doc
 genSimpleItem rmap refType (SSId idName) = text <$> findRuleDataTypeName rmap refType idName
 genSimpleItem _    _       (SSIgnore _) = Right empty
-genSimpleItem _    _       (SSLifted _) = error "lifted rules are not yet implemented"
+-- All-lifted alternatives are filtered out before constructor generation
+-- (needGenereateAlt) and Normalize rejects every other lifted position, so a
+-- lifted clause reaching this point is a pipeline bug, not a missing feature.
+genSimpleItem _    _       (SSLifted _) = error "Internal error (GenAST): lifted clause survived normalization"
 
 -- A reference to an unknown rule is a user error; name both the unknown
 -- rule and the type that references it. A bare type name resolves only via

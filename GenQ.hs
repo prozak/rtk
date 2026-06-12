@@ -21,7 +21,8 @@ sortNameToHaskellName s = s
 -- genQ has no user-reachable error paths today (its remaining guards are
 -- internal invariants); the Either signature keeps it uniform with genX/genY.
 genQ :: NormalGrammar -> Either Diagnostic String
-genQ (NormalGrammar name rules _ antiRules shortcuts _ info) = Right [str|{-# LANGUAGE TemplateHaskell #-}
+genQ (NormalGrammar name rules _ antiRules shortcuts _ info) = Right [str|?banner
+{-# LANGUAGE TemplateHaskell #-}
 module ?name~QQ
 where
 
@@ -103,12 +104,14 @@ rtkPosWildPat _ = Just TH.wildP
 ?antiFunsGenExp
 ?antiFunsGenPat
 
+-- This grammar's quasi-quoters work in expression and pattern contexts only
 ?qqFunType
 ?qqFunDecs
 
 ?qqParseFuns
 |]
-    where pat = "Pat"
+    where banner = provenanceBanner name
+          pat = "Pat"
           expType = "Exp"
           proxyRules = getProxyRules info
           qqFunName typ = [str|quote?name~?typ|]
@@ -166,8 +169,13 @@ rtkPosWildPat _ = Just TH.wildP
            Right a -> return a
   let expr = func ast
 |] ++ dataToExpCall typ "expr"
-          qqFunType = qqFunName "Type" ++ " s = return TH.ListT"
-          qqFunDecs = qqFunName "Decs" ++ " s = return []"
+          -- quoteType/quoteDec used to return dummies (TH.ListT / []),
+          -- silently compiling a quote in the wrong context into nonsense;
+          -- failing in TH.Q makes it a compile error at the splice site
+          qqFunType = qqFunName "Type"
+                      ++ " _ = fail \"this quasi-quoter cannot be used in a type context\""
+          qqFunDecs = qqFunName "Decs"
+                      ++ " _ = fail \"this quasi-quoter cannot be used in a declaration context\""
           antiFunsGenExp = unlines $ antiFunsGen expType
           antiFunsGenPat = unlines $ antiFunsGen pat
           typeNameToConstructor = M.fromList $ map (\(STSeq cName lst) ->

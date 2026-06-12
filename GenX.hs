@@ -67,7 +67,8 @@ genX (NormalGrammar { getNGrammarName = name, getLexicalRules = tokens, getNImpo
     where macroIds = getMacroIds tokens
           symMacroIds = getSymMacroIds tokens
           adt = genTokenADT $ removeSymmacros tokens
-          header = vcat [text "{",
+          header = vcat [text (provenanceBanner name),
+                         text "{",
                          text "{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}",
                          ((text "module" <+> text name) <> text "Lexer(scanTokens, alexScanTokens, Token(..), PosToken(..), AlexPosn(..))"), text "where",
                          text "import Data.Data (Data)",
@@ -156,23 +157,22 @@ backquoteStr s = concat (map (\chr -> if (case chr of
                                           else [chr] )
                                   s)
 
+-- Escape the characters that are special in Alex set syntax ([...]). A
+-- literal backslash is special too and must become \\: it used to pass
+-- through raw, where Alex reads it as an escape, so a backslash silently
+-- changed the meaning of its class and users resorted to the [\x5C] hex
+-- spelling (issue #95). The exception: token post-processing
+-- (TokenProcessing.unBackQuote) keeps the \n \t \r \f \v escape pairs
+-- intact in regex content, so a backslash heading one of those pairs
+-- stands for the control character and passes through for Alex to read
+-- the same way.
 backquoteStrInBrackets :: String -> String
-backquoteStrInBrackets s = concat (map (\chr -> if (case chr of
-                                                        '[' -> True
-                                                        ']' -> True
-                                                        '(' -> True
-                                                        ')' -> True
-                                                        ' ' -> True
-                                                        '*' -> True
-                                                        '/' -> True
-                                                        '{' -> True
-                                                        '}' -> True
-                                                        '$' -> True
-                                                        '"' -> True
-                                                        _   -> False)
-                                          then ['\\', chr]
-                                          else [chr] )
-                                  s)
+backquoteStrInBrackets ('\\' : c : rest)
+    | isAlexEscape ['\\', c] = '\\' : c : backquoteStrInBrackets rest
+backquoteStrInBrackets (chr : rest) = escaped ++ backquoteStrInBrackets rest
+    where escaped | chr `elem` "[]() */{}$\"\\" = ['\\', chr]
+                  | otherwise                   = [chr]
+backquoteStrInBrackets [] = []
 
 -- Report a lexical-rule generation error, naming the rule for context.
 lexErr :: ID -> String -> Either Diagnostic a

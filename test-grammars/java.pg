@@ -688,17 +688,26 @@ floatTypeSuffix  =
 # Character literal: handles simple chars and escape sequences
 # Simple char: 'a', single-char escapes: '\n', '\t', multi-digit octal
 # escapes: '\12', '\101', '\377' (JLS 3.10.6), and Unicode: '\u0041'
-# Use [\\x5C] (hex for backslash) to avoid RTK lexer escaping issues
 char  = '\'' . '\''
-      | '\'' [\\x5C] . '\''
-      | '\'' [\\x5C] [0-7] [0-7] '\''
-      | '\'' [\\x5C] [0-3] [0-7] [0-7] '\''
-      | '\'' [\\x5C] 'u' [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] '\'' ;
+      | '\'' backslash . '\''
+      | '\'' backslash [0-7] [0-7] '\''
+      | '\'' backslash [0-3] [0-7] [0-7] '\''
+      | '\'' backslash 'u' [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] '\'' ;
 
 # String literal: handles escape sequences like \", \\, \n, etc.
 # Use negated class to match any char except quote, backslash, newline, CR
 # Allow backslash followed by any char for escape sequences
-string  = [\"] ([^\\x22\\x5C\\x0A\\x0D] | [\\x5C] .)* [\"] ;
+string  = [\"] ([^\"\\\n\r] | backslash .)* [\"] ;
+
+# The literal-backslash class, as a charset macro. The grammar lexer reads
+# '\]' as an escape pair inside [...], so a class ENDING in a backslash
+# (like this one) mis-lexes whenever another ']' follows it on the same
+# line; the macro pins the class at a line end once instead of constraining
+# every use site. (It used to be spelled [\\x5C] at each use, leaking
+# Alex's hex escape through the then-unescaped bracket translation -
+# issue #95.)
+@symmacro
+backslash = [\\] ;
 
 id = [a-zA-Z$_][a-zA-Z$_0-9]* ;
 # Fixed: Split [*] [^/] into explicit cases for better Alex DFA generation
