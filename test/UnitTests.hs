@@ -6,6 +6,7 @@
 --   * pipeline error handling (ported from EmptyGrammar_Test.hs)
 --   * normalization behavior on small inline grammars
 --   * normalization invariants checked against every grammar in test-grammars/
+--   * the compiled-in generated quasi-quoter (GrammarQQ smoke test)
 module Main (main) where
 
 import Control.Exception (SomeException, evaluate, try)
@@ -21,6 +22,8 @@ import Test.HUnit
 import Diagnostics (Diagnostic (..), SourcePos (..), renderDiagnostic)
 import GenX (isAlexEscape)
 import Grammar (isClauseSeqLifted)
+import GrammarParser (Clause)
+import GrammarQQ (clause)
 import Lexer (AlexPosn (..), PosToken (..), Token (..))
 import Normalize (fillConstructorNames, normalizeTopLevelClauses)
 import Syntax
@@ -42,6 +45,7 @@ main = do
         , TestLabel "pipeline error handling" errorHandlingTests
         , TestLabel "normalization behavior" normalizationTests
         , TestLabel "self-hosted front end" selfHostedFrontEndTests
+        , TestLabel "compiled-in quasi-quoter (GrammarQQ)" grammarQQTests
         ] ++ perGrammar ++ astEquality
     when (errors results + failures results /= 0) exitFailure
 
@@ -719,6 +723,51 @@ selfHostedFrontEndTests = TestList
                 "defined more than once" `isInfixOf` diagMessage d
                 && "line 2, column 1" `isInfixOf` diagMessage d
     ]
+
+--------------------------------------------------------------------------------
+-- The compiled-in generated quasi-quoter (GrammarQQ)
+--------------------------------------------------------------------------------
+
+-- | Smoke test for the snapshot's quasi-quoter, compiled into rtk beside
+-- GrammarLexer/GrammarParser: the quotes below are parsed by the generated
+-- front end at rtk's OWN compile time, and Anti_* splices work in both
+-- expression and pattern context. Note the quotes produce the generated AST
+-- types ('GrammarParser.Clause' here), not 'Syntax.IClause' - bridging that
+-- gap is the pipeline migration (task 8c in docs/qq-grammar-rewrites-plan.md).
+grammarQQTests :: Test
+grammarQQTests = TestList
+    [ TestLabel "an expression quote builds a clause and splices $vars" $ TestCase $ do
+        -- $cl resolves via grammar.pg's @shortcuts(cl) to a Clause
+        -- metavariable; in expression context the Anti_Clause splice inserts
+        -- the local 'cl' into the quoted star repetition
+        let cl = [clause| Name |] :: Clause
+        assertEqual "spliced clause equals the directly quoted one"
+            [clause| Name * |] [clause| $cl * |]
+    , TestLabel "a pattern quote matches modulo positions and binds splices" $ TestCase $
+        -- pattern and scrutinee come from different quote bodies, so their
+        -- positions differ; patterns wildcard every RtkPos field, and the
+        -- metavariable binds the repeated clause through the Anti_Clause
+        -- splice
+        assertEqual "the inner clause is bound"
+            (Just [clause| Name |]) (starInner [clause| Name * |])
+    , TestLabel "a pattern quote still discriminates clause shapes" $ TestCase $
+        assertEqual "a plus clause does not match the star pattern"
+            Nothing (starInner [clause| Name + |])
+    , TestLabel "the quoted language's own literals lex inside quotes" $ TestCase $
+        -- Name '*' is a sequence (a rule reference, then a string literal),
+        -- distinct from the star repetition Name *
+        assertBool "sequence with a '*' literal differs from the star clause"
+            ([clause| Name '*' |] /= [clause| Name * |])
+    ]
+
+-- | A matcher defined by a quasi-quoted pattern. The scrutinee stays an
+-- opaque argument: applied to a quoted clause directly, GHC sees the
+-- expanded constructors on both sides, proves each match's outcome at
+-- compile time and rejects the would-be-exercised alternative as redundant
+-- under -Werror.
+starInner :: Clause -> Maybe Clause
+starInner [clause| $cl2 * |] = Just cl2
+starInner _                  = Nothing
 
 -- | Both front ends must produce the same 'InitialGrammar' for every grammar
 -- in the corpus, source positions included: the generated front end captures

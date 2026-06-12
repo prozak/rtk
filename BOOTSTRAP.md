@@ -10,12 +10,13 @@ compiler compiled by itself, RTK is self-hosting:
   language.** Changes to the grammar language land in grammar.pg (and the
   regenerated goldens) FIRST.
 - **The generated front end is the default.** `GrammarLexer.x` /
-  `GrammarParser.y` — RTK's own output for grammar.pg — are compiled into rtk
-  straight from the golden snapshot in `test/golden/grammar/`;
+  `GrammarParser.y` / `GrammarQQ.hs` — RTK's own output for grammar.pg — are
+  compiled into rtk straight from the golden snapshot in `test/golden/grammar/`;
   `src/generated/ASTAdapter.hs` converts the generated AST to the pipeline's
   `InitialGrammar`, after which everything (normalization, code generation) is
   front-end independent. `--use-generated` is still accepted as an explicit
-  choice.
+  choice. (The compiled-in quasi-quoter quotes fragments as the *generated*
+  AST types; the unit suite smoke-tests it.)
 - **The hand-written `Lexer.x` / `Parser.y` are the reference oracle.** They
   are selected with `rtk --use-handwritten` and exist to keep the equivalence
   harness honest: they follow grammar.pg, not the other way round, and change

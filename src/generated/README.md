@@ -31,12 +31,14 @@ exactly like the stage files of any self-hosting compiler — and
 `make accept-golden` advances it, so the build input of the default front end
 stays in sync with the generators by construction.
 
-`GrammarQQ.hs` (the generated quasi-quoter) is deliberately **not** compiled
-into rtk: it would drag `regex-posix` and Template Haskell splices into the
-build. An earlier sketch of the adapter used quasi-quotation to pattern match
-on the generated AST; the real adapter is plain total pattern matching on the
-generated constructors (`Ctr__…`), which is deterministic and dependency-free.
-The golden snapshot pins those constructor names.
+`GrammarQQ.hs` (the generated quasi-quoter) is compiled in from the same
+snapshot (task 8b of `docs/qq-grammar-rewrites-plan.md`): generated
+quasi-quoters need no regex packages anymore, only `template-haskell`, so
+rtk's own code and tests can quote grammar fragments against the generated
+AST — `cabal test unit` smoke-tests `[clause| … |]` quotes and `Anti_*`
+splices in-tree. The adapter itself stays plain total pattern matching on
+the generated constructors (`Ctr__…`), which is deterministic and
+dependency-free; the golden snapshot pins those constructor names.
 
 ## What the adapter must replicate
 

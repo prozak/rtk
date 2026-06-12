@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- The generated quasi-quoter for RTK's own grammar language (`GrammarQQ`) is
+  compiled into rtk, beside `GrammarLexer`/`GrammarParser` in the snapshot
+  front-end component — possible since 0.11 made generated quasi-quoters
+  dependency-light (`template-haskell`, a GHC boot library, is the only
+  dependency the quasi-quoter adds). Grammar fragments can now be quoted
+  in-tree, and the unit suite smoke-tests it: `[clause| Name * |]` parses at
+  rtk's own compile time, `$cl`-style metavariables splice and bind through
+  the `Anti_*` constructors in both expression and pattern context. The
+  quotes produce the generated AST types, not the pipeline's
+  `InitialGrammar`; migrating the pipeline onto the generated AST so
+  normalization rewrites can be quasi-quoted is the follow-up (tasks 8c/8d
+  in docs/qq-grammar-rewrites-plan.md)
 - PL/0 compiler tutorial (`tutorials/pl0-compiler/`): the language of Brian
   Callahan's "Let's write a compiler" tutorial series, at the series'
   parts 1-3 ("validator") milestone. Baseline Wirth PL/0 — empty statements
@@ -68,8 +80,8 @@ gained PVP bounds; CI a pinned, cached toolchain.
   `<Name>Lexer.x`/`<Name>Parser.y` pair and typechecks the result with
   `ghc -fno-code`. The golden suite diffs text only and sat green while the
   debug-test and t1 snapshots did not compile; the gate closes that
-  test-architecture hole (QQ goldens join once the regex-posix dependency
-  is dropped, task 8b)
+  test-architecture hole (the `<Name>QQ.hs` goldens are gated too, since
+  generated quasi-quoters dropped their regex dependency — see Fixed)
 - Source positions in generated ASTs: every constructor that generated
   parsers build (except the quasi-quotation-only `Anti_*` splice
   constructors) now stores the position of its alternative's first symbol
@@ -309,6 +321,17 @@ gained PVP bounds; CI a pinned, cached toolchain.
   declaration context compiled into nonsense. Both now `fail` in `TH.Q`,
   making the misuse a GHC compile error at the splice site ("this
   quasi-quoter cannot be used in a type/declaration context")
+- A `$name` metavariable at the end of a line (or of the whole quote body)
+  silently stayed unrewritten, failing with a confusing parse error at the
+  `$`: the generated quasi-quoter's metavariable scan used regex-posix,
+  whose default newline option made the terminator class never match `\n`.
+  The scan is now a plain character function with the documented semantics
+  preserved (`$$` escapes, explicit `$Type:name` passthrough, the
+  unknown-metavariable error). Generated QQ modules consequently import no
+  regex packages at all — `regex-posix`/`regex-base` (which were never
+  declared rtk dependencies and compiled only as transitive flukes) are
+  gone from every user's generated-code dependency footprint, and the
+  README/cabal generated-code dependency lists shrank accordingly
 - Writing into a missing output directory no longer escapes as a raw
   `IOException`: `rtk g.pg /tmp/does/not/exist` now creates the directory
   and succeeds; IO failures that remain (no permission, a file where the

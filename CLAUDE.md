@@ -237,8 +237,9 @@ make test          # or: cabal test
 
 Runs the two cabal test suites defined in rtk.cabal:
 - `unit` (test/UnitTests.hs) - HUnit tests for StrQuote, token post-processing,
-  pipeline error handling, normalization behavior on small inline grammars, and
-  normalization invariants checked against every grammar in test-grammars/
+  pipeline error handling, normalization behavior on small inline grammars,
+  normalization invariants checked against every grammar in test-grammars/, and
+  a smoke test of the compiled-in generated quasi-quoter (GrammarQQ)
 - `golden` (test/GoldenTests.hs) - golden/snapshot tests: the generated
   `<Name>Lexer.x`, `<Name>Parser.y` and `<Name>QQ.hs` for every grammar in
   test-grammars/ are compared against the snapshots in test/golden/
