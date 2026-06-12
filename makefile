@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens test-wyah-tutorial test-lex-java accept-lex-java test-all-java test-i14-qq test-java-rewrite test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens tutorials test-wyah-tutorial test-lex-java accept-lex-java test-all-java test-i14-qq test-java-rewrite test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -231,6 +231,16 @@ test-t1: build | test-out
 #   make -C tutorials/write-you-a-haskell test
 test-wyah-tutorial:
 	$(MAKE) -C tutorials/write-you-a-haskell test
+
+# Every tutorial's test suite (must stay .PHONY: the tutorials/ directory
+# itself would otherwise count as up to date). CI's tutorials job runs
+# exactly this target.
+tutorials:
+	$(MAKE) -C tutorials/c-compiler test
+	$(MAKE) -C tutorials/write-you-a-haskell test
+	$(MAKE) -C tutorials/lets-build-a-compiler test
+	$(MAKE) -C tutorials/pl0-compiler test
+	$(MAKE) -C tutorials/lisp-interpreter test
 
 # Java quasi-quotation tests (separate from regular java-main parser driver)
 test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
