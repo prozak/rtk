@@ -164,6 +164,7 @@ jobs:
         run_test "Issue 14 QQ Tests" "make test-i14-qq"
         run_test "P QQ Pattern Matching Tests" "make test-p"
         run_test "C Compiler Tutorial" "make -C tutorials/c-compiler test"
+        run_test "Write You a Haskell Tutorial" "make -C tutorials/write-you-a-haskell test"
         run_test "Apache Commons Lexical Tests" "make test-lex-commons-lang-all"
         run_test "Apache Commons Parser Tests" "make test-parse-commons-lang-all"
         # test-debug and test-debug-all exercise the same debug flags but
