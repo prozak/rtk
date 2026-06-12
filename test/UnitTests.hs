@@ -19,7 +19,12 @@ import System.Exit (exitFailure)
 import System.FilePath (takeBaseName)
 import Test.HUnit
 
+import Data.Generics (everything, mkQ)
+import qualified GrammarLexer as GL
+import qualified GrammarParser as GP
+
 import Diagnostics (Diagnostic (..), SourcePos (..), renderDiagnostic)
+import Frontend (grammarRules, ruleClause, ruleName, ruleTypeName)
 import GenX (isAlexEscape)
 import Grammar (isClauseSeqLifted)
 import GrammarParser (Clause)
@@ -61,8 +66,34 @@ normalizeNoFill :: String -> NormalGrammar
 normalizeNoFill = either (error . ("unexpected diagnostic: " ++) . show) id . normalizeNoFillE
 
 -- | Parse a valid grammar, failing loudly on a diagnostic.
-parseOrDie :: String -> InitialGrammar
+parseOrDie :: String -> GP.Grammar
 parseOrDie = either (error . ("unexpected diagnostic: " ++) . show) id . parseGrammarSource
+
+--------------------------------------------------------------------------------
+-- Generated-AST builders for expected values. Positions are
+-- equality-transparent, so rtkNoPos compares equal to any parsed position.
+--------------------------------------------------------------------------------
+
+np :: GP.RtkPos
+np = GP.rtkNoPos
+
+gpRef :: String -> GP.Clause
+gpRef n = GP.Ref np (GP.Ident np n)
+
+gpLit :: String -> GP.Clause
+gpLit s = GP.Lit np (GP.Str np s)
+
+gpIgnore :: GP.Clause -> GP.Clause
+gpIgnore = GP.Ignored np
+
+gpSeq :: [GP.Clause] -> GP.Clause
+gpSeq = foldl1 (GP.Seq np)
+
+gpAlt :: [GP.Clause] -> GP.Clause
+gpAlt = foldl1 (GP.Alt np)
+
+gpLabeled :: String -> GP.Clause -> GP.Clause
+gpLabeled n = GP.Labeled np (GP.Ident np n)
 
 --------------------------------------------------------------------------------
 -- StrQuote
@@ -97,15 +128,19 @@ tokenProcessingTests = TestList
     , TestLabel "unBackQuote unescapes backslash itself" $ TestCase $
         assertEqual "" "\\" (unBackQuote "\\\\")
     , TestLabel "catBigstrs joins adjacent big strings" $ TestCase $
-        assertEqual "" (map at [BigStr "a\nb", Id "x"])
-                       (catBigstrs (map at [BigStr "a", BigStr "b", Id "x"]))
+        -- tokens carry the raw text: merging drops the inner delimiters and
+        -- yields a well-delimited block again
+        assertEqual "" (map at [BigStr "\"\"\"a\nb\"\"\"", Id "x"])
+                       (catBigstrs (map at [BigStr "\"\"\"a\"\"\"", BigStr "\"\"\"b\"\"\"", Id "x"]))
     , TestLabel "catBigstrs keeps the position of the first part" $ TestCase $
-        assertEqual "" [PosToken (AlexPn 0 1 1) (BigStr "a\nb")]
-                       (catBigstrs [ PosToken (AlexPn 0 1 1) (BigStr "a")
-                                   , PosToken (AlexPn 5 2 1) (BigStr "b") ])
-    , TestLabel "processTokens combines both steps" $ TestCase $
-        assertEqual "" (map at [StrLit "'", BigStr "a\nb"])
-                       (processTokens (map at [StrLit "\\'", BigStr "a", BigStr "b"]))
+        assertEqual "" [PosToken (AlexPn 0 1 1) (BigStr "\"\"\"a\nb\"\"\"")]
+                       (catBigstrs [ PosToken (AlexPn 0 1 1) (BigStr "\"\"\"a\"\"\"")
+                                   , PosToken (AlexPn 9 2 1) (BigStr "\"\"\"b\"\"\"") ])
+    , TestLabel "processTokens merges big strings and leaves literals raw" $ TestCase $
+        -- escape processing happens on the parsed AST
+        -- (Frontend.cleanGrammarTokens), not here
+        assertEqual "" (map at [StrLit "'\\''", BigStr "\"\"\"a\nb\"\"\""])
+                       (processTokens (map at [StrLit "'\\''", BigStr "\"\"\"a\"\"\"", BigStr "\"\"\"b\"\"\""]))
     , TestLabel "a '\\f' keyword survives to the generated lexer" testFormFeedReachesLexer
     , TestLabel "a backslash in a character class is emitted Alex-escaped" testBackslashClassEscaped
     ]
@@ -236,14 +271,14 @@ errorHandlingTests = TestList
         expectDiagnostic "a mixed lifted clause"
             (normalizeGrammarSource "grammar 'Test';\nFoo = ,Bar Baz;\nBar = 'b';\nBaz = 'z';\n") $ \d -> do
             assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
-            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertEqual "position of the ',Bar' clause" (Just (SourcePos 2 7)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "lifted" `isInfixOf` diagMessage d
     , TestLabel "a lifted clause under * is rejected" $ TestCase $
         expectDiagnostic "a lifted clause under *"
             (normalizeGrammarSource "grammar 'X';\nFoo = ,Bar * ;\nBar = 'b';\n") $ \d -> do
             assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
-            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertEqual "position of the ',Bar *' clause" (Just (SourcePos 2 7)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "lifted" `isInfixOf` diagMessage d && "*" `isInfixOf` diagMessage d
     , TestLabel "repetition of a value-less item is rejected" $ TestCase $
@@ -253,7 +288,7 @@ errorHandlingTests = TestList
         expectDiagnostic "a string literal under *"
             (normalizeGrammarSource "grammar 'I28';\nFoo = 'x'* ;\n") $ \d -> do
             assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
-            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertEqual "position of the repeated 'x'" (Just (SourcePos 2 7)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "produces no value" `isInfixOf` diagMessage d
     , TestLabel "repetition over a lexical rule is rejected" $ TestCase $
@@ -263,7 +298,7 @@ errorHandlingTests = TestList
         expectDiagnostic "a lexical rule under +"
             (normalizeGrammarSource "grammar 'I28';\nFoo = num+ ;\nnum = [0-9]+ ;\n") $ \d -> do
             assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
-            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertEqual "position of the repeated 'num'" (Just (SourcePos 2 7)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "lexical rule" `isInfixOf` diagMessage d && "num" `isInfixOf` diagMessage d
     , TestLabel "duplicate rule definitions are rejected" $ TestCase $
@@ -334,17 +369,18 @@ testStringLiterals = TestCase $ do
                 , "B = 'x' A ;"
                 , "bb = [b]+ ;"
                 ]
-        tokenRules = [ r | r <- getIRules g, getIClause r == IStrLit "x" ]
+        rules = grammarRules g
+        tokenRules = [ r | r <- rules, ruleClause r == gpLit "x" ]
     -- both uses of 'x' share a single generated keyword rule
     case tokenRules of
         [tok] -> do
-            assertEqual "keyword token type" (Just "Keyword") (getIDataTypeName tok)
-            let tokName = getIRuleName tok
-                clauseOf n = getIClause <$> find ((== n) . getIRuleName) (getIRules g)
+            assertEqual "keyword token type" (Just "Keyword") (ruleTypeName tok)
+            let tokName = ruleName tok
+                clauseOf n = ruleClause <$> find ((== n) . ruleName) rules
             assertEqual "literal in A replaced by ignored token"
-                (Just $ IAlt [ISeq [IIgnore (IId tokName), IId "bb"]]) (clauseOf "A")
+                (Just $ gpSeq [gpIgnore (gpRef tokName), gpRef "bb"]) (clauseOf "A")
             assertEqual "literal in B replaced by ignored token"
-                (Just $ IAlt [ISeq [IIgnore (IId tokName), IId "A"]]) (clauseOf "B")
+                (Just $ gpSeq [gpIgnore (gpRef tokName), gpRef "A"]) (clauseOf "B")
         _ -> assertFailure $ "expected exactly one token rule for 'x', got: " ++ show tokenRules
 
 listGrammar :: NormalGrammar
@@ -630,7 +666,7 @@ testStartGroup = TestCase $ do
     mapM_ (\dummy -> case find ((== dummy) . getLRuleName) (getLexicalRules g) of
               Just LexicalRule{getLRuleDataType = t, getLClause = cl} -> do
                   assertEqual ("dummy token type for " ++ dummy) "Keyword" t
-                  assertEqual ("dummy token spelling for " ++ dummy) (IStrLit dummy) cl
+                  assertEqual ("dummy token spelling for " ++ dummy) (gpLit dummy) cl
               other -> assertFailure $ "missing dummy keyword " ++ dummy ++ ": " ++ show other)
           (M.elems startInfo)
 
@@ -692,20 +728,20 @@ namedConstructorTests = TestList
         expectDiagnostic "a lowercase constructor name"
             (normalizeGrammarSource "grammar 'X';\nFoo = bad: aa ;\naa = [a]+ ;\n") $ \d -> do
             assertEqual "context names the rule" (Just "in rule 'Foo'") (diagContext d)
-            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertEqual "position of the label 'bad'" (Just (SourcePos 2 7)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "must start with an uppercase letter" `isInfixOf` diagMessage d
                 && "bad" `isInfixOf` diagMessage d
     , TestLabel "the reserved Ctr__ prefix is rejected" $ TestCase $
         expectDiagnostic "a Ctr__ constructor name"
             (normalizeGrammarSource "grammar 'X';\nFoo = Ctr__Foo__0: aa ;\naa = [a]+ ;\n") $ \d -> do
-            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertEqual "position of the label" (Just (SourcePos 2 7)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "reserved prefix 'Ctr__'" `isInfixOf` diagMessage d
     , TestLabel "the reserved Anti_ prefix is rejected" $ TestCase $
         expectDiagnostic "an Anti_ constructor name"
             (normalizeGrammarSource "grammar 'X';\nFoo = Anti_Foo: aa ;\naa = [a]+ ;\n") $ \d -> do
-            assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
+            assertEqual "position of the label" (Just (SourcePos 2 7)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "reserved prefix 'Anti_'" `isInfixOf` diagMessage d
     , TestLabel "duplicate explicit names are rejected across the whole grammar" $ TestCase $
@@ -715,10 +751,10 @@ namedConstructorTests = TestList
             (normalizeGrammarSource
                 "grammar 'X';\nFoo = Mk: aa ;\nBar = Mk: bb ;\naa = [a]+ ;\nbb = [b]+ ;\n") $ \d -> do
             assertEqual "context names the second rule" (Just "in rule 'Bar'") (diagContext d)
-            assertEqual "position of 'Bar'" (Just (SourcePos 3 1)) (diagPos d)
+            assertEqual "position of the second label" (Just (SourcePos 3 7)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "already used in rule 'Foo'" `isInfixOf` diagMessage d
-                && "line 2, column 1" `isInfixOf` diagMessage d
+                && "line 2, column 7" `isInfixOf` diagMessage d
     , TestLabel "duplicate explicit names within one rule are rejected" $ TestCase $
         expectDiagnostic "a duplicate constructor name in one rule"
             (normalizeGrammarSource "grammar 'X';\nFoo = Mk: aa | Mk: bb ;\naa = [a]+ ;\nbb = [b]+ ;\n") $ \d ->
@@ -728,7 +764,7 @@ namedConstructorTests = TestList
         expectDiagnostic "a label in a lexical rule"
             (normalizeGrammarSource "grammar 'X';\nFoo = tok ;\ntok = Mk: [a]+ ;\n") $ \d -> do
             assertEqual "context names the lexical rule" (Just "in rule 'tok'") (diagContext d)
-            assertEqual "position of 'tok'" (Just (SourcePos 3 1)) (diagPos d)
+            assertEqual "position of the label 'Mk'" (Just (SourcePos 3 7)) (diagPos d)
             assertBool ("unexpected message: " ++ diagMessage d) $
                 "lexical rule" `isInfixOf` diagMessage d
     , TestLabel "a label on a lifted alternative is rejected" $ TestCase $
@@ -820,14 +856,14 @@ testCtorLabelForcesConstructor = TestCase $ do
             not $ null [ () | STSeq "Wrap" [SSId proxy] <- alts, "Rule_" `isPrefixOf` proxy ]
         other -> assertFailure $ "expected S to be a data group, got: " ++ show other
 
--- | Both front ends must represent labels identically: as an 'ICtor' node
--- wrapping the alternative's sequence. Checked structurally against the
+-- | Both front ends must represent labels identically: as a 'GP.Labeled'
+-- node wrapping the alternative's sequence. Checked structurally against the
 -- expected shape AND between the two front ends, for a plain labeled
--- alternative, a labeled group as a whole alternative (which merges into
--- the enclosing alternation like any group), and a labeled group in element
--- position (which stays a nested single-alternative alternation). The label
--- 'Mk_1' also pins identifier lexing parity: grammar.pg's id rule allows
--- underscores, which the reference lexer used to reject.
+-- alternative, a labeled group as a whole alternative, and a labeled group
+-- in element position (parentheses are pure grouping, so the label node is
+-- the only trace of the group). The label 'Mk_1' also pins identifier
+-- lexing parity: grammar.pg's id rule allows underscores, which the
+-- reference lexer used to reject.
 testCtorLabelFrontEndEquality :: Test
 testCtorLabelFrontEndEquality = TestCase $ do
     let src = unlines
@@ -841,17 +877,19 @@ testCtorLabelFrontEndEquality = TestCase $ do
             ]
     case (parseGrammarSource src, parseGrammarSourceGenerated src) of
         (Right h, Right g) -> do
-            assertEqual "hand-written vs generated front end (positions included)" h g
-            let clauseOf n = getIClause <$> find ((== n) . getIRuleName) (getIRules h)
+            assertEqual "hand-written vs generated front end" h g
+            assertEqual "hand-written vs generated front end (positions)"
+                (positionsOf h) (positionsOf g)
+            let clauseOf n = ruleClause <$> find ((== n) . ruleName) (grammarRules h)
             assertEqual "labeled alternative shape"
-                (Just (IAlt [ ICtor "Mk_1" (ISeq [IId "aa", IId "bb"])
-                            , ISeq [IId "cc"] ]))
+                (Just (gpAlt [ gpLabeled "Mk_1" (gpSeq [gpRef "aa", gpRef "bb"])
+                             , gpRef "cc" ]))
                 (clauseOf "S")
-            assertEqual "labeled group as the whole alternative merges into the alternation"
-                (Just (IAlt [ICtor "L" (ISeq [IId "aa"])]))
+            assertEqual "labeled group as the whole alternative"
+                (Just (gpLabeled "L" (gpRef "aa")))
                 (clauseOf "T")
-            assertEqual "labeled group in element position stays nested"
-                (Just (IAlt [ISeq [IId "aa", IAlt [ICtor "M" (ISeq [IId "bb"])]]]))
+            assertEqual "labeled group in element position"
+                (Just (gpSeq [gpRef "aa", gpLabeled "M" (gpRef "bb")]))
                 (clauseOf "U")
         (Left d, _) -> assertFailure $ "hand-written front end failed: " ++ show d
         (_, Left d) -> assertFailure $ "generated front end failed: " ++ show d
@@ -864,9 +902,9 @@ selfHostedFrontEndTests :: Test
 selfHostedFrontEndTests = TestList
     [ TestLabel "parse errors carry a structured position" $ TestCase $
         -- ';' missing after the grammar declaration. The generated parser
-        -- encodes the position as "LINE:COL:message" and the adapter splits
-        -- it back out, so the diagnostic points at the identifier 'Foo' on
-        -- line 2 exactly like the hand-written front end's does.
+        -- encodes the position as "LINE:COL:message" and parseWithGenerated
+        -- splits it back out, so the diagnostic points at the identifier
+        -- 'Foo' on line 2 exactly like the hand-written front end's does.
         expectDiagnostic "a missing ';'"
             (parseGrammarSourceGenerated "grammar 'Test'\nFoo = bar;\n") $ \d -> do
             assertEqual "position of 'Foo'" (Just (SourcePos 2 1)) (diagPos d)
@@ -892,9 +930,9 @@ selfHostedFrontEndTests = TestList
             _ -> assertFailure "both front ends should reject the '%'"
     , TestLabel "rule positions are captured: duplicate rules get a structured diagnostic" $ TestCase $
         -- The generated AST carries the position of every rule's first
-        -- token, and the adapter maps it into getIRulePos, so a
-        -- normalization diagnostic under the default front end points at the
-        -- offending line and column exactly like the hand-written front end.
+        -- token, and normalization reads it directly, so a normalization
+        -- diagnostic under the default front end points at the offending
+        -- line and column exactly like the hand-written front end.
         expectDiagnostic "a duplicate rule"
             (parseGrammarSourceGenerated "grammar 'Dup';\nFoo = 'a';\nFoo = 'b';\n"
                 >>= normalizeParsedGrammar) $ \d -> do
@@ -911,9 +949,10 @@ selfHostedFrontEndTests = TestList
 -- | Smoke test for the snapshot's quasi-quoter, compiled into rtk beside
 -- GrammarLexer/GrammarParser: the quotes below are parsed by the generated
 -- front end at rtk's OWN compile time, and Anti_* splices work in both
--- expression and pattern context. Note the quotes produce the generated AST
--- types ('GrammarParser.Clause' here), not 'Syntax.IClause' - bridging that
--- gap is the pipeline migration (task 8c in docs/qq-grammar-rewrites-plan.md).
+-- expression and pattern context. The quotes produce the generated AST types
+-- ('GrammarParser.Clause' here) - the same types the pipeline computes over
+-- since the 8c migration, so quoted fragments can feed normalization-level
+-- rewrites (task 8d in docs/qq-grammar-rewrites-plan.md).
 grammarQQTests :: Test
 grammarQQTests = TestList
     [ TestLabel "an expression quote builds a clause and splices $vars" $ TestCase $ do
@@ -949,13 +988,15 @@ starInner :: Clause -> Maybe Clause
 starInner [clause| $cl2 * |] = Just cl2
 starInner _                  = Nothing
 
--- | Both front ends must produce the same 'InitialGrammar' for every grammar
--- in the corpus, source positions included: the generated front end captures
--- 'getIRulePos' from the position fields of its AST, and they must agree
--- with the positions the hand-written parser records. This catches adapter
--- bugs with far better messages than a generated-artifact diff. Grammars
--- pinned in 'frontEndDivergentGrammars' are expected to differ (or be
--- rejected); the test fails once they agree, so the pin gets dropped.
+-- | Both front ends must produce the same parsed grammar ('GP.Grammar') for
+-- every grammar in the corpus, source positions included. Equality alone no
+-- longer proves position agreement - 'GP.RtkPos' is equality-transparent -
+-- so the positions of EVERY node are projected with 'positionsOf' and
+-- compared explicitly (strictly stronger than the rule-position comparison
+-- the retired InitialGrammar equality gave). This catches front-end bugs
+-- with far better messages than a generated-artifact diff. Grammars pinned
+-- in 'frontEndDivergentGrammars' are expected to differ (or be rejected);
+-- the test fails once they agree, so the pin gets dropped.
 astEqualityTestFor :: FilePath -> IO Test
 astEqualityTestFor pgFile = do
     source <- readFileUtf8 pgFile
@@ -966,8 +1007,10 @@ astEqualityTestFor pgFile = do
         case (lookup grammarKey frontEndDivergentGrammars, hand, gen) of
             (_, Left d, _) -> assertFailure $
                 "hand-written front end failed on " ++ pgFile ++ ": " ++ show d
-            (Nothing, Right h, Right g) ->
-                assertEqual "hand-written vs generated front end (positions included)" h g
+            (Nothing, Right h, Right g) -> do
+                assertEqual "hand-written vs generated front end" h g
+                assertEqual "hand-written vs generated front end (node positions)"
+                    (positionsOf h) (positionsOf g)
             (Nothing, _, Left d) -> assertFailure $
                 "generated front end failed on " ++ pgFile ++ ": " ++ show d
             (Just _, _, Left _) -> return () -- rejected: still divergent
@@ -975,6 +1018,14 @@ astEqualityTestFor pgFile = do
                 when (h == g) $ assertFailure $
                     "the front ends now agree on this grammar (pinned because: " ++ reason
                     ++ ");\ndrop it from frontEndDivergentGrammars in test/TestSupport.hs"
+
+-- | Every node position in the parsed grammar, in traversal order, as
+-- (line, column). 'GP.RtkPos' equality is transparent by design (so ASTs
+-- from different sources compare equal), which makes this explicit
+-- projection the only way to assert position agreement.
+positionsOf :: GP.Grammar -> [(Int, Int)]
+positionsOf = everything (++) ([] `mkQ` project)
+  where project (GP.RtkPos (GL.AlexPn _ line col)) = [(line, col)]
 
 --------------------------------------------------------------------------------
 -- Invariants checked against every grammar in test-grammars/

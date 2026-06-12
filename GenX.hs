@@ -2,21 +2,26 @@
 module GenX (genX, isAlexEscape)
     where
 
+import qualified GrammarParser as GP
+
 import Syntax
 import Diagnostics (Diagnostic(..))
+import Frontend (altElems, nameText, seqElems, showClause, strLitText)
 import Text.PrettyPrint hiding ((<>))
 import qualified Data.Set as S
 import Data.Maybe (catMaybes)
 import Grammar
 import StrQuote
 
-getMacroIdsFromClause :: IClause -> S.Set String
-getMacroIdsFromClause (IId s) = S.singleton s
-getMacroIdsFromClause (IOpt clause) = getMacroIdsFromClause clause
-getMacroIdsFromClause (IPlus clause _) = getMacroIdsFromClause clause
-getMacroIdsFromClause (IStar clause _) = getMacroIdsFromClause clause
-getMacroIdsFromClause (ISeq clauses) = S.unions $ map getMacroIdsFromClause clauses
-getMacroIdsFromClause (IAlt clauses) = S.unions $ map getMacroIdsFromClause clauses
+getMacroIdsFromClause :: LClause -> S.Set String
+getMacroIdsFromClause (GP.Ref _ n) = S.singleton (nameText n)
+getMacroIdsFromClause (GP.Opt _ clause) = getMacroIdsFromClause clause
+getMacroIdsFromClause (GP.Plus _ clause) = getMacroIdsFromClause clause
+getMacroIdsFromClause (GP.PlusDelim _ clause _) = getMacroIdsFromClause clause
+getMacroIdsFromClause (GP.Star _ clause) = getMacroIdsFromClause clause
+getMacroIdsFromClause (GP.StarDelim _ clause _) = getMacroIdsFromClause clause
+getMacroIdsFromClause (GP.Seq _ l r) = getMacroIdsFromClause l `S.union` getMacroIdsFromClause r
+getMacroIdsFromClause (GP.Alt _ l r) = getMacroIdsFromClause l `S.union` getMacroIdsFromClause r
 getMacroIdsFromClause _ = S.empty
 
 getMacroIdsHelper :: LexicalRule -> S.Set String
@@ -44,7 +49,7 @@ genMacroText sMacroIds macroIds tokens = do
   where
     lineFor (LexicalRule {getLRuleName = name, getLClause = cl})
       | name `S.member` macroIds = do
-          d <- translateClause name sMacroIds cl
+          d <- translateRuleClause name sMacroIds cl
           return $ Just $ (text "@" <> text name) <+> text "=" <+> d
       | otherwise = return Nothing
     lineFor (MacroRule {getLRuleName = name, getLClause = cl}) = do
@@ -120,7 +125,7 @@ simple t (pos, _, _, _) len = return $ PosToken pos t
 -- into a structured position - the same encoding the rtk grammar lexer uses
 rtkError ((AlexPn _ line column), _, _, str) len = alexError $ (show line) ++ ":" ++ (show column) ++ ":lexical error. Following chars: " ++ (take 10 str)
 |]
-          funs = text funs_text             
+          funs = text funs_text
           footer = vcat [text "{", adt, funs , text "}"]
           nl = text ""
 
@@ -139,7 +144,7 @@ genTokens smacroIds lexical_rules = do
     toks <- mapM makeToken lexical_rules
     return $ text "tokens" <+> text ":-" <+> vcat (toks ++ [text ". { rtkError }"])
     where makeToken LexicalRule { getLRuleDataType = data_type, getLRuleFunc = func, getLRuleName = name, getLClause = cl } = do
-              cld <- translateClause name smacroIds cl
+              cld <- translateRuleClause name smacroIds cl
               return $ cld <+> makeProduction name data_type func
           makeToken (MacroRule _ _) = return empty
           makeProduction name data_type func =
@@ -183,14 +188,17 @@ backquoteStrInBrackets [] = []
 lexErr :: ID -> String -> Either Diagnostic a
 lexErr rname msg = Left $ Diagnostic Nothing (Just ("in lexical rule '" ++ rname ++ "'")) msg
 
-translateClauseForMacro :: ID -> IClause -> Either Diagnostic Doc
-translateClauseForMacro _ (IStrLit s) = Right $ text s
-translateClauseForMacro _ (IRegExpLit re) = Right $ brackets $ text $ backquoteStrInBrackets re
-translateClauseForMacro rname (ISeq cls) = do
-    ds <- mapM (translateClauseForMacro rname) cls
+-- A @symmacro definition. Mirrors the rule-clause translation but renders
+-- alternations bare (no parentheses) and rejects everything that is not a
+-- literal, a regex or a grouping of those.
+translateClauseForMacro :: ID -> LClause -> Either Diagnostic Doc
+translateClauseForMacro _ (GP.Lit _ s) = Right $ text (strLitText s)
+translateClauseForMacro _ (GP.Regex _ re) = Right $ brackets $ text $ backquoteStrInBrackets re
+translateClauseForMacro rname c@GP.Seq{} = do
+    ds <- mapM (translateClauseForMacro rname) (seqElems c)
     return $ hsep $ punctuate (text " ") ds
-translateClauseForMacro rname (IAlt clauses) = do
-    ds <- mapM (translateClauseForMacro rname) clauses
+translateClauseForMacro rname c@GP.Alt{} = do
+    ds <- mapM (translateClauseForMacro rname) (altElems c)
     return $ hsep $ punctuate (text "|") ds
 translateClauseForMacro rname cl = lexErr rname $ "cannot translate clause to a lexer macro definition: " ++ showClause cl
 
@@ -207,29 +215,57 @@ isAlexEscape "\\f" = True   -- form feed
 isAlexEscape "\\v" = True   -- vertical tab
 isAlexEscape _ = False
 
-translateClause :: ID -> S.Set ID -> IClause -> Either Diagnostic Doc
-translateClause _ sMacroIds (IId name) | name `S.member` sMacroIds =
-  Right $ text "$" <> text name
-translateClause _ _ (IId name) =
-  Right $ text "@" <> text name
-translateClause _ _ (IStrLit s)
-  | isAlexEscape s = Right $ text s   -- output bare escape: \n, \t, etc.
-  | otherwise      = Right $ doubleQuotes $ text $ backquoteStr s
-translateClause _ _ (IDot)              = Right $ text "."
-translateClause _ _ (IRegExpLit re)     = Right $ brackets $ text $ backquoteStrInBrackets re
-translateClause rname sMacroIds (IStar cl Nothing)  = (<> text "*") <$> translateClause rname sMacroIds cl
--- a* ~x --> (a(x a)*)?
-translateClause rname _ (IStar _ (Just _)) = lexErr rname "star (*) clauses with delimiters (~) are not supported in lexical rules"
-translateClause rname sMacroIds (IPlus cl Nothing)  = (<> text "+") <$> translateClause rname sMacroIds cl
-translateClause rname _ (IPlus _ (Just _)) = lexErr rname "plus (+) clauses with delimiters (~) are not supported in lexical rules"
-translateClause rname sMacroIds (IAlt clauses)      = do
-    ds <- mapM (translateClause rname sMacroIds) clauses
+-- The whole clause of a lexical rule. A user rule's clause renders as a
+-- parenthesized alternation (the same canonical wrapping the retired
+-- IClause front half applied to every rule); the synthesized keyword rules
+-- (string-literal tokens, start-wrapper dummies) have a bare literal clause
+-- and render as a bare quoted string.
+translateRuleClause :: ID -> S.Set ID -> LClause -> Either Diagnostic Doc
+translateRuleClause rname sMacroIds cl = case cl of
+    GP.Lit{} -> translateItem rname sMacroIds cl
+    _        -> translateTop rname sMacroIds cl
+
+-- A clause in rule (or parenthesized-group) position: a parenthesized
+-- alternation of space-separated sequences.
+translateTop :: ID -> S.Set ID -> LClause -> Either Diagnostic Doc
+translateTop rname sMacroIds c = do
+    ds <- mapM (translateAlt rname sMacroIds) (altElems c)
     return $ parens $ hsep $ punctuate (text "|") ds
-translateClause rname sMacroIds (ISeq clauses)    = do
-    ds <- mapM (translateClause rname sMacroIds) clauses
+
+translateAlt :: ID -> S.Set ID -> LClause -> Either Diagnostic Doc
+translateAlt rname sMacroIds alt = do
+    ds <- mapM (translateElem rname sMacroIds) (seqElems alt)
     return $ hsep $ punctuate (text " ") ds
-translateClause rname sMacroIds (IOpt clause)       = (<+> text "?") <$> translateClause rname sMacroIds clause
-translateClause rname _ cl                 = lexErr rname $ "cannot translate clause to lexer spec: " ++ showClause cl
+
+translateElem :: ID -> S.Set ID -> LClause -> Either Diagnostic Doc
+translateElem rname sMacroIds c = case c of
+    GP.Star _ cl       -> (<> text "*") <$> translateItem rname sMacroIds cl
+    GP.StarDelim{}     -> lexErr rname "star (*) clauses with delimiters (~) are not supported in lexical rules"
+    GP.Plus _ cl       -> (<> text "+") <$> translateItem rname sMacroIds cl
+    GP.PlusDelim{}     -> lexErr rname "plus (+) clauses with delimiters (~) are not supported in lexical rules"
+    GP.Opt _ cl        -> (<+> text "?") <$> translateItem rname sMacroIds cl
+    GP.Lifted{}        -> cannotTranslate rname c
+    GP.Ignored{}       -> cannotTranslate rname c
+    GP.Labeled{}       -> cannotTranslate rname c
+    GP.Anti_Clause{}   -> cannotTranslate rname c
+    _                  -> translateItem rname sMacroIds c
+
+-- An item (a repetition operand or a sequence element): a leaf, or a
+-- parenthesized group.
+translateItem :: ID -> S.Set ID -> LClause -> Either Diagnostic Doc
+translateItem _ sMacroIds (GP.Ref _ n)
+  | nameText n `S.member` sMacroIds = Right $ text "$" <> text (nameText n)
+  | otherwise                       = Right $ text "@" <> text (nameText n)
+translateItem _ _ (GP.Lit _ s)
+  | isAlexEscape lit = Right $ text lit   -- output bare escape: \n, \t, etc.
+  | otherwise        = Right $ doubleQuotes $ text $ backquoteStr lit
+  where lit = strLitText s
+translateItem _ _ (GP.Dot _)      = Right $ text "."
+translateItem _ _ (GP.Regex _ re) = Right $ brackets $ text $ backquoteStrInBrackets re
+translateItem rname sMacroIds c   = translateTop rname sMacroIds c
+
+cannotTranslate :: ID -> LClause -> Either Diagnostic a
+cannotTranslate rname cl = lexErr rname $ "cannot translate clause to lexer spec: " ++ showClause cl
 
 joinAlts :: [Doc] -> Doc
 joinAlts alts = vcat $ punctuate (text " |") (filter (not.isEmpty) alts)

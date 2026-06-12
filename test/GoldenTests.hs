@@ -32,8 +32,9 @@ import System.Exit (exitFailure)
 import System.FilePath ((</>), takeBaseName)
 import Test.HUnit
 
+import qualified GrammarParser as GP
+
 import Diagnostics (Diagnostic, renderDiagnostic)
-import Syntax (InitialGrammar)
 import TestSupport
 
 goldenRoot :: FilePath
@@ -54,7 +55,7 @@ regenerateHint =
 
 -- | Run the pipeline on one grammar file, forcing the generated contents so
 -- that any lazy `error` from the generators surfaces here as a test failure.
-generateArtifacts :: (String -> Either Diagnostic InitialGrammar)
+generateArtifacts :: (String -> Either Diagnostic GP.Grammar)
                   -> FilePath -> IO (Either String [(FilePath, String)])
 generateArtifacts parseSrc pgFile = do
     source <- readFileUtf8 pgFile

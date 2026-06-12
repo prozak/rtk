@@ -6,14 +6,14 @@ module Debug
 
     -- * Pipeline stage debugging
     , printTokens
-    , printInitialGrammar
+    , printParsedGrammar
     , printNormalGrammar
     , printComparison
 
     -- * Single-rule pipeline trace
     , traceRuleTokens
     , traceRuleTokensUnavailable
-    , traceRuleInitial
+    , traceRuleParsed
     , traceRuleNormal
 
     -- * Statistics and analysis
@@ -40,10 +40,12 @@ module Debug
     , Color(..)
     ) where
 
+import qualified GrammarParser as GP
 import qualified Lexer as L
 import Syntax
 import DebugOptions
 import Diagnostics (showSourcePos)
+import Frontend (grammarName, grammarRules, rulePos, ruleName, ruleTypeName)
 import Text.Show.Pretty (ppShow)
 import Control.Monad (when)
 import Data.Char (toLower)
@@ -118,12 +120,12 @@ printTokens opts tokens = do
     putStrLn ""
     putStrLn $ ppShow tokens
 
--- | Debug initial grammar (after parsing)
-printInitialGrammar :: DebugOptions -> InitialGrammar -> IO ()
-printInitialGrammar opts grammar = do
-    debugSection opts "PARSER OUTPUT - INITIAL GRAMMAR"
-    putStrLn $ "Grammar name: " ++ getIGrammarName grammar
-    putStrLn $ "Number of rules: " ++ show (length $ getIRules grammar)
+-- | Debug the parsed grammar (the generated AST, after parsing)
+printParsedGrammar :: DebugOptions -> GP.Grammar -> IO ()
+printParsedGrammar opts grammar = do
+    debugSection opts "PARSER OUTPUT - PARSED GRAMMAR"
+    putStrLn $ "Grammar name: " ++ grammarName grammar
+    putStrLn $ "Number of rules: " ++ show (length $ grammarRules grammar)
     putStrLn ""
     putStrLn $ ppShow grammar
 
@@ -158,19 +160,19 @@ printComparison opts title1 val1 title2 val2 = do
 
 -- | Header shared by all stages of a rule trace
 traceSection :: DebugOptions -> String -> String -> IO ()
-traceSection opts ruleName stage =
-    debugSection opts $ "RULE TRACE: '" ++ ruleName ++ "' - " ++ stage
+traceSection opts targetRule stage =
+    debugSection opts $ "RULE TRACE: '" ++ targetRule ++ "' - " ++ stage
 
 -- | Token-stage view of a rule trace: every place the rule name is mentioned
 -- in the source, as Id tokens with their positions. Returns whether the rule
 -- was found at this stage.
 traceRuleTokens :: DebugOptions -> String -> [L.PosToken] -> IO Bool
-traceRuleTokens opts ruleName tokens = do
-    traceSection opts ruleName "Tokens"
-    let mentions = [pos | L.PosToken pos (L.Id name) <- tokens, name == ruleName]
+traceRuleTokens opts targetRule tokens = do
+    traceSection opts targetRule "Tokens"
+    let mentions = [pos | L.PosToken pos (L.Id name) <- tokens, name == targetRule]
     if null mentions
         then do
-            reportNotFoundAtStage opts ruleName [n | L.PosToken _ (L.Id n) <- tokens]
+            reportNotFoundAtStage opts targetRule [n | L.PosToken _ (L.Id n) <- tokens]
             return False
         else do
             putStrLn $ "Mentioned " ++ show (length mentions) ++ " time(s) in the token stream:"
@@ -179,30 +181,30 @@ traceRuleTokens opts ruleName tokens = do
             return True
   where
     showMention (L.AlexPn _ line col) =
-        "  line " ++ show line ++ ", column " ++ show col ++ ": Id " ++ show ruleName
+        "  line " ++ show line ++ ", column " ++ show col ++ ": Id " ++ show targetRule
 
 -- | Under --use-generated the front end has no separate token stream to
 -- inspect, so the token stage of a rule trace is just a note.
 traceRuleTokensUnavailable :: DebugOptions -> String -> IO ()
-traceRuleTokensUnavailable opts ruleName = do
-    traceSection opts ruleName "Tokens"
+traceRuleTokensUnavailable opts targetRule = do
+    traceSection opts targetRule "Tokens"
     putStrLn "Token stage is internal to the generated front end; trace continues after parsing."
     putStrLn ""
 
--- | InitialGrammar-stage view of a rule trace (after parse, after
--- string-norm): the IRules whose rule name or data type name matches, each
+-- | Parsed-grammar-stage view of a rule trace (after parse, after
+-- string-norm): the rules whose rule name or data type name matches, each
 -- headed by its source position.
-traceRuleInitial :: DebugOptions -> String -> String -> InitialGrammar -> IO Bool
-traceRuleInitial opts ruleName stage grammar = do
-    traceSection opts ruleName stage
-    let rules = getIRules grammar
+traceRuleParsed :: DebugOptions -> String -> String -> GP.Grammar -> IO Bool
+traceRuleParsed opts targetRule stage grammar = do
+    traceSection opts targetRule stage
+    let rules = grammarRules grammar
         matches = filter matchesRule rules
-        matchesRule r = getIRuleName r == ruleName
-                     || getIDataTypeName r == Just ruleName
+        matchesRule r = ruleName r == targetRule
+                     || ruleTypeName r == Just targetRule
     if null matches
         then do
-            reportNotFoundAtStage opts ruleName
-                (map getIRuleName rules ++ mapMaybe getIDataTypeName rules)
+            reportNotFoundAtStage opts targetRule
+                (map ruleName rules ++ mapMaybe ruleTypeName rules)
             return False
         else do
             mapM_ printMatch matches
@@ -210,8 +212,8 @@ traceRuleInitial opts ruleName stage grammar = do
   where
     printMatch rule = do
         debugSubSection opts $
-            "Rule '" ++ getIRuleName rule ++ "' ("
-            ++ maybe "no position" showSourcePos (getIRulePos rule) ++ ")"
+            "Rule '" ++ ruleName rule ++ "' ("
+            ++ maybe "no position" showSourcePos (rulePos rule) ++ ")"
         putStrLn $ ppShow rule
         putStrLn ""
 
@@ -220,18 +222,18 @@ traceRuleInitial opts ruleName stage grammar = do
 -- type name or by a contained rule name) plus any matching lexical rule,
 -- shown compactly, with the full structure in pretty format.
 traceRuleNormal :: DebugOptions -> String -> String -> NormalGrammar -> IO Bool
-traceRuleNormal opts ruleName stage grammar = do
-    traceSection opts ruleName stage
+traceRuleNormal opts targetRule stage grammar = do
+    traceSection opts targetRule stage
     let groups = getSyntaxRuleGroups grammar
         lRules = getLexicalRules grammar
         proxyRules = getProxyRules (getGrammarInfo grammar)
         matchingGroups = filter groupMatches groups
-        groupMatches g = getSDataTypeName g == ruleName
-                      || any ((== ruleName) . getSRuleName) (getSRules g)
-        matchingLexical = filter ((== ruleName) . getLRuleName) lRules
+        groupMatches g = getSDataTypeName g == targetRule
+                      || any ((== targetRule) . getSRuleName) (getSRules g)
+        matchingLexical = filter ((== targetRule) . getLRuleName) lRules
     if null matchingGroups && null matchingLexical
         then do
-            reportNotFoundAtStage opts ruleName $
+            reportNotFoundAtStage opts targetRule $
                 map getSDataTypeName groups
                 ++ concatMap (map getSRuleName . getSRules) groups
                 ++ map getLRuleName lRules
@@ -256,10 +258,10 @@ traceRuleNormal opts ruleName stage grammar = do
 -- renames things (Rule_N, ListElem_*, tok_*), so suggestions keep the trace
 -- usable across stages.
 reportNotFoundAtStage :: DebugOptions -> String -> [String] -> IO ()
-reportNotFoundAtStage opts ruleName names = do
+reportNotFoundAtStage opts targetRule names = do
     withColor (debugColor opts) Yellow $
-        "Rule '" ++ ruleName ++ "' is not present at this stage.\n"
-    let suggestions = take 5 (nearMatches ruleName names)
+        "Rule '" ++ targetRule ++ "' is not present at this stage.\n"
+    let suggestions = take 5 (nearMatches targetRule names)
     when (not (null suggestions)) $ do
         putStrLn "Near matches:"
         mapM_ (putStrLn . ("  - " ++)) suggestions
@@ -279,11 +281,11 @@ nearMatches query names = filter close (nub names)
 -------------------------------------------------------------------------------
 
 -- | Show comprehensive grammar statistics
-showGrammarStats :: DebugOptions -> InitialGrammar -> NormalGrammar -> IO ()
+showGrammarStats :: DebugOptions -> GP.Grammar -> NormalGrammar -> IO ()
 showGrammarStats opts iGrammar nGrammar = do
     debugSection opts "GRAMMAR STATISTICS"
 
-    let iRules = getIRules iGrammar
+    let iRules = grammarRules iGrammar
         sRuleGroups = getSyntaxRuleGroups nGrammar
         lRules = getLexicalRules nGrammar
         aRules = getAntiRules nGrammar
@@ -296,7 +298,7 @@ showGrammarStats opts iGrammar nGrammar = do
     putStrLn $ "Grammar name: " ++ getNGrammarName nGrammar
     putStrLn ""
     putStrLn "=== Rule Counts ==="
-    putStrLn $ "  Initial rules:        " ++ show (length iRules)
+    putStrLn $ "  Parsed rules:         " ++ show (length iRules)
     putStrLn $ "  Syntax rule groups:   " ++ show (length sRuleGroups)
     putStrLn $ "  Total syntax rules:   " ++ show totalSyntaxRules
     putStrLn $ "  Lexical rules:        " ++ show (length lRules)
@@ -364,7 +366,7 @@ hasManyAlternatives grp = any checkRule (getSRules grp)
 extractStringLiterals :: [LexicalRule] -> [String]
 extractStringLiterals = mapMaybe extractFromRule
   where
-    extractFromRule (LexicalRule _ _ _ (IStrLit s)) = Just s
+    extractFromRule (LexicalRule _ _ _ (GP.Lit _ (GP.Str _ s))) = Just s
     extractFromRule _ = Nothing
 
 -- | Helper: Find duplicates in a list
@@ -575,9 +577,9 @@ detectLeftRecursion opts grammar = do
 -- | Check if a rule group is left-recursive
 isLeftRecursive :: [SyntaxRuleGroup] -> SyntaxRuleGroup -> Bool
 isLeftRecursive _ grp =
-    let ruleName = getSDataTypeName grp
+    let typeName = getSDataTypeName grp
         firstSymbols = concatMap (getFirstSymbols . getSClause) (getSRules grp)
-    in ruleName `elem` firstSymbols
+    in typeName `elem` firstSymbols
   where
     getFirstSymbols (STAltOfSeq seqs) = concatMap getFirstFromSeq seqs
     getFirstSymbols (STMany _ sc _) = getFirstFromSimple sc
@@ -610,14 +612,14 @@ countFrequencies xs = map (\x -> (x, length $ filter (== x) xs)) (nub xs)
 
 -- | Expand a rule by inlining all references
 showExpandedRule :: DebugOptions -> NormalGrammar -> String -> IO ()
-showExpandedRule opts grammar ruleName = do
-    debugSection opts $ "EXPANDED RULE: " ++ ruleName
+showExpandedRule opts grammar targetRule = do
+    debugSection opts $ "EXPANDED RULE: " ++ targetRule
 
     let sRuleGroups = getSyntaxRuleGroups grammar
-        maybeGroup = lookup ruleName $ map (\g -> (getSDataTypeName g, g)) sRuleGroups
+        maybeGroup = lookup targetRule $ map (\g -> (getSDataTypeName g, g)) sRuleGroups
 
     case maybeGroup of
-        Nothing -> putStrLn $ "  Rule '" ++ ruleName ++ "' not found."
+        Nothing -> putStrLn $ "  Rule '" ++ targetRule ++ "' not found."
         Just grp -> do
             putStrLn $ "  Type: " ++ getSDataTypeName grp
             putStrLn $ "  Rules: " ++ show (length $ getSRules grp)

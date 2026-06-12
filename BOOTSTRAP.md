@@ -11,16 +11,21 @@ compiler compiled by itself, RTK is self-hosting:
   regenerated goldens) FIRST.
 - **The generated front end is the default.** `GrammarLexer.x` /
   `GrammarParser.y` / `GrammarQQ.hs` — RTK's own output for grammar.pg — are
-  compiled into rtk straight from the golden snapshot in `test/golden/grammar/`;
-  `src/generated/ASTAdapter.hs` converts the generated AST to the pipeline's
-  `InitialGrammar`, after which everything (normalization, code generation) is
-  front-end independent. `--use-generated` is still accepted as an explicit
-  choice. (The compiled-in quasi-quoter quotes fragments as the *generated*
-  AST types; the unit suite smoke-tests it.)
+  compiled into rtk straight from the golden snapshot in `test/golden/grammar/`.
+  Since task 8c the pipeline computes DIRECTLY over the generated AST
+  (`GP.Grammar`/`GP.Rule`/`GP.Clause`): there is no separate pipeline
+  representation and no conversion layer. `src/generated/Frontend.hs` hosts
+  the parse entry points, the shared token-text cleanup
+  (`cleanGrammarTokens`) and the accessors the pipeline uses.
+  `--use-generated` is still accepted as an explicit choice. (The compiled-in
+  quasi-quoter quotes fragments as the same generated AST types the pipeline
+  computes over; the unit suite smoke-tests it.)
 - **The hand-written `Lexer.x` / `Parser.y` are the reference oracle.** They
-  are selected with `rtk --use-handwritten` and exist to keep the equivalence
-  harness honest: they follow grammar.pg, not the other way round, and change
-  only to keep the harness green.
+  are selected with `rtk --use-handwritten`, and `Parser.y`'s semantic
+  actions build the very same generated-AST values (same constructors, same
+  binary `Alt`/`Seq` spines, same first-symbol positions). They exist to
+  keep the equivalence harness honest: they follow grammar.pg, not the other
+  way round, and change only to keep the harness green.
 
 The snapshot in `test/golden/grammar/` is the checked-in bootstrap stage: it
 was produced by the *previous* rtk binary, exactly like the stage files of any
@@ -48,10 +53,12 @@ hand-written front end a usable reference:
 - `cabal test golden` runs **every** grammar in `test-grammars/` through both
   front ends; both must reproduce the snapshots in `test/golden/`
   byte-for-byte.
-- `cabal test unit` parses every grammar with both front ends and asserts the
-  `InitialGrammar`s are equal, source positions included. It also asserts
-  front-end error parity: lexical errors render identically under both front
-  ends, and parse errors carry the same structured position.
+- `cabal test unit` parses every grammar with both front ends and asserts
+  the `GP.Grammar`s are equal AND that the projected (line, column) of every
+  AST node agrees — `RtkPos` is equality-transparent, so equality alone
+  cannot see positions and the suite projects them explicitly. It also
+  asserts front-end error parity: lexical errors render identically under
+  both front ends, and parse errors carry the same structured position.
 - `TestSupport.frontEndDivergentGrammars` is the pin list for grammars whose
   front ends are temporarily allowed to diverge. **It is empty.** Should a
   divergence ever have to be tolerated again, a pinned grammar is checked with
@@ -64,21 +71,30 @@ enforced by the harness above, and full textual identity was never the goal.)
 
 ## Changing the grammar language
 
+The coupling is **structural** since task 8c: the pipeline's own source code
+(`Frontend`, `StringLiterals`, `Normalize`, `GenX`, the hand-written
+`Parser.y`, parts of the test suites) is typed against the AST compiled from
+the snapshot. A grammar.pg change that alters the generated AST's shape or
+constructor names therefore breaks the in-tree BUILD — not just a test —
+until the snapshot is re-accepted and the pipeline's pattern matches are
+updated. The workflow is two-phase:
+
 1. Edit `test-grammars/grammar.pg` — the spec.
 2. `make accept-golden` and review the diff of `test/golden/` (this also
-   advances the bootstrap stage that the default front end is compiled from).
-3. If the change alters the generated AST's shape or constructor names,
-   update `src/generated/ASTAdapter.hs` to match and rebuild — the adapter
-   is compiled against the snapshot. grammar.pg names every
-   constructor-producing alternative (`RuleSimple`, `Star`, `Labeled`, …),
-   so the adapter's pattern matches are stable prose names: reordering or
-   inserting alternatives does not rename constructors. A change to the
-   label syntax itself is two-phase: the checked-in stage must be able to
-   parse the new grammar.pg before `accept-golden` can run (bootstrap via
-   `rtk --use-handwritten` when it cannot).
+   advances the bootstrap stage that the default front end is compiled
+   from). If the checked-in stage cannot parse the new grammar.pg (a change
+   to syntax the stage itself doesn't know yet), bootstrap via
+   `rtk --use-handwritten` first.
+3. Rebuild. If the change altered the generated AST's shape or constructor
+   names, fix every pipeline module that pattern-matches the changed
+   constructors until the build is clean again — the compiler enumerates the
+   sites. grammar.pg names every constructor-producing alternative
+   (`RuleSimple`, `Star`, `Labeled`, …), so these matches are stable prose
+   names: reordering or inserting alternatives does not rename constructors.
 4. Update the hand-written `Lexer.x` / `Parser.y` so the reference follows the
-   spec and the equivalence harness is green again.
-5. `cabal test` — both suites must pass.
+   spec (its actions construct the changed AST) and the equivalence harness
+   is green again.
+5. `cabal test` — both suites must pass — and re-check the fixed point.
 
 ## Error reporting parity
 
@@ -132,18 +148,22 @@ equivalence harness proves it on every run.
 4. ✅ Bootstrap fixed point (`rtk --use-generated grammar.pg` regenerated its
    own parser byte-for-byte)
 5. ✅ Structured positions in the generated path (position-transparent
-   `RtkPos`, rule positions mapped into `getIRulePos`)
+   `RtkPos` on every node)
 6. ✅ Front-end error parity (`LINE:COL:` encoding split into diagnostics)
 7. ✅ **Generated front end made the default**; hand-written files demoted to
    reference; pinned-divergence list emptied
+8. ✅ **Pipeline migrated onto the generated AST** (task 8c): the historic
+   `InitialGrammar`/`IRule`/`IClause` types and the AST adapter retired; the
+   reference `Parser.y` ported to construct generated-AST values
 
 ## Files
 
 - `test-grammars/grammar.pg` — the grammar language specification
 - `test/golden/grammar/` — checked-in bootstrap stage (compiled into rtk)
-- `src/generated/ASTAdapter.hs` — generated AST → `InitialGrammar`
+- `src/generated/Frontend.hs` — front-end entry points, shared token-text
+  cleanup, generated-AST helpers
 - `Lexer.x`, `Parser.y` — hand-written reference front end
-  (`--use-handwritten`)
+  (`--use-handwritten`); the parser's actions build generated-AST values
 - `test/TestSupport.hs` — equivalence-harness support (pin list, both
   pipelines)
 

@@ -1,9 +1,16 @@
 {-# LANGUAGE TemplateHaskell #-}
+-- | Clause normalization: from the parsed grammar (the GENERATED AST,
+-- 'GP.Grammar') down to the 'NormalGrammar' the code generators consume.
 module Normalize(normalizeTopLevelClauses, fillConstructorNames)
     where
 
+import qualified GrammarParser as GP
+
 import Syntax
-import Diagnostics (Diagnostic(..), showSourcePos)
+import Diagnostics (Diagnostic(..), SourcePos, showSourcePos)
+import Frontend (altElems, clausePos, grammarImports, grammarName, grammarRules,
+                 nameText, namePos, ruleClause, ruleFunc, ruleName, ruleOptions,
+                 rulePos, ruleTypeName, seqElems, showClause, showClauseSeq)
 import Grammar (isClauseSeqLifted, isNotIgnored)
 import Data.Char (isUpper)
 import Control.Monad (foldM, foldM_)
@@ -27,7 +34,7 @@ import Control.Monad.State.Strict (State, StateT, gets, lift, modify,
 -- 3. simple_clause ?
 -- 4. Seq [simple_clause]
 -- 5. alternative of sequences of simple_clause
--- 
+--
 -- simple_clause is one of the following:
 -- 1. id
 -- 2. Ignore simple_clause
@@ -46,7 +53,9 @@ data NormalizationState = NormalizationState {
                                               -- type name -> rules that receive the $Type:var
                                               -- splice alternative (see computeQQAttachPoints)
                                               _qqAttachPoints :: M.Map ID (S.Set ID),
-                                              _currentRule :: Maybe IRule
+                                              -- name and position of the rule being normalized,
+                                              -- as error context and position fallback
+                                              _currentRule :: Maybe (ID, Maybe SourcePos)
                                              }
 
 $(makeLenses ''NormalizationState)
@@ -55,16 +64,28 @@ $(makeLenses ''NormalizationState)
 -- under the state transformer.
 type Normalization a = StateT NormalizationState (Either Diagnostic) a
 
--- Report a grammar error as a Diagnostic, attaching the rule being normalized
--- (its name as context and its source position, when known) when the problem
--- was found.
-normError :: String -> Normalization a
-normError msg = do
+setCurrentRule :: GP.Rule -> Normalization ()
+setCurrentRule r = currentRule .= Just (ruleName r, rulePos r)
+
+-- Report a grammar error as a Diagnostic at the given position (the
+-- offending clause's, when known - the generated AST carries a position on
+-- every node), attaching the rule being normalized as context; the rule's
+-- header position is the fallback when the node carries none.
+normErrorWith :: Maybe SourcePos -> String -> Normalization a
+normErrorWith mpos msg = do
   ctx <- gets _currentRule
   let diag = case ctx of
-               Just r  -> Diagnostic (getIRulePos r) (Just ("in rule '" ++ getIRuleName r ++ "'")) msg
-               Nothing -> Diagnostic Nothing Nothing msg
+               Just (rn, rpos) -> Diagnostic (maybe rpos Just mpos) (Just ("in rule '" ++ rn ++ "'")) msg
+               Nothing         -> Diagnostic mpos Nothing msg
   lift (Left diag)
+
+-- A rule-level error: positioned at the current rule's header.
+normError :: String -> Normalization a
+normError = normErrorWith Nothing
+
+-- A clause-level error: positioned at the offending clause.
+normErrorAt :: GP.Clause -> String -> Normalization a
+normErrorAt c = normErrorWith (clausePos c)
 
 newNamePrefixed :: String -> Normalization String
 newNamePrefixed prefix = do
@@ -76,13 +97,13 @@ newName :: Normalization String
 newName = newNamePrefixed "Rule_"
 
 saveProxyRuleName :: ID -> Normalization ()
-saveProxyRuleName ruleName = do
-  proxyRuleNames %= S.insert ruleName
+saveProxyRuleName ruleName0 = do
+  proxyRuleNames %= S.insert ruleName0
   return ()
 
 addRule :: ID -> ID -> SyntaxTopClause -> Normalization ()
-addRule tdName ruleName clause = do
-  let doAdd rs = Just $ (SyntaxRule ruleName clause) : (maybe [] id rs)
+addRule tdName ruleName0 clause = do
+  let doAdd rs = Just $ (SyntaxRule ruleName0 clause) : (maybe [] id rs)
   normSRules %= M.alter doAdd tdName
   return ()
 
@@ -100,12 +121,13 @@ addQQLexRule :: ID -> Normalization ID
 addQQLexRule tdName = do
   -- Use deterministic name based on type name, not counter
   let termKindName = "qq_" ++ tdName
-  addLexicalRule $ LexicalRule "String" "(tail . dropWhile (/= ':'))" termKindName
-                     (IAlt [ISeq [IStrLit "$",
-                                  IStrLit tdName,
-                                  IStrLit ":",
-                                  IRegExpLit "a-zA-Z_",
-                                  IStar (IRegExpLit "A-Za-z0-9_") Nothing]])
+      np    = GP.rtkNoPos
+      lit s = GP.Lit np (GP.Str np s)
+      cl    = foldl1 (GP.Seq np)
+                [ lit "$", lit tdName, lit ":"
+                , GP.Regex np "a-zA-Z_"
+                , GP.Star np (GP.Regex np "A-Za-z0-9_") ]
+  addLexicalRule $ LexicalRule "String" "(tail . dropWhile (/= ':'))" termKindName cl
   return termKindName
 
 -- Cached version of addQQLexRule that reuses existing QQ lex rules for the same type
@@ -140,23 +162,23 @@ addAntiRuleCached tdName isList = do
       return constr
 
 addRuleWithQQ :: ID -> ID -> SyntaxTopClause -> Normalization ()
-addRuleWithQQ tdName ruleName clause = do
+addRuleWithQQ tdName ruleName0 clause = do
   case clause of
     STAltOfSeq altseqs ->
         case L.find (\(STSeq _ ssc) -> case ssc of
                                          (SSLifted _ : _) -> True
                                          _ -> False)
                     altseqs of
-          Just _ -> addRule tdName ruleName clause
+          Just _ -> addRule tdName ruleName0 clause
           Nothing -> qqAdd altseqs
     STMany opType (SSId rule) mcl -> do
                 -- For list rules, look up the actual type data name for the element rule
                 -- This handles cases where the element rule has a shared type (e.g., Expression : AddExpr)
                 typeMap <- use ruleToTypeName
                 let elemTypeName = M.findWithDefault rule rule typeMap
-                newRule <- addListProxyRule elemTypeName rule ruleName
-                addRule tdName ruleName $ STMany opType (SSId newRule) mcl
-    _ -> addRule tdName ruleName clause
+                newRule <- addListProxyRule elemTypeName rule ruleName0
+                addRule tdName ruleName0 $ STMany opType (SSId newRule) mcl
+    _ -> addRule tdName ruleName0 clause
   where qqAdd altseqs = do
           -- The QQ machinery (lexical rule, anti rule) is created at the first
           -- eligible rule of the type, as before; but the splice alternative
@@ -169,14 +191,14 @@ addRuleWithQQ tdName ruleName clause = do
           qqLexRule <- addQQLexRuleCached tdName     -- Use cached version
           constr <- addAntiRuleCached tdName False   -- Use cached version
           attachMap <- use qqAttachPoints
-          let attachHere = S.member ruleName $ M.findWithDefault S.empty tdName attachMap
+          let attachHere = S.member ruleName0 $ M.findWithDefault S.empty tdName attachMap
           if attachHere
-            then addRule tdName ruleName $ STAltOfSeq (STSeq constr [SSId qqLexRule] : altseqs)
-            else addRule tdName ruleName clause
+            then addRule tdName ruleName0 $ STAltOfSeq (STSeq constr [SSId qqLexRule] : altseqs)
+            else addRule tdName ruleName0 clause
 
 addListProxyRule :: ID -> ID -> ID -> Normalization ID
 addListProxyRule tdName elemRuleName listName = do
-  ruleName <- newNamePrefixed $ "ListElem_" ++ listName
+  ruleName0 <- newNamePrefixed $ "ListElem_" ++ listName
   -- The QQ token is named after the LIST rule (e.g. $RuleList:xs for
   -- "RuleList = Rule*"), because GenQ's anti functions for isList rules
   -- splice whole lists: in patterns the anti node binds the entire list,
@@ -185,138 +207,140 @@ addListProxyRule tdName elemRuleName listName = do
   -- since the token parses in element position within the list.
   qqLexRule <- addQQLexRuleCached listName
   constr <- addAntiRuleCached tdName True
-  addRule tdName ruleName $ STAltOfSeq [STSeq constr [SSId qqLexRule], STSeq "" [SSLifted elemRuleName]]
-  return ruleName
+  addRule tdName ruleName0 $ STAltOfSeq [STSeq constr [SSId qqLexRule], STSeq "" [SSLifted elemRuleName]]
+  return ruleName0
 
-extractClause :: IClause -> Normalization ID
+extractClause :: GP.Clause -> Normalization ID
 extractClause cl = do
-  ruleName <- newName
-  cl1 <- checkNormalClause cl
-  addRule ruleName ruleName cl1
-  saveProxyRuleName ruleName
-  return $ ruleName
+  ruleName0 <- newName
+  cl1 <- checkClause cl
+  addRule ruleName0 ruleName0 cl1
+  saveProxyRuleName ruleName0
+  return $ ruleName0
 
 extractSClause :: SyntaxTopClause -> Normalization ID
 extractSClause cl = do
-  ruleName <- newName
-  addRule ruleName ruleName cl
-  saveProxyRuleName ruleName
-  return $ ruleName
+  ruleName0 <- newName
+  addRule ruleName0 ruleName0 cl
+  saveProxyRuleName ruleName0
+  return $ ruleName0
 
-processRuleOptions :: IRule -> Normalization ()
-processRuleOptions IRule{getIDataTypeName=dtn, getIRuleName=rn, getIRuleOptions=ropts} = do
-  let dtName = (maybe rn Prelude.id dtn)
+processRuleOptions :: GP.Rule -> Normalization ()
+processRuleOptions r = do
+  let dtName = fromMaybe (ruleName r) (ruleTypeName r)
   mapM_ (\ opt -> case opt of
-                    OShortcuts lst -> mapM_ (\ shortcut -> do
-                                               addShortcut shortcut dtName
-                                               return ()) lst
-                    OSymmacro -> return ()  -- Handle symmacro option
-                    ) ropts
+                    GP.Shortcuts _ ids -> mapM_ (\ shortcut -> do
+                                               addShortcut (nameText shortcut) dtName
+                                               return ()) ids
+                    GP.Symmacro _ -> return ()  -- Handle symmacro option
+                    GP.Anti_Option v -> error $ "Normalize: quasi-quotation-only Option"
+                                                ++ " cannot come from a grammar file: $" ++ v
+                    ) (ruleOptions r)
 
-checkSimpleClause :: IClause -> Normalization SyntaxSimpleClause
-checkSimpleClause (IId idName) = return $ SSId idName
-checkSimpleClause (ILifted (IId idName)) = return $ SSLifted idName
-checkSimpleClause (IIgnore c1) = do
-  newC1 <- checkSimpleClause c1
-  case newC1 of
-    SSId idName -> return $ SSIgnore idName
-    _ -> normError $ "ignore (!) cannot be applied to: " ++ showClause c1
-checkSimpleClause c = extractClause c >>= return . SSId
+isSymmacroOption :: GP.Option -> Bool
+isSymmacroOption GP.Symmacro{} = True
+isSymmacroOption _             = False
 
--- A repetition/option clause: cannot be the body of a lifted (,) clause.
-isRepetition :: IClause -> Bool
-isRepetition IStar{} = True
-isRepetition IPlus{} = True
-isRepetition IOpt{}  = True
-isRepetition _       = False
+--------------------------------------------------------------------------------
+-- Clause normalization over the generated AST.
+--
+-- The functions below dispatch on POSITION, because the generated AST has no
+-- canonicalizing wrappers: an Alt/Seq node in rule (or group) position is
+-- the rule's own alternation/sequence, while the same node in element
+-- position can only have come from a parenthesized group (grammar.pg's
+-- 'Clause5 = '(' ,Clause ')'' lifts the group, the parentheses leave no
+-- node) and is extracted into a proxy rule. Optional clauses desugar inline
+-- - 'c?' becomes an alternation with an empty alternative - since the
+-- generated AST cannot represent empty sequences (the old removeOpts
+-- pre-pass rewrote them on the retired IClause representation).
+--------------------------------------------------------------------------------
 
--- The repeated element of a * or + clause must be a syntax rule: the rule's
--- value is a list of the element's values, and the element's splice support
--- (a ListElem proxy whose Anti_ constructor lives in the element's data
--- type, see addListProxyRule) needs a grammar-owned data declaration to
--- host that constructor. Terminals have neither: an ignored item (a string
--- literal or !-clause) produces no value to collect, and a lexical rule
--- produces a bare token payload with no data declaration. Both used to slip
--- through to the generators and emit uncompilable Haskell (issue #28), as
--- did a lifted (,) element, which crashed GenAST. Reject them here, where
--- the offending rule is still known. The delimiter is unrestricted: it is
--- matched and dropped, so any clause works there.
-checkRepeatedClause :: IClause -> Normalization SyntaxSimpleClause
-checkRepeatedClause c = do
-  c1 <- checkSimpleClause c
-  case c1 of
-    -- Not rendered via showClause: a string literal is already replaced by
-    -- its internal token name (tok_..._N) at this stage, which would leak
-    -- into the message; the rule context and position locate the clause.
-    SSIgnore _ -> normError $ "repetition of an item that produces no value:"
-                              ++ " the repeated item is a string literal or !-ignored clause,"
-                              ++ " which is matched but dropped;"
-                              ++ " wrap the item in a syntax rule and repeat that rule instead"
-    SSId name | isLexicalRule name ->
-        normError $ "repetition over the lexical rule '" ++ name ++ "' is not supported:"
-                    ++ " wrap it in a syntax rule (Item = " ++ name ++ " ;) and repeat Item"
-                    ++ " to give the list elements a data type"
-    SSLifted _ -> normError "a lifted (,) clause is not supported under *, + or ?"
-    _ -> return c1
+-- A clause in rule (or parenthesized-group) position: an alternation of
+-- sequences.
+checkClause :: GP.Clause -> Normalization SyntaxTopClause
+checkClause c = case altElems c of
+  [alt] -> checkSingleAlt alt
+  alts  -> STAltOfSeq <$> mapM checkAltSeq alts
 
-checkNormalClause :: IClause -> Normalization SyntaxTopClause
-checkNormalClause (IStar c mc) = do
-  c1 <- checkRepeatedClause c
-  c2l <- mapM checkSimpleClause (maybeToList mc)
-  return $ STMany STStar c1 (listToMaybe c2l)
-checkNormalClause (IPlus c mc) = do
-  c1 <- checkRepeatedClause c
-  c2l <- mapM checkSimpleClause (maybeToList mc)
-  return $ STMany STPlus c1 (listToMaybe c2l)
-checkNormalClause (IOpt c) = do
-  c1 <- checkSimpleClause c
-  return $ STOpt c1
-checkNormalClause (IAlt [c]) = do
-  checkNormalClause c
-checkNormalClause (IAlt cs) = do
-  cs1 <- mapM checkNormalClauseSeq cs
-  return $ STAltOfSeq cs1
-checkNormalClause (ISeq [c]) = do
-  checkNormalClause c
-checkNormalClause tc@(ISeq _) = do
-  c1 <- checkNormalClauseSeq tc
-  return $ STAltOfSeq [c1]
+-- A sole alternative: a repetition or option here shapes the whole rule
+-- (STMany / the desugared option), everything else is a one-alternative
+-- alternation.
+checkSingleAlt :: GP.Clause -> Normalization SyntaxTopClause
+checkSingleAlt (GP.Labeled _ n body) = do
+  s <- checkNamedSeq n body
+  return $ STAltOfSeq [s]
+checkSingleAlt alt = case seqElems alt of
+  [el] -> checkSoleElement el
+  els  -> do
+    s <- checkSeqOf els
+    return $ STAltOfSeq [s]
+
+checkSoleElement :: GP.Clause -> Normalization SyntaxTopClause
+checkSoleElement c = case c of
+  GP.Star _ el        -> STMany STStar <$> checkRepeated el <*> pure Nothing
+  GP.StarDelim _ el d -> STMany STStar <$> checkRepeated el <*> (Just <$> checkSimple d)
+  GP.Plus _ el        -> STMany STPlus <$> checkRepeated el <*> pure Nothing
+  GP.PlusDelim _ el d -> STMany STPlus <$> checkRepeated el <*> (Just <$> checkSimple d)
+  GP.Opt _ el         -> desugarOpt el
+  GP.Lifted{}         -> checkLiftedAlone c
+  GP.Ignored{}        -> checkIgnoredAlone c
+  GP.Ref _ n          -> return $ STAltOfSeq [STSeq "" [SSId (nameText n)]]
+  -- group spines reach here only through extractClause; checkClause
+  -- re-flattens them
+  GP.Alt{}            -> checkClause c
+  GP.Seq{}            -> checkClause c
+  GP.Labeled{}        -> checkClause c
+  _ -> normErrorAt c $ "this clause cannot be used in a syntax rule: " ++ showClause c
+                       ++ " (regular expressions and '.' are only allowed in lexical rules)"
+
+-- c? desugars to ( | c): an empty alternative plus the optional clause.
+desugarOpt :: GP.Clause -> Normalization SyntaxTopClause
+desugarOpt el = do
+  c1 <- checkSimple el
+  return $ STAltOfSeq [STSeq "" [], STSeq "" [c1]]
+
 -- A lifted (,) clause names the single rule whose value becomes this rule's
 -- value, so it must reference one rule, not a repetition. Lifting a list/plus
 -- (e.g. "Foo = ,Bar* ;") is not implemented: it would otherwise slip through to
 -- GenAST.genSimpleItem and die there ("lifted rules are not yet implemented").
--- (IOpt is desugared by removeOpts before normalization, so only * and + reach
--- here as repetitions.)
-checkNormalClause (ILifted c)
-  | isRepetition c =
-      normError "a lifted (,) clause is not supported under *, + or ?"
+-- (',Bar?' is fine: the option desugars into a proxy rule and the proxy is
+-- lifted.)
+checkLiftedAlone :: GP.Clause -> Normalization SyntaxTopClause
+checkLiftedAlone c@(GP.Lifted _ body)
+  | isStarPlus body =
+      normErrorAt c "a lifted (,) clause is not supported under *, + or ?"
   | otherwise = do
-      c1 <- checkSimpleClause c
+      c1 <- checkSimple body
       case c1 of
         SSId idName -> return $ STAltOfSeq [STSeq "" [SSLifted idName]]
-        _ -> normError $ "lifted (,) cannot be applied to: " ++ showClause c
-checkNormalClause (IIgnore c) = do
-  c1 <- checkSimpleClause c
+        _ -> normErrorAt c $ "lifted (,) cannot be applied to: " ++ showClause body
+checkLiftedAlone c = normErrorAt c $ "lifted (,) cannot be applied to: " ++ showClause c
+
+checkIgnoredAlone :: GP.Clause -> Normalization SyntaxTopClause
+checkIgnoredAlone c@(GP.Ignored _ body) = do
+  c1 <- checkSimple body
   case c1 of
     SSId idName -> return $ STAltOfSeq [STSeq "" [SSIgnore idName]]
-    _ -> normError $ "ignore (!) cannot be applied to: " ++ showClause c
-checkNormalClause (IId idName) = do
-  return $ STAltOfSeq [STSeq "" [SSId idName]]
-checkNormalClause (ICtor n c) = do
-  s <- checkNamedClauseSeq n c
-  return $ STAltOfSeq [s]
-checkNormalClause c = normError $ "this clause cannot be used in a syntax rule: " ++ showClause c
-                                  ++ " (regular expressions and '.' are only allowed in lexical rules)"
+    _ -> normErrorAt c $ "ignore (!) cannot be applied to: " ++ showClause body
+checkIgnoredAlone c = normErrorAt c $ "ignore (!) cannot be applied to: " ++ showClause c
 
-checkNormalClauseSeq :: IClause -> Normalization STSeq
-checkNormalClauseSeq (ICtor n c) = checkNamedClauseSeq n c
-checkNormalClauseSeq (ISeq cs) = do
-  cs1 <- mapM checkSimpleClause cs
-  checkLiftedInSeq cs cs1
+isStarPlus :: GP.Clause -> Bool
+isStarPlus GP.Star{}      = True
+isStarPlus GP.StarDelim{} = True
+isStarPlus GP.Plus{}      = True
+isStarPlus GP.PlusDelim{} = True
+isStarPlus _              = False
+
+-- One alternative of a multi-alternative rule.
+checkAltSeq :: GP.Clause -> Normalization STSeq
+checkAltSeq (GP.Labeled _ n body) = checkNamedSeq n body
+checkAltSeq alt = checkSeqOf (seqElems alt)
+
+checkSeqOf :: [GP.Clause] -> Normalization STSeq
+checkSeqOf els = do
+  cs1 <- mapM checkSimple els
+  checkLiftedInSeq els cs1
   return $ STSeq "" cs1
-checkNormalClauseSeq ic = do
-  c1 <- checkSimpleClause ic
-  return $ STSeq "" [c1]
 
 -- A named alternative ("Star: Clause5 '*'"): the body normalizes exactly
 -- like the same alternative would unlabeled, and the user's name replaces
@@ -327,75 +351,119 @@ checkNormalClauseSeq ic = do
 -- passes another rule's value through and produces no constructor, so a
 -- name on it would silently vanish (GenY ignores names on lifted
 -- alternatives, GenAST filters them from the data declaration).
-checkNamedClauseSeq :: ConstructorName -> IClause -> Normalization STSeq
-checkNamedClauseSeq n c = do
-  STSeq _ cs1 <- checkNormalClauseSeq c
+checkNamedSeq :: GP.Name -> GP.Clause -> Normalization STSeq
+checkNamedSeq n body = do
+  STSeq _ cs1 <- checkSeqOf (seqElems body)
   if isClauseSeqLifted cs1
-    then normError $ "the lifted (,) alternative '" ++ showClause c
-                     ++ "' passes another rule's value through and produces no constructor,"
-                     ++ " so it cannot be named '" ++ n ++ "': remove the label or the ','"
-    else return $ STSeq n cs1
+    then normErrorWith (namePos n) $
+           "the lifted (,) alternative '" ++ showClauseSeq (seqElems body)
+           ++ "' passes another rule's value through and produces no constructor,"
+           ++ " so it cannot be named '" ++ nameText n ++ "': remove the label or the ','"
+    else return $ STSeq (nameText n) cs1
 
 -- A lifted (,) clause must be the only non-ignored clause of its sequence.
--- Check it here, where the offending rule is still known, instead of failing
+-- Check it here, where the offending clause is still known, instead of failing
 -- without context during code generation (see isClauseSeqLifted)
-checkLiftedInSeq :: [IClause] -> [SyntaxSimpleClause] -> Normalization ()
+checkLiftedInSeq :: [GP.Clause] -> [SyntaxSimpleClause] -> Normalization ()
 checkLiftedInSeq orig cs =
   case filter isNotIgnored cs of
     [SSLifted _] -> return ()
-    cs1 | any isLifted cs1 -> normError $ "a lifted (,) clause cannot be mixed with other clauses in a sequence: "
-                                          ++ showClause (ISeq orig)
+    cs1 | any isLifted cs1 ->
+            normErrorWith (firstLiftedPos orig) $
+              "a lifted (,) clause cannot be mixed with other clauses in a sequence: "
+              ++ showClauseSeq orig
     _ -> return ()
   where isLifted SSLifted{} = True
         isLifted _          = False
+        firstLiftedPos os = listToMaybe [ p | o@GP.Lifted{} <- os, Just p <- [clausePos o] ]
 
-normalizeRule :: IRule -> Normalization ()
-normalizeRule r@IRule{getIDataTypeName=dtn, getIRuleName=rn, getIClause=cl, getIDataFunc=_, getIRuleOptions=_} | not (isLexicalRule rn) = do
+checkSimple :: GP.Clause -> Normalization SyntaxSimpleClause
+checkSimple (GP.Ref _ n) = return $ SSId (nameText n)
+checkSimple (GP.Lifted _ (GP.Ref _ n)) = return $ SSLifted (nameText n)
+checkSimple c@(GP.Ignored _ body) = do
+  newC1 <- checkSimple body
+  case newC1 of
+    SSId idName -> return $ SSIgnore idName
+    _ -> normErrorAt c $ "ignore (!) cannot be applied to: " ++ showClause body
+checkSimple c = extractClause c >>= return . SSId
+
+-- The repeated element of a * or + clause must be a syntax rule: the rule's
+-- value is a list of the element's values, and the element's splice support
+-- (a ListElem proxy whose Anti_ constructor lives in the element's data
+-- type, see addListProxyRule) needs a grammar-owned data declaration to
+-- host that constructor. Terminals have neither: an ignored item (a string
+-- literal or !-clause) produces no value to collect, and a lexical rule
+-- produces a bare token payload with no data declaration. Both used to slip
+-- through to the generators and emit uncompilable Haskell (issue #28), as
+-- did a lifted (,) element, which crashed GenAST. Reject them here, where
+-- the offending clause is still known. The delimiter is unrestricted: it is
+-- matched and dropped, so any clause works there.
+checkRepeated :: GP.Clause -> Normalization SyntaxSimpleClause
+checkRepeated c = do
+  c1 <- checkSimple c
+  case c1 of
+    -- Not rendered via showClause: a string literal is already replaced by
+    -- its internal token name (tok_..._N) at this stage, which would leak
+    -- into the message; the rule context and position locate the clause.
+    SSIgnore _ -> normErrorAt c $ "repetition of an item that produces no value:"
+                              ++ " the repeated item is a string literal or !-ignored clause,"
+                              ++ " which is matched but dropped;"
+                              ++ " wrap the item in a syntax rule and repeat that rule instead"
+    SSId name | isLexicalRule name ->
+        normErrorAt c $ "repetition over the lexical rule '" ++ name ++ "' is not supported:"
+                    ++ " wrap it in a syntax rule (Item = " ++ name ++ " ;) and repeat Item"
+                    ++ " to give the list elements a data type"
+    SSLifted _ -> normErrorAt c "a lifted (,) clause is not supported under *, + or ?"
+    _ -> return c1
+
+normalizeRule :: GP.Rule -> Normalization ()
+normalizeRule r | not (isLexicalRule rn) = do
   processRuleOptions r
-  newCl <- checkNormalClause cl
-  addRuleWithQQ (maybe rn Prelude.id dtn) rn newCl
-normalizeRule r@IRule{getIDataTypeName=dtn, getIDataFunc=df, getIRuleName=rn, getIClause=cl, getIRuleOptions=_} | (isLexicalRule rn) = do
-  let (dtn1, df1) = case (dtn, df) of
+  newCl <- checkClause (ruleClause r)
+  addRuleWithQQ (fromMaybe rn (ruleTypeName r)) rn newCl
+  where rn = ruleName r
+normalizeRule r = do
+  let rn = ruleName r
+      (dtn1, df1) = case (ruleTypeName r, ruleFunc r) of
                       (Nothing, Nothing) -> ("String", "id")
                       (Just d,  Nothing) -> (d,        "read")
                       (Just d,   Just f) -> (d,        f)
                       (Nothing,  Just f) -> ("String", f)
-  if (OSymmacro `elem` (getIRuleOptions r))
+  if any isSymmacroOption (ruleOptions r)
     then
-      addLexicalRule $ MacroRule rn cl
+      addLexicalRule $ MacroRule rn (ruleClause r)
     else
-      addLexicalRule $ LexicalRule dtn1 df1 rn cl
-normalizeRule r = error $ "normalizeRule: unexpected rule pattern: " ++ show r
+      addLexicalRule $ LexicalRule dtn1 df1 rn (ruleClause r)
 
 -- Build a map from rule name to type data name for all rules in the grammar.
 -- This is needed to look up the correct type when processing list rules.
-buildRuleToTypeMap :: InitialGrammar -> M.Map ID ID
-buildRuleToTypeMap grammar = M.fromList $ map ruleMapping $ getIRules grammar
+buildRuleToTypeMap :: [GP.Rule] -> M.Map ID ID
+buildRuleToTypeMap rules = M.fromList $ map ruleMapping rules
   where
-    ruleMapping r = (getIRuleName r, maybe (getIRuleName r) id (getIDataTypeName r))
+    ruleMapping r = (ruleName r, fromMaybe (ruleName r) (ruleTypeName r))
 
 -- A rule name may be defined only once: addRule would otherwise silently
 -- merge the definitions into one rule group, turning an (almost certainly
 -- accidental) duplicate into extra alternatives (issue #20). Checked on the
 -- input rules, so the synthesized start wrapper added later by addStartGroup
 -- - which legitimately reuses the start rule's name - is exempt.
-checkDuplicateRuleNames :: [IRule] -> Normalization ()
+checkDuplicateRuleNames :: [GP.Rule] -> Normalization ()
 checkDuplicateRuleNames = go M.empty
   where
     go _ [] = return ()
     go seen (r : rest) =
-      case M.lookup (getIRuleName r) seen of
-        Nothing -> go (M.insert (getIRuleName r) r seen) rest
+      case M.lookup (ruleName r) seen of
+        Nothing -> go (M.insert (ruleName r) r seen) rest
         Just firstDef -> do
-          currentRule .= Just r
-          normError $ "rule '" ++ getIRuleName r ++ "' is defined more than once"
+          setCurrentRule r
+          normError $ "rule '" ++ ruleName r ++ "' is defined more than once"
                       ++ firstDefinedAt firstDef
-    firstDefinedAt r = case getIRulePos r of
+    firstDefinedAt r = case rulePos r of
       Just pos -> " (first definition at " ++ showSourcePos pos ++ ")"
       Nothing  -> ""
 
 -- Explicit constructor names ("Name: ..." alternative labels) are validated
--- up front, while the offending rule and its position are still known:
+-- up front, while the offending label and its position are still known:
 --
 --   * the name must be constructor-shaped (start with an uppercase letter;
 --     the lexer already restricts it to [A-Za-z0-9_]*);
@@ -409,46 +477,48 @@ checkDuplicateRuleNames = go M.empty
 --     the Anti_ alternatives), dropping one of the user's alternatives;
 --   * lexical rules carry no AST constructors, so labels there are rejected
 --     rather than silently ignored.
-checkCtorLabels :: [IRule] -> Normalization ()
+checkCtorLabels :: [GP.Rule] -> Normalization ()
 checkCtorLabels = foldM_ checkRule M.empty
   where
     checkRule seen r = do
-      currentRule .= Just r
-      foldM (checkName r) seen (ctorLabels (getIClause r))
-    ctorLabels :: IClause -> [ConstructorName]
+      setCurrentRule r
+      foldM (checkName r) seen (ctorLabels (ruleClause r))
+    ctorLabels :: GP.Clause -> [GP.Name]
     ctorLabels = everything (++) ([] `mkQ` label)
-      where label (ICtor n _) = [n]
-            label _           = []
-    checkName r seen n
-      | isLexicalRule (getIRuleName r) =
-          normError $ "a constructor name ('" ++ n ++ ":') cannot appear in a lexical rule:"
+      where label (GP.Labeled _ n _) = [n]
+            label _                  = []
+    checkName r seen nm
+      | isLexicalRule (ruleName r) =
+          labelError nm $ "a constructor name ('" ++ n ++ ":') cannot appear in a lexical rule:"
                       ++ " tokens carry no AST constructors"
       | not (startsUpper n) =
-          normError $ "constructor name '" ++ n ++ "' must start with an uppercase letter"
+          labelError nm $ "constructor name '" ++ n ++ "' must start with an uppercase letter"
       | "Ctr__" `L.isPrefixOf` n =
-          normError $ "constructor name '" ++ n ++ "' uses the reserved prefix 'Ctr__'"
+          labelError nm $ "constructor name '" ++ n ++ "' uses the reserved prefix 'Ctr__'"
                       ++ " (rtk generates such names for unnamed alternatives)"
       | "Anti_" `L.isPrefixOf` n =
-          normError $ "constructor name '" ++ n ++ "' uses the reserved prefix 'Anti_'"
+          labelError nm $ "constructor name '" ++ n ++ "' uses the reserved prefix 'Anti_'"
                       ++ " (rtk generates such names for quasi-quotation splices)"
       | Just firstUse <- M.lookup n seen =
-          normError $ "constructor name '" ++ n ++ "' is already used"
+          labelError nm $ "constructor name '" ++ n ++ "' is already used"
                       ++ inRule firstUse
                       ++ ": explicit constructor names must be unique across the grammar"
                       ++ " (all constructors share one generated Haskell module)"
-      | otherwise = return $ M.insert n r seen
+      | otherwise = return $ M.insert n (ruleName r, namePos nm) seen
+      where n = nameText nm
+    labelError nm = normErrorWith (namePos nm)
     startsUpper (ch : _) = isUpper ch
     startsUpper []       = False
-    inRule r = " in rule '" ++ getIRuleName r ++ "'"
-               ++ case getIRulePos r of
-                    Just pos -> " (at " ++ showSourcePos pos ++ ")"
-                    Nothing  -> ""
+    inRule (rn, mpos) = " in rule '" ++ rn ++ "'"
+                        ++ case mpos of
+                             Just pos -> " (at " ++ showSourcePos pos ++ ")"
+                             Nothing  -> ""
 
 -- Every bare-name reference inside a clause.
-allIdRefs :: IClause -> [ID]
+allIdRefs :: GP.Clause -> [ID]
 allIdRefs = everything (++) ([] `mkQ` idRef)
-  where idRef (IId n) = [n]
-        idRef _       = []
+  where idRef (GP.Ref _ n) = [nameText n]
+        idRef _            = []
 
 -- A declared type may exist only through rule annotations ("T : Rule = ..."),
 -- with no rule named T - a "pure type group". A reference to such a bare type
@@ -466,7 +536,7 @@ allIdRefs = everything (++) ([] `mkQ` idRef)
 --
 -- A lifted alternative passes the annotated rule's value through, so the
 -- cover adds a nonterminal for T without adding an AST constructor. It is
--- synthesized on the InitialGrammar, before any normalization bookkeeping,
+-- synthesized on the parsed rule list, before any normalization bookkeeping,
 -- so it flows through buildRuleToTypeMap and computeQQAttachPoints exactly
 -- like a hand-written cover: its alternatives are unit edges r_i -> T, the
 -- annotated rules therefore cover the always-demanded T, and a $T:var
@@ -483,34 +553,32 @@ allIdRefs = everything (++) ([] `mkQ` idRef)
 -- start type, no synthesized cover joining the group, and no list-element
 -- proxy added into it by a repetition over a start-typed element. Grammars
 -- that demand no cover are returned untouched, output byte for byte.
-synthesizeTypeCovers :: InitialGrammar -> InitialGrammar
-synthesizeTypeCovers grammar
-  | null covers = grammar
-  | otherwise   = grammar { getIRules = getIRules grammar ++ covers }
+synthesizeTypeCovers :: [GP.Rule] -> [GP.Rule]
+synthesizeTypeCovers rules
+  | null covers = rules
+  | otherwise   = rules ++ covers
   where
-    rules     = getIRules grammar
-    synRules  = [ r | r <- rules, not (isLexicalRule (getIRuleName r)) ]
-    ruleNames = S.fromList (map getIRuleName rules)
-    ruleTypeOf r = maybe (getIRuleName r) Prelude.id (getIDataTypeName r)
-    typeOfName = M.fromList [ (getIRuleName r, ruleTypeOf r) | r <- synRules ]
+    synRules  = [ r | r <- rules, not (isLexicalRule (ruleName r)) ]
+    ruleNames = S.fromList (map ruleName rules)
+    ruleTypeOf r = fromMaybe (ruleName r) (ruleTypeName r)
+    typeOfName = M.fromList [ (ruleName r, ruleTypeOf r) | r <- synRules ]
 
     -- declared types and each type's annotated rules, in declaration order
-    declaredTypes = L.nub [ t | r <- synRules, Just t <- [getIDataTypeName r] ]
-    rulesOfType t = [ getIRuleName r | r <- synRules, getIDataTypeName r == Just t ]
+    declaredTypes = L.nub [ t | r <- synRules, Just t <- [ruleTypeName r] ]
+    rulesOfType t = [ ruleName r | r <- synRules, ruleTypeName r == Just t ]
     pureTypes = [ t | t <- declaredTypes, not (t `S.member` ruleNames) ]
 
-    referenced = S.fromList $ concatMap (allIdRefs . getIClause) synRules
+    referenced = S.fromList $ concatMap (allIdRefs . ruleClause) synRules
     demanded
       | aliasStart = [ t | t <- pureTypes, t `S.member` referenced ]
       | otherwise  = pureTypes   -- the start wrapper references every type
 
     covers = map coverRule demanded
-    coverRule t = IRule { getIDataTypeName = Just t
-                        , getIDataFunc     = Nothing
-                        , getIRuleName     = t
-                        , getIClause       = IAlt [ ILifted (IId r) | r <- rulesOfType t ]
-                        , getIRuleOptions  = []
-                        , getIRulePos      = Nothing }
+    coverRule t = GP.RuleTyped np (ident t) (ident t)
+                    (foldl1 (GP.Alt np)
+                      [ GP.Lifted np (GP.Ref np (ident r)) | r <- rulesOfType t ])
+    np = GP.rtkNoPos
+    ident = GP.Ident np
 
     aliasStart = case synRules of
       []              -> True   -- no wrappers (normalization rejects the grammar first)
@@ -519,31 +587,25 @@ synthesizeTypeCovers grammar
         in case [ r | r <- synRules, ruleTypeOf r == firstID ] of
              -- a cover joins the group when the start type is itself a
              -- referenced pure type
-             [r] -> isTopRepetition (getIClause r)
+             [r] -> isTopRepetition (ruleClause r)
                     && not (firstID `elem` pureTypes && firstID `S.member` referenced)
                     && all ((/= Just firstID) . topRepetitionElemType) synRules
              _   -> False
 
-    isTopRepetition c = case unwrapSingleton c of
-      IStar{} -> True
-      IPlus{} -> True
-      _       -> False
+    isTopRepetition = isStarPlus
 
     -- The type of the element a top-level repetition rule collects: such a
     -- rule gets a ListElem proxy added into the ELEMENT type's group (see
     -- addRuleWithQQ/addListProxyRule). A non-reference element is extracted
     -- into a fresh proxy group of its own and can never hit the start group.
-    topRepetitionElemType r = case unwrapSingleton (getIClause r) of
-        IStar c _ -> elemType c
-        IPlus c _ -> elemType c
-        _         -> Nothing
-      where elemType (IId e) = Just (M.findWithDefault e e typeOfName)
-            elemType _       = Nothing
-
-    -- mirrors checkNormalClause's singleton unwrapping
-    unwrapSingleton (IAlt [c]) = unwrapSingleton c
-    unwrapSingleton (ISeq [c]) = unwrapSingleton c
-    unwrapSingleton c          = c
+    topRepetitionElemType r = case ruleClause r of
+        GP.Star _ c         -> elemType c
+        GP.StarDelim _ c _  -> elemType c
+        GP.Plus _ c         -> elemType c
+        GP.PlusDelim _ c _  -> elemType c
+        _                   -> Nothing
+      where elemType (GP.Ref _ n) = Just (M.findWithDefault (nameText n) (nameText n) typeOfName)
+            elemType _            = Nothing
 
 -- Decide, for every data type, which of its rules receive the $Type:var
 -- splice alternative ("attach points"). A type declared by a single rule
@@ -584,88 +646,90 @@ synthesizeTypeCovers grammar
 -- least as available as before: when no rule is named after the type, every
 -- rule of the group counts as demanded; and when the greedy cover cannot
 -- cover anything, every candidate becomes an attach point.
-computeQQAttachPoints :: InitialGrammar -> M.Map ID (S.Set ID)
-computeQQAttachPoints grammar = M.fromList $ map attachFor groups
+computeQQAttachPoints :: [GP.Rule] -> M.Map ID (S.Set ID)
+computeQQAttachPoints rules = M.fromList $ map attachFor groups
   where
-    synRules = [ r | r <- getIRules grammar, not (isLexicalRule (getIRuleName r)) ]
-    ruleTypeOf r = maybe (getIRuleName r) Prelude.id (getIDataTypeName r)
+    synRules = [ r | r <- rules, not (isLexicalRule (ruleName r)) ]
+    ruleTypeOf r = fromMaybe (ruleName r) (ruleTypeName r)
     groupNames = L.nub $ map ruleTypeOf synRules
     groups = [ (t, [ r | r <- synRules, ruleTypeOf r == t ]) | t <- groupNames ]
-    groupOfRule = M.fromList [ (getIRuleName r, ruleTypeOf r) | r <- synRules ]
+    groupOfRule = M.fromList [ (ruleName r, ruleTypeOf r) | r <- synRules ]
 
     -- Rule-level nullability, by fixpoint. Lexical rules (and unknown names)
     -- never match the empty input.
-    clausesByName = M.fromListWith (flip (++)) [ (getIRuleName r, [getIClause r]) | r <- synRules ]
+    clausesByName = M.fromListWith (flip (++)) [ (ruleName r, [ruleClause r]) | r <- synRules ]
     nullableRules = fixNullable S.empty
     fixNullable env =
       let env' = S.fromList [ n | (n, cls) <- M.toList clausesByName
                                 , any (clauseNullable env) cls ]
       in if env' == env then env else fixNullable env'
     clauseNullable env c = case c of
-      IId n        -> S.member n env
-      IStrLit _    -> False
-      IDot         -> False
-      IRegExpLit _ -> False
-      IStar _ _    -> True
-      IOpt _       -> True
-      IPlus c1 _   -> clauseNullable env c1
-      IAlt cs      -> any (clauseNullable env) cs
-      ISeq cs      -> all (clauseNullable env) cs
-      ILifted c1   -> clauseNullable env c1
-      IIgnore c1   -> clauseNullable env c1
-      ICtor _ c1   -> clauseNullable env c1
+      GP.Ref _ n          -> S.member (nameText n) env
+      GP.Lit _ _          -> False
+      GP.Dot _            -> False
+      GP.Regex _ _        -> False
+      GP.Star _ _         -> True
+      GP.StarDelim _ _ _  -> True
+      GP.Opt _ _          -> True
+      GP.Plus _ c1        -> clauseNullable env c1
+      GP.PlusDelim _ c1 _ -> clauseNullable env c1
+      GP.Alt _ l r        -> clauseNullable env l || clauseNullable env r
+      GP.Seq _ l r        -> clauseNullable env l && clauseNullable env r
+      GP.Lifted _ c1      -> clauseNullable env c1
+      GP.Ignored _ c1     -> clauseNullable env c1
+      GP.Labeled _ _ c1   -> clauseNullable env c1
+      GP.Anti_Clause _    -> False
     isNullable = clauseNullable nullableRules
 
-    -- The alternatives a clause normalizes to, mirroring checkNormalClause:
-    -- singleton wrappers unwrap, a top-level option contributes an empty
-    -- alternative (removeOpts), everything else is a single alternative.
-    unwrapTop (IAlt [c]) = unwrapTop c
-    unwrapTop (ISeq [c]) = unwrapTop c
-    unwrapTop c          = c
-    topAlts c = case unwrapTop c of
-                  IAlt cs -> cs
-                  IOpt c1 -> [ISeq [], ISeq [c1]]
-                  c'      -> [c']
+    -- The alternatives a clause normalizes to, as element lists (the empty
+    -- list is the empty alternative an option desugars to). Mirrors
+    -- checkClause/desugarOpt.
+    topAlts :: GP.Clause -> [[GP.Clause]]
+    topAlts c = case c of
+                  GP.Alt{}    -> map seqElems (altElems c)
+                  GP.Opt _ c1 -> [[], [c1]]
+                  _           -> [seqElems c]
 
     -- The non-nullable core of an alternative: Just n for a nonterminal
     -- whose value passes through (a plain or lifted reference), Nothing for
-    -- anything opaque (tokens, ignored or repeated material, nested
-    -- alternatives, which normalize to proxy rules).
+    -- anything opaque (tokens, ignored or repeated material, parenthesized
+    -- groups, which normalize to proxy rules).
     coreElems c
       | isNullable c = []
       | otherwise = case c of
-          ISeq cs    -> concatMap coreElems cs
-          IId n      -> [Just n]
-          ILifted c1 -> coreElems c1
-          _          -> [Nothing]
-    unitTarget alt = case coreElems alt of
+          GP.Ref _ n     -> [Just (nameText n)]
+          GP.Lifted _ c1 -> coreElems c1
+          _              -> [Nothing]
+    unitTarget alt = case concatMap coreElems alt of
                        [Just n] -> Just n
                        _        -> Nothing
 
     -- Mirror of the addRuleWithQQ guard: would this clause get the splice
     -- alternative at all? (STMany rules take the list-proxy path; a leading
     -- lifted (,) clause suppresses the alternative.)
-    eligibleClause c = case unwrapTop c of
-      IStar{}   -> False
-      IPlus{}   -> False
-      ILifted _ -> False
-      c'        -> not $ any altLeadsLifted (topAlts c')
-    altLeadsLifted (ISeq (c:_)) = liftedIdHead c
-    altLeadsLifted c            = liftedIdHead c
-    liftedIdHead (ILifted (IId _)) = True
-    liftedIdHead _                 = False
+    eligibleClause c = case c of
+      GP.Star{}      -> False
+      GP.StarDelim{} -> False
+      GP.Plus{}      -> False
+      GP.PlusDelim{} -> False
+      GP.Lifted{}    -> False
+      _              -> not $ any altLeadsLifted (topAlts c)
+    altLeadsLifted (e : _) = liftedIdHead e
+    altLeadsLifted []      = False
+    liftedIdHead (GP.Lifted _ (GP.Ref _ _)) = True
+    liftedIdHead _                          = False
 
-    attachFor (t, [r]) = (t, S.singleton (getIRuleName r))
+    attachFor (t, [r]) = (t, S.singleton (ruleName r))
     attachFor (t, rs)  = (t, picked)
       where
-        names = L.nub $ map getIRuleName rs   -- in declaration order
+        names = L.nub $ map ruleName rs   -- in declaration order
         nameSet = S.fromList names
 
         -- lift graph: source -> targets it reduces to by a unit production
         edges = M.fromListWith S.union
-                  [ (src, S.singleton (getIRuleName r))
+                  [ (src, S.singleton (ruleName r))
                   | r <- rs
-                  , alt <- topAlts (getIClause r)
+                  , alt <- topAlts (ruleClause r)
                   , Just src <- [unitTarget alt]
                   , src `S.member` nameSet ]
         closureOf n0 = go (S.singleton n0) [n0]
@@ -678,9 +742,9 @@ computeQQAttachPoints grammar = M.fromList $ map attachFor groups
 
         -- rules of this group demanded by some position of the grammar
         demandRefs r alt =
-          let refs = filter (`S.member` nameSet) (allIdRefs alt)
+          let refs = filter (`S.member` nameSet) (concatMap allIdRefs alt)
           in case unitTarget alt of
-               Just n | M.lookup (getIRuleName r) groupOfRule == Just t
+               Just n | M.lookup (ruleName r) groupOfRule == Just t
                       , n `S.member` nameSet -> L.delete n refs
                _ -> refs
         demanded
@@ -688,12 +752,12 @@ computeQQAttachPoints grammar = M.fromList $ map attachFor groups
           | otherwise            = nameSet   -- no rule carries the type name:
                                              -- assume everything is demanded
           where demanded0 = S.fromList [ ref | r <- synRules
-                                             , alt <- topAlts (getIClause r)
+                                             , alt <- topAlts (ruleClause r)
                                              , ref <- demandRefs r alt ]
 
         candidates = [ n | n <- names
-                         , any (eligibleClause . getIClause)
-                               [ r | r <- rs, getIRuleName r == n ] ]
+                         , any (eligibleClause . ruleClause)
+                               [ r | r <- rs, ruleName r == n ] ]
 
         greedy uncovered acc
           | S.null uncovered = reverse acc
@@ -717,14 +781,13 @@ computeQQAttachPoints grammar = M.fromList $ map attachFor groups
                                                 -- the old attach-everywhere
                    ns -> S.fromList ns
 
-doNM :: InitialGrammar -> Normalization ()
-doNM grammar = do
-  let grammar0 = everywhereBut (False `mkQ` (isLexicalRule . getIRuleName)) (mkT removeOpts) grammar
-  checkDuplicateRuleNames $ getIRules grammar0
-  checkCtorLabels $ getIRules grammar0
-  mapM_ (\r -> do currentRule .= Just r
+doNM :: [GP.Rule] -> Normalization ()
+doNM rules = do
+  checkDuplicateRuleNames rules
+  checkCtorLabels rules
+  mapM_ (\r -> do setCurrentRule r
                   normalizeRule r)
-        $ getIRules grammar0
+        rules
   currentRule .= Nothing
   postNormalizeGrammar
 
@@ -797,8 +860,9 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
                                      dummy]) $ filterProxyRules proxyRules rules
       newTokens = map (\(_, name) -> LexicalRule { getLRuleDataType = "Keyword",
                                                    getLRuleFunc = "",
-                                                   getLRuleName = name, getLClause = (IStrLit name)}) $ M.toList ruleToStartInfo
-      
+                                                   getLRuleName = name,
+                                                   getLClause = GP.Lit GP.rtkNoPos (GP.Str GP.rtkNoPos name)}) $ M.toList ruleToStartInfo
+
       qqRule = SyntaxRule (fromMaybe (error "Internal error: start rule name is not set in grammar info")
                                      (getStartRuleName info))
                           $ STAltOfSeq rulesClauses
@@ -820,29 +884,30 @@ addStartGroup ng@NormalGrammar { getSyntaxRuleGroups = rules, getLexicalRules = 
              getGrammarInfo = info { getNameCounter = counter, getRuleToStartInfo = ruleToStartInfo }}
       [] -> error "Grammar must have at least one rule group"
 
-normalizeTopLevelClauses :: InitialGrammar -> Either Diagnostic NormalGrammar
-normalizeTopLevelClauses grammar0 =
-  let grammar = synthesizeTypeCovers grammar0 in
-  case getIRules grammar of
+normalizeTopLevelClauses :: GP.Grammar -> Either Diagnostic NormalGrammar
+normalizeTopLevelClauses g0 =
+  let gname = grammarName g0
+      rules = synthesizeTypeCovers (grammarRules g0) in
+  case rules of
     [] -> Left $ Diagnostic Nothing Nothing $
-                   "grammar '" ++ getIGrammarName grammar ++ "' contains no rules"
-    (firstIRule:_) -> do
-      let firstID = maybe (getIRuleName firstIRule) Prelude.id (getIDataTypeName firstIRule)
-          ruleTypeMap = buildRuleToTypeMap grammar
-          attachPoints = computeQQAttachPoints grammar
+                   "grammar '" ++ gname ++ "' contains no rules"
+    (firstRule:_) -> do
+      let firstID = fromMaybe (ruleName firstRule) (ruleTypeName firstRule)
+          ruleTypeMap = buildRuleToTypeMap rules
+          attachPoints = computeQQAttachPoints rules
       (_, NormalizationState nrs nls counter antiRules shortcuts proxyRules _ _ _ _ _) <-
-        runStateT (doNM grammar) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap attachPoints Nothing)
+        runStateT (doNM rules) (NormalizationState M.empty [] 0 [] [] S.empty M.empty M.empty ruleTypeMap attachPoints Nothing)
       firstRuleGroupRules <- case M.lookup firstID nrs of
         Just rs -> Right rs
-        Nothing -> Left $ Diagnostic (getIRulePos firstIRule) Nothing $
-                            "the first rule ('" ++ getIRuleName firstIRule
+        Nothing -> Left $ Diagnostic (rulePos firstRule) Nothing $
+                            "the first rule ('" ++ ruleName firstRule
                             ++ "') must be a syntax rule (its name must start with an uppercase letter),"
                             ++ " because it defines the start symbol of the grammar"
       let nrs1 = M.delete firstID nrs
           firstGroup = SyntaxRuleGroup firstID firstRuleGroupRules
           otherGroups = map (\ (k,v) -> SyntaxRuleGroup k v) $ M.toList nrs1
           groups = firstGroup : otherGroups
-      return $ addStartGroup $ NormalGrammar (getIGrammarName grammar) groups nls antiRules shortcuts (getImports grammar) (GrammarInfo (Just firstID) M.empty counter proxyRules)
+      return $ addStartGroup $ NormalGrammar gname groups nls antiRules shortcuts (grammarImports g0) (GrammarInfo (Just firstID) M.empty counter proxyRules)
 
 data FillNameState = FillNameState { nameCtr :: Int, nameBase :: String }
 type FillName a = State FillNameState a
@@ -866,7 +931,3 @@ fillConstructorNames ng@NormalGrammar { getSyntaxRuleGroups = rules, getGrammarI
       where newrules = map (\r -> doRename (getSDataTypeName r) r) rules
             doRename n dat = let (dat1, (FillNameState _ _)) = runState (everywhereM (mkM (fillConstructorName n)) dat) (FillNameState 0 n)
                                in dat1
-
-removeOpts :: IClause -> IClause
-removeOpts (IOpt c) = IAlt [ISeq [], ISeq [c]]
-removeOpts a = a

@@ -20,8 +20,10 @@ import System.Directory (listDirectory)
 import System.FilePath ((</>), takeExtension)
 import System.IO
 
-import ASTAdapter (parseWithGenerated)
+import qualified GrammarParser as GP
+
 import Diagnostics (Diagnostic)
+import Frontend (cleanGrammarTokens, parseWithGenerated)
 import GenQ (genQ)
 import GenX (genX)
 import GenY (genY)
@@ -32,20 +34,24 @@ import StringLiterals (normalizeStringLiterals)
 import Syntax
 import TokenProcessing (processTokens)
 
--- | Lexing, token post-processing and parsing of a grammar specification.
-parseGrammarSource :: String -> Either Diagnostic InitialGrammar
-parseGrammarSource src = scanTokens src >>= (parse . processTokens)
+-- | The hand-written reference front end: lexing, token post-processing,
+-- parsing and the shared token-text cleanup. Both front ends produce the
+-- GENERATED AST ('GP.Grammar'); the pipeline has no other parsed-grammar
+-- representation.
+parseGrammarSource :: String -> Either Diagnostic GP.Grammar
+parseGrammarSource src = cleanGrammarTokens <$> (scanTokens src >>= (parse . processTokens))
 
--- | The self-hosted front end: the same job as 'parseGrammarSource', done by
--- the lexer/parser RTK generated from grammar.pg plus the AST adapter.
-parseGrammarSourceGenerated :: String -> Either Diagnostic InitialGrammar
+-- | The self-hosted front end (the default): the same job as
+-- 'parseGrammarSource', done by the lexer/parser RTK generated from
+-- grammar.pg.
+parseGrammarSourceGenerated :: String -> Either Diagnostic GP.Grammar
 parseGrammarSourceGenerated = parseWithGenerated
 
 -- | The shared back half of the front-end pipeline: normalization of an
 -- already-parsed grammar down to what the code generators consume.
-normalizeParsedGrammar :: InitialGrammar -> Either Diagnostic NormalGrammar
-normalizeParsedGrammar ig = do
-    ng <- normalizeTopLevelClauses (normalizeStringLiterals ig)
+normalizeParsedGrammar :: GP.Grammar -> Either Diagnostic NormalGrammar
+normalizeParsedGrammar pg = do
+    ng <- normalizeTopLevelClauses (normalizeStringLiterals pg)
     return (fillConstructorNames ng)
 
 -- | The full front-end pipeline, producing the normalized grammar that the

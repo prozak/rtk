@@ -1,7 +1,7 @@
 import Lexer
 import Parser (parse)
 import Syntax
-import ASTAdapter (parseWithGenerated, scanTokensGenerated)
+import Frontend (cleanGrammarTokens, parseWithGenerated, scanTokensGenerated)
 import Diagnostics (Diagnostic (..), renderDiagnostic)
 import TokenProcessing
 import StringLiterals
@@ -83,15 +83,17 @@ main = do
                 when (debugStage opts == Just StageLex)
                     exitAfterDebug
 
-                -- Stage 2: Parsing
-                (eGrammar, maybeT2) <- runStage opts "Parsing" $ parse tokens
+                -- Stage 2: Parsing (plus the shared token-text cleanup;
+                -- the generated front end applies the same pass inside
+                -- parseWithGenerated)
+                (eGrammar, maybeT2) <- runStage opts "Parsing" $ fmap cleanGrammarTokens (parse tokens)
                 g <- orDie opts eGrammar
                 return (g, [maybeT1, maybeT1_5, maybeT2])
 
     when (debugParse opts) $
-        D.printInitialGrammar opts grammar
+        D.printParsedGrammar opts grammar
 
-    traceRule $ \name -> D.traceRuleInitial opts name "After Parse" grammar
+    traceRule $ \name -> D.traceRuleParsed opts name "After Parse" grammar
 
     when (debugStage opts == Just StageParse)
         exitAfterDebug
@@ -102,7 +104,7 @@ main = do
     when (debugStringNorm opts) $
         D.printComparison opts "Before String Normalization" grammar "After String Normalization" grammar0
 
-    traceRule $ \name -> D.traceRuleInitial opts name "After String Normalization" grammar0
+    traceRule $ \name -> D.traceRuleParsed opts name "After String Normalization" grammar0
 
     when (debugStage opts == Just StageStringNorm)
         exitAfterDebug

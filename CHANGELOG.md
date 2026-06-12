@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- The pipeline computes directly over the generated AST (task 8c): the
+  historic `InitialGrammar`/`IRule`/`IClause` types — the hand-written
+  parsed-grammar representation dating back to the original `Parser.y` —
+  are retired. String-literal normalization, clause normalization and the
+  lexical-clause translation in GenX now consume `GrammarParser`'s
+  `Grammar`/`Rule`/`Clause` (compiled from the `test/golden/grammar/`
+  snapshot), the same types the compiled-in `GrammarQQ` quotes produce, so
+  normalization-level rewrites can be expressed as quasi-quoted patterns
+  (task 8d). The hand-written reference front end stays as the equivalence
+  oracle: `Parser.y`'s actions construct generated-AST values (same
+  constructors, spines and first-symbol positions), and the AST-equality
+  suite now also projects and compares the position of every node, since
+  `RtkPos` is equality-transparent. The `ASTAdapter` conversion layer is
+  replaced by `src/generated/Frontend.hs` (parse entry points, generated-AST
+  helpers, and the now-shared token-text cleanup: both lexers keep raw token
+  text and a single `cleanGrammarTokens` pass strips delimiters and
+  processes escapes after parsing). Generated artifacts are byte-identical
+  for every corpus grammar. The bootstrap coupling is now structural — a
+  grammar.pg change that reshapes the AST breaks the in-tree build until the
+  snapshot is re-accepted and the pipeline's matches are fixed; see
+  "Changing the grammar language" in BOOTSTRAP.md
+- Normalization diagnostics point at the offending CLAUSE instead of the
+  rule header: the generated AST carries a source position on every node,
+  so errors like "a lifted (,) clause cannot be mixed with other clauses",
+  "repetition over the lexical rule ...", and the constructor-label checks
+  (case, reserved prefixes, duplicates — including the "first used at"
+  cross-reference) now report the line and column of the clause or label
+  itself, still with the rule named as context
+
 ### Added
 - Named constructors (task 8a): an alternative may carry a leading label —
   `Expr = Add: Expr '+' Term | Term ;` — that names its generated AST
