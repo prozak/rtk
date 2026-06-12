@@ -1,11 +1,11 @@
-Tk__tok_class_13
+Tk__tok_class_15
 Tk__id "Operators"
-Tk__tok__symbol__14
+Tk__tok__symbol__11
 Tk__tok_void_28
 Tk__id "m"
 Tk__tok__lparen__7
 Tk__tok__rparen__8
-Tk__tok__symbol__14
+Tk__tok__symbol__11
 Tk__tok_int_24
 Tk__id "a"
 Tk__tok__eql__10
@@ -184,6 +184,6 @@ Tk__tok__minus__minus__83
 Tk__tok__symbol__73
 Tk__id "b"
 Tk__tok__semi__1
-Tk__tok__symbol__15
-Tk__tok__symbol__15
+Tk__tok__symbol__12
+Tk__tok__symbol__12
 EndOfFile

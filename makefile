@@ -188,6 +188,18 @@ $(eval $(call make-shared-test-rule,java-set-value,java,Java,test-grammars/java/
 $(eval $(call make-shared-test-rule,java-implements,java,Java,test-grammars/java/test-implements.java))
 $(eval $(call make-shared-test-rule,java-nested-if,java,Java,test-grammars/java/test-nested-if.java))
 
+# Phase 4g feature probes: anonymous classes, array initializers, 'default'
+# methods, annotation value arrays, package-info units, multiple top-level
+# types, enum-constant javadoc, generic primitive/void returns
+$(eval $(call make-shared-test-rule,java-anon-class,java,Java,test-grammars/java/test-anon-class.java))
+$(eval $(call make-shared-test-rule,java-array-init,java,Java,test-grammars/java/test-array-init.java))
+$(eval $(call make-shared-test-rule,java-default-method,java,Java,test-grammars/java/test-default-method.java))
+$(eval $(call make-shared-test-rule,java-annotation-array,java,Java,test-grammars/java/test-annotation-array.java))
+$(eval $(call make-shared-test-rule,java-package-info,java,Java,test-grammars/java/test-package-info.java))
+$(eval $(call make-shared-test-rule,java-multiple-types,java,Java,test-grammars/java/test-multiple-types.java))
+$(eval $(call make-shared-test-rule,java-enum-javadoc,java,Java,test-grammars/java/test-enum-javadoc.java))
+$(eval $(call make-shared-test-rule,java-generic-void,java,Java,test-grammars/java/test-generic-void.java))
+
 # JavaDoc comment tests (blank line + {@link Class#method()} regression tests)
 $(eval $(call make-shared-test-rule,java-javadoc-blank-link,java,Java,test-grammars/java/javadoc/test-blank-then-link.java))
 $(eval $(call make-shared-test-rule,java-javadoc-minimal-hash,java,Java,test-grammars/java/javadoc/test-minimal-hash.java))
@@ -207,7 +219,7 @@ accept-lex-java: test-out/java-main
 	ACCEPT=1 ./test-java-lexical.sh
 
 # Run all Java tests
-test-all-java: test-java test-java-simple test-java-minimal test-java-field test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method test-java-simple-return test-java-return-field test-java-very-simple test-java-parameter-only test-java-field-this test-java-simple-assignment test-java-compound-assignment test-java-set-value test-java-implements test-java-nested-if test-java-javadoc-blank-link test-java-javadoc-minimal-hash test-java-javadoc-minimal-fail test-java-javadoc-link-tag test-java-javadoc-just-hash
+test-all-java: test-java test-java-simple test-java-minimal test-java-field test-java-field-public test-java-package test-java-string test-java-complex test-java-full test-java-generics test-java-enum test-java-annotations test-java-empty-method test-java-simple-return test-java-return-field test-java-very-simple test-java-parameter-only test-java-field-this test-java-simple-assignment test-java-compound-assignment test-java-set-value test-java-implements test-java-nested-if test-java-anon-class test-java-array-init test-java-default-method test-java-annotation-array test-java-package-info test-java-multiple-types test-java-enum-javadoc test-java-generic-void test-java-javadoc-blank-link test-java-javadoc-minimal-hash test-java-javadoc-minimal-fail test-java-javadoc-link-tag test-java-javadoc-just-hash
 	@echo ""
 	@echo "=== All Java tests completed successfully! ==="
 

@@ -75,10 +75,10 @@ grammar 'Java';
 # 6. QQ bootstrap dummy bracket - 1 state, 1 conflict. The quasi-quoter
 #    wraps a quote body in a per-rule dummy-token pair, and the whole-file
 #    entry 'Java -> DUMMY . Java DUMMY' lets a second opening DUMMY (shift)
-#    compete with deriving an empty CompilationUnit ((Package)? -> empty)
-#    right before the closing DUMMY (reduce). Only a completely empty
-#    [java| |] quote is affected (it fails to parse); any non-empty quote
-#    has a real token after the opening DUMMY.
+#    compete with deriving an empty CompilationUnit (OptDocComment -> empty,
+#    the unit's first nullable) right before the closing DUMMY (reduce).
+#    Only a completely empty [java| |] quote is affected (it fails to
+#    parse); any non-empty quote has a real token after the opening DUMMY.
 #
 # A seventh family - catch/finally attaching to the nearest try, 1 state,
 # 4 conflicts - dissolved when try/catch/finally bodies were tightened from
@@ -89,7 +89,14 @@ grammar 'Java';
 # references add ZERO conflicts: '->' and '::' are fresh tokens that no
 # reduce lookahead contains, so every lambda head and reference form is
 # decided by a plain shift - see the NOTEs at AssignmentExpression and
-# PostfixExpression.
+# PostfixExpression. The Phase 4g batch - anonymous class bodies, array
+# creation with initializers, the 'default' modifier, annotation value
+# arrays, generic members with primitive/void returns, enum-constant doc
+# comments, and the package-info/multi-type CompilationUnit left-factoring
+# - also adds ZERO conflicts; each construct's NOTE explains why (anchor
+# tokens, shared nonterminals, or '{' never following a complete
+# expression). Only the family-6 item moved: the empty unit's first
+# nullable is now OptDocComment instead of the retired (Package)? option.
 # ============================================================================
 
 Java = CompilationUnit ;
@@ -99,11 +106,33 @@ OptDocComment = (DocComment)? ;
 TypeDeclaration =
  OptDocComment ModifierList TypeDeclRest ;
 
+TypeDeclarationList = (TypeDeclaration)* ;
+
 ImportList = (ImportStatement)*;
+
+# A compilation unit may open with a doc comment and annotations that
+# belong to the 'package' line (package-info.java, JLS 7.4.1) - or, when
+# there is no package line, to the first type declaration. The two cannot
+# be told apart before the token after them, and giving each its own
+# nullable doc position would epsilon-reduce one against the other
+# (reduce/reduce). So the leading 'OptDocComment ModifierList' is parsed
+# ONCE, shared, and CompilationUnitRest's anchor token says what it
+# belongs to: 'package' (UnitPackageFirst - the package's), a type-start
+# token (UnitTypeFirst - the first type's, which therefore does NOT
+# re-parse its own leading doc/modifiers; types after the first are full
+# TypeDeclarations again), or 'import' (UnitImportsFirst - a dangling doc
+# nothing claims). Sharing ModifierList (not a bare AnnotationList) keeps
+# the '@'-extension machinery in one item set; that it also accepts
+# modifier keywords before 'package' is parser-level tolerance (javac's
+# job). TypeDeclarationList replaces the old (TypeDeclaration)?: a unit
+# may hold any number of top-level types (JLS 7.3).
 CompilationUnit  =
- (Package)?
- ImportList
- (TypeDeclaration)?  ;
+ OptDocComment ModifierList (CompilationUnitRest)?  ;
+
+CompilationUnitRest =
+ UnitPackageFirst: Package ImportList TypeDeclarationList
+ | UnitImportsFirst: ImportStatement ImportList TypeDeclarationList
+ | UnitTypeFirst: TypeDeclRest TypeDeclarationList ;
 
 Package  =
  'package' CompoundName  ';'  ;
@@ -133,11 +162,26 @@ Annotation = '@' CompoundName ('(' AnnotationArguments? ')')? ;
 
 AnnotationArguments = AnnotationElement (',' AnnotationElement)* ;
 
-# Explicit alternatives (not (id '=')? Expression) so LALR keeps both items
+# Explicit alternatives (not (id '=')? ElementValue) so LALR keeps both items
 # alive after shifting id; otherwise values starting with an identifier, e.g.
-# @Retention(RetentionPolicy.RUNTIME), fail. ConditionalExpression is the JLS
-# ElementValue level; full Expression would make @Foo(a = b) ambiguous.
-AnnotationElement = id '=' ConditionalExpression | ConditionalExpression ;
+# @Retention(RetentionPolicy.RUNTIME), fail.
+AnnotationElement = id '=' ElementValue | ElementValue ;
+
+# JLS 9.7.1 ElementValue: ConditionalExpression is the JLS expression level
+# (full Expression would make @Foo(a = b) ambiguous); a nested annotation
+# and the brace-enclosed value array are anchored on '@' and '{', tokens no
+# expression can start with, so the three alternatives never compete.
+ElementValue =
+ ConditionalExpression
+ | Annotation
+ | ElementValueArrayInitializer ;
+
+# '{' (values...)? '}' with an optional trailing comma (JLS 9.7.1), e.g.
+# @Target({ ElementType.METHOD, ElementType.FIELD }). After a ',' the next
+# token picks between another value and the closing '}' (the trailing-comma
+# case), the same deferred decision as EnumConstantList's trailing ','.
+ElementValueArrayInitializer =
+ '{' (ElementValue (',' ElementValue)* (',')?)? '}' ;
 
 AnnotationList = Annotation* ;
 
@@ -145,7 +189,7 @@ AnnotationList = Annotation* ;
 # declaration rule (TypeDeclaration at the top level, FieldDeclaration inside
 # a type body). The class/interface/enum/@interface rules must NOT start with
 # their own nullable ModifierList: after the enclosing list, every token that
-# can extend a ModifierList (the 10 modifier keywords, '@', and the splice
+# can extend a ModifierList (the 11 modifier keywords, '@', and the splice
 # tokens qq_Modifier/qq_Annotation/qq_ModifierList) used to conflict between
 # extending the outer list and epsilon-starting the inner one - 14
 # shift/reduce conflicts whose shift put all modifiers on the outer list and
@@ -192,8 +236,14 @@ AnnotationTypeElementList = AnnotationTypeElement* ;
 # ModifierList against FieldDeclaration's nullable OptDocComment → r/r).
 AnnotationTypeElement = FieldDeclaration ;
 
-# Enum declaration
-EnumConstant = AnnotationList id ('(' Arglist ')')? ('{' FieldDeclarationList '}')? ;
+# Enum declaration. A constant may carry a doc comment (JLS 8.9.1 puts
+# annotations there; the doc comment is standard style). The OptDocComment
+# is safe: inside an enum body every constant position (after '{' or a
+# separating ',') expects only an EnumConstant, so the doccomment shift and
+# the epsilon-reduce on '@'/id compete with nothing - the trailing-comma
+# branch reduces on '}'/';' only, and FieldDeclaration's own OptDocComment
+# sits behind the ';' that ends the constant list.
+EnumConstant = OptDocComment AnnotationList id ('(' Arglist ')')? ('{' FieldDeclarationList '}')? ;
 
 EnumConstantList = EnumConstant (',' EnumConstant)* (',')? ;
 
@@ -245,9 +295,20 @@ NonEmptyDims = ('[' ']')+ ;
 # - Primitive type keyword → definitely method/field
 # - TypeParameters → definitely method (generic)
 # - id → could be constructor or reference type method/field
+#
+# The primitive-return generic alternative ('<T> void m()', JLS 8.4) is
+# anchored on NON-nullable NonEmptyTypeParameters: with the nullable
+# TypeParameters it would put the 9 primitive keywords into the
+# empty-TypeParameters reduce lookahead, racing the first alternative's
+# shift in every member state (9 new conflicts per state). Anchored, the
+# branch is only entered through a real '<' - the same '<' shift the
+# reference-type generic alternative uses (TypeParameters derives the same
+# NonEmptyTypeParameters) - and after the closing '>' the next token picks
+# the branch: a primitive keyword shifts here, id reduces TypeParameters.
 MemberDeclaration =
  PrimitiveTypeKeyword Dims id MemberRest                       # Primitive type method/field
- | TypeParameters id MoreTypeSpecifier id MemberRest           # Generic method with any type
+ | TypeParameters id MoreTypeSpecifier id MemberRest           # Generic method with reference type
+ | NonEmptyTypeParameters PrimitiveTypeKeyword Dims id MemberRest # Generic method with primitive/void type
  | id MemberAfterFirstId ;                                     # Constructor or reference type
 
 # Primitive type keywords (from TypeSpecifier)
@@ -328,7 +389,11 @@ VariableInitializerList = (VariableInitializer (',' VariableInitializer)* (',')?
 
 VariableInitializer  =
 Expression
- |  '{'  VariableInitializerList  '}'  ;
+ |  ArrayInitializer  ;
+
+# Brace-enclosed initializer (JLS 10.6), shared by declarators
+# ('int[] a = {1, 2};') and array creation ('new int[] {1, 2}').
+ArrayInitializer  =  '{'  VariableInitializerList  '}'  ;
 
 StaticInitializer  =
  StatementBlock  ;
@@ -751,9 +816,27 @@ Expression : PrimaryNoPostfix =
 
 # Only array creation takes sizing expressions (DimExprs); trailing empty
 # pairs allow 'new int[3][]'. Uses TypeSpecifier, not Type, so the dims are
-# not consumed twice. 'new int[] {1,2}' (initializer syntax) is a separate
-# feature (Phase 4g).
-CreationExpression = 'new' TypeSpecifier ( '(' Arglist ')' | DimExprs (NonEmptyDims)? );
+# not consumed twice.
+#
+# The optional class body after the call form is an anonymous class
+# (JLS 15.9.5): 'new Foo() { ... }'. The '{' is a plain, conflict-FREE
+# shift: no production puts '{' directly after a complete expression, so
+# '{' is never in the lookahead of the empty-body reduce - after ')' the
+# parser either shifts '{' (anonymous body) or reduces on a real
+# expression-follower. (Array-initializer braces sit after NonEmptyDims,
+# never after a complete creation, and keep it that way.)
+#
+# The NonEmptyDims ArrayInitializer alternative is array creation with an
+# initializer (JLS 15.10.1): 'new int[] {1, 2}', 'new int[][] {{1}, {2}}'.
+# The initializer form takes only EMPTY bracket pairs (sizes and an
+# initializer are mutually exclusive in the JLS), so DimExprs keeps its
+# branch to itself: after 'new T [' the next token decides as before
+# (']' commits to the initializer form's empty pair, an expression start
+# to a sizing expression).
+CreationExpression = 'new' TypeSpecifier
+ ( '(' Arglist ')' ('{' FieldDeclarationList '}')?
+ | DimExprs (NonEmptyDims)?
+ | NonEmptyDims ArrayInitializer );
 
 DimExprs = ('[' Expression ']')+ ;
 
@@ -792,7 +875,15 @@ WildcardType =
  | '?' 'extends' Type
  | '?' 'super' Type ;
 
-TypeParameters = ('<' TypeParameter (',' TypeParameter)* '>')? ;
+# Split like TypeArguments/NonEmptyTypeArguments: the nullable wrapper for
+# positions where type parameters are optional (class/interface headers,
+# reference-type generic members), the non-empty core for
+# MemberDeclaration's primitive-return generic alternative, which must be
+# '<'-anchored (see the NOTE there). One shared core nonterminal, so both
+# uses ride the same '<' shift.
+TypeParameters = NonEmptyTypeParameters? ;
+
+NonEmptyTypeParameters = '<' TypeParameter (',' TypeParameter)* '>' ;
 
 TypeParameter = id ('extends' Type ('&' Type)*)? ;
 
@@ -824,6 +915,14 @@ TypeSpecifier =
  |  'void'
  | CompoundName TypeArguments ;
 
+# 'default' (JLS 9.4: interface default methods) is a Modifier even though
+# the JLS grammar gives it its own InterfaceMethodModifier production:
+# accepting it on classes too is parser-level tolerance (javac's job, like
+# 'default' values on ordinary methods - see MemberRest). It cannot clash
+# with the switch label ('default' ':' sits in a statement context where no
+# ModifierList is parsed) nor with the annotation-element default clause
+# (that 'default' follows a method header's ')' Dims ThrowsClause?, a
+# position with no ModifierList item either).
 Modifier =
  'public'
  |  'private'
@@ -834,7 +933,8 @@ Modifier =
  |  'synchronized'
  |  'abstract'
  |  'threadsafe'
- |  'transient'  ;
+ |  'transient'
+ |  'default'  ;
 
 # The tail of a dotted name, hoisted into a NAMED rule so that CompoundName
 # and the PrimaryNoPostfix alternatives anchored on 'id CompoundNameTail'

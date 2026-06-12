@@ -1,89 +1,40 @@
 # Blacklist for full parsing tests (main sources)
 # These files use features not yet supported by the grammar, chiefly:
-# - anonymous inner classes (new Foo() { ... })
-# - a doc comment directly before 'package' (package-info.java)
-# - generic methods with a void/primitive return type (<T> void m(...))
-# - array initializers in annotation values (@Foo({A, B})) and in array
-#   creation (new int[] {1, 2})
-# - a lambda directly under a cast ((Predicate<T>) t -> ...)
+# - lambdas with typed or modified parameter lists ((final T t) -> ...),
+#   lambdas directly under a cast ((Predicate<T>) t -> ...), and lambdas in
+#   a conditional's false branch (cond ? x : (a, b) -> ...)
+# - array class literals (String[].class) and array-constructor method
+#   references (boolean[]::new)
+# - comma-separated statement-expression lists in a for-update (i++, pos++)
+# - the 'volatile' modifier
 #
-# Total: 77 files blacklisted, 182 files passing
+# Total: 27 files blacklisted, 232 files passing
 # As grammar support is added, remove files from this list
 
-org/apache/commons/lang3/AnnotationUtils.java
 org/apache/commons/lang3/AppendableJoiner.java
 org/apache/commons/lang3/ArrayUtils.java
-org/apache/commons/lang3/BooleanUtils.java
 org/apache/commons/lang3/CharSequenceUtils.java
-org/apache/commons/lang3/ClassUtils.java
-org/apache/commons/lang3/EnumUtils.java
-org/apache/commons/lang3/Functions.java
-org/apache/commons/lang3/JavaVersion.java
-org/apache/commons/lang3/ObjectUtils.java
-org/apache/commons/lang3/Range.java
-org/apache/commons/lang3/StringEscapeUtils.java
 org/apache/commons/lang3/StringUtils.java
 org/apache/commons/lang3/ThreadUtils.java
-org/apache/commons/lang3/Validate.java
-org/apache/commons/lang3/arch/Processor.java
-org/apache/commons/lang3/arch/package-info.java
 org/apache/commons/lang3/builder/DiffBuilder.java
-org/apache/commons/lang3/builder/HashCodeBuilder.java
 org/apache/commons/lang3/builder/ReflectionToStringBuilder.java
 org/apache/commons/lang3/builder/ToStringBuilder.java
-org/apache/commons/lang3/builder/package-info.java
-org/apache/commons/lang3/compare/package-info.java
-org/apache/commons/lang3/concurrent/AbstractCircuitBreaker.java
 org/apache/commons/lang3/concurrent/LazyInitializer.java
-org/apache/commons/lang3/concurrent/locks/package-info.java
-org/apache/commons/lang3/concurrent/package-info.java
-org/apache/commons/lang3/event/EventListenerSupport.java
-org/apache/commons/lang3/event/EventUtils.java
-org/apache/commons/lang3/event/package-info.java
-org/apache/commons/lang3/exception/package-info.java
 org/apache/commons/lang3/function/BooleanConsumer.java
 org/apache/commons/lang3/function/ByteConsumer.java
-org/apache/commons/lang3/function/Consumers.java
-org/apache/commons/lang3/function/Failable.java
-org/apache/commons/lang3/function/FailableBiConsumer.java
 org/apache/commons/lang3/function/FailableBiFunction.java
 org/apache/commons/lang3/function/FailableBiPredicate.java
 org/apache/commons/lang3/function/FailableByteConsumer.java
 org/apache/commons/lang3/function/FailableConsumer.java
 org/apache/commons/lang3/function/FailableDoubleConsumer.java
-org/apache/commons/lang3/function/FailableDoublePredicate.java
 org/apache/commons/lang3/function/FailableDoubleUnaryOperator.java
 org/apache/commons/lang3/function/FailableFunction.java
 org/apache/commons/lang3/function/FailableIntConsumer.java
-org/apache/commons/lang3/function/FailableIntPredicate.java
 org/apache/commons/lang3/function/FailableIntUnaryOperator.java
 org/apache/commons/lang3/function/FailableLongConsumer.java
-org/apache/commons/lang3/function/FailableLongPredicate.java
 org/apache/commons/lang3/function/FailableLongUnaryOperator.java
-org/apache/commons/lang3/function/FailablePredicate.java
-org/apache/commons/lang3/function/TriConsumer.java
 org/apache/commons/lang3/function/TriFunction.java
-org/apache/commons/lang3/function/package-info.java
-org/apache/commons/lang3/math/package-info.java
-org/apache/commons/lang3/mutable/Mutable.java
-org/apache/commons/lang3/mutable/package-info.java
-org/apache/commons/lang3/package-info.java
 org/apache/commons/lang3/reflect/TypeUtils.java
-org/apache/commons/lang3/reflect/package-info.java
-org/apache/commons/lang3/stream/package-info.java
 org/apache/commons/lang3/text/StrBuilder.java
 org/apache/commons/lang3/text/StrMatcher.java
 org/apache/commons/lang3/text/StrSubstitutor.java
-org/apache/commons/lang3/text/package-info.java
-org/apache/commons/lang3/text/translate/NumericEntityUnescaper.java
-org/apache/commons/lang3/text/translate/package-info.java
-org/apache/commons/lang3/time/DateUtils.java
-org/apache/commons/lang3/time/DurationUtils.java
-org/apache/commons/lang3/time/FastDateFormat.java
-org/apache/commons/lang3/time/FastDateParser.java
-org/apache/commons/lang3/time/StopWatch.java
-org/apache/commons/lang3/time/package-info.java
-org/apache/commons/lang3/tuple/Pair.java
-org/apache/commons/lang3/tuple/package-info.java
-org/apache/commons/lang3/util/IterableStringTokenizer.java
-org/apache/commons/lang3/util/package-info.java

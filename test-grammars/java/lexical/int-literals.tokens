@@ -1,6 +1,6 @@
-Tk__tok_class_13
+Tk__tok_class_15
 Tk__id "IntLiterals"
-Tk__tok__symbol__14
+Tk__tok__symbol__11
 Tk__tok_int_24
 Tk__id "dec"
 Tk__tok__eql__10
@@ -71,5 +71,5 @@ Tk__id "underscoreLong"
 Tk__tok__eql__10
 Tk__integerLiteral "9_999_999_999L"
 Tk__tok__semi__1
-Tk__tok__symbol__15
+Tk__tok__symbol__12
 EndOfFile

@@ -14,105 +14,111 @@ import qualified JavaLexer as L (Token(..), PosToken(..), AlexPosn(..), alexScan
 %token
 
 rtk__eof { L.PosToken _ L.EndOfFile }
-tok_AdditiveOp_dummy_193 { L.PosToken _ L.Tk__tok_AdditiveOp_dummy_193 }
-tok_Annotation_dummy_192 { L.PosToken _ L.Tk__tok_Annotation_dummy_192 }
-tok_AnnotationArguments_dummy_191 { L.PosToken _ L.Tk__tok_AnnotationArguments_dummy_191 }
-tok_AnnotationDeclaration_dummy_190 { L.PosToken _ L.Tk__tok_AnnotationDeclaration_dummy_190 }
-tok_AnnotationElement_dummy_189 { L.PosToken _ L.Tk__tok_AnnotationElement_dummy_189 }
-tok_AnnotationList_dummy_188 { L.PosToken _ L.Tk__tok_AnnotationList_dummy_188 }
-tok_AnnotationTypeElement_dummy_187 { L.PosToken _ L.Tk__tok_AnnotationTypeElement_dummy_187 }
-tok_AnnotationTypeElementList_dummy_186 { L.PosToken _ L.Tk__tok_AnnotationTypeElementList_dummy_186 }
-tok_Arglist_dummy_185 { L.PosToken _ L.Tk__tok_Arglist_dummy_185 }
-tok_AssignmentOp_dummy_184 { L.PosToken _ L.Tk__tok_AssignmentOp_dummy_184 }
-tok_CatchList_dummy_183 { L.PosToken _ L.Tk__tok_CatchList_dummy_183 }
-tok_CatchParameter_dummy_182 { L.PosToken _ L.Tk__tok_CatchParameter_dummy_182 }
-tok_ClassDeclaration_dummy_181 { L.PosToken _ L.Tk__tok_ClassDeclaration_dummy_181 }
-tok_ClassOrInterfaceType_dummy_180 { L.PosToken _ L.Tk__tok_ClassOrInterfaceType_dummy_180 }
-tok_CompilationUnit_dummy_179 { L.PosToken _ L.Tk__tok_CompilationUnit_dummy_179 }
-tok_CompoundName_dummy_178 { L.PosToken _ L.Tk__tok_CompoundName_dummy_178 }
-tok_CompoundNameTail_dummy_177 { L.PosToken _ L.Tk__tok_CompoundNameTail_dummy_177 }
-tok_CreationExpression_dummy_176 { L.PosToken _ L.Tk__tok_CreationExpression_dummy_176 }
-tok_DimExprs_dummy_175 { L.PosToken _ L.Tk__tok_DimExprs_dummy_175 }
-tok_Dims_dummy_174 { L.PosToken _ L.Tk__tok_Dims_dummy_174 }
-tok_DoStatement_dummy_173 { L.PosToken _ L.Tk__tok_DoStatement_dummy_173 }
-tok_DocComment_dummy_172 { L.PosToken _ L.Tk__tok_DocComment_dummy_172 }
-tok_EnumConstant_dummy_171 { L.PosToken _ L.Tk__tok_EnumConstant_dummy_171 }
-tok_EnumConstantList_dummy_170 { L.PosToken _ L.Tk__tok_EnumConstantList_dummy_170 }
-tok_EnumDeclaration_dummy_169 { L.PosToken _ L.Tk__tok_EnumDeclaration_dummy_169 }
-tok_EqualityOp_dummy_168 { L.PosToken _ L.Tk__tok_EqualityOp_dummy_168 }
-tok_Expression_dummy_167 { L.PosToken _ L.Tk__tok_Expression_dummy_167 }
-tok_ExtendsList_dummy_166 { L.PosToken _ L.Tk__tok_ExtendsList_dummy_166 }
-tok_FieldDeclaration_dummy_165 { L.PosToken _ L.Tk__tok_FieldDeclaration_dummy_165 }
-tok_FieldDeclarationList_dummy_164 { L.PosToken _ L.Tk__tok_FieldDeclarationList_dummy_164 }
-tok_ForEachHeader_dummy_163 { L.PosToken _ L.Tk__tok_ForEachHeader_dummy_163 }
-tok_ForStatement_dummy_162 { L.PosToken _ L.Tk__tok_ForStatement_dummy_162 }
-tok_IfStatement_dummy_161 { L.PosToken _ L.Tk__tok_IfStatement_dummy_161 }
-tok_ImplementsList_dummy_160 { L.PosToken _ L.Tk__tok_ImplementsList_dummy_160 }
-tok_ImportHead_dummy_159 { L.PosToken _ L.Tk__tok_ImportHead_dummy_159 }
-tok_ImportList_dummy_158 { L.PosToken _ L.Tk__tok_ImportList_dummy_158 }
-tok_ImportName_dummy_157 { L.PosToken _ L.Tk__tok_ImportName_dummy_157 }
-tok_ImportStatement_dummy_156 { L.PosToken _ L.Tk__tok_ImportStatement_dummy_156 }
-tok_InterfaceDeclaration_dummy_155 { L.PosToken _ L.Tk__tok_InterfaceDeclaration_dummy_155 }
-tok_Java_dummy_194 { L.PosToken _ L.Tk__tok_Java_dummy_194 }
-tok_LambdaBody_dummy_154 { L.PosToken _ L.Tk__tok_LambdaBody_dummy_154 }
-tok_Literal_dummy_153 { L.PosToken _ L.Tk__tok_Literal_dummy_153 }
-tok_LocalModifierList1_dummy_152 { L.PosToken _ L.Tk__tok_LocalModifierList1_dummy_152 }
-tok_MemberAfterFirstId_dummy_151 { L.PosToken _ L.Tk__tok_MemberAfterFirstId_dummy_151 }
-tok_MemberDeclaration_dummy_150 { L.PosToken _ L.Tk__tok_MemberDeclaration_dummy_150 }
-tok_MemberRest_dummy_149 { L.PosToken _ L.Tk__tok_MemberRest_dummy_149 }
-tok_Modifier_dummy_148 { L.PosToken _ L.Tk__tok_Modifier_dummy_148 }
-tok_ModifierList_dummy_147 { L.PosToken _ L.Tk__tok_ModifierList_dummy_147 }
-tok_MoreTypeSpecifier_dummy_146 { L.PosToken _ L.Tk__tok_MoreTypeSpecifier_dummy_146 }
-tok_MoreVariableDeclarators_dummy_145 { L.PosToken _ L.Tk__tok_MoreVariableDeclarators_dummy_145 }
-tok_MultiplicativeOp_dummy_144 { L.PosToken _ L.Tk__tok_MultiplicativeOp_dummy_144 }
-tok_NonEmptyDims_dummy_143 { L.PosToken _ L.Tk__tok_NonEmptyDims_dummy_143 }
-tok_NonEmptyTypeArguments_dummy_142 { L.PosToken _ L.Tk__tok_NonEmptyTypeArguments_dummy_142 }
-tok_OptDocComment_dummy_141 { L.PosToken _ L.Tk__tok_OptDocComment_dummy_141 }
-tok_OptElsePart_dummy_140 { L.PosToken _ L.Tk__tok_OptElsePart_dummy_140 }
-tok_OptExpression_dummy_139 { L.PosToken _ L.Tk__tok_OptExpression_dummy_139 }
-tok_OptFinally_dummy_138 { L.PosToken _ L.Tk__tok_OptFinally_dummy_138 }
-tok_OptId_dummy_137 { L.PosToken _ L.Tk__tok_OptId_dummy_137 }
-tok_OptVariableInitializer_dummy_136 { L.PosToken _ L.Tk__tok_OptVariableInitializer_dummy_136 }
-tok_Package_dummy_135 { L.PosToken _ L.Tk__tok_Package_dummy_135 }
-tok_ParamModifierList_dummy_134 { L.PosToken _ L.Tk__tok_ParamModifierList_dummy_134 }
-tok_Parameter_dummy_133 { L.PosToken _ L.Tk__tok_Parameter_dummy_133 }
-tok_ParameterList_dummy_132 { L.PosToken _ L.Tk__tok_ParameterList_dummy_132 }
-tok_PostfixOp_dummy_131 { L.PosToken _ L.Tk__tok_PostfixOp_dummy_131 }
-tok_PrefixOp_dummy_130 { L.PosToken _ L.Tk__tok_PrefixOp_dummy_130 }
-tok_PrimitiveTypeKeyword_dummy_129 { L.PosToken _ L.Tk__tok_PrimitiveTypeKeyword_dummy_129 }
-tok_RelationalOp_dummy_128 { L.PosToken _ L.Tk__tok_RelationalOp_dummy_128 }
-tok_Resource_dummy_127 { L.PosToken _ L.Tk__tok_Resource_dummy_127 }
-tok_ResourceSpec_dummy_126 { L.PosToken _ L.Tk__tok_ResourceSpec_dummy_126 }
-tok_ShiftOp_dummy_125 { L.PosToken _ L.Tk__tok_ShiftOp_dummy_125 }
-tok_Statement_dummy_124 { L.PosToken _ L.Tk__tok_Statement_dummy_124 }
-tok_StatementBlock_dummy_123 { L.PosToken _ L.Tk__tok_StatementBlock_dummy_123 }
-tok_StatementList_dummy_122 { L.PosToken _ L.Tk__tok_StatementList_dummy_122 }
-tok_StaticInitializer_dummy_121 { L.PosToken _ L.Tk__tok_StaticInitializer_dummy_121 }
-tok_SwitchCaseList_dummy_120 { L.PosToken _ L.Tk__tok_SwitchCaseList_dummy_120 }
-tok_SwitchStatement_dummy_119 { L.PosToken _ L.Tk__tok_SwitchStatement_dummy_119 }
-tok_ThrowsClause_dummy_118 { L.PosToken _ L.Tk__tok_ThrowsClause_dummy_118 }
-tok_TryStatement_dummy_117 { L.PosToken _ L.Tk__tok_TryStatement_dummy_117 }
-tok_Type_dummy_116 { L.PosToken _ L.Tk__tok_Type_dummy_116 }
-tok_TypeArgument_dummy_115 { L.PosToken _ L.Tk__tok_TypeArgument_dummy_115 }
-tok_TypeArguments_dummy_114 { L.PosToken _ L.Tk__tok_TypeArguments_dummy_114 }
-tok_TypeDeclRest_dummy_113 { L.PosToken _ L.Tk__tok_TypeDeclRest_dummy_113 }
-tok_TypeDeclaration_dummy_112 { L.PosToken _ L.Tk__tok_TypeDeclaration_dummy_112 }
-tok_TypeParameter_dummy_111 { L.PosToken _ L.Tk__tok_TypeParameter_dummy_111 }
-tok_TypeParameters_dummy_110 { L.PosToken _ L.Tk__tok_TypeParameters_dummy_110 }
-tok_TypeSpecifier_dummy_109 { L.PosToken _ L.Tk__tok_TypeSpecifier_dummy_109 }
-tok_VariableDeclaration_dummy_108 { L.PosToken _ L.Tk__tok_VariableDeclaration_dummy_108 }
-tok_VariableDeclarator_dummy_107 { L.PosToken _ L.Tk__tok_VariableDeclarator_dummy_107 }
-tok_VariableDeclaratorList_dummy_106 { L.PosToken _ L.Tk__tok_VariableDeclaratorList_dummy_106 }
-tok_VariableInitializer_dummy_105 { L.PosToken _ L.Tk__tok_VariableInitializer_dummy_105 }
-tok_VariableInitializerList_dummy_104 { L.PosToken _ L.Tk__tok_VariableInitializerList_dummy_104 }
-tok_WhileStatement_dummy_103 { L.PosToken _ L.Tk__tok_WhileStatement_dummy_103 }
-tok_WildcardType_dummy_102 { L.PosToken _ L.Tk__tok_WildcardType_dummy_102 }
+tok_AdditiveOp_dummy_205 { L.PosToken _ L.Tk__tok_AdditiveOp_dummy_205 }
+tok_Annotation_dummy_204 { L.PosToken _ L.Tk__tok_Annotation_dummy_204 }
+tok_AnnotationArguments_dummy_203 { L.PosToken _ L.Tk__tok_AnnotationArguments_dummy_203 }
+tok_AnnotationDeclaration_dummy_202 { L.PosToken _ L.Tk__tok_AnnotationDeclaration_dummy_202 }
+tok_AnnotationElement_dummy_201 { L.PosToken _ L.Tk__tok_AnnotationElement_dummy_201 }
+tok_AnnotationList_dummy_200 { L.PosToken _ L.Tk__tok_AnnotationList_dummy_200 }
+tok_AnnotationTypeElement_dummy_199 { L.PosToken _ L.Tk__tok_AnnotationTypeElement_dummy_199 }
+tok_AnnotationTypeElementList_dummy_198 { L.PosToken _ L.Tk__tok_AnnotationTypeElementList_dummy_198 }
+tok_Arglist_dummy_197 { L.PosToken _ L.Tk__tok_Arglist_dummy_197 }
+tok_ArrayInitializer_dummy_196 { L.PosToken _ L.Tk__tok_ArrayInitializer_dummy_196 }
+tok_AssignmentOp_dummy_195 { L.PosToken _ L.Tk__tok_AssignmentOp_dummy_195 }
+tok_CatchList_dummy_194 { L.PosToken _ L.Tk__tok_CatchList_dummy_194 }
+tok_CatchParameter_dummy_193 { L.PosToken _ L.Tk__tok_CatchParameter_dummy_193 }
+tok_ClassDeclaration_dummy_192 { L.PosToken _ L.Tk__tok_ClassDeclaration_dummy_192 }
+tok_ClassOrInterfaceType_dummy_191 { L.PosToken _ L.Tk__tok_ClassOrInterfaceType_dummy_191 }
+tok_CompilationUnit_dummy_190 { L.PosToken _ L.Tk__tok_CompilationUnit_dummy_190 }
+tok_CompilationUnitRest_dummy_189 { L.PosToken _ L.Tk__tok_CompilationUnitRest_dummy_189 }
+tok_CompoundName_dummy_188 { L.PosToken _ L.Tk__tok_CompoundName_dummy_188 }
+tok_CompoundNameTail_dummy_187 { L.PosToken _ L.Tk__tok_CompoundNameTail_dummy_187 }
+tok_CreationExpression_dummy_186 { L.PosToken _ L.Tk__tok_CreationExpression_dummy_186 }
+tok_DimExprs_dummy_185 { L.PosToken _ L.Tk__tok_DimExprs_dummy_185 }
+tok_Dims_dummy_184 { L.PosToken _ L.Tk__tok_Dims_dummy_184 }
+tok_DoStatement_dummy_183 { L.PosToken _ L.Tk__tok_DoStatement_dummy_183 }
+tok_DocComment_dummy_182 { L.PosToken _ L.Tk__tok_DocComment_dummy_182 }
+tok_ElementValue_dummy_181 { L.PosToken _ L.Tk__tok_ElementValue_dummy_181 }
+tok_ElementValueArrayInitializer_dummy_180 { L.PosToken _ L.Tk__tok_ElementValueArrayInitializer_dummy_180 }
+tok_EnumConstant_dummy_179 { L.PosToken _ L.Tk__tok_EnumConstant_dummy_179 }
+tok_EnumConstantList_dummy_178 { L.PosToken _ L.Tk__tok_EnumConstantList_dummy_178 }
+tok_EnumDeclaration_dummy_177 { L.PosToken _ L.Tk__tok_EnumDeclaration_dummy_177 }
+tok_EqualityOp_dummy_176 { L.PosToken _ L.Tk__tok_EqualityOp_dummy_176 }
+tok_Expression_dummy_175 { L.PosToken _ L.Tk__tok_Expression_dummy_175 }
+tok_ExtendsList_dummy_174 { L.PosToken _ L.Tk__tok_ExtendsList_dummy_174 }
+tok_FieldDeclaration_dummy_173 { L.PosToken _ L.Tk__tok_FieldDeclaration_dummy_173 }
+tok_FieldDeclarationList_dummy_172 { L.PosToken _ L.Tk__tok_FieldDeclarationList_dummy_172 }
+tok_ForEachHeader_dummy_171 { L.PosToken _ L.Tk__tok_ForEachHeader_dummy_171 }
+tok_ForStatement_dummy_170 { L.PosToken _ L.Tk__tok_ForStatement_dummy_170 }
+tok_IfStatement_dummy_169 { L.PosToken _ L.Tk__tok_IfStatement_dummy_169 }
+tok_ImplementsList_dummy_168 { L.PosToken _ L.Tk__tok_ImplementsList_dummy_168 }
+tok_ImportHead_dummy_167 { L.PosToken _ L.Tk__tok_ImportHead_dummy_167 }
+tok_ImportList_dummy_166 { L.PosToken _ L.Tk__tok_ImportList_dummy_166 }
+tok_ImportName_dummy_165 { L.PosToken _ L.Tk__tok_ImportName_dummy_165 }
+tok_ImportStatement_dummy_164 { L.PosToken _ L.Tk__tok_ImportStatement_dummy_164 }
+tok_InterfaceDeclaration_dummy_163 { L.PosToken _ L.Tk__tok_InterfaceDeclaration_dummy_163 }
+tok_Java_dummy_206 { L.PosToken _ L.Tk__tok_Java_dummy_206 }
+tok_LambdaBody_dummy_162 { L.PosToken _ L.Tk__tok_LambdaBody_dummy_162 }
+tok_Literal_dummy_161 { L.PosToken _ L.Tk__tok_Literal_dummy_161 }
+tok_LocalModifierList1_dummy_160 { L.PosToken _ L.Tk__tok_LocalModifierList1_dummy_160 }
+tok_MemberAfterFirstId_dummy_159 { L.PosToken _ L.Tk__tok_MemberAfterFirstId_dummy_159 }
+tok_MemberDeclaration_dummy_158 { L.PosToken _ L.Tk__tok_MemberDeclaration_dummy_158 }
+tok_MemberRest_dummy_157 { L.PosToken _ L.Tk__tok_MemberRest_dummy_157 }
+tok_Modifier_dummy_156 { L.PosToken _ L.Tk__tok_Modifier_dummy_156 }
+tok_ModifierList_dummy_155 { L.PosToken _ L.Tk__tok_ModifierList_dummy_155 }
+tok_MoreTypeSpecifier_dummy_154 { L.PosToken _ L.Tk__tok_MoreTypeSpecifier_dummy_154 }
+tok_MoreVariableDeclarators_dummy_153 { L.PosToken _ L.Tk__tok_MoreVariableDeclarators_dummy_153 }
+tok_MultiplicativeOp_dummy_152 { L.PosToken _ L.Tk__tok_MultiplicativeOp_dummy_152 }
+tok_NonEmptyDims_dummy_151 { L.PosToken _ L.Tk__tok_NonEmptyDims_dummy_151 }
+tok_NonEmptyTypeArguments_dummy_150 { L.PosToken _ L.Tk__tok_NonEmptyTypeArguments_dummy_150 }
+tok_NonEmptyTypeParameters_dummy_149 { L.PosToken _ L.Tk__tok_NonEmptyTypeParameters_dummy_149 }
+tok_OptDocComment_dummy_148 { L.PosToken _ L.Tk__tok_OptDocComment_dummy_148 }
+tok_OptElsePart_dummy_147 { L.PosToken _ L.Tk__tok_OptElsePart_dummy_147 }
+tok_OptExpression_dummy_146 { L.PosToken _ L.Tk__tok_OptExpression_dummy_146 }
+tok_OptFinally_dummy_145 { L.PosToken _ L.Tk__tok_OptFinally_dummy_145 }
+tok_OptId_dummy_144 { L.PosToken _ L.Tk__tok_OptId_dummy_144 }
+tok_OptVariableInitializer_dummy_143 { L.PosToken _ L.Tk__tok_OptVariableInitializer_dummy_143 }
+tok_Package_dummy_142 { L.PosToken _ L.Tk__tok_Package_dummy_142 }
+tok_ParamModifierList_dummy_141 { L.PosToken _ L.Tk__tok_ParamModifierList_dummy_141 }
+tok_Parameter_dummy_140 { L.PosToken _ L.Tk__tok_Parameter_dummy_140 }
+tok_ParameterList_dummy_139 { L.PosToken _ L.Tk__tok_ParameterList_dummy_139 }
+tok_PostfixOp_dummy_138 { L.PosToken _ L.Tk__tok_PostfixOp_dummy_138 }
+tok_PrefixOp_dummy_137 { L.PosToken _ L.Tk__tok_PrefixOp_dummy_137 }
+tok_PrimitiveTypeKeyword_dummy_136 { L.PosToken _ L.Tk__tok_PrimitiveTypeKeyword_dummy_136 }
+tok_RelationalOp_dummy_135 { L.PosToken _ L.Tk__tok_RelationalOp_dummy_135 }
+tok_Resource_dummy_134 { L.PosToken _ L.Tk__tok_Resource_dummy_134 }
+tok_ResourceSpec_dummy_133 { L.PosToken _ L.Tk__tok_ResourceSpec_dummy_133 }
+tok_ShiftOp_dummy_132 { L.PosToken _ L.Tk__tok_ShiftOp_dummy_132 }
+tok_Statement_dummy_131 { L.PosToken _ L.Tk__tok_Statement_dummy_131 }
+tok_StatementBlock_dummy_130 { L.PosToken _ L.Tk__tok_StatementBlock_dummy_130 }
+tok_StatementList_dummy_129 { L.PosToken _ L.Tk__tok_StatementList_dummy_129 }
+tok_StaticInitializer_dummy_128 { L.PosToken _ L.Tk__tok_StaticInitializer_dummy_128 }
+tok_SwitchCaseList_dummy_127 { L.PosToken _ L.Tk__tok_SwitchCaseList_dummy_127 }
+tok_SwitchStatement_dummy_126 { L.PosToken _ L.Tk__tok_SwitchStatement_dummy_126 }
+tok_ThrowsClause_dummy_125 { L.PosToken _ L.Tk__tok_ThrowsClause_dummy_125 }
+tok_TryStatement_dummy_124 { L.PosToken _ L.Tk__tok_TryStatement_dummy_124 }
+tok_Type_dummy_123 { L.PosToken _ L.Tk__tok_Type_dummy_123 }
+tok_TypeArgument_dummy_122 { L.PosToken _ L.Tk__tok_TypeArgument_dummy_122 }
+tok_TypeArguments_dummy_121 { L.PosToken _ L.Tk__tok_TypeArguments_dummy_121 }
+tok_TypeDeclRest_dummy_120 { L.PosToken _ L.Tk__tok_TypeDeclRest_dummy_120 }
+tok_TypeDeclaration_dummy_119 { L.PosToken _ L.Tk__tok_TypeDeclaration_dummy_119 }
+tok_TypeDeclarationList_dummy_118 { L.PosToken _ L.Tk__tok_TypeDeclarationList_dummy_118 }
+tok_TypeParameter_dummy_117 { L.PosToken _ L.Tk__tok_TypeParameter_dummy_117 }
+tok_TypeParameters_dummy_116 { L.PosToken _ L.Tk__tok_TypeParameters_dummy_116 }
+tok_TypeSpecifier_dummy_115 { L.PosToken _ L.Tk__tok_TypeSpecifier_dummy_115 }
+tok_VariableDeclaration_dummy_114 { L.PosToken _ L.Tk__tok_VariableDeclaration_dummy_114 }
+tok_VariableDeclarator_dummy_113 { L.PosToken _ L.Tk__tok_VariableDeclarator_dummy_113 }
+tok_VariableDeclaratorList_dummy_112 { L.PosToken _ L.Tk__tok_VariableDeclaratorList_dummy_112 }
+tok_VariableInitializer_dummy_111 { L.PosToken _ L.Tk__tok_VariableInitializer_dummy_111 }
+tok_VariableInitializerList_dummy_110 { L.PosToken _ L.Tk__tok_VariableInitializerList_dummy_110 }
+tok_WhileStatement_dummy_109 { L.PosToken _ L.Tk__tok_WhileStatement_dummy_109 }
+tok_WildcardType_dummy_108 { L.PosToken _ L.Tk__tok_WildcardType_dummy_108 }
 tok__tilde__84 { L.PosToken _ L.Tk__tok__tilde__84 }
-tok__symbol__15 { L.PosToken _ L.Tk__tok__symbol__15 }
+tok__symbol__12 { L.PosToken _ L.Tk__tok__symbol__12 }
 tok__pipe__pipe__66 { L.PosToken _ L.Tk__tok__pipe__pipe__66 }
 tok__pipe__eql__58 { L.PosToken _ L.Tk__tok__pipe__eql__58 }
 tok__pipe__48 { L.PosToken _ L.Tk__tok__pipe__48 }
-tok__symbol__14 { L.PosToken _ L.Tk__tok__symbol__14 }
+tok__symbol__11 { L.PosToken _ L.Tk__tok__symbol__11 }
 tok_while_45 { L.PosToken _ L.Tk__tok_while_45 }
 tok_void_28 { L.PosToken _ L.Tk__tok_void_28 }
 tok_try_50 { L.PosToken _ L.Tk__tok_try_50 }
@@ -140,21 +146,21 @@ tok_interface_16 { L.PosToken _ L.Tk__tok_interface_16 }
 tok_int_24 { L.PosToken _ L.Tk__tok_int_24 }
 tok_instanceof_76 { L.PosToken _ L.Tk__tok_instanceof_76 }
 tok_import_2 { L.PosToken _ L.Tk__tok_import_2 }
-tok_implements_12 { L.PosToken _ L.Tk__tok_implements_12 }
+tok_implements_14 { L.PosToken _ L.Tk__tok_implements_14 }
 tok_if_43 { L.PosToken _ L.Tk__tok_if_43 }
 tok_for_46 { L.PosToken _ L.Tk__tok_for_46 }
 tok_float_25 { L.PosToken _ L.Tk__tok_float_25 }
 tok_finally_49 { L.PosToken _ L.Tk__tok_finally_49 }
 tok_final_31 { L.PosToken _ L.Tk__tok_final_31 }
 tok_false_89 { L.PosToken _ L.Tk__tok_false_89 }
-tok_extends_11 { L.PosToken _ L.Tk__tok_extends_11 }
+tok_extends_13 { L.PosToken _ L.Tk__tok_extends_13 }
 tok_enum_17 { L.PosToken _ L.Tk__tok_enum_17 }
 tok_else_42 { L.PosToken _ L.Tk__tok_else_42 }
 tok_double_27 { L.PosToken _ L.Tk__tok_double_27 }
 tok_do_44 { L.PosToken _ L.Tk__tok_do_44 }
 tok_default_30 { L.PosToken _ L.Tk__tok_default_30 }
 tok_continue_39 { L.PosToken _ L.Tk__tok_continue_39 }
-tok_class_13 { L.PosToken _ L.Tk__tok_class_13 }
+tok_class_15 { L.PosToken _ L.Tk__tok_class_15 }
 tok_char_22 { L.PosToken _ L.Tk__tok_char_22 }
 tok_catch_47 { L.PosToken _ L.Tk__tok_catch_47 }
 tok_case_51 { L.PosToken _ L.Tk__tok_case_51 }
@@ -219,6 +225,7 @@ qq_Modifier { L.PosToken _ (L.Tk__qq_Modifier _) }
 qq_TypeSpecifier { L.PosToken _ (L.Tk__qq_TypeSpecifier _) }
 qq_Type { L.PosToken _ (L.Tk__qq_Type _) }
 qq_TypeParameter { L.PosToken _ (L.Tk__qq_TypeParameter _) }
+qq_NonEmptyTypeParameters { L.PosToken _ (L.Tk__qq_NonEmptyTypeParameters _) }
 qq_TypeParameters { L.PosToken _ (L.Tk__qq_TypeParameters _) }
 qq_WildcardType { L.PosToken _ (L.Tk__qq_WildcardType _) }
 qq_TypeArgument { L.PosToken _ (L.Tk__qq_TypeArgument _) }
@@ -260,6 +267,7 @@ qq_Parameter { L.PosToken _ (L.Tk__qq_Parameter _) }
 qq_ParamModifierList { L.PosToken _ (L.Tk__qq_ParamModifierList _) }
 qq_ParameterList { L.PosToken _ (L.Tk__qq_ParameterList _) }
 qq_StaticInitializer { L.PosToken _ (L.Tk__qq_StaticInitializer _) }
+qq_ArrayInitializer { L.PosToken _ (L.Tk__qq_ArrayInitializer _) }
 qq_VariableInitializer { L.PosToken _ (L.Tk__qq_VariableInitializer _) }
 qq_VariableInitializerList { L.PosToken _ (L.Tk__qq_VariableInitializerList _) }
 qq_VariableDeclarator { L.PosToken _ (L.Tk__qq_VariableDeclarator _) }
@@ -293,6 +301,8 @@ qq_ExtendsList { L.PosToken _ (L.Tk__qq_ExtendsList _) }
 qq_ClassOrInterfaceType { L.PosToken _ (L.Tk__qq_ClassOrInterfaceType _) }
 qq_ModifierList { L.PosToken _ (L.Tk__qq_ModifierList _) }
 qq_AnnotationList { L.PosToken _ (L.Tk__qq_AnnotationList _) }
+qq_ElementValueArrayInitializer { L.PosToken _ (L.Tk__qq_ElementValueArrayInitializer _) }
+qq_ElementValue { L.PosToken _ (L.Tk__qq_ElementValue _) }
 qq_AnnotationElement { L.PosToken _ (L.Tk__qq_AnnotationElement _) }
 qq_AnnotationArguments { L.PosToken _ (L.Tk__qq_AnnotationArguments _) }
 qq_Annotation { L.PosToken _ (L.Tk__qq_Annotation _) }
@@ -301,8 +311,10 @@ qq_ImportHead { L.PosToken _ (L.Tk__qq_ImportHead _) }
 qq_ImportName { L.PosToken _ (L.Tk__qq_ImportName _) }
 qq_ImportStatement { L.PosToken _ (L.Tk__qq_ImportStatement _) }
 qq_Package { L.PosToken _ (L.Tk__qq_Package _) }
+qq_CompilationUnitRest { L.PosToken _ (L.Tk__qq_CompilationUnitRest _) }
 qq_CompilationUnit { L.PosToken _ (L.Tk__qq_CompilationUnit _) }
 qq_ImportList { L.PosToken _ (L.Tk__qq_ImportList _) }
+qq_TypeDeclarationList { L.PosToken _ (L.Tk__qq_TypeDeclarationList _) }
 qq_TypeDeclaration { L.PosToken _ (L.Tk__qq_TypeDeclaration _) }
 qq_OptDocComment { L.PosToken _ (L.Tk__qq_OptDocComment _) }
 qq_Java { L.PosToken _ (L.Tk__qq_Java _) }
@@ -311,109 +323,115 @@ qq_Java { L.PosToken _ (L.Tk__qq_Java _) }
 
 Java__top : Java rtk__eof { $1 }
 
-Java : tok_Java_dummy_194 Java tok_Java_dummy_194 { Ctr__Java__0 (rtkPosOf $1) $2 } |
-       tok_AdditiveOp_dummy_193 AdditiveOp tok_AdditiveOp_dummy_193 { Ctr__Java__1 (rtkPosOf $1) $2 } |
-       tok_Annotation_dummy_192 Annotation tok_Annotation_dummy_192 { Ctr__Java__2 (rtkPosOf $1) $2 } |
-       tok_AnnotationArguments_dummy_191 AnnotationArguments tok_AnnotationArguments_dummy_191 { Ctr__Java__3 (rtkPosOf $1) $2 } |
-       tok_AnnotationDeclaration_dummy_190 AnnotationDeclaration tok_AnnotationDeclaration_dummy_190 { Ctr__Java__4 (rtkPosOf $1) $2 } |
-       tok_AnnotationElement_dummy_189 AnnotationElement tok_AnnotationElement_dummy_189 { Ctr__Java__5 (rtkPosOf $1) $2 } |
-       tok_AnnotationList_dummy_188 AnnotationList tok_AnnotationList_dummy_188 { Ctr__Java__6 (rtkPosOf $1) (reverse $2) } |
-       tok_AnnotationTypeElement_dummy_187 AnnotationTypeElement tok_AnnotationTypeElement_dummy_187 { Ctr__Java__7 (rtkPosOf $1) $2 } |
-       tok_AnnotationTypeElementList_dummy_186 AnnotationTypeElementList tok_AnnotationTypeElementList_dummy_186 { Ctr__Java__8 (rtkPosOf $1) (reverse $2) } |
-       tok_Arglist_dummy_185 Arglist tok_Arglist_dummy_185 { Ctr__Java__9 (rtkPosOf $1) $2 } |
-       tok_AssignmentOp_dummy_184 AssignmentOp tok_AssignmentOp_dummy_184 { Ctr__Java__10 (rtkPosOf $1) $2 } |
-       tok_CatchList_dummy_183 CatchList tok_CatchList_dummy_183 { Ctr__Java__11 (rtkPosOf $1) (reverse $2) } |
-       tok_CatchParameter_dummy_182 CatchParameter tok_CatchParameter_dummy_182 { Ctr__Java__12 (rtkPosOf $1) $2 } |
-       tok_ClassDeclaration_dummy_181 ClassDeclaration tok_ClassDeclaration_dummy_181 { Ctr__Java__13 (rtkPosOf $1) $2 } |
-       tok_ClassOrInterfaceType_dummy_180 ClassOrInterfaceType tok_ClassOrInterfaceType_dummy_180 { Ctr__Java__14 (rtkPosOf $1) $2 } |
-       tok_CompilationUnit_dummy_179 CompilationUnit tok_CompilationUnit_dummy_179 { Ctr__Java__15 (rtkPosOf $1) $2 } |
-       tok_CompoundName_dummy_178 CompoundName tok_CompoundName_dummy_178 { Ctr__Java__16 (rtkPosOf $1) $2 } |
-       tok_CompoundNameTail_dummy_177 CompoundNameTail tok_CompoundNameTail_dummy_177 { Ctr__Java__17 (rtkPosOf $1) (reverse $2) } |
-       tok_CreationExpression_dummy_176 CreationExpression tok_CreationExpression_dummy_176 { Ctr__Java__18 (rtkPosOf $1) $2 } |
-       tok_DimExprs_dummy_175 DimExprs tok_DimExprs_dummy_175 { Ctr__Java__19 (rtkPosOf $1) (reverse $2) } |
-       tok_Dims_dummy_174 Dims tok_Dims_dummy_174 { Ctr__Java__20 (rtkPosOf $1) (reverse $2) } |
-       tok_DoStatement_dummy_173 DoStatement tok_DoStatement_dummy_173 { Ctr__Java__21 (rtkPosOf $1) $2 } |
-       tok_DocComment_dummy_172 DocComment tok_DocComment_dummy_172 { Ctr__Java__22 (rtkPosOf $1) $2 } |
-       tok_EnumConstant_dummy_171 EnumConstant tok_EnumConstant_dummy_171 { Ctr__Java__23 (rtkPosOf $1) $2 } |
-       tok_EnumConstantList_dummy_170 EnumConstantList tok_EnumConstantList_dummy_170 { Ctr__Java__24 (rtkPosOf $1) $2 } |
-       tok_EnumDeclaration_dummy_169 EnumDeclaration tok_EnumDeclaration_dummy_169 { Ctr__Java__25 (rtkPosOf $1) $2 } |
-       tok_EqualityOp_dummy_168 EqualityOp tok_EqualityOp_dummy_168 { Ctr__Java__26 (rtkPosOf $1) $2 } |
-       tok_Expression_dummy_167 Expression tok_Expression_dummy_167 { Ctr__Java__27 (rtkPosOf $1) $2 } |
-       tok_ExtendsList_dummy_166 ExtendsList tok_ExtendsList_dummy_166 { Ctr__Java__28 (rtkPosOf $1) $2 } |
-       tok_FieldDeclaration_dummy_165 FieldDeclaration tok_FieldDeclaration_dummy_165 { Ctr__Java__29 (rtkPosOf $1) $2 } |
-       tok_FieldDeclarationList_dummy_164 FieldDeclarationList tok_FieldDeclarationList_dummy_164 { Ctr__Java__30 (rtkPosOf $1) (reverse $2) } |
-       tok_ForEachHeader_dummy_163 ForEachHeader tok_ForEachHeader_dummy_163 { Ctr__Java__31 (rtkPosOf $1) $2 } |
-       tok_ForStatement_dummy_162 ForStatement tok_ForStatement_dummy_162 { Ctr__Java__32 (rtkPosOf $1) $2 } |
-       tok_IfStatement_dummy_161 IfStatement tok_IfStatement_dummy_161 { Ctr__Java__33 (rtkPosOf $1) $2 } |
-       tok_ImplementsList_dummy_160 ImplementsList tok_ImplementsList_dummy_160 { Ctr__Java__34 (rtkPosOf $1) $2 } |
-       tok_ImportHead_dummy_159 ImportHead tok_ImportHead_dummy_159 { Ctr__Java__35 (rtkPosOf $1) $2 } |
-       tok_ImportList_dummy_158 ImportList tok_ImportList_dummy_158 { Ctr__Java__36 (rtkPosOf $1) (reverse $2) } |
-       tok_ImportName_dummy_157 ImportName tok_ImportName_dummy_157 { Ctr__Java__37 (rtkPosOf $1) $2 } |
-       tok_ImportStatement_dummy_156 ImportStatement tok_ImportStatement_dummy_156 { Ctr__Java__38 (rtkPosOf $1) $2 } |
-       tok_InterfaceDeclaration_dummy_155 InterfaceDeclaration tok_InterfaceDeclaration_dummy_155 { Ctr__Java__39 (rtkPosOf $1) $2 } |
-       tok_LambdaBody_dummy_154 LambdaBody tok_LambdaBody_dummy_154 { Ctr__Java__40 (rtkPosOf $1) $2 } |
-       tok_Literal_dummy_153 Literal tok_Literal_dummy_153 { Ctr__Java__41 (rtkPosOf $1) $2 } |
-       tok_LocalModifierList1_dummy_152 LocalModifierList1 tok_LocalModifierList1_dummy_152 { Ctr__Java__42 (rtkPosOf $1) (reverse $2) } |
-       tok_MemberAfterFirstId_dummy_151 MemberAfterFirstId tok_MemberAfterFirstId_dummy_151 { Ctr__Java__43 (rtkPosOf $1) $2 } |
-       tok_MemberDeclaration_dummy_150 MemberDeclaration tok_MemberDeclaration_dummy_150 { Ctr__Java__44 (rtkPosOf $1) $2 } |
-       tok_MemberRest_dummy_149 MemberRest tok_MemberRest_dummy_149 { Ctr__Java__45 (rtkPosOf $1) $2 } |
-       tok_Modifier_dummy_148 Modifier tok_Modifier_dummy_148 { Ctr__Java__46 (rtkPosOf $1) $2 } |
-       tok_ModifierList_dummy_147 ModifierList tok_ModifierList_dummy_147 { Ctr__Java__47 (rtkPosOf $1) (reverse $2) } |
-       tok_MoreTypeSpecifier_dummy_146 MoreTypeSpecifier tok_MoreTypeSpecifier_dummy_146 { Ctr__Java__48 (rtkPosOf $1) $2 } |
-       tok_MoreVariableDeclarators_dummy_145 MoreVariableDeclarators tok_MoreVariableDeclarators_dummy_145 { Ctr__Java__49 (rtkPosOf $1) (reverse $2) } |
-       tok_MultiplicativeOp_dummy_144 MultiplicativeOp tok_MultiplicativeOp_dummy_144 { Ctr__Java__50 (rtkPosOf $1) $2 } |
-       tok_NonEmptyDims_dummy_143 NonEmptyDims tok_NonEmptyDims_dummy_143 { Ctr__Java__51 (rtkPosOf $1) (reverse $2) } |
-       tok_NonEmptyTypeArguments_dummy_142 NonEmptyTypeArguments tok_NonEmptyTypeArguments_dummy_142 { Ctr__Java__52 (rtkPosOf $1) $2 } |
-       tok_OptDocComment_dummy_141 OptDocComment tok_OptDocComment_dummy_141 { Ctr__Java__53 (rtkPosOf $1) $2 } |
-       tok_OptElsePart_dummy_140 OptElsePart tok_OptElsePart_dummy_140 { Ctr__Java__54 (rtkPosOf $1) $2 } |
-       tok_OptExpression_dummy_139 OptExpression tok_OptExpression_dummy_139 { Ctr__Java__55 (rtkPosOf $1) $2 } |
-       tok_OptFinally_dummy_138 OptFinally tok_OptFinally_dummy_138 { Ctr__Java__56 (rtkPosOf $1) $2 } |
-       tok_OptId_dummy_137 OptId tok_OptId_dummy_137 { Ctr__Java__57 (rtkPosOf $1) $2 } |
-       tok_OptVariableInitializer_dummy_136 OptVariableInitializer tok_OptVariableInitializer_dummy_136 { Ctr__Java__58 (rtkPosOf $1) $2 } |
-       tok_Package_dummy_135 Package tok_Package_dummy_135 { Ctr__Java__59 (rtkPosOf $1) $2 } |
-       tok_ParamModifierList_dummy_134 ParamModifierList tok_ParamModifierList_dummy_134 { Ctr__Java__60 (rtkPosOf $1) (reverse $2) } |
-       tok_Parameter_dummy_133 Parameter tok_Parameter_dummy_133 { Ctr__Java__61 (rtkPosOf $1) $2 } |
-       tok_ParameterList_dummy_132 ParameterList tok_ParameterList_dummy_132 { Ctr__Java__62 (rtkPosOf $1) $2 } |
-       tok_PostfixOp_dummy_131 PostfixOp tok_PostfixOp_dummy_131 { Ctr__Java__63 (rtkPosOf $1) $2 } |
-       tok_PrefixOp_dummy_130 PrefixOp tok_PrefixOp_dummy_130 { Ctr__Java__64 (rtkPosOf $1) $2 } |
-       tok_PrimitiveTypeKeyword_dummy_129 PrimitiveTypeKeyword tok_PrimitiveTypeKeyword_dummy_129 { Ctr__Java__65 (rtkPosOf $1) $2 } |
-       tok_RelationalOp_dummy_128 RelationalOp tok_RelationalOp_dummy_128 { Ctr__Java__66 (rtkPosOf $1) $2 } |
-       tok_Resource_dummy_127 Resource tok_Resource_dummy_127 { Ctr__Java__67 (rtkPosOf $1) $2 } |
-       tok_ResourceSpec_dummy_126 ResourceSpec tok_ResourceSpec_dummy_126 { Ctr__Java__68 (rtkPosOf $1) $2 } |
-       tok_ShiftOp_dummy_125 ShiftOp tok_ShiftOp_dummy_125 { Ctr__Java__69 (rtkPosOf $1) $2 } |
-       tok_Statement_dummy_124 Statement tok_Statement_dummy_124 { Ctr__Java__70 (rtkPosOf $1) $2 } |
-       tok_StatementBlock_dummy_123 StatementBlock tok_StatementBlock_dummy_123 { Ctr__Java__71 (rtkPosOf $1) $2 } |
-       tok_StatementList_dummy_122 StatementList tok_StatementList_dummy_122 { Ctr__Java__72 (rtkPosOf $1) (reverse $2) } |
-       tok_StaticInitializer_dummy_121 StaticInitializer tok_StaticInitializer_dummy_121 { Ctr__Java__73 (rtkPosOf $1) $2 } |
-       tok_SwitchCaseList_dummy_120 SwitchCaseList tok_SwitchCaseList_dummy_120 { Ctr__Java__74 (rtkPosOf $1) (reverse $2) } |
-       tok_SwitchStatement_dummy_119 SwitchStatement tok_SwitchStatement_dummy_119 { Ctr__Java__75 (rtkPosOf $1) $2 } |
-       tok_ThrowsClause_dummy_118 ThrowsClause tok_ThrowsClause_dummy_118 { Ctr__Java__76 (rtkPosOf $1) $2 } |
-       tok_TryStatement_dummy_117 TryStatement tok_TryStatement_dummy_117 { Ctr__Java__77 (rtkPosOf $1) $2 } |
-       tok_Type_dummy_116 Type tok_Type_dummy_116 { Ctr__Java__78 (rtkPosOf $1) $2 } |
-       tok_TypeArgument_dummy_115 TypeArgument tok_TypeArgument_dummy_115 { Ctr__Java__79 (rtkPosOf $1) $2 } |
-       tok_TypeArguments_dummy_114 TypeArguments tok_TypeArguments_dummy_114 { Ctr__Java__80 (rtkPosOf $1) $2 } |
-       tok_TypeDeclRest_dummy_113 TypeDeclRest tok_TypeDeclRest_dummy_113 { Ctr__Java__81 (rtkPosOf $1) $2 } |
-       tok_TypeDeclaration_dummy_112 TypeDeclaration tok_TypeDeclaration_dummy_112 { Ctr__Java__82 (rtkPosOf $1) $2 } |
-       tok_TypeParameter_dummy_111 TypeParameter tok_TypeParameter_dummy_111 { Ctr__Java__83 (rtkPosOf $1) $2 } |
-       tok_TypeParameters_dummy_110 TypeParameters tok_TypeParameters_dummy_110 { Ctr__Java__84 (rtkPosOf $1) $2 } |
-       tok_TypeSpecifier_dummy_109 TypeSpecifier tok_TypeSpecifier_dummy_109 { Ctr__Java__85 (rtkPosOf $1) $2 } |
-       tok_VariableDeclaration_dummy_108 VariableDeclaration tok_VariableDeclaration_dummy_108 { Ctr__Java__86 (rtkPosOf $1) $2 } |
-       tok_VariableDeclarator_dummy_107 VariableDeclarator tok_VariableDeclarator_dummy_107 { Ctr__Java__87 (rtkPosOf $1) $2 } |
-       tok_VariableDeclaratorList_dummy_106 VariableDeclaratorList tok_VariableDeclaratorList_dummy_106 { Ctr__Java__88 (rtkPosOf $1) $2 } |
-       tok_VariableInitializer_dummy_105 VariableInitializer tok_VariableInitializer_dummy_105 { Ctr__Java__89 (rtkPosOf $1) $2 } |
-       tok_VariableInitializerList_dummy_104 VariableInitializerList tok_VariableInitializerList_dummy_104 { Ctr__Java__90 (rtkPosOf $1) $2 } |
-       tok_WhileStatement_dummy_103 WhileStatement tok_WhileStatement_dummy_103 { Ctr__Java__91 (rtkPosOf $1) $2 } |
-       tok_WildcardType_dummy_102 WildcardType tok_WildcardType_dummy_102 { Ctr__Java__92 (rtkPosOf $1) $2 }
+Java : tok_Java_dummy_206 Java tok_Java_dummy_206 { Ctr__Java__0 (rtkPosOf $1) $2 } |
+       tok_AdditiveOp_dummy_205 AdditiveOp tok_AdditiveOp_dummy_205 { Ctr__Java__1 (rtkPosOf $1) $2 } |
+       tok_Annotation_dummy_204 Annotation tok_Annotation_dummy_204 { Ctr__Java__2 (rtkPosOf $1) $2 } |
+       tok_AnnotationArguments_dummy_203 AnnotationArguments tok_AnnotationArguments_dummy_203 { Ctr__Java__3 (rtkPosOf $1) $2 } |
+       tok_AnnotationDeclaration_dummy_202 AnnotationDeclaration tok_AnnotationDeclaration_dummy_202 { Ctr__Java__4 (rtkPosOf $1) $2 } |
+       tok_AnnotationElement_dummy_201 AnnotationElement tok_AnnotationElement_dummy_201 { Ctr__Java__5 (rtkPosOf $1) $2 } |
+       tok_AnnotationList_dummy_200 AnnotationList tok_AnnotationList_dummy_200 { Ctr__Java__6 (rtkPosOf $1) (reverse $2) } |
+       tok_AnnotationTypeElement_dummy_199 AnnotationTypeElement tok_AnnotationTypeElement_dummy_199 { Ctr__Java__7 (rtkPosOf $1) $2 } |
+       tok_AnnotationTypeElementList_dummy_198 AnnotationTypeElementList tok_AnnotationTypeElementList_dummy_198 { Ctr__Java__8 (rtkPosOf $1) (reverse $2) } |
+       tok_Arglist_dummy_197 Arglist tok_Arglist_dummy_197 { Ctr__Java__9 (rtkPosOf $1) $2 } |
+       tok_ArrayInitializer_dummy_196 ArrayInitializer tok_ArrayInitializer_dummy_196 { Ctr__Java__10 (rtkPosOf $1) $2 } |
+       tok_AssignmentOp_dummy_195 AssignmentOp tok_AssignmentOp_dummy_195 { Ctr__Java__11 (rtkPosOf $1) $2 } |
+       tok_CatchList_dummy_194 CatchList tok_CatchList_dummy_194 { Ctr__Java__12 (rtkPosOf $1) (reverse $2) } |
+       tok_CatchParameter_dummy_193 CatchParameter tok_CatchParameter_dummy_193 { Ctr__Java__13 (rtkPosOf $1) $2 } |
+       tok_ClassDeclaration_dummy_192 ClassDeclaration tok_ClassDeclaration_dummy_192 { Ctr__Java__14 (rtkPosOf $1) $2 } |
+       tok_ClassOrInterfaceType_dummy_191 ClassOrInterfaceType tok_ClassOrInterfaceType_dummy_191 { Ctr__Java__15 (rtkPosOf $1) $2 } |
+       tok_CompilationUnit_dummy_190 CompilationUnit tok_CompilationUnit_dummy_190 { Ctr__Java__16 (rtkPosOf $1) $2 } |
+       tok_CompilationUnitRest_dummy_189 CompilationUnitRest tok_CompilationUnitRest_dummy_189 { Ctr__Java__17 (rtkPosOf $1) $2 } |
+       tok_CompoundName_dummy_188 CompoundName tok_CompoundName_dummy_188 { Ctr__Java__18 (rtkPosOf $1) $2 } |
+       tok_CompoundNameTail_dummy_187 CompoundNameTail tok_CompoundNameTail_dummy_187 { Ctr__Java__19 (rtkPosOf $1) (reverse $2) } |
+       tok_CreationExpression_dummy_186 CreationExpression tok_CreationExpression_dummy_186 { Ctr__Java__20 (rtkPosOf $1) $2 } |
+       tok_DimExprs_dummy_185 DimExprs tok_DimExprs_dummy_185 { Ctr__Java__21 (rtkPosOf $1) (reverse $2) } |
+       tok_Dims_dummy_184 Dims tok_Dims_dummy_184 { Ctr__Java__22 (rtkPosOf $1) (reverse $2) } |
+       tok_DoStatement_dummy_183 DoStatement tok_DoStatement_dummy_183 { Ctr__Java__23 (rtkPosOf $1) $2 } |
+       tok_DocComment_dummy_182 DocComment tok_DocComment_dummy_182 { Ctr__Java__24 (rtkPosOf $1) $2 } |
+       tok_ElementValue_dummy_181 ElementValue tok_ElementValue_dummy_181 { Ctr__Java__25 (rtkPosOf $1) $2 } |
+       tok_ElementValueArrayInitializer_dummy_180 ElementValueArrayInitializer tok_ElementValueArrayInitializer_dummy_180 { Ctr__Java__26 (rtkPosOf $1) $2 } |
+       tok_EnumConstant_dummy_179 EnumConstant tok_EnumConstant_dummy_179 { Ctr__Java__27 (rtkPosOf $1) $2 } |
+       tok_EnumConstantList_dummy_178 EnumConstantList tok_EnumConstantList_dummy_178 { Ctr__Java__28 (rtkPosOf $1) $2 } |
+       tok_EnumDeclaration_dummy_177 EnumDeclaration tok_EnumDeclaration_dummy_177 { Ctr__Java__29 (rtkPosOf $1) $2 } |
+       tok_EqualityOp_dummy_176 EqualityOp tok_EqualityOp_dummy_176 { Ctr__Java__30 (rtkPosOf $1) $2 } |
+       tok_Expression_dummy_175 Expression tok_Expression_dummy_175 { Ctr__Java__31 (rtkPosOf $1) $2 } |
+       tok_ExtendsList_dummy_174 ExtendsList tok_ExtendsList_dummy_174 { Ctr__Java__32 (rtkPosOf $1) $2 } |
+       tok_FieldDeclaration_dummy_173 FieldDeclaration tok_FieldDeclaration_dummy_173 { Ctr__Java__33 (rtkPosOf $1) $2 } |
+       tok_FieldDeclarationList_dummy_172 FieldDeclarationList tok_FieldDeclarationList_dummy_172 { Ctr__Java__34 (rtkPosOf $1) (reverse $2) } |
+       tok_ForEachHeader_dummy_171 ForEachHeader tok_ForEachHeader_dummy_171 { Ctr__Java__35 (rtkPosOf $1) $2 } |
+       tok_ForStatement_dummy_170 ForStatement tok_ForStatement_dummy_170 { Ctr__Java__36 (rtkPosOf $1) $2 } |
+       tok_IfStatement_dummy_169 IfStatement tok_IfStatement_dummy_169 { Ctr__Java__37 (rtkPosOf $1) $2 } |
+       tok_ImplementsList_dummy_168 ImplementsList tok_ImplementsList_dummy_168 { Ctr__Java__38 (rtkPosOf $1) $2 } |
+       tok_ImportHead_dummy_167 ImportHead tok_ImportHead_dummy_167 { Ctr__Java__39 (rtkPosOf $1) $2 } |
+       tok_ImportList_dummy_166 ImportList tok_ImportList_dummy_166 { Ctr__Java__40 (rtkPosOf $1) (reverse $2) } |
+       tok_ImportName_dummy_165 ImportName tok_ImportName_dummy_165 { Ctr__Java__41 (rtkPosOf $1) $2 } |
+       tok_ImportStatement_dummy_164 ImportStatement tok_ImportStatement_dummy_164 { Ctr__Java__42 (rtkPosOf $1) $2 } |
+       tok_InterfaceDeclaration_dummy_163 InterfaceDeclaration tok_InterfaceDeclaration_dummy_163 { Ctr__Java__43 (rtkPosOf $1) $2 } |
+       tok_LambdaBody_dummy_162 LambdaBody tok_LambdaBody_dummy_162 { Ctr__Java__44 (rtkPosOf $1) $2 } |
+       tok_Literal_dummy_161 Literal tok_Literal_dummy_161 { Ctr__Java__45 (rtkPosOf $1) $2 } |
+       tok_LocalModifierList1_dummy_160 LocalModifierList1 tok_LocalModifierList1_dummy_160 { Ctr__Java__46 (rtkPosOf $1) (reverse $2) } |
+       tok_MemberAfterFirstId_dummy_159 MemberAfterFirstId tok_MemberAfterFirstId_dummy_159 { Ctr__Java__47 (rtkPosOf $1) $2 } |
+       tok_MemberDeclaration_dummy_158 MemberDeclaration tok_MemberDeclaration_dummy_158 { Ctr__Java__48 (rtkPosOf $1) $2 } |
+       tok_MemberRest_dummy_157 MemberRest tok_MemberRest_dummy_157 { Ctr__Java__49 (rtkPosOf $1) $2 } |
+       tok_Modifier_dummy_156 Modifier tok_Modifier_dummy_156 { Ctr__Java__50 (rtkPosOf $1) $2 } |
+       tok_ModifierList_dummy_155 ModifierList tok_ModifierList_dummy_155 { Ctr__Java__51 (rtkPosOf $1) (reverse $2) } |
+       tok_MoreTypeSpecifier_dummy_154 MoreTypeSpecifier tok_MoreTypeSpecifier_dummy_154 { Ctr__Java__52 (rtkPosOf $1) $2 } |
+       tok_MoreVariableDeclarators_dummy_153 MoreVariableDeclarators tok_MoreVariableDeclarators_dummy_153 { Ctr__Java__53 (rtkPosOf $1) (reverse $2) } |
+       tok_MultiplicativeOp_dummy_152 MultiplicativeOp tok_MultiplicativeOp_dummy_152 { Ctr__Java__54 (rtkPosOf $1) $2 } |
+       tok_NonEmptyDims_dummy_151 NonEmptyDims tok_NonEmptyDims_dummy_151 { Ctr__Java__55 (rtkPosOf $1) (reverse $2) } |
+       tok_NonEmptyTypeArguments_dummy_150 NonEmptyTypeArguments tok_NonEmptyTypeArguments_dummy_150 { Ctr__Java__56 (rtkPosOf $1) $2 } |
+       tok_NonEmptyTypeParameters_dummy_149 NonEmptyTypeParameters tok_NonEmptyTypeParameters_dummy_149 { Ctr__Java__57 (rtkPosOf $1) $2 } |
+       tok_OptDocComment_dummy_148 OptDocComment tok_OptDocComment_dummy_148 { Ctr__Java__58 (rtkPosOf $1) $2 } |
+       tok_OptElsePart_dummy_147 OptElsePart tok_OptElsePart_dummy_147 { Ctr__Java__59 (rtkPosOf $1) $2 } |
+       tok_OptExpression_dummy_146 OptExpression tok_OptExpression_dummy_146 { Ctr__Java__60 (rtkPosOf $1) $2 } |
+       tok_OptFinally_dummy_145 OptFinally tok_OptFinally_dummy_145 { Ctr__Java__61 (rtkPosOf $1) $2 } |
+       tok_OptId_dummy_144 OptId tok_OptId_dummy_144 { Ctr__Java__62 (rtkPosOf $1) $2 } |
+       tok_OptVariableInitializer_dummy_143 OptVariableInitializer tok_OptVariableInitializer_dummy_143 { Ctr__Java__63 (rtkPosOf $1) $2 } |
+       tok_Package_dummy_142 Package tok_Package_dummy_142 { Ctr__Java__64 (rtkPosOf $1) $2 } |
+       tok_ParamModifierList_dummy_141 ParamModifierList tok_ParamModifierList_dummy_141 { Ctr__Java__65 (rtkPosOf $1) (reverse $2) } |
+       tok_Parameter_dummy_140 Parameter tok_Parameter_dummy_140 { Ctr__Java__66 (rtkPosOf $1) $2 } |
+       tok_ParameterList_dummy_139 ParameterList tok_ParameterList_dummy_139 { Ctr__Java__67 (rtkPosOf $1) $2 } |
+       tok_PostfixOp_dummy_138 PostfixOp tok_PostfixOp_dummy_138 { Ctr__Java__68 (rtkPosOf $1) $2 } |
+       tok_PrefixOp_dummy_137 PrefixOp tok_PrefixOp_dummy_137 { Ctr__Java__69 (rtkPosOf $1) $2 } |
+       tok_PrimitiveTypeKeyword_dummy_136 PrimitiveTypeKeyword tok_PrimitiveTypeKeyword_dummy_136 { Ctr__Java__70 (rtkPosOf $1) $2 } |
+       tok_RelationalOp_dummy_135 RelationalOp tok_RelationalOp_dummy_135 { Ctr__Java__71 (rtkPosOf $1) $2 } |
+       tok_Resource_dummy_134 Resource tok_Resource_dummy_134 { Ctr__Java__72 (rtkPosOf $1) $2 } |
+       tok_ResourceSpec_dummy_133 ResourceSpec tok_ResourceSpec_dummy_133 { Ctr__Java__73 (rtkPosOf $1) $2 } |
+       tok_ShiftOp_dummy_132 ShiftOp tok_ShiftOp_dummy_132 { Ctr__Java__74 (rtkPosOf $1) $2 } |
+       tok_Statement_dummy_131 Statement tok_Statement_dummy_131 { Ctr__Java__75 (rtkPosOf $1) $2 } |
+       tok_StatementBlock_dummy_130 StatementBlock tok_StatementBlock_dummy_130 { Ctr__Java__76 (rtkPosOf $1) $2 } |
+       tok_StatementList_dummy_129 StatementList tok_StatementList_dummy_129 { Ctr__Java__77 (rtkPosOf $1) (reverse $2) } |
+       tok_StaticInitializer_dummy_128 StaticInitializer tok_StaticInitializer_dummy_128 { Ctr__Java__78 (rtkPosOf $1) $2 } |
+       tok_SwitchCaseList_dummy_127 SwitchCaseList tok_SwitchCaseList_dummy_127 { Ctr__Java__79 (rtkPosOf $1) (reverse $2) } |
+       tok_SwitchStatement_dummy_126 SwitchStatement tok_SwitchStatement_dummy_126 { Ctr__Java__80 (rtkPosOf $1) $2 } |
+       tok_ThrowsClause_dummy_125 ThrowsClause tok_ThrowsClause_dummy_125 { Ctr__Java__81 (rtkPosOf $1) $2 } |
+       tok_TryStatement_dummy_124 TryStatement tok_TryStatement_dummy_124 { Ctr__Java__82 (rtkPosOf $1) $2 } |
+       tok_Type_dummy_123 Type tok_Type_dummy_123 { Ctr__Java__83 (rtkPosOf $1) $2 } |
+       tok_TypeArgument_dummy_122 TypeArgument tok_TypeArgument_dummy_122 { Ctr__Java__84 (rtkPosOf $1) $2 } |
+       tok_TypeArguments_dummy_121 TypeArguments tok_TypeArguments_dummy_121 { Ctr__Java__85 (rtkPosOf $1) $2 } |
+       tok_TypeDeclRest_dummy_120 TypeDeclRest tok_TypeDeclRest_dummy_120 { Ctr__Java__86 (rtkPosOf $1) $2 } |
+       tok_TypeDeclaration_dummy_119 TypeDeclaration tok_TypeDeclaration_dummy_119 { Ctr__Java__87 (rtkPosOf $1) $2 } |
+       tok_TypeDeclarationList_dummy_118 TypeDeclarationList tok_TypeDeclarationList_dummy_118 { Ctr__Java__88 (rtkPosOf $1) (reverse $2) } |
+       tok_TypeParameter_dummy_117 TypeParameter tok_TypeParameter_dummy_117 { Ctr__Java__89 (rtkPosOf $1) $2 } |
+       tok_TypeParameters_dummy_116 TypeParameters tok_TypeParameters_dummy_116 { Ctr__Java__90 (rtkPosOf $1) $2 } |
+       tok_TypeSpecifier_dummy_115 TypeSpecifier tok_TypeSpecifier_dummy_115 { Ctr__Java__91 (rtkPosOf $1) $2 } |
+       tok_VariableDeclaration_dummy_114 VariableDeclaration tok_VariableDeclaration_dummy_114 { Ctr__Java__92 (rtkPosOf $1) $2 } |
+       tok_VariableDeclarator_dummy_113 VariableDeclarator tok_VariableDeclarator_dummy_113 { Ctr__Java__93 (rtkPosOf $1) $2 } |
+       tok_VariableDeclaratorList_dummy_112 VariableDeclaratorList tok_VariableDeclaratorList_dummy_112 { Ctr__Java__94 (rtkPosOf $1) $2 } |
+       tok_VariableInitializer_dummy_111 VariableInitializer tok_VariableInitializer_dummy_111 { Ctr__Java__95 (rtkPosOf $1) $2 } |
+       tok_VariableInitializerList_dummy_110 VariableInitializerList tok_VariableInitializerList_dummy_110 { Ctr__Java__96 (rtkPosOf $1) $2 } |
+       tok_WhileStatement_dummy_109 WhileStatement tok_WhileStatement_dummy_109 { Ctr__Java__97 (rtkPosOf $1) $2 } |
+       tok_WildcardType_dummy_108 WildcardType tok_WildcardType_dummy_108 { Ctr__Java__98 (rtkPosOf $1) $2 }
 
 Java : qq_Java { Anti_Java (tkVal_qq_Java $1) } |
-       CompilationUnit { Ctr__Java__93 (rtkPosOf $1) $1 }
+       CompilationUnit { Ctr__Java__99 (rtkPosOf $1) $1 }
 
 AdditiveOp : qq_AdditiveOp { Anti_AdditiveOp (tkVal_qq_AdditiveOp $1) } |
              tok__plus__78 { Ctr__AdditiveOp__0 (rtkPosOf $1) } |
              tok__minus__79 { Ctr__AdditiveOp__1 (rtkPosOf $1) }
 
-ListElem_AnnotationList9 : qq_AnnotationList { Anti_Annotation (tkVal_qq_AnnotationList $1) } |
-                           Annotation { $1 }
+ListElem_AnnotationList14 : qq_AnnotationList { Anti_Annotation (tkVal_qq_AnnotationList $1) } |
+                            Annotation { $1 }
 
 Annotation : qq_Annotation { Anti_Annotation (tkVal_qq_Annotation $1) } |
              tok__symbol__6 CompoundName Rule_4 { Ctr__Annotation__1 (rtkPosOf $1) $2 $3 }
@@ -422,27 +440,30 @@ AnnotationArguments : qq_AnnotationArguments { Anti_AnnotationArguments (tkVal_q
                       AnnotationElement Rule_7 { Ctr__AnnotationArguments__0 (rtkPosOf $1) $1 (reverse $2) }
 
 AnnotationDeclaration : qq_AnnotationDeclaration { Anti_AnnotationDeclaration (tkVal_qq_AnnotationDeclaration $1) } |
-                        tok__symbol__6 tok_interface_16 id tok__symbol__14 AnnotationTypeElementList tok__symbol__15 { Ctr__AnnotationDeclaration__0 (rtkPosOf $1) (tkVal_id $3) (reverse $5) }
+                        tok__symbol__6 tok_interface_16 id tok__symbol__11 AnnotationTypeElementList tok__symbol__12 { Ctr__AnnotationDeclaration__0 (rtkPosOf $1) (tkVal_id $3) (reverse $5) }
 
 AnnotationElement : qq_AnnotationElement { Anti_AnnotationElement (tkVal_qq_AnnotationElement $1) } |
-                    id tok__eql__10 ConditionalExpression { Ctr__AnnotationElement__0 (rtkPosOf $1) (tkVal_id $1) $3 } |
-                    ConditionalExpression { Ctr__AnnotationElement__1 (rtkPosOf $1) $1 }
+                    id tok__eql__10 ElementValue { Ctr__AnnotationElement__0 (rtkPosOf $1) (tkVal_id $1) $3 } |
+                    ElementValue { Ctr__AnnotationElement__1 (rtkPosOf $1) $1 }
 
 AnnotationList : {- empty -} { [] } |
-                 AnnotationList ListElem_AnnotationList9 { $2 : $1 }
+                 AnnotationList ListElem_AnnotationList14 { $2 : $1 }
 
 AnnotationTypeElement : qq_AnnotationTypeElement { Anti_AnnotationTypeElement (tkVal_qq_AnnotationTypeElement $1) } |
                         FieldDeclaration { Ctr__AnnotationTypeElement__0 (rtkPosOf $1) $1 }
 
-ListElem_AnnotationTypeElementList19 : qq_AnnotationTypeElementList { Anti_AnnotationTypeElement (tkVal_qq_AnnotationTypeElementList $1) } |
+ListElem_AnnotationTypeElementList24 : qq_AnnotationTypeElementList { Anti_AnnotationTypeElement (tkVal_qq_AnnotationTypeElementList $1) } |
                                        AnnotationTypeElement { $1 }
 
 AnnotationTypeElementList : {- empty -} { [] } |
-                            AnnotationTypeElementList ListElem_AnnotationTypeElementList19 { $2 : $1 }
+                            AnnotationTypeElementList ListElem_AnnotationTypeElementList24 { $2 : $1 }
 
 Arglist : qq_Arglist { Anti_Arglist (tkVal_qq_Arglist $1) } |
           { Ctr__Arglist__0 rtkNoPos } |
-          Rule_88 { Ctr__Arglist__1 (rtkPosOf $1) $1 }
+          Rule_95 { Ctr__Arglist__1 (rtkPosOf $1) $1 }
+
+ArrayInitializer : qq_ArrayInitializer { Anti_ArrayInitializer (tkVal_qq_ArrayInitializer $1) } |
+                   tok__symbol__11 VariableInitializerList tok__symbol__12 { Ctr__ArrayInitializer__0 (rtkPosOf $1) $2 }
 
 AssignmentOp : qq_AssignmentOp { Anti_AssignmentOp (tkVal_qq_AssignmentOp $1) } |
                tok__eql__10 { Ctr__AssignmentOp__0 (rtkPosOf $1) } |
@@ -459,34 +480,39 @@ AssignmentOp : qq_AssignmentOp { Anti_AssignmentOp (tkVal_qq_AssignmentOp $1) } 
                tok__symbol__symbol__symbol__eql__64 { Ctr__AssignmentOp__11 (rtkPosOf $1) }
 
 CatchList : {- empty -} { [] } |
-            CatchList ListElem_CatchList66 { $2 : $1 }
+            CatchList ListElem_CatchList71 { $2 : $1 }
 
 CatchParameter : qq_CatchParameter { Anti_CatchParameter (tkVal_qq_CatchParameter $1) } |
-                 ParamModifierList Type Rule_67 id { Ctr__CatchParameter__0 (rtkPosOf (reverse $1)) (reverse $1) $2 (reverse $3) (tkVal_id $4) }
+                 ParamModifierList Type Rule_72 id { Ctr__CatchParameter__0 (rtkPosOf (reverse $1)) (reverse $1) $2 (reverse $3) (tkVal_id $4) }
 
 ClassDeclaration : qq_ClassDeclaration { Anti_ClassDeclaration (tkVal_qq_ClassDeclaration $1) } |
-                   tok_class_13 id TypeParameters Rule_16 Rule_17 tok__symbol__14 FieldDeclarationList tok__symbol__15 { Ctr__ClassDeclaration__0 (rtkPosOf $1) (tkVal_id $2) $3 $4 $5 (reverse $7) }
+                   tok_class_15 id TypeParameters Rule_21 Rule_22 tok__symbol__11 FieldDeclarationList tok__symbol__12 { Ctr__ClassDeclaration__0 (rtkPosOf $1) (tkVal_id $2) $3 $4 $5 (reverse $7) }
 
 ClassOrInterfaceType : qq_ClassOrInterfaceType { Anti_ClassOrInterfaceType (tkVal_qq_ClassOrInterfaceType $1) } |
                        CompoundName TypeArguments { Ctr__ClassOrInterfaceType__0 (rtkPosOf $1) $1 $2 }
 
 CompilationUnit : qq_CompilationUnit { Anti_CompilationUnit (tkVal_qq_CompilationUnit $1) } |
-                  Rule_1 ImportList Rule_2 { Ctr__CompilationUnit__0 (rtkPosOf $1) $1 (reverse $2) $3 }
+                  OptDocComment ModifierList Rule_2 { Ctr__CompilationUnit__0 (rtkPosOf $1) $1 (reverse $2) $3 }
+
+CompilationUnitRest : qq_CompilationUnitRest { Anti_CompilationUnitRest (tkVal_qq_CompilationUnitRest $1) } |
+                      Package ImportList TypeDeclarationList { UnitPackageFirst (rtkPosOf $1) $1 (reverse $2) (reverse $3) } |
+                      ImportStatement ImportList TypeDeclarationList { UnitImportsFirst (rtkPosOf $1) $1 (reverse $2) (reverse $3) } |
+                      TypeDeclRest TypeDeclarationList { UnitTypeFirst (rtkPosOf $1) $1 (reverse $2) }
 
 CompoundName : qq_CompoundName { Anti_CompoundName (tkVal_qq_CompoundName $1) } |
                id CompoundNameTail { Ctr__CompoundName__0 (rtkPosOf $1) (tkVal_id $1) (reverse $2) }
 
 CompoundNameTail : {- empty -} { [] } |
-                   CompoundNameTail ListElem_CompoundNameTail101 { $2 : $1 }
+                   CompoundNameTail ListElem_CompoundNameTail107 { $2 : $1 }
 
 CreationExpression : qq_CreationExpression { Anti_CreationExpression (tkVal_qq_CreationExpression $1) } |
-                     tok_new_87 TypeSpecifier Rule_84 { Ctr__CreationExpression__0 (rtkPosOf $1) $2 $3 }
+                     tok_new_87 TypeSpecifier Rule_89 { Ctr__CreationExpression__0 (rtkPosOf $1) $2 $3 }
 
-DimExprs : ListElem_DimExprs87 { [$1] } |
-           DimExprs ListElem_DimExprs87 { $2 : $1 }
+DimExprs : ListElem_DimExprs94 { [$1] } |
+           DimExprs ListElem_DimExprs94 { $2 : $1 }
 
 Dims : {- empty -} { [] } |
-       Dims ListElem_Dims32 { $2 : $1 }
+       Dims ListElem_Dims37 { $2 : $1 }
 
 DoStatement : qq_DoStatement { Anti_DoStatement (tkVal_qq_DoStatement $1) } |
               tok_do_44 Statement tok_while_45 tok__lparen__7 Expression tok__rparen__8 tok__semi__1 { Ctr__DoStatement__0 (rtkPosOf $1) $2 $5 }
@@ -494,14 +520,22 @@ DoStatement : qq_DoStatement { Anti_DoStatement (tkVal_qq_DoStatement $1) } |
 DocComment : qq_DocComment { Anti_DocComment (tkVal_qq_DocComment $1) } |
              doccomment { Ctr__DocComment__0 (rtkPosOf $1) (tkVal_doccomment $1) }
 
+ElementValue : qq_ElementValue { Anti_ElementValue (tkVal_qq_ElementValue $1) } |
+               ConditionalExpression { Ctr__ElementValue__0 (rtkPosOf $1) $1 } |
+               Annotation { Ctr__ElementValue__1 (rtkPosOf $1) $1 } |
+               ElementValueArrayInitializer { Ctr__ElementValue__2 (rtkPosOf $1) $1 }
+
+ElementValueArrayInitializer : qq_ElementValueArrayInitializer { Anti_ElementValueArrayInitializer (tkVal_qq_ElementValueArrayInitializer $1) } |
+                               tok__symbol__11 Rule_9 tok__symbol__12 { Ctr__ElementValueArrayInitializer__0 (rtkPosOf $1) $2 }
+
 EnumConstant : qq_EnumConstant { Anti_EnumConstant (tkVal_qq_EnumConstant $1) } |
-               AnnotationList id Rule_20 Rule_22 { Ctr__EnumConstant__0 (rtkPosOf (reverse $1)) (reverse $1) (tkVal_id $2) $3 $4 }
+               OptDocComment AnnotationList id Rule_25 Rule_27 { Ctr__EnumConstant__0 (rtkPosOf $1) $1 (reverse $2) (tkVal_id $3) $4 $5 }
 
 EnumConstantList : qq_EnumConstantList { Anti_EnumConstantList (tkVal_qq_EnumConstantList $1) } |
-                   EnumConstant Rule_24 Rule_26 { Ctr__EnumConstantList__0 (rtkPosOf $1) $1 (reverse $2) $3 }
+                   EnumConstant Rule_29 Rule_31 { Ctr__EnumConstantList__0 (rtkPosOf $1) $1 (reverse $2) $3 }
 
 EnumDeclaration : qq_EnumDeclaration { Anti_EnumDeclaration (tkVal_qq_EnumDeclaration $1) } |
-                  tok_enum_17 id Rule_27 tok__symbol__14 EnumConstantList Rule_28 tok__symbol__15 { Ctr__EnumDeclaration__0 (rtkPosOf $1) (tkVal_id $2) $3 $5 $6 }
+                  tok_enum_17 id Rule_32 tok__symbol__11 EnumConstantList Rule_33 tok__symbol__12 { Ctr__EnumDeclaration__0 (rtkPosOf $1) (tkVal_id $2) $3 $5 $6 }
 
 EqualityOp : qq_EqualityOp { Anti_EqualityOp (tkVal_qq_EqualityOp $1) } |
              tok__eql__eql__70 { Ctr__EqualityOp__0 (rtkPosOf $1) } |
@@ -512,13 +546,13 @@ PrimaryNoPostfix : qq_Expression { Anti_Expression (tkVal_qq_Expression $1) } |
                    tok_this_41 { Ctr__Expression__1 (rtkPosOf $1) } |
                    tok__lparen__7 Expression tok__rparen__8 { Ctr__Expression__2 (rtkPosOf $1) $2 } |
                    CreationExpression { Ctr__Expression__3 (rtkPosOf $1) $1 } |
-                   CompoundName Rule_80 { Ctr__Expression__4 (rtkPosOf $1) $1 $2 } |
+                   CompoundName Rule_85 { Ctr__Expression__4 (rtkPosOf $1) $1 $2 } |
                    CompoundName tok__sq_bkt_l__18 Expression tok__sq_bkt_r__19 { Ctr__Expression__5 (rtkPosOf $1) $1 $3 } |
-                   tok_super_40 tok__dot__4 id Rule_82 { Ctr__Expression__6 (rtkPosOf $1) (tkVal_id $3) $4 } |
-                   id CompoundNameTail tok__dot__4 tok_class_13 { Ctr__Expression__7 (rtkPosOf $1) (tkVal_id $1) (reverse $2) } |
+                   tok_super_40 tok__dot__4 id Rule_87 { Ctr__Expression__6 (rtkPosOf $1) (tkVal_id $3) $4 } |
+                   id CompoundNameTail tok__dot__4 tok_class_15 { Ctr__Expression__7 (rtkPosOf $1) (tkVal_id $1) (reverse $2) } |
                    id CompoundNameTail tok__dot__4 tok_this_41 { Ctr__Expression__8 (rtkPosOf $1) (tkVal_id $1) (reverse $2) } |
                    id CompoundNameTail tok__dot__4 NonEmptyTypeArguments id tok__lparen__7 Arglist tok__rparen__8 { Ctr__Expression__9 (rtkPosOf $1) (tkVal_id $1) (reverse $2) $4 (tkVal_id $5) $7 } |
-                   PrimitiveTypeKeyword tok__dot__4 tok_class_13 { Ctr__Expression__10 (rtkPosOf $1) $1 }
+                   PrimitiveTypeKeyword tok__dot__4 tok_class_15 { Ctr__Expression__10 (rtkPosOf $1) $1 }
 
 PostfixExpression : PrimaryNoPostfix { Ctr__Expression__11 (rtkPosOf $1) $1 } |
                     PostfixExpression PostfixOp { Ctr__Expression__12 (rtkPosOf $1) $1 $2 } |
@@ -576,47 +610,47 @@ ConditionalOrExpression : ConditionalAndExpression { Ctr__Expression__48 (rtkPos
 ConditionalExpression : ConditionalOrExpression { Ctr__Expression__50 (rtkPosOf $1) $1 } |
                         ConditionalOrExpression tok__symbol__65 Expression tok__colon__37 ConditionalExpression { Ctr__Expression__51 (rtkPosOf $1) $1 $3 $5 }
 
-AssignmentExpression : ConditionalExpression Rule_76 { Ctr__Expression__52 (rtkPosOf $1) $1 $2 } |
+AssignmentExpression : ConditionalExpression Rule_81 { Ctr__Expression__52 (rtkPosOf $1) $1 $2 } |
                        id tok__minus__symbol__53 LambdaBody { Ctr__Expression__53 (rtkPosOf $1) (tkVal_id $1) $3 } |
                        tok__lparen__7 tok__rparen__8 tok__minus__symbol__53 LambdaBody { Ctr__Expression__54 (rtkPosOf $1) $4 } |
-                       tok__lparen__7 id Rule_78 tok__rparen__8 tok__minus__symbol__53 LambdaBody { Ctr__Expression__55 (rtkPosOf $1) (tkVal_id $2) (reverse $3) $6 } |
+                       tok__lparen__7 id Rule_83 tok__rparen__8 tok__minus__symbol__53 LambdaBody { Ctr__Expression__55 (rtkPosOf $1) (tkVal_id $2) (reverse $3) $6 } |
                        tok__lparen__7 Expression tok__rparen__8 tok__minus__symbol__53 LambdaBody { Ctr__Expression__56 (rtkPosOf $1) $2 $5 }
 
 Expression : AssignmentExpression { Ctr__Expression__57 (rtkPosOf $1) $1 }
 
 ExtendsList : qq_ExtendsList { Anti_ExtendsList (tkVal_qq_ExtendsList $1) } |
-              tok_extends_11 ClassOrInterfaceType Rule_12 { Ctr__ExtendsList__0 (rtkPosOf $1) $2 (reverse $3) }
+              tok_extends_13 ClassOrInterfaceType Rule_17 { Ctr__ExtendsList__0 (rtkPosOf $1) $2 (reverse $3) }
 
 FieldDeclaration : qq_FieldDeclaration { Anti_FieldDeclaration (tkVal_qq_FieldDeclaration $1) } |
-                   OptDocComment ModifierList Rule_30 { Ctr__FieldDeclaration__0 (rtkPosOf $1) $1 (reverse $2) $3 } |
+                   OptDocComment ModifierList Rule_35 { Ctr__FieldDeclaration__0 (rtkPosOf $1) $1 (reverse $2) $3 } |
                    tok__semi__1 { Ctr__FieldDeclaration__1 (rtkPosOf $1) }
 
-ListElem_FieldDeclarationList15 : qq_FieldDeclarationList { Anti_FieldDeclaration (tkVal_qq_FieldDeclarationList $1) } |
+ListElem_FieldDeclarationList20 : qq_FieldDeclarationList { Anti_FieldDeclaration (tkVal_qq_FieldDeclarationList $1) } |
                                   FieldDeclaration { $1 }
 
 FieldDeclarationList : {- empty -} { [] } |
-                       FieldDeclarationList ListElem_FieldDeclarationList15 { $2 : $1 }
+                       FieldDeclarationList ListElem_FieldDeclarationList20 { $2 : $1 }
 
 ForEachHeader : qq_ForEachHeader { Anti_ForEachHeader (tkVal_qq_ForEachHeader $1) } |
                 Type id tok__colon__37 Expression { Ctr__ForEachHeader__0 (rtkPosOf $1) $1 (tkVal_id $2) $4 } |
                 LocalModifierList1 Type id tok__colon__37 Expression { Ctr__ForEachHeader__1 (rtkPosOf (reverse $1)) (reverse $1) $2 (tkVal_id $3) $5 }
 
 ForStatement : qq_ForStatement { Anti_ForStatement (tkVal_qq_ForStatement $1) } |
-               tok_for_46 tok__lparen__7 Rule_64 OptExpression tok__semi__1 OptExpression tok__rparen__8 Statement { Ctr__ForStatement__0 (rtkPosOf $1) $3 $4 $6 $8 } |
+               tok_for_46 tok__lparen__7 Rule_69 OptExpression tok__semi__1 OptExpression tok__rparen__8 Statement { Ctr__ForStatement__0 (rtkPosOf $1) $3 $4 $6 $8 } |
                tok_for_46 tok__lparen__7 ForEachHeader tok__rparen__8 Statement { Ctr__ForStatement__1 (rtkPosOf $1) $3 $5 }
 
 IfStatement : qq_IfStatement { Anti_IfStatement (tkVal_qq_IfStatement $1) } |
               tok_if_43 tok__lparen__7 Expression tok__rparen__8 Statement OptElsePart { Ctr__IfStatement__0 (rtkPosOf $1) $3 $5 $6 }
 
 ImplementsList : qq_ImplementsList { Anti_ImplementsList (tkVal_qq_ImplementsList $1) } |
-                 tok_implements_12 Rule_14 { Ctr__ImplementsList__0 (rtkPosOf $1) (reverse $2) }
+                 tok_implements_14 Rule_19 { Ctr__ImplementsList__0 (rtkPosOf $1) (reverse $2) }
 
 ImportHead : qq_ImportHead { Anti_ImportHead (tkVal_qq_ImportHead $1) } |
              id { Ctr__ImportHead__0 (rtkPosOf $1) (tkVal_id $1) } |
              ImportHead tok__dot__4 id { Ctr__ImportHead__1 (rtkPosOf $1) $1 (tkVal_id $3) }
 
 ImportList : {- empty -} { [] } |
-             ImportList ListElem_ImportList0 { $2 : $1 }
+             ImportList ListElem_ImportList1 { $2 : $1 }
 
 ImportName : qq_ImportName { Anti_ImportName (tkVal_qq_ImportName $1) } |
              ImportHead { Ctr__ImportName__0 (rtkPosOf $1) $1 } |
@@ -625,11 +659,11 @@ ImportName : qq_ImportName { Anti_ImportName (tkVal_qq_ImportName $1) } |
 ImportStatement : qq_ImportStatement { Anti_ImportStatement (tkVal_qq_ImportStatement $1) } |
                   tok_import_2 Rule_3 ImportName tok__semi__1 { Ctr__ImportStatement__0 (rtkPosOf $1) $2 $3 }
 
-ListElem_ImportList0 : qq_ImportList { Anti_ImportStatement (tkVal_qq_ImportList $1) } |
+ListElem_ImportList1 : qq_ImportList { Anti_ImportStatement (tkVal_qq_ImportList $1) } |
                        ImportStatement { $1 }
 
 InterfaceDeclaration : qq_InterfaceDeclaration { Anti_InterfaceDeclaration (tkVal_qq_InterfaceDeclaration $1) } |
-                       tok_interface_16 id TypeParameters Rule_18 tok__symbol__14 FieldDeclarationList tok__symbol__15 { Ctr__InterfaceDeclaration__0 (rtkPosOf $1) (tkVal_id $2) $3 $4 (reverse $6) }
+                       tok_interface_16 id TypeParameters Rule_23 tok__symbol__11 FieldDeclarationList tok__symbol__12 { Ctr__InterfaceDeclaration__0 (rtkPosOf $1) (tkVal_id $2) $3 $4 (reverse $6) }
 
 LambdaBody : qq_LambdaBody { Anti_LambdaBody (tkVal_qq_LambdaBody $1) } |
              Expression { Ctr__LambdaBody__0 (rtkPosOf $1) $1 } |
@@ -644,20 +678,21 @@ Literal : qq_Literal { Anti_Literal (tkVal_qq_Literal $1) } |
           string { Ctr__Literal__5 (rtkPosOf $1) (tkVal_string $1) } |
           tok_null_90 { Ctr__Literal__6 (rtkPosOf $1) }
 
-LocalModifierList1 : ListElem_LocalModifierList149 { [$1] } |
-                     LocalModifierList1 ListElem_LocalModifierList149 { $2 : $1 }
+LocalModifierList1 : ListElem_LocalModifierList154 { [$1] } |
+                     LocalModifierList1 ListElem_LocalModifierList154 { $2 : $1 }
 
 MemberAfterFirstId : qq_MemberAfterFirstId { Anti_MemberAfterFirstId (tkVal_qq_MemberAfterFirstId $1) } |
-                     tok__lparen__7 Rule_35 tok__rparen__8 Rule_36 StatementBlock { Ctr__MemberAfterFirstId__0 (rtkPosOf $1) $2 $4 $5 } |
+                     tok__lparen__7 Rule_40 tok__rparen__8 Rule_41 StatementBlock { Ctr__MemberAfterFirstId__0 (rtkPosOf $1) $2 $4 $5 } |
                      MoreTypeSpecifier id MemberRest { Ctr__MemberAfterFirstId__1 (rtkPosOf $1) $1 (tkVal_id $2) $3 }
 
 MemberDeclaration : qq_MemberDeclaration { Anti_MemberDeclaration (tkVal_qq_MemberDeclaration $1) } |
                     PrimitiveTypeKeyword Dims id MemberRest { Ctr__MemberDeclaration__0 (rtkPosOf $1) $1 (reverse $2) (tkVal_id $3) $4 } |
                     TypeParameters id MoreTypeSpecifier id MemberRest { Ctr__MemberDeclaration__1 (rtkPosOf $1) $1 (tkVal_id $2) $3 (tkVal_id $4) $5 } |
-                    id MemberAfterFirstId { Ctr__MemberDeclaration__2 (rtkPosOf $1) (tkVal_id $1) $2 }
+                    NonEmptyTypeParameters PrimitiveTypeKeyword Dims id MemberRest { Ctr__MemberDeclaration__2 (rtkPosOf $1) $1 $2 (reverse $3) (tkVal_id $4) $5 } |
+                    id MemberAfterFirstId { Ctr__MemberDeclaration__3 (rtkPosOf $1) (tkVal_id $1) $2 }
 
 MemberRest : qq_MemberRest { Anti_MemberRest (tkVal_qq_MemberRest $1) } |
-             tok__lparen__7 Rule_39 tok__rparen__8 Dims Rule_40 Rule_41 { Ctr__MemberRest__0 (rtkPosOf $1) $2 (reverse $4) $5 $6 } |
+             tok__lparen__7 Rule_44 tok__rparen__8 Dims Rule_45 Rule_46 { Ctr__MemberRest__0 (rtkPosOf $1) $2 (reverse $4) $5 $6 } |
              Dims OptVariableInitializer MoreVariableDeclarators tok__semi__1 { Ctr__MemberRest__1 (rtkPosOf (reverse $1)) (reverse $1) $2 (reverse $3) }
 
 Modifier : qq_Modifier { Anti_Modifier (tkVal_qq_Modifier $1) } |
@@ -670,29 +705,33 @@ Modifier : qq_Modifier { Anti_Modifier (tkVal_qq_Modifier $1) } |
            tok_synchronized_34 { Ctr__Modifier__6 (rtkPosOf $1) } |
            tok_abstract_95 { Ctr__Modifier__7 (rtkPosOf $1) } |
            tok_threadsafe_96 { Ctr__Modifier__8 (rtkPosOf $1) } |
-           tok_transient_97 { Ctr__Modifier__9 (rtkPosOf $1) }
+           tok_transient_97 { Ctr__Modifier__9 (rtkPosOf $1) } |
+           tok_default_30 { Ctr__Modifier__10 (rtkPosOf $1) }
 
 ModifierList : {- empty -} { [] } |
-               ModifierList ListElem_ModifierList11 { $2 : $1 }
+               ModifierList ListElem_ModifierList16 { $2 : $1 }
 
 MoreTypeSpecifier : qq_MoreTypeSpecifier { Anti_MoreTypeSpecifier (tkVal_qq_MoreTypeSpecifier $1) } |
                     tok__dot__4 id MoreTypeSpecifier { Ctr__MoreTypeSpecifier__0 (rtkPosOf $1) (tkVal_id $2) $3 } |
                     TypeArguments Dims { Ctr__MoreTypeSpecifier__1 (rtkPosOf $1) $1 (reverse $2) }
 
 MoreVariableDeclarators : {- empty -} { [] } |
-                          MoreVariableDeclarators ListElem_MoreVariableDeclarators45 { $2 : $1 }
+                          MoreVariableDeclarators ListElem_MoreVariableDeclarators50 { $2 : $1 }
 
 MultiplicativeOp : qq_MultiplicativeOp { Anti_MultiplicativeOp (tkVal_qq_MultiplicativeOp $1) } |
                    tok__star__5 { Ctr__MultiplicativeOp__0 (rtkPosOf $1) } |
                    tok__symbol__80 { Ctr__MultiplicativeOp__1 (rtkPosOf $1) } |
                    tok__symbol__81 { Ctr__MultiplicativeOp__2 (rtkPosOf $1) }
 
-NonEmptyDims : ListElem_NonEmptyDims34 { [$1] } |
-               NonEmptyDims ListElem_NonEmptyDims34 { $2 : $1 }
+NonEmptyDims : ListElem_NonEmptyDims39 { [$1] } |
+               NonEmptyDims ListElem_NonEmptyDims39 { $2 : $1 }
 
 NonEmptyTypeArguments : qq_NonEmptyTypeArguments { Anti_NonEmptyTypeArguments (tkVal_qq_NonEmptyTypeArguments $1) } |
-                        tok__symbol__72 TypeArgument Rule_91 tok__symbol__73 { Ctr__NonEmptyTypeArguments__0 (rtkPosOf $1) $2 (reverse $3) } |
+                        tok__symbol__72 TypeArgument Rule_98 tok__symbol__73 { Ctr__NonEmptyTypeArguments__0 (rtkPosOf $1) $2 (reverse $3) } |
                         tok__symbol__72 tok__symbol__73 { Ctr__NonEmptyTypeArguments__1 (rtkPosOf $1) }
+
+NonEmptyTypeParameters : qq_NonEmptyTypeParameters { Anti_NonEmptyTypeParameters (tkVal_qq_NonEmptyTypeParameters $1) } |
+                         tok__symbol__72 TypeParameter Rule_100 tok__symbol__73 { Ctr__NonEmptyTypeParameters__0 (rtkPosOf $1) $2 (reverse $3) }
 
 OptDocComment : qq_OptDocComment { Anti_OptDocComment (tkVal_qq_OptDocComment $1) } |
                 { Ctr__OptDocComment__0 rtkNoPos } |
@@ -700,7 +739,7 @@ OptDocComment : qq_OptDocComment { Anti_OptDocComment (tkVal_qq_OptDocComment $1
 
 OptElsePart : qq_OptElsePart { Anti_OptElsePart (tkVal_qq_OptElsePart $1) } |
               { Ctr__OptElsePart__0 rtkNoPos } |
-              Rule_63 { Ctr__OptElsePart__1 (rtkPosOf $1) $1 }
+              Rule_68 { Ctr__OptElsePart__1 (rtkPosOf $1) $1 }
 
 OptExpression : qq_OptExpression { Anti_OptExpression (tkVal_qq_OptExpression $1) } |
                 { Ctr__OptExpression__0 rtkNoPos } |
@@ -708,7 +747,7 @@ OptExpression : qq_OptExpression { Anti_OptExpression (tkVal_qq_OptExpression $1
 
 OptFinally : qq_OptFinally { Anti_OptFinally (tkVal_qq_OptFinally $1) } |
              { Ctr__OptFinally__0 rtkNoPos } |
-             Rule_69 { Ctr__OptFinally__1 (rtkPosOf $1) $1 }
+             Rule_74 { Ctr__OptFinally__1 (rtkPosOf $1) $1 }
 
 OptId : qq_OptId { Anti_OptId (tkVal_qq_OptId $1) } |
         { Ctr__OptId__0 rtkNoPos } |
@@ -716,19 +755,19 @@ OptId : qq_OptId { Anti_OptId (tkVal_qq_OptId $1) } |
 
 OptVariableInitializer : qq_OptVariableInitializer { Anti_OptVariableInitializer (tkVal_qq_OptVariableInitializer $1) } |
                          { Ctr__OptVariableInitializer__0 rtkNoPos } |
-                         Rule_50 { Ctr__OptVariableInitializer__1 (rtkPosOf $1) $1 }
+                         Rule_55 { Ctr__OptVariableInitializer__1 (rtkPosOf $1) $1 }
 
 Package : qq_Package { Anti_Package (tkVal_qq_Package $1) } |
           tok_package_0 CompoundName tok__semi__1 { Ctr__Package__0 (rtkPosOf $1) $2 }
 
 ParamModifierList : {- empty -} { [] } |
-                    ParamModifierList ListElem_ParamModifierList58 { $2 : $1 }
+                    ParamModifierList ListElem_ParamModifierList63 { $2 : $1 }
 
 Parameter : qq_Parameter { Anti_Parameter (tkVal_qq_Parameter $1) } |
-            ParamModifierList Type Rule_59 id Dims { Ctr__Parameter__0 (rtkPosOf (reverse $1)) (reverse $1) $2 $3 (tkVal_id $4) (reverse $5) }
+            ParamModifierList Type Rule_64 id Dims { Ctr__Parameter__0 (rtkPosOf (reverse $1)) (reverse $1) $2 $3 (tkVal_id $4) (reverse $5) }
 
 ParameterList : qq_ParameterList { Anti_ParameterList (tkVal_qq_ParameterList $1) } |
-                Parameter Rule_55 { Ctr__ParameterList__0 (rtkPosOf $1) $1 (reverse $2) }
+                Parameter Rule_60 { Ctr__ParameterList__0 (rtkPosOf $1) $1 (reverse $2) }
 
 PostfixOp : qq_PostfixOp { Anti_PostfixOp (tkVal_qq_PostfixOp $1) } |
             tok__plus__plus__82 { Ctr__PostfixOp__0 (rtkPosOf $1) } |
@@ -761,265 +800,279 @@ Resource : qq_Resource { Anti_Resource (tkVal_qq_Resource $1) } |
            ParamModifierList Type id tok__eql__10 Expression { Ctr__Resource__0 (rtkPosOf (reverse $1)) (reverse $1) $2 (tkVal_id $3) $5 }
 
 ResourceSpec : qq_ResourceSpec { Anti_ResourceSpec (tkVal_qq_ResourceSpec $1) } |
-               tok__lparen__7 Resource Rule_71 Rule_73 tok__rparen__8 { Ctr__ResourceSpec__0 (rtkPosOf $1) $2 (reverse $3) $4 }
+               tok__lparen__7 Resource Rule_76 Rule_78 tok__rparen__8 { Ctr__ResourceSpec__0 (rtkPosOf $1) $2 (reverse $3) $4 }
 
-Rule_1 : { Ctr__Rule_1__0 rtkNoPos } |
-         Package { Ctr__Rule_1__1 (rtkPosOf $1) $1 }
+Rule_10 : ElementValue Rule_11 Rule_13 { Ctr__Rule_10__0 (rtkPosOf $1) $1 (reverse $2) $3 }
 
-ListElem_ModifierList11 : qq_ModifierList { Anti_Rule_10 (tkVal_qq_ModifierList $1) } |
-                          Rule_10 { $1 }
+Rule_100 : {- empty -} { [] } |
+           Rule_100 Rule_101 { $2 : $1 }
 
-Rule_10 : Modifier { Ctr__Rule_10__1 (rtkPosOf $1) $1 } |
-          Annotation { Ctr__Rule_10__2 (rtkPosOf $1) $1 }
+Rule_101 : tok__coma__9 TypeParameter { Ctr__Rule_101__0 (rtkPosOf $1) $2 }
 
-ListElem_CompoundNameTail101 : qq_CompoundNameTail { Anti_Rule_100 (tkVal_qq_CompoundNameTail $1) } |
-                               Rule_100 { $1 }
+Rule_102 : { Ctr__Rule_102__0 rtkNoPos } |
+           Rule_103 { Ctr__Rule_102__1 (rtkPosOf $1) $1 }
 
-Rule_100 : tok__dot__4 id { Ctr__Rule_100__1 (rtkPosOf $1) (tkVal_id $2) }
+Rule_103 : tok_extends_13 Type Rule_104 { Ctr__Rule_103__0 (rtkPosOf $1) $2 (reverse $3) }
 
-Rule_12 : {- empty -} { [] } |
-          Rule_12 Rule_13 { $2 : $1 }
+Rule_104 : {- empty -} { [] } |
+           Rule_104 Rule_105 { $2 : $1 }
 
-Rule_13 : tok__coma__9 ClassOrInterfaceType { Ctr__Rule_13__0 (rtkPosOf $1) $2 }
+Rule_105 : tok__symbol__69 Type { Ctr__Rule_105__0 (rtkPosOf $1) $2 }
 
-Rule_14 : ClassOrInterfaceType { [$1] } |
-          Rule_14 tok__coma__9 ClassOrInterfaceType { $3 : $1 }
+ListElem_CompoundNameTail107 : qq_CompoundNameTail { Anti_Rule_106 (tkVal_qq_CompoundNameTail $1) } |
+                               Rule_106 { $1 }
 
-Rule_16 : { Ctr__Rule_16__0 rtkNoPos } |
-          ExtendsList { Ctr__Rule_16__1 (rtkPosOf $1) $1 }
+Rule_106 : tok__dot__4 id { Ctr__Rule_106__1 (rtkPosOf $1) (tkVal_id $2) }
 
-Rule_17 : { Ctr__Rule_17__0 rtkNoPos } |
-          ImplementsList { Ctr__Rule_17__1 (rtkPosOf $1) $1 }
+Rule_11 : {- empty -} { [] } |
+          Rule_11 Rule_12 { $2 : $1 }
 
-Rule_18 : { Ctr__Rule_18__0 rtkNoPos } |
-          ExtendsList { Ctr__Rule_18__1 (rtkPosOf $1) $1 }
+Rule_12 : tok__coma__9 ElementValue { Ctr__Rule_12__0 (rtkPosOf $1) $2 }
+
+Rule_13 : { Ctr__Rule_13__0 rtkNoPos } |
+          tok__coma__9 { Ctr__Rule_13__1 (rtkPosOf $1) }
+
+ListElem_ModifierList16 : qq_ModifierList { Anti_Rule_15 (tkVal_qq_ModifierList $1) } |
+                          Rule_15 { $1 }
+
+Rule_15 : Modifier { Ctr__Rule_15__1 (rtkPosOf $1) $1 } |
+          Annotation { Ctr__Rule_15__2 (rtkPosOf $1) $1 }
+
+Rule_17 : {- empty -} { [] } |
+          Rule_17 Rule_18 { $2 : $1 }
+
+Rule_18 : tok__coma__9 ClassOrInterfaceType { Ctr__Rule_18__0 (rtkPosOf $1) $2 }
+
+Rule_19 : ClassOrInterfaceType { [$1] } |
+          Rule_19 tok__coma__9 ClassOrInterfaceType { $3 : $1 }
 
 Rule_2 : { Ctr__Rule_2__0 rtkNoPos } |
-         TypeDeclaration { Ctr__Rule_2__1 (rtkPosOf $1) $1 }
+         CompilationUnitRest { Ctr__Rule_2__1 (rtkPosOf $1) $1 }
 
-Rule_20 : { Ctr__Rule_20__0 rtkNoPos } |
-          Rule_21 { Ctr__Rule_20__1 (rtkPosOf $1) $1 }
-
-Rule_21 : tok__lparen__7 Arglist tok__rparen__8 { Ctr__Rule_21__0 (rtkPosOf $1) $2 }
+Rule_21 : { Ctr__Rule_21__0 rtkNoPos } |
+          ExtendsList { Ctr__Rule_21__1 (rtkPosOf $1) $1 }
 
 Rule_22 : { Ctr__Rule_22__0 rtkNoPos } |
-          Rule_23 { Ctr__Rule_22__1 (rtkPosOf $1) $1 }
+          ImplementsList { Ctr__Rule_22__1 (rtkPosOf $1) $1 }
 
-Rule_23 : tok__symbol__14 FieldDeclarationList tok__symbol__15 { Ctr__Rule_23__0 (rtkPosOf $1) (reverse $2) }
+Rule_23 : { Ctr__Rule_23__0 rtkNoPos } |
+          ExtendsList { Ctr__Rule_23__1 (rtkPosOf $1) $1 }
 
-Rule_24 : {- empty -} { [] } |
-          Rule_24 Rule_25 { $2 : $1 }
+Rule_25 : { Ctr__Rule_25__0 rtkNoPos } |
+          Rule_26 { Ctr__Rule_25__1 (rtkPosOf $1) $1 }
 
-Rule_25 : tok__coma__9 EnumConstant { Ctr__Rule_25__0 (rtkPosOf $1) $2 }
-
-Rule_26 : { Ctr__Rule_26__0 rtkNoPos } |
-          tok__coma__9 { Ctr__Rule_26__1 (rtkPosOf $1) }
+Rule_26 : tok__lparen__7 Arglist tok__rparen__8 { Ctr__Rule_26__0 (rtkPosOf $1) $2 }
 
 Rule_27 : { Ctr__Rule_27__0 rtkNoPos } |
-          ImplementsList { Ctr__Rule_27__1 (rtkPosOf $1) $1 }
+          Rule_28 { Ctr__Rule_27__1 (rtkPosOf $1) $1 }
 
-Rule_28 : { Ctr__Rule_28__0 rtkNoPos } |
-          Rule_29 { Ctr__Rule_28__1 (rtkPosOf $1) $1 }
+Rule_28 : tok__symbol__11 FieldDeclarationList tok__symbol__12 { Ctr__Rule_28__0 (rtkPosOf $1) (reverse $2) }
 
-Rule_29 : tok__semi__1 FieldDeclarationList { Ctr__Rule_29__0 (rtkPosOf $1) (reverse $2) }
+Rule_29 : {- empty -} { [] } |
+          Rule_29 Rule_30 { $2 : $1 }
 
 Rule_3 : { Ctr__Rule_3__0 rtkNoPos } |
          tok_static_3 { Ctr__Rule_3__1 (rtkPosOf $1) }
 
-Rule_30 : MemberDeclaration { Ctr__Rule_30__0 (rtkPosOf $1) $1 } |
-          TypeDeclRest { Ctr__Rule_30__1 (rtkPosOf $1) $1 } |
-          StaticInitializer { Ctr__Rule_30__2 (rtkPosOf $1) $1 }
+Rule_30 : tok__coma__9 EnumConstant { Ctr__Rule_30__0 (rtkPosOf $1) $2 }
 
-ListElem_Dims32 : qq_Dims { Anti_Rule_31 (tkVal_qq_Dims $1) } |
-                  Rule_31 { $1 }
+Rule_31 : { Ctr__Rule_31__0 rtkNoPos } |
+          tok__coma__9 { Ctr__Rule_31__1 (rtkPosOf $1) }
 
-Rule_31 : tok__sq_bkt_l__18 tok__sq_bkt_r__19 { Ctr__Rule_31__1 (rtkPosOf $1) }
+Rule_32 : { Ctr__Rule_32__0 rtkNoPos } |
+          ImplementsList { Ctr__Rule_32__1 (rtkPosOf $1) $1 }
 
-ListElem_NonEmptyDims34 : qq_NonEmptyDims { Anti_Rule_33 (tkVal_qq_NonEmptyDims $1) } |
-                          Rule_33 { $1 }
+Rule_33 : { Ctr__Rule_33__0 rtkNoPos } |
+          Rule_34 { Ctr__Rule_33__1 (rtkPosOf $1) $1 }
 
-Rule_33 : tok__sq_bkt_l__18 tok__sq_bkt_r__19 { Ctr__Rule_33__1 (rtkPosOf $1) }
+Rule_34 : tok__semi__1 FieldDeclarationList { Ctr__Rule_34__0 (rtkPosOf $1) (reverse $2) }
 
-Rule_35 : { Ctr__Rule_35__0 rtkNoPos } |
-          ParameterList { Ctr__Rule_35__1 (rtkPosOf $1) $1 }
+Rule_35 : MemberDeclaration { Ctr__Rule_35__0 (rtkPosOf $1) $1 } |
+          TypeDeclRest { Ctr__Rule_35__1 (rtkPosOf $1) $1 } |
+          StaticInitializer { Ctr__Rule_35__2 (rtkPosOf $1) $1 }
 
-Rule_36 : { Ctr__Rule_36__0 rtkNoPos } |
-          ThrowsClause { Ctr__Rule_36__1 (rtkPosOf $1) $1 }
+ListElem_Dims37 : qq_Dims { Anti_Rule_36 (tkVal_qq_Dims $1) } |
+                  Rule_36 { $1 }
 
-Rule_37 : {- empty -} { [] } |
-          Rule_37 Rule_38 { $2 : $1 }
+Rule_36 : tok__sq_bkt_l__18 tok__sq_bkt_r__19 { Ctr__Rule_36__1 (rtkPosOf $1) }
 
-Rule_38 : tok__coma__9 CompoundName { Ctr__Rule_38__0 (rtkPosOf $1) $2 }
+ListElem_NonEmptyDims39 : qq_NonEmptyDims { Anti_Rule_38 (tkVal_qq_NonEmptyDims $1) } |
+                          Rule_38 { $1 }
 
-Rule_39 : { Ctr__Rule_39__0 rtkNoPos } |
-          ParameterList { Ctr__Rule_39__1 (rtkPosOf $1) $1 }
+Rule_38 : tok__sq_bkt_l__18 tok__sq_bkt_r__19 { Ctr__Rule_38__1 (rtkPosOf $1) }
 
 Rule_4 : { Ctr__Rule_4__0 rtkNoPos } |
          Rule_5 { Ctr__Rule_4__1 (rtkPosOf $1) $1 }
 
 Rule_40 : { Ctr__Rule_40__0 rtkNoPos } |
-          ThrowsClause { Ctr__Rule_40__1 (rtkPosOf $1) $1 }
+          ParameterList { Ctr__Rule_40__1 (rtkPosOf $1) $1 }
 
-Rule_41 : StatementBlock { Ctr__Rule_41__0 (rtkPosOf $1) $1 } |
-          Rule_42 tok__semi__1 { Ctr__Rule_41__1 (rtkPosOf $1) $1 }
+Rule_41 : { Ctr__Rule_41__0 rtkNoPos } |
+          ThrowsClause { Ctr__Rule_41__1 (rtkPosOf $1) $1 }
 
-Rule_42 : { Ctr__Rule_42__0 rtkNoPos } |
-          Rule_43 { Ctr__Rule_42__1 (rtkPosOf $1) $1 }
+Rule_42 : {- empty -} { [] } |
+          Rule_42 Rule_43 { $2 : $1 }
 
-Rule_43 : tok_default_30 Expression { Ctr__Rule_43__0 (rtkPosOf $1) $2 }
+Rule_43 : tok__coma__9 CompoundName { Ctr__Rule_43__0 (rtkPosOf $1) $2 }
 
-ListElem_MoreVariableDeclarators45 : qq_MoreVariableDeclarators { Anti_Rule_44 (tkVal_qq_MoreVariableDeclarators $1) } |
-                                     Rule_44 { $1 }
+Rule_44 : { Ctr__Rule_44__0 rtkNoPos } |
+          ParameterList { Ctr__Rule_44__1 (rtkPosOf $1) $1 }
 
-Rule_44 : tok__coma__9 VariableDeclarator { Ctr__Rule_44__1 (rtkPosOf $1) $2 }
+Rule_45 : { Ctr__Rule_45__0 rtkNoPos } |
+          ThrowsClause { Ctr__Rule_45__1 (rtkPosOf $1) $1 }
 
-Rule_46 : {- empty -} { [] } |
-          Rule_46 Rule_47 { $2 : $1 }
+Rule_46 : StatementBlock { Ctr__Rule_46__0 (rtkPosOf $1) $1 } |
+          Rule_47 tok__semi__1 { Ctr__Rule_46__1 (rtkPosOf $1) $1 }
 
-Rule_47 : tok__coma__9 VariableDeclarator { Ctr__Rule_47__0 (rtkPosOf $1) $2 }
+Rule_47 : { Ctr__Rule_47__0 rtkNoPos } |
+          Rule_48 { Ctr__Rule_47__1 (rtkPosOf $1) $1 }
 
-ListElem_LocalModifierList149 : qq_LocalModifierList1 { Anti_Rule_48 (tkVal_qq_LocalModifierList1 $1) } |
-                                Rule_48 { $1 }
+Rule_48 : tok_default_30 Expression { Ctr__Rule_48__0 (rtkPosOf $1) $2 }
 
-Rule_48 : tok_final_31 { Ctr__Rule_48__1 (rtkPosOf $1) } |
-          Annotation { Ctr__Rule_48__2 (rtkPosOf $1) $1 }
+ListElem_MoreVariableDeclarators50 : qq_MoreVariableDeclarators { Anti_Rule_49 (tkVal_qq_MoreVariableDeclarators $1) } |
+                                     Rule_49 { $1 }
+
+Rule_49 : tok__coma__9 VariableDeclarator { Ctr__Rule_49__1 (rtkPosOf $1) $2 }
 
 Rule_5 : tok__lparen__7 Rule_6 tok__rparen__8 { Ctr__Rule_5__0 (rtkPosOf $1) $2 }
 
-Rule_50 : tok__eql__10 VariableInitializer { Ctr__Rule_50__0 (rtkPosOf $1) $2 }
+Rule_51 : {- empty -} { [] } |
+          Rule_51 Rule_52 { $2 : $1 }
 
-Rule_51 : VariableInitializer Rule_52 Rule_54 { Ctr__Rule_51__0 (rtkPosOf $1) $1 (reverse $2) $3 }
+Rule_52 : tok__coma__9 VariableDeclarator { Ctr__Rule_52__0 (rtkPosOf $1) $2 }
 
-Rule_52 : {- empty -} { [] } |
-          Rule_52 Rule_53 { $2 : $1 }
+ListElem_LocalModifierList154 : qq_LocalModifierList1 { Anti_Rule_53 (tkVal_qq_LocalModifierList1 $1) } |
+                                Rule_53 { $1 }
 
-Rule_53 : tok__coma__9 VariableInitializer { Ctr__Rule_53__0 (rtkPosOf $1) $2 }
+Rule_53 : tok_final_31 { Ctr__Rule_53__1 (rtkPosOf $1) } |
+          Annotation { Ctr__Rule_53__2 (rtkPosOf $1) $1 }
 
-Rule_54 : { Ctr__Rule_54__0 rtkNoPos } |
-          tok__coma__9 { Ctr__Rule_54__1 (rtkPosOf $1) }
+Rule_55 : tok__eql__10 VariableInitializer { Ctr__Rule_55__0 (rtkPosOf $1) $2 }
 
-Rule_55 : {- empty -} { [] } |
-          Rule_55 Rule_56 { $2 : $1 }
+Rule_56 : VariableInitializer Rule_57 Rule_59 { Ctr__Rule_56__0 (rtkPosOf $1) $1 (reverse $2) $3 }
 
-Rule_56 : tok__coma__9 Parameter { Ctr__Rule_56__0 (rtkPosOf $1) $2 }
+Rule_57 : {- empty -} { [] } |
+          Rule_57 Rule_58 { $2 : $1 }
 
-ListElem_ParamModifierList58 : qq_ParamModifierList { Anti_Rule_57 (tkVal_qq_ParamModifierList $1) } |
-                               Rule_57 { $1 }
-
-Rule_57 : tok_final_31 { Ctr__Rule_57__1 (rtkPosOf $1) } |
-          Annotation { Ctr__Rule_57__2 (rtkPosOf $1) $1 }
+Rule_58 : tok__coma__9 VariableInitializer { Ctr__Rule_58__0 (rtkPosOf $1) $2 }
 
 Rule_59 : { Ctr__Rule_59__0 rtkNoPos } |
-          tok__dot__dot__dot__32 { Ctr__Rule_59__1 (rtkPosOf $1) }
+          tok__coma__9 { Ctr__Rule_59__1 (rtkPosOf $1) }
 
 Rule_6 : { Ctr__Rule_6__0 rtkNoPos } |
          AnnotationArguments { Ctr__Rule_6__1 (rtkPosOf $1) $1 }
 
-Rule_61 : { Ctr__Rule_61__0 rtkNoPos } |
-          Rule_62 { Ctr__Rule_61__1 (rtkPosOf $1) $1 }
+Rule_60 : {- empty -} { [] } |
+          Rule_60 Rule_61 { $2 : $1 }
 
-Rule_62 : tok__colon__37 Expression { Ctr__Rule_62__0 (rtkPosOf $1) $2 }
+Rule_61 : tok__coma__9 Parameter { Ctr__Rule_61__0 (rtkPosOf $1) $2 }
 
-Rule_63 : tok_else_42 Statement { Ctr__Rule_63__0 (rtkPosOf $1) $2 }
+ListElem_ParamModifierList63 : qq_ParamModifierList { Anti_Rule_62 (tkVal_qq_ParamModifierList $1) } |
+                               Rule_62 { $1 }
 
-Rule_64 : VariableDeclaration { Ctr__Rule_64__0 (rtkPosOf $1) $1 } |
-          Expression tok__semi__1 { Ctr__Rule_64__1 (rtkPosOf $1) $1 } |
-          tok__semi__1 { Ctr__Rule_64__2 (rtkPosOf $1) }
+Rule_62 : tok_final_31 { Ctr__Rule_62__1 (rtkPosOf $1) } |
+          Annotation { Ctr__Rule_62__2 (rtkPosOf $1) $1 }
 
-ListElem_CatchList66 : qq_CatchList { Anti_Rule_65 (tkVal_qq_CatchList $1) } |
-                       Rule_65 { $1 }
+Rule_64 : { Ctr__Rule_64__0 rtkNoPos } |
+          tok__dot__dot__dot__32 { Ctr__Rule_64__1 (rtkPosOf $1) }
 
-Rule_65 : tok_catch_47 tok__lparen__7 CatchParameter tok__rparen__8 StatementBlock { Ctr__Rule_65__1 (rtkPosOf $1) $3 $5 }
+Rule_66 : { Ctr__Rule_66__0 rtkNoPos } |
+          Rule_67 { Ctr__Rule_66__1 (rtkPosOf $1) $1 }
 
-Rule_67 : {- empty -} { [] } |
-          Rule_67 Rule_68 { $2 : $1 }
+Rule_67 : tok__colon__37 Expression { Ctr__Rule_67__0 (rtkPosOf $1) $2 }
 
-Rule_68 : tok__pipe__48 Type { Ctr__Rule_68__0 (rtkPosOf $1) $2 }
+Rule_68 : tok_else_42 Statement { Ctr__Rule_68__0 (rtkPosOf $1) $2 }
 
-Rule_69 : tok_finally_49 StatementBlock { Ctr__Rule_69__0 (rtkPosOf $1) $2 }
+Rule_69 : VariableDeclaration { Ctr__Rule_69__0 (rtkPosOf $1) $1 } |
+          Expression tok__semi__1 { Ctr__Rule_69__1 (rtkPosOf $1) $1 } |
+          tok__semi__1 { Ctr__Rule_69__2 (rtkPosOf $1) }
 
 Rule_7 : {- empty -} { [] } |
          Rule_7 Rule_8 { $2 : $1 }
 
-Rule_70 : { Ctr__Rule_70__0 rtkNoPos } |
-          ResourceSpec { Ctr__Rule_70__1 (rtkPosOf $1) $1 }
+ListElem_CatchList71 : qq_CatchList { Anti_Rule_70 (tkVal_qq_CatchList $1) } |
+                       Rule_70 { $1 }
 
-Rule_71 : {- empty -} { [] } |
-          Rule_71 Rule_72 { $2 : $1 }
+Rule_70 : tok_catch_47 tok__lparen__7 CatchParameter tok__rparen__8 StatementBlock { Ctr__Rule_70__1 (rtkPosOf $1) $3 $5 }
 
-Rule_72 : tok__semi__1 Resource { Ctr__Rule_72__0 (rtkPosOf $1) $2 }
+Rule_72 : {- empty -} { [] } |
+          Rule_72 Rule_73 { $2 : $1 }
 
-Rule_73 : { Ctr__Rule_73__0 rtkNoPos } |
-          tok__semi__1 { Ctr__Rule_73__1 (rtkPosOf $1) }
+Rule_73 : tok__pipe__48 Type { Ctr__Rule_73__0 (rtkPosOf $1) $2 }
 
-ListElem_SwitchCaseList75 : qq_SwitchCaseList { Anti_Rule_74 (tkVal_qq_SwitchCaseList $1) } |
-                            Rule_74 { $1 }
+Rule_74 : tok_finally_49 StatementBlock { Ctr__Rule_74__0 (rtkPosOf $1) $2 }
 
-Rule_74 : tok_case_51 Expression tok__colon__37 { Ctr__Rule_74__1 (rtkPosOf $1) $2 } |
-          tok_default_30 tok__colon__37 { Ctr__Rule_74__2 (rtkPosOf $1) } |
-          Statement { Ctr__Rule_74__3 (rtkPosOf $1) $1 }
+Rule_75 : { Ctr__Rule_75__0 rtkNoPos } |
+          ResourceSpec { Ctr__Rule_75__1 (rtkPosOf $1) $1 }
 
-Rule_76 : { Ctr__Rule_76__0 rtkNoPos } |
-          Rule_77 { Ctr__Rule_76__1 (rtkPosOf $1) $1 }
+Rule_76 : {- empty -} { [] } |
+          Rule_76 Rule_77 { $2 : $1 }
 
-Rule_77 : AssignmentOp AssignmentExpression { Ctr__Rule_77__0 (rtkPosOf $1) $1 $2 }
+Rule_77 : tok__semi__1 Resource { Ctr__Rule_77__0 (rtkPosOf $1) $2 }
 
-Rule_78 : Rule_79 { [$1] } |
-          Rule_78 Rule_79 { $2 : $1 }
+Rule_78 : { Ctr__Rule_78__0 rtkNoPos } |
+          tok__semi__1 { Ctr__Rule_78__1 (rtkPosOf $1) }
 
-Rule_79 : tok__coma__9 id { Ctr__Rule_79__0 (rtkPosOf $1) (tkVal_id $2) }
+ListElem_SwitchCaseList80 : qq_SwitchCaseList { Anti_Rule_79 (tkVal_qq_SwitchCaseList $1) } |
+                            Rule_79 { $1 }
+
+Rule_79 : tok_case_51 Expression tok__colon__37 { Ctr__Rule_79__1 (rtkPosOf $1) $2 } |
+          tok_default_30 tok__colon__37 { Ctr__Rule_79__2 (rtkPosOf $1) } |
+          Statement { Ctr__Rule_79__3 (rtkPosOf $1) $1 }
 
 Rule_8 : tok__coma__9 AnnotationElement { Ctr__Rule_8__0 (rtkPosOf $1) $2 }
 
-Rule_80 : { Ctr__Rule_80__0 rtkNoPos } |
-          Rule_81 { Ctr__Rule_80__1 (rtkPosOf $1) $1 }
+Rule_81 : { Ctr__Rule_81__0 rtkNoPos } |
+          Rule_82 { Ctr__Rule_81__1 (rtkPosOf $1) $1 }
 
-Rule_81 : tok__lparen__7 Arglist tok__rparen__8 { Ctr__Rule_81__0 (rtkPosOf $1) $2 }
+Rule_82 : AssignmentOp AssignmentExpression { Ctr__Rule_82__0 (rtkPosOf $1) $1 $2 }
 
-Rule_82 : { Ctr__Rule_82__0 rtkNoPos } |
-          Rule_83 { Ctr__Rule_82__1 (rtkPosOf $1) $1 }
+Rule_83 : Rule_84 { [$1] } |
+          Rule_83 Rule_84 { $2 : $1 }
 
-Rule_83 : tok__lparen__7 Arglist tok__rparen__8 { Ctr__Rule_83__0 (rtkPosOf $1) $2 }
-
-Rule_84 : tok__lparen__7 Arglist tok__rparen__8 { Ctr__Rule_84__0 (rtkPosOf $1) $2 } |
-          DimExprs Rule_85 { Ctr__Rule_84__1 (rtkPosOf (reverse $1)) (reverse $1) $2 }
+Rule_84 : tok__coma__9 id { Ctr__Rule_84__0 (rtkPosOf $1) (tkVal_id $2) }
 
 Rule_85 : { Ctr__Rule_85__0 rtkNoPos } |
-          NonEmptyDims { Ctr__Rule_85__1 (rtkPosOf (reverse $1)) (reverse $1) }
+          Rule_86 { Ctr__Rule_85__1 (rtkPosOf $1) $1 }
 
-ListElem_DimExprs87 : qq_DimExprs { Anti_Rule_86 (tkVal_qq_DimExprs $1) } |
-                      Rule_86 { $1 }
+Rule_86 : tok__lparen__7 Arglist tok__rparen__8 { Ctr__Rule_86__0 (rtkPosOf $1) $2 }
 
-Rule_86 : tok__sq_bkt_l__18 Expression tok__sq_bkt_r__19 { Ctr__Rule_86__1 (rtkPosOf $1) $2 }
+Rule_87 : { Ctr__Rule_87__0 rtkNoPos } |
+          Rule_88 { Ctr__Rule_87__1 (rtkPosOf $1) $1 }
 
-Rule_88 : Expression Rule_89 { Ctr__Rule_88__0 (rtkPosOf $1) $1 (reverse $2) }
+Rule_88 : tok__lparen__7 Arglist tok__rparen__8 { Ctr__Rule_88__0 (rtkPosOf $1) $2 }
 
-Rule_89 : {- empty -} { [] } |
-          Rule_89 Rule_90 { $2 : $1 }
+Rule_89 : tok__lparen__7 Arglist tok__rparen__8 Rule_90 { Ctr__Rule_89__0 (rtkPosOf $1) $2 $4 } |
+          DimExprs Rule_92 { Ctr__Rule_89__1 (rtkPosOf (reverse $1)) (reverse $1) $2 } |
+          NonEmptyDims ArrayInitializer { Ctr__Rule_89__2 (rtkPosOf (reverse $1)) (reverse $1) $2 }
 
-Rule_90 : tok__coma__9 Expression { Ctr__Rule_90__0 (rtkPosOf $1) $2 }
+Rule_9 : { Ctr__Rule_9__0 rtkNoPos } |
+         Rule_10 { Ctr__Rule_9__1 (rtkPosOf $1) $1 }
 
-Rule_91 : {- empty -} { [] } |
-          Rule_91 Rule_92 { $2 : $1 }
+Rule_90 : { Ctr__Rule_90__0 rtkNoPos } |
+          Rule_91 { Ctr__Rule_90__1 (rtkPosOf $1) $1 }
 
-Rule_92 : tok__coma__9 TypeArgument { Ctr__Rule_92__0 (rtkPosOf $1) $2 }
+Rule_91 : tok__symbol__11 FieldDeclarationList tok__symbol__12 { Ctr__Rule_91__0 (rtkPosOf $1) (reverse $2) }
 
-Rule_93 : tok__symbol__72 TypeParameter Rule_94 tok__symbol__73 { Ctr__Rule_93__0 (rtkPosOf $1) $2 (reverse $3) }
+Rule_92 : { Ctr__Rule_92__0 rtkNoPos } |
+          NonEmptyDims { Ctr__Rule_92__1 (rtkPosOf (reverse $1)) (reverse $1) }
 
-Rule_94 : {- empty -} { [] } |
-          Rule_94 Rule_95 { $2 : $1 }
+ListElem_DimExprs94 : qq_DimExprs { Anti_Rule_93 (tkVal_qq_DimExprs $1) } |
+                      Rule_93 { $1 }
 
-Rule_95 : tok__coma__9 TypeParameter { Ctr__Rule_95__0 (rtkPosOf $1) $2 }
+Rule_93 : tok__sq_bkt_l__18 Expression tok__sq_bkt_r__19 { Ctr__Rule_93__1 (rtkPosOf $1) $2 }
 
-Rule_96 : { Ctr__Rule_96__0 rtkNoPos } |
-          Rule_97 { Ctr__Rule_96__1 (rtkPosOf $1) $1 }
+Rule_95 : Expression Rule_96 { Ctr__Rule_95__0 (rtkPosOf $1) $1 (reverse $2) }
 
-Rule_97 : tok_extends_11 Type Rule_98 { Ctr__Rule_97__0 (rtkPosOf $1) $2 (reverse $3) }
+Rule_96 : {- empty -} { [] } |
+          Rule_96 Rule_97 { $2 : $1 }
+
+Rule_97 : tok__coma__9 Expression { Ctr__Rule_97__0 (rtkPosOf $1) $2 }
 
 Rule_98 : {- empty -} { [] } |
           Rule_98 Rule_99 { $2 : $1 }
 
-Rule_99 : tok__symbol__69 Type { Ctr__Rule_99__0 (rtkPosOf $1) $2 }
+Rule_99 : tok__coma__9 TypeArgument { Ctr__Rule_99__0 (rtkPosOf $1) $2 }
 
 ShiftOp : qq_ShiftOp { Anti_ShiftOp (tkVal_qq_ShiftOp $1) } |
           tok__symbol__symbol__77 { Ctr__ShiftOp__0 (rtkPosOf $1) } |
@@ -1039,7 +1092,7 @@ Statement : qq_Statement { Anti_Statement (tkVal_qq_Statement $1) } |
             SwitchStatement { Ctr__Statement__9 (rtkPosOf $1) $1 } |
             tok_synchronized_34 tok__lparen__7 Expression tok__rparen__8 Statement { Ctr__Statement__10 (rtkPosOf $1) $3 $5 } |
             tok_throw_35 Expression tok__semi__1 { Ctr__Statement__11 (rtkPosOf $1) $2 } |
-            tok_assert_36 Expression Rule_61 tok__semi__1 { Ctr__Statement__12 (rtkPosOf $1) $2 $3 } |
+            tok_assert_36 Expression Rule_66 tok__semi__1 { Ctr__Statement__12 (rtkPosOf $1) $2 $3 } |
             id tok__colon__37 Statement { Ctr__Statement__13 (rtkPosOf $1) (tkVal_id $1) $3 } |
             tok_break_38 OptId tok__semi__1 { Ctr__Statement__14 (rtkPosOf $1) $2 } |
             tok_continue_39 OptId tok__semi__1 { Ctr__Statement__15 (rtkPosOf $1) $2 } |
@@ -1047,29 +1100,29 @@ Statement : qq_Statement { Anti_Statement (tkVal_qq_Statement $1) } |
             tok_this_41 tok__lparen__7 Arglist tok__rparen__8 tok__semi__1 { Ctr__Statement__17 (rtkPosOf $1) $3 } |
             tok__semi__1 { Ctr__Statement__18 (rtkPosOf $1) }
 
-ListElem_StatementList60 : qq_StatementList { Anti_Statement (tkVal_qq_StatementList $1) } |
+ListElem_StatementList65 : qq_StatementList { Anti_Statement (tkVal_qq_StatementList $1) } |
                            Statement { $1 }
 
 StatementBlock : qq_StatementBlock { Anti_StatementBlock (tkVal_qq_StatementBlock $1) } |
-                 tok__symbol__14 StatementList tok__symbol__15 { Ctr__StatementBlock__0 (rtkPosOf $1) (reverse $2) }
+                 tok__symbol__11 StatementList tok__symbol__12 { Ctr__StatementBlock__0 (rtkPosOf $1) (reverse $2) }
 
 StatementList : {- empty -} { [] } |
-                StatementList ListElem_StatementList60 { $2 : $1 }
+                StatementList ListElem_StatementList65 { $2 : $1 }
 
 StaticInitializer : qq_StaticInitializer { Anti_StaticInitializer (tkVal_qq_StaticInitializer $1) } |
                     StatementBlock { Ctr__StaticInitializer__0 (rtkPosOf $1) $1 }
 
 SwitchCaseList : {- empty -} { [] } |
-                 SwitchCaseList ListElem_SwitchCaseList75 { $2 : $1 }
+                 SwitchCaseList ListElem_SwitchCaseList80 { $2 : $1 }
 
 SwitchStatement : qq_SwitchStatement { Anti_SwitchStatement (tkVal_qq_SwitchStatement $1) } |
-                  tok_switch_52 tok__lparen__7 Expression tok__rparen__8 tok__symbol__14 SwitchCaseList tok__symbol__15 { Ctr__SwitchStatement__0 (rtkPosOf $1) $3 (reverse $6) }
+                  tok_switch_52 tok__lparen__7 Expression tok__rparen__8 tok__symbol__11 SwitchCaseList tok__symbol__12 { Ctr__SwitchStatement__0 (rtkPosOf $1) $3 (reverse $6) }
 
 ThrowsClause : qq_ThrowsClause { Anti_ThrowsClause (tkVal_qq_ThrowsClause $1) } |
-               tok_throws_29 CompoundName Rule_37 { Ctr__ThrowsClause__0 (rtkPosOf $1) $2 (reverse $3) }
+               tok_throws_29 CompoundName Rule_42 { Ctr__ThrowsClause__0 (rtkPosOf $1) $2 (reverse $3) }
 
 TryStatement : qq_TryStatement { Anti_TryStatement (tkVal_qq_TryStatement $1) } |
-               tok_try_50 Rule_70 StatementBlock CatchList OptFinally { Ctr__TryStatement__0 (rtkPosOf $1) $2 $3 (reverse $4) $5 }
+               tok_try_50 Rule_75 StatementBlock CatchList OptFinally { Ctr__TryStatement__0 (rtkPosOf $1) $2 $3 (reverse $4) $5 }
 
 Type : qq_Type { Anti_Type (tkVal_qq_Type $1) } |
        PrimitiveTypeKeyword Dims { Ctr__Type__0 (rtkPosOf $1) $1 (reverse $2) } |
@@ -1091,15 +1144,21 @@ TypeDeclRest : qq_TypeDeclRest { Anti_TypeDeclRest (tkVal_qq_TypeDeclRest $1) } 
                EnumDeclaration { Ctr__TypeDeclRest__2 (rtkPosOf $1) $1 } |
                AnnotationDeclaration { Ctr__TypeDeclRest__3 (rtkPosOf $1) $1 }
 
+ListElem_TypeDeclarationList0 : qq_TypeDeclarationList { Anti_TypeDeclaration (tkVal_qq_TypeDeclarationList $1) } |
+                                TypeDeclaration { $1 }
+
 TypeDeclaration : qq_TypeDeclaration { Anti_TypeDeclaration (tkVal_qq_TypeDeclaration $1) } |
-                  OptDocComment ModifierList TypeDeclRest { Ctr__TypeDeclaration__0 (rtkPosOf $1) $1 (reverse $2) $3 }
+                  OptDocComment ModifierList TypeDeclRest { Ctr__TypeDeclaration__1 (rtkPosOf $1) $1 (reverse $2) $3 }
+
+TypeDeclarationList : {- empty -} { [] } |
+                      TypeDeclarationList ListElem_TypeDeclarationList0 { $2 : $1 }
 
 TypeParameter : qq_TypeParameter { Anti_TypeParameter (tkVal_qq_TypeParameter $1) } |
-                id Rule_96 { Ctr__TypeParameter__0 (rtkPosOf $1) (tkVal_id $1) $2 }
+                id Rule_102 { Ctr__TypeParameter__0 (rtkPosOf $1) (tkVal_id $1) $2 }
 
 TypeParameters : qq_TypeParameters { Anti_TypeParameters (tkVal_qq_TypeParameters $1) } |
                  { Ctr__TypeParameters__0 rtkNoPos } |
-                 Rule_93 { Ctr__TypeParameters__1 (rtkPosOf $1) $1 }
+                 NonEmptyTypeParameters { Ctr__TypeParameters__1 (rtkPosOf $1) $1 }
 
 TypeSpecifier : qq_TypeSpecifier { Anti_TypeSpecifier (tkVal_qq_TypeSpecifier $1) } |
                 tok_boolean_20 { Ctr__TypeSpecifier__0 (rtkPosOf $1) } |
@@ -1121,22 +1180,22 @@ VariableDeclarator : qq_VariableDeclarator { Anti_VariableDeclarator (tkVal_qq_V
                      id Dims OptVariableInitializer { Ctr__VariableDeclarator__0 (rtkPosOf $1) (tkVal_id $1) (reverse $2) $3 }
 
 VariableDeclaratorList : qq_VariableDeclaratorList { Anti_VariableDeclaratorList (tkVal_qq_VariableDeclaratorList $1) } |
-                         VariableDeclarator Rule_46 { Ctr__VariableDeclaratorList__0 (rtkPosOf $1) $1 (reverse $2) }
+                         VariableDeclarator Rule_51 { Ctr__VariableDeclaratorList__0 (rtkPosOf $1) $1 (reverse $2) }
 
 VariableInitializer : qq_VariableInitializer { Anti_VariableInitializer (tkVal_qq_VariableInitializer $1) } |
                       Expression { Ctr__VariableInitializer__0 (rtkPosOf $1) $1 } |
-                      tok__symbol__14 VariableInitializerList tok__symbol__15 { Ctr__VariableInitializer__1 (rtkPosOf $1) $2 }
+                      ArrayInitializer { Ctr__VariableInitializer__1 (rtkPosOf $1) $1 }
 
 VariableInitializerList : qq_VariableInitializerList { Anti_VariableInitializerList (tkVal_qq_VariableInitializerList $1) } |
                           { Ctr__VariableInitializerList__0 rtkNoPos } |
-                          Rule_51 { Ctr__VariableInitializerList__1 (rtkPosOf $1) $1 }
+                          Rule_56 { Ctr__VariableInitializerList__1 (rtkPosOf $1) $1 }
 
 WhileStatement : qq_WhileStatement { Anti_WhileStatement (tkVal_qq_WhileStatement $1) } |
                  tok_while_45 tok__lparen__7 Expression tok__rparen__8 Statement { Ctr__WhileStatement__0 (rtkPosOf $1) $3 $5 }
 
 WildcardType : qq_WildcardType { Anti_WildcardType (tkVal_qq_WildcardType $1) } |
                tok__symbol__65 { Ctr__WildcardType__0 (rtkPosOf $1) } |
-               tok__symbol__65 tok_extends_11 Type { Ctr__WildcardType__1 (rtkPosOf $1) $3 } |
+               tok__symbol__65 tok_extends_13 Type { Ctr__WildcardType__1 (rtkPosOf $1) $3 } |
                tok__symbol__65 tok_super_40 Type { Ctr__WildcardType__2 (rtkPosOf $1) $3 }
 
 
@@ -1149,105 +1208,111 @@ parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
 -- Render a token the way it appears in the source, for error messages
 showRtkToken :: L.Token -> String
 showRtkToken L.EndOfFile = "end of input"
-showRtkToken L.Tk__tok_AdditiveOp_dummy_193 = "'tok_AdditiveOp_dummy_193'"
-showRtkToken L.Tk__tok_Annotation_dummy_192 = "'tok_Annotation_dummy_192'"
-showRtkToken L.Tk__tok_AnnotationArguments_dummy_191 = "'tok_AnnotationArguments_dummy_191'"
-showRtkToken L.Tk__tok_AnnotationDeclaration_dummy_190 = "'tok_AnnotationDeclaration_dummy_190'"
-showRtkToken L.Tk__tok_AnnotationElement_dummy_189 = "'tok_AnnotationElement_dummy_189'"
-showRtkToken L.Tk__tok_AnnotationList_dummy_188 = "'tok_AnnotationList_dummy_188'"
-showRtkToken L.Tk__tok_AnnotationTypeElement_dummy_187 = "'tok_AnnotationTypeElement_dummy_187'"
-showRtkToken L.Tk__tok_AnnotationTypeElementList_dummy_186 = "'tok_AnnotationTypeElementList_dummy_186'"
-showRtkToken L.Tk__tok_Arglist_dummy_185 = "'tok_Arglist_dummy_185'"
-showRtkToken L.Tk__tok_AssignmentOp_dummy_184 = "'tok_AssignmentOp_dummy_184'"
-showRtkToken L.Tk__tok_CatchList_dummy_183 = "'tok_CatchList_dummy_183'"
-showRtkToken L.Tk__tok_CatchParameter_dummy_182 = "'tok_CatchParameter_dummy_182'"
-showRtkToken L.Tk__tok_ClassDeclaration_dummy_181 = "'tok_ClassDeclaration_dummy_181'"
-showRtkToken L.Tk__tok_ClassOrInterfaceType_dummy_180 = "'tok_ClassOrInterfaceType_dummy_180'"
-showRtkToken L.Tk__tok_CompilationUnit_dummy_179 = "'tok_CompilationUnit_dummy_179'"
-showRtkToken L.Tk__tok_CompoundName_dummy_178 = "'tok_CompoundName_dummy_178'"
-showRtkToken L.Tk__tok_CompoundNameTail_dummy_177 = "'tok_CompoundNameTail_dummy_177'"
-showRtkToken L.Tk__tok_CreationExpression_dummy_176 = "'tok_CreationExpression_dummy_176'"
-showRtkToken L.Tk__tok_DimExprs_dummy_175 = "'tok_DimExprs_dummy_175'"
-showRtkToken L.Tk__tok_Dims_dummy_174 = "'tok_Dims_dummy_174'"
-showRtkToken L.Tk__tok_DoStatement_dummy_173 = "'tok_DoStatement_dummy_173'"
-showRtkToken L.Tk__tok_DocComment_dummy_172 = "'tok_DocComment_dummy_172'"
-showRtkToken L.Tk__tok_EnumConstant_dummy_171 = "'tok_EnumConstant_dummy_171'"
-showRtkToken L.Tk__tok_EnumConstantList_dummy_170 = "'tok_EnumConstantList_dummy_170'"
-showRtkToken L.Tk__tok_EnumDeclaration_dummy_169 = "'tok_EnumDeclaration_dummy_169'"
-showRtkToken L.Tk__tok_EqualityOp_dummy_168 = "'tok_EqualityOp_dummy_168'"
-showRtkToken L.Tk__tok_Expression_dummy_167 = "'tok_Expression_dummy_167'"
-showRtkToken L.Tk__tok_ExtendsList_dummy_166 = "'tok_ExtendsList_dummy_166'"
-showRtkToken L.Tk__tok_FieldDeclaration_dummy_165 = "'tok_FieldDeclaration_dummy_165'"
-showRtkToken L.Tk__tok_FieldDeclarationList_dummy_164 = "'tok_FieldDeclarationList_dummy_164'"
-showRtkToken L.Tk__tok_ForEachHeader_dummy_163 = "'tok_ForEachHeader_dummy_163'"
-showRtkToken L.Tk__tok_ForStatement_dummy_162 = "'tok_ForStatement_dummy_162'"
-showRtkToken L.Tk__tok_IfStatement_dummy_161 = "'tok_IfStatement_dummy_161'"
-showRtkToken L.Tk__tok_ImplementsList_dummy_160 = "'tok_ImplementsList_dummy_160'"
-showRtkToken L.Tk__tok_ImportHead_dummy_159 = "'tok_ImportHead_dummy_159'"
-showRtkToken L.Tk__tok_ImportList_dummy_158 = "'tok_ImportList_dummy_158'"
-showRtkToken L.Tk__tok_ImportName_dummy_157 = "'tok_ImportName_dummy_157'"
-showRtkToken L.Tk__tok_ImportStatement_dummy_156 = "'tok_ImportStatement_dummy_156'"
-showRtkToken L.Tk__tok_InterfaceDeclaration_dummy_155 = "'tok_InterfaceDeclaration_dummy_155'"
-showRtkToken L.Tk__tok_Java_dummy_194 = "'tok_Java_dummy_194'"
-showRtkToken L.Tk__tok_LambdaBody_dummy_154 = "'tok_LambdaBody_dummy_154'"
-showRtkToken L.Tk__tok_Literal_dummy_153 = "'tok_Literal_dummy_153'"
-showRtkToken L.Tk__tok_LocalModifierList1_dummy_152 = "'tok_LocalModifierList1_dummy_152'"
-showRtkToken L.Tk__tok_MemberAfterFirstId_dummy_151 = "'tok_MemberAfterFirstId_dummy_151'"
-showRtkToken L.Tk__tok_MemberDeclaration_dummy_150 = "'tok_MemberDeclaration_dummy_150'"
-showRtkToken L.Tk__tok_MemberRest_dummy_149 = "'tok_MemberRest_dummy_149'"
-showRtkToken L.Tk__tok_Modifier_dummy_148 = "'tok_Modifier_dummy_148'"
-showRtkToken L.Tk__tok_ModifierList_dummy_147 = "'tok_ModifierList_dummy_147'"
-showRtkToken L.Tk__tok_MoreTypeSpecifier_dummy_146 = "'tok_MoreTypeSpecifier_dummy_146'"
-showRtkToken L.Tk__tok_MoreVariableDeclarators_dummy_145 = "'tok_MoreVariableDeclarators_dummy_145'"
-showRtkToken L.Tk__tok_MultiplicativeOp_dummy_144 = "'tok_MultiplicativeOp_dummy_144'"
-showRtkToken L.Tk__tok_NonEmptyDims_dummy_143 = "'tok_NonEmptyDims_dummy_143'"
-showRtkToken L.Tk__tok_NonEmptyTypeArguments_dummy_142 = "'tok_NonEmptyTypeArguments_dummy_142'"
-showRtkToken L.Tk__tok_OptDocComment_dummy_141 = "'tok_OptDocComment_dummy_141'"
-showRtkToken L.Tk__tok_OptElsePart_dummy_140 = "'tok_OptElsePart_dummy_140'"
-showRtkToken L.Tk__tok_OptExpression_dummy_139 = "'tok_OptExpression_dummy_139'"
-showRtkToken L.Tk__tok_OptFinally_dummy_138 = "'tok_OptFinally_dummy_138'"
-showRtkToken L.Tk__tok_OptId_dummy_137 = "'tok_OptId_dummy_137'"
-showRtkToken L.Tk__tok_OptVariableInitializer_dummy_136 = "'tok_OptVariableInitializer_dummy_136'"
-showRtkToken L.Tk__tok_Package_dummy_135 = "'tok_Package_dummy_135'"
-showRtkToken L.Tk__tok_ParamModifierList_dummy_134 = "'tok_ParamModifierList_dummy_134'"
-showRtkToken L.Tk__tok_Parameter_dummy_133 = "'tok_Parameter_dummy_133'"
-showRtkToken L.Tk__tok_ParameterList_dummy_132 = "'tok_ParameterList_dummy_132'"
-showRtkToken L.Tk__tok_PostfixOp_dummy_131 = "'tok_PostfixOp_dummy_131'"
-showRtkToken L.Tk__tok_PrefixOp_dummy_130 = "'tok_PrefixOp_dummy_130'"
-showRtkToken L.Tk__tok_PrimitiveTypeKeyword_dummy_129 = "'tok_PrimitiveTypeKeyword_dummy_129'"
-showRtkToken L.Tk__tok_RelationalOp_dummy_128 = "'tok_RelationalOp_dummy_128'"
-showRtkToken L.Tk__tok_Resource_dummy_127 = "'tok_Resource_dummy_127'"
-showRtkToken L.Tk__tok_ResourceSpec_dummy_126 = "'tok_ResourceSpec_dummy_126'"
-showRtkToken L.Tk__tok_ShiftOp_dummy_125 = "'tok_ShiftOp_dummy_125'"
-showRtkToken L.Tk__tok_Statement_dummy_124 = "'tok_Statement_dummy_124'"
-showRtkToken L.Tk__tok_StatementBlock_dummy_123 = "'tok_StatementBlock_dummy_123'"
-showRtkToken L.Tk__tok_StatementList_dummy_122 = "'tok_StatementList_dummy_122'"
-showRtkToken L.Tk__tok_StaticInitializer_dummy_121 = "'tok_StaticInitializer_dummy_121'"
-showRtkToken L.Tk__tok_SwitchCaseList_dummy_120 = "'tok_SwitchCaseList_dummy_120'"
-showRtkToken L.Tk__tok_SwitchStatement_dummy_119 = "'tok_SwitchStatement_dummy_119'"
-showRtkToken L.Tk__tok_ThrowsClause_dummy_118 = "'tok_ThrowsClause_dummy_118'"
-showRtkToken L.Tk__tok_TryStatement_dummy_117 = "'tok_TryStatement_dummy_117'"
-showRtkToken L.Tk__tok_Type_dummy_116 = "'tok_Type_dummy_116'"
-showRtkToken L.Tk__tok_TypeArgument_dummy_115 = "'tok_TypeArgument_dummy_115'"
-showRtkToken L.Tk__tok_TypeArguments_dummy_114 = "'tok_TypeArguments_dummy_114'"
-showRtkToken L.Tk__tok_TypeDeclRest_dummy_113 = "'tok_TypeDeclRest_dummy_113'"
-showRtkToken L.Tk__tok_TypeDeclaration_dummy_112 = "'tok_TypeDeclaration_dummy_112'"
-showRtkToken L.Tk__tok_TypeParameter_dummy_111 = "'tok_TypeParameter_dummy_111'"
-showRtkToken L.Tk__tok_TypeParameters_dummy_110 = "'tok_TypeParameters_dummy_110'"
-showRtkToken L.Tk__tok_TypeSpecifier_dummy_109 = "'tok_TypeSpecifier_dummy_109'"
-showRtkToken L.Tk__tok_VariableDeclaration_dummy_108 = "'tok_VariableDeclaration_dummy_108'"
-showRtkToken L.Tk__tok_VariableDeclarator_dummy_107 = "'tok_VariableDeclarator_dummy_107'"
-showRtkToken L.Tk__tok_VariableDeclaratorList_dummy_106 = "'tok_VariableDeclaratorList_dummy_106'"
-showRtkToken L.Tk__tok_VariableInitializer_dummy_105 = "'tok_VariableInitializer_dummy_105'"
-showRtkToken L.Tk__tok_VariableInitializerList_dummy_104 = "'tok_VariableInitializerList_dummy_104'"
-showRtkToken L.Tk__tok_WhileStatement_dummy_103 = "'tok_WhileStatement_dummy_103'"
-showRtkToken L.Tk__tok_WildcardType_dummy_102 = "'tok_WildcardType_dummy_102'"
+showRtkToken L.Tk__tok_AdditiveOp_dummy_205 = "'tok_AdditiveOp_dummy_205'"
+showRtkToken L.Tk__tok_Annotation_dummy_204 = "'tok_Annotation_dummy_204'"
+showRtkToken L.Tk__tok_AnnotationArguments_dummy_203 = "'tok_AnnotationArguments_dummy_203'"
+showRtkToken L.Tk__tok_AnnotationDeclaration_dummy_202 = "'tok_AnnotationDeclaration_dummy_202'"
+showRtkToken L.Tk__tok_AnnotationElement_dummy_201 = "'tok_AnnotationElement_dummy_201'"
+showRtkToken L.Tk__tok_AnnotationList_dummy_200 = "'tok_AnnotationList_dummy_200'"
+showRtkToken L.Tk__tok_AnnotationTypeElement_dummy_199 = "'tok_AnnotationTypeElement_dummy_199'"
+showRtkToken L.Tk__tok_AnnotationTypeElementList_dummy_198 = "'tok_AnnotationTypeElementList_dummy_198'"
+showRtkToken L.Tk__tok_Arglist_dummy_197 = "'tok_Arglist_dummy_197'"
+showRtkToken L.Tk__tok_ArrayInitializer_dummy_196 = "'tok_ArrayInitializer_dummy_196'"
+showRtkToken L.Tk__tok_AssignmentOp_dummy_195 = "'tok_AssignmentOp_dummy_195'"
+showRtkToken L.Tk__tok_CatchList_dummy_194 = "'tok_CatchList_dummy_194'"
+showRtkToken L.Tk__tok_CatchParameter_dummy_193 = "'tok_CatchParameter_dummy_193'"
+showRtkToken L.Tk__tok_ClassDeclaration_dummy_192 = "'tok_ClassDeclaration_dummy_192'"
+showRtkToken L.Tk__tok_ClassOrInterfaceType_dummy_191 = "'tok_ClassOrInterfaceType_dummy_191'"
+showRtkToken L.Tk__tok_CompilationUnit_dummy_190 = "'tok_CompilationUnit_dummy_190'"
+showRtkToken L.Tk__tok_CompilationUnitRest_dummy_189 = "'tok_CompilationUnitRest_dummy_189'"
+showRtkToken L.Tk__tok_CompoundName_dummy_188 = "'tok_CompoundName_dummy_188'"
+showRtkToken L.Tk__tok_CompoundNameTail_dummy_187 = "'tok_CompoundNameTail_dummy_187'"
+showRtkToken L.Tk__tok_CreationExpression_dummy_186 = "'tok_CreationExpression_dummy_186'"
+showRtkToken L.Tk__tok_DimExprs_dummy_185 = "'tok_DimExprs_dummy_185'"
+showRtkToken L.Tk__tok_Dims_dummy_184 = "'tok_Dims_dummy_184'"
+showRtkToken L.Tk__tok_DoStatement_dummy_183 = "'tok_DoStatement_dummy_183'"
+showRtkToken L.Tk__tok_DocComment_dummy_182 = "'tok_DocComment_dummy_182'"
+showRtkToken L.Tk__tok_ElementValue_dummy_181 = "'tok_ElementValue_dummy_181'"
+showRtkToken L.Tk__tok_ElementValueArrayInitializer_dummy_180 = "'tok_ElementValueArrayInitializer_dummy_180'"
+showRtkToken L.Tk__tok_EnumConstant_dummy_179 = "'tok_EnumConstant_dummy_179'"
+showRtkToken L.Tk__tok_EnumConstantList_dummy_178 = "'tok_EnumConstantList_dummy_178'"
+showRtkToken L.Tk__tok_EnumDeclaration_dummy_177 = "'tok_EnumDeclaration_dummy_177'"
+showRtkToken L.Tk__tok_EqualityOp_dummy_176 = "'tok_EqualityOp_dummy_176'"
+showRtkToken L.Tk__tok_Expression_dummy_175 = "'tok_Expression_dummy_175'"
+showRtkToken L.Tk__tok_ExtendsList_dummy_174 = "'tok_ExtendsList_dummy_174'"
+showRtkToken L.Tk__tok_FieldDeclaration_dummy_173 = "'tok_FieldDeclaration_dummy_173'"
+showRtkToken L.Tk__tok_FieldDeclarationList_dummy_172 = "'tok_FieldDeclarationList_dummy_172'"
+showRtkToken L.Tk__tok_ForEachHeader_dummy_171 = "'tok_ForEachHeader_dummy_171'"
+showRtkToken L.Tk__tok_ForStatement_dummy_170 = "'tok_ForStatement_dummy_170'"
+showRtkToken L.Tk__tok_IfStatement_dummy_169 = "'tok_IfStatement_dummy_169'"
+showRtkToken L.Tk__tok_ImplementsList_dummy_168 = "'tok_ImplementsList_dummy_168'"
+showRtkToken L.Tk__tok_ImportHead_dummy_167 = "'tok_ImportHead_dummy_167'"
+showRtkToken L.Tk__tok_ImportList_dummy_166 = "'tok_ImportList_dummy_166'"
+showRtkToken L.Tk__tok_ImportName_dummy_165 = "'tok_ImportName_dummy_165'"
+showRtkToken L.Tk__tok_ImportStatement_dummy_164 = "'tok_ImportStatement_dummy_164'"
+showRtkToken L.Tk__tok_InterfaceDeclaration_dummy_163 = "'tok_InterfaceDeclaration_dummy_163'"
+showRtkToken L.Tk__tok_Java_dummy_206 = "'tok_Java_dummy_206'"
+showRtkToken L.Tk__tok_LambdaBody_dummy_162 = "'tok_LambdaBody_dummy_162'"
+showRtkToken L.Tk__tok_Literal_dummy_161 = "'tok_Literal_dummy_161'"
+showRtkToken L.Tk__tok_LocalModifierList1_dummy_160 = "'tok_LocalModifierList1_dummy_160'"
+showRtkToken L.Tk__tok_MemberAfterFirstId_dummy_159 = "'tok_MemberAfterFirstId_dummy_159'"
+showRtkToken L.Tk__tok_MemberDeclaration_dummy_158 = "'tok_MemberDeclaration_dummy_158'"
+showRtkToken L.Tk__tok_MemberRest_dummy_157 = "'tok_MemberRest_dummy_157'"
+showRtkToken L.Tk__tok_Modifier_dummy_156 = "'tok_Modifier_dummy_156'"
+showRtkToken L.Tk__tok_ModifierList_dummy_155 = "'tok_ModifierList_dummy_155'"
+showRtkToken L.Tk__tok_MoreTypeSpecifier_dummy_154 = "'tok_MoreTypeSpecifier_dummy_154'"
+showRtkToken L.Tk__tok_MoreVariableDeclarators_dummy_153 = "'tok_MoreVariableDeclarators_dummy_153'"
+showRtkToken L.Tk__tok_MultiplicativeOp_dummy_152 = "'tok_MultiplicativeOp_dummy_152'"
+showRtkToken L.Tk__tok_NonEmptyDims_dummy_151 = "'tok_NonEmptyDims_dummy_151'"
+showRtkToken L.Tk__tok_NonEmptyTypeArguments_dummy_150 = "'tok_NonEmptyTypeArguments_dummy_150'"
+showRtkToken L.Tk__tok_NonEmptyTypeParameters_dummy_149 = "'tok_NonEmptyTypeParameters_dummy_149'"
+showRtkToken L.Tk__tok_OptDocComment_dummy_148 = "'tok_OptDocComment_dummy_148'"
+showRtkToken L.Tk__tok_OptElsePart_dummy_147 = "'tok_OptElsePart_dummy_147'"
+showRtkToken L.Tk__tok_OptExpression_dummy_146 = "'tok_OptExpression_dummy_146'"
+showRtkToken L.Tk__tok_OptFinally_dummy_145 = "'tok_OptFinally_dummy_145'"
+showRtkToken L.Tk__tok_OptId_dummy_144 = "'tok_OptId_dummy_144'"
+showRtkToken L.Tk__tok_OptVariableInitializer_dummy_143 = "'tok_OptVariableInitializer_dummy_143'"
+showRtkToken L.Tk__tok_Package_dummy_142 = "'tok_Package_dummy_142'"
+showRtkToken L.Tk__tok_ParamModifierList_dummy_141 = "'tok_ParamModifierList_dummy_141'"
+showRtkToken L.Tk__tok_Parameter_dummy_140 = "'tok_Parameter_dummy_140'"
+showRtkToken L.Tk__tok_ParameterList_dummy_139 = "'tok_ParameterList_dummy_139'"
+showRtkToken L.Tk__tok_PostfixOp_dummy_138 = "'tok_PostfixOp_dummy_138'"
+showRtkToken L.Tk__tok_PrefixOp_dummy_137 = "'tok_PrefixOp_dummy_137'"
+showRtkToken L.Tk__tok_PrimitiveTypeKeyword_dummy_136 = "'tok_PrimitiveTypeKeyword_dummy_136'"
+showRtkToken L.Tk__tok_RelationalOp_dummy_135 = "'tok_RelationalOp_dummy_135'"
+showRtkToken L.Tk__tok_Resource_dummy_134 = "'tok_Resource_dummy_134'"
+showRtkToken L.Tk__tok_ResourceSpec_dummy_133 = "'tok_ResourceSpec_dummy_133'"
+showRtkToken L.Tk__tok_ShiftOp_dummy_132 = "'tok_ShiftOp_dummy_132'"
+showRtkToken L.Tk__tok_Statement_dummy_131 = "'tok_Statement_dummy_131'"
+showRtkToken L.Tk__tok_StatementBlock_dummy_130 = "'tok_StatementBlock_dummy_130'"
+showRtkToken L.Tk__tok_StatementList_dummy_129 = "'tok_StatementList_dummy_129'"
+showRtkToken L.Tk__tok_StaticInitializer_dummy_128 = "'tok_StaticInitializer_dummy_128'"
+showRtkToken L.Tk__tok_SwitchCaseList_dummy_127 = "'tok_SwitchCaseList_dummy_127'"
+showRtkToken L.Tk__tok_SwitchStatement_dummy_126 = "'tok_SwitchStatement_dummy_126'"
+showRtkToken L.Tk__tok_ThrowsClause_dummy_125 = "'tok_ThrowsClause_dummy_125'"
+showRtkToken L.Tk__tok_TryStatement_dummy_124 = "'tok_TryStatement_dummy_124'"
+showRtkToken L.Tk__tok_Type_dummy_123 = "'tok_Type_dummy_123'"
+showRtkToken L.Tk__tok_TypeArgument_dummy_122 = "'tok_TypeArgument_dummy_122'"
+showRtkToken L.Tk__tok_TypeArguments_dummy_121 = "'tok_TypeArguments_dummy_121'"
+showRtkToken L.Tk__tok_TypeDeclRest_dummy_120 = "'tok_TypeDeclRest_dummy_120'"
+showRtkToken L.Tk__tok_TypeDeclaration_dummy_119 = "'tok_TypeDeclaration_dummy_119'"
+showRtkToken L.Tk__tok_TypeDeclarationList_dummy_118 = "'tok_TypeDeclarationList_dummy_118'"
+showRtkToken L.Tk__tok_TypeParameter_dummy_117 = "'tok_TypeParameter_dummy_117'"
+showRtkToken L.Tk__tok_TypeParameters_dummy_116 = "'tok_TypeParameters_dummy_116'"
+showRtkToken L.Tk__tok_TypeSpecifier_dummy_115 = "'tok_TypeSpecifier_dummy_115'"
+showRtkToken L.Tk__tok_VariableDeclaration_dummy_114 = "'tok_VariableDeclaration_dummy_114'"
+showRtkToken L.Tk__tok_VariableDeclarator_dummy_113 = "'tok_VariableDeclarator_dummy_113'"
+showRtkToken L.Tk__tok_VariableDeclaratorList_dummy_112 = "'tok_VariableDeclaratorList_dummy_112'"
+showRtkToken L.Tk__tok_VariableInitializer_dummy_111 = "'tok_VariableInitializer_dummy_111'"
+showRtkToken L.Tk__tok_VariableInitializerList_dummy_110 = "'tok_VariableInitializerList_dummy_110'"
+showRtkToken L.Tk__tok_WhileStatement_dummy_109 = "'tok_WhileStatement_dummy_109'"
+showRtkToken L.Tk__tok_WildcardType_dummy_108 = "'tok_WildcardType_dummy_108'"
 showRtkToken L.Tk__tok__tilde__84 = "'~'"
-showRtkToken L.Tk__tok__symbol__15 = "'}'"
+showRtkToken L.Tk__tok__symbol__12 = "'}'"
 showRtkToken L.Tk__tok__pipe__pipe__66 = "'||'"
 showRtkToken L.Tk__tok__pipe__eql__58 = "'|='"
 showRtkToken L.Tk__tok__pipe__48 = "'|'"
-showRtkToken L.Tk__tok__symbol__14 = "'{'"
+showRtkToken L.Tk__tok__symbol__11 = "'{'"
 showRtkToken L.Tk__tok_while_45 = "'while'"
 showRtkToken L.Tk__tok_void_28 = "'void'"
 showRtkToken L.Tk__tok_try_50 = "'try'"
@@ -1275,21 +1340,21 @@ showRtkToken L.Tk__tok_interface_16 = "'interface'"
 showRtkToken L.Tk__tok_int_24 = "'int'"
 showRtkToken L.Tk__tok_instanceof_76 = "'instanceof'"
 showRtkToken L.Tk__tok_import_2 = "'import'"
-showRtkToken L.Tk__tok_implements_12 = "'implements'"
+showRtkToken L.Tk__tok_implements_14 = "'implements'"
 showRtkToken L.Tk__tok_if_43 = "'if'"
 showRtkToken L.Tk__tok_for_46 = "'for'"
 showRtkToken L.Tk__tok_float_25 = "'float'"
 showRtkToken L.Tk__tok_finally_49 = "'finally'"
 showRtkToken L.Tk__tok_final_31 = "'final'"
 showRtkToken L.Tk__tok_false_89 = "'false'"
-showRtkToken L.Tk__tok_extends_11 = "'extends'"
+showRtkToken L.Tk__tok_extends_13 = "'extends'"
 showRtkToken L.Tk__tok_enum_17 = "'enum'"
 showRtkToken L.Tk__tok_else_42 = "'else'"
 showRtkToken L.Tk__tok_double_27 = "'double'"
 showRtkToken L.Tk__tok_do_44 = "'do'"
 showRtkToken L.Tk__tok_default_30 = "'default'"
 showRtkToken L.Tk__tok_continue_39 = "'continue'"
-showRtkToken L.Tk__tok_class_13 = "'class'"
+showRtkToken L.Tk__tok_class_15 = "'class'"
 showRtkToken L.Tk__tok_char_22 = "'char'"
 showRtkToken L.Tk__tok_catch_47 = "'catch'"
 showRtkToken L.Tk__tok_case_51 = "'case'"
@@ -1354,6 +1419,7 @@ showRtkToken (L.Tk__qq_Modifier v) = "qq_Modifier " ++ show v
 showRtkToken (L.Tk__qq_TypeSpecifier v) = "qq_TypeSpecifier " ++ show v
 showRtkToken (L.Tk__qq_Type v) = "qq_Type " ++ show v
 showRtkToken (L.Tk__qq_TypeParameter v) = "qq_TypeParameter " ++ show v
+showRtkToken (L.Tk__qq_NonEmptyTypeParameters v) = "qq_NonEmptyTypeParameters " ++ show v
 showRtkToken (L.Tk__qq_TypeParameters v) = "qq_TypeParameters " ++ show v
 showRtkToken (L.Tk__qq_WildcardType v) = "qq_WildcardType " ++ show v
 showRtkToken (L.Tk__qq_TypeArgument v) = "qq_TypeArgument " ++ show v
@@ -1395,6 +1461,7 @@ showRtkToken (L.Tk__qq_Parameter v) = "qq_Parameter " ++ show v
 showRtkToken (L.Tk__qq_ParamModifierList v) = "qq_ParamModifierList " ++ show v
 showRtkToken (L.Tk__qq_ParameterList v) = "qq_ParameterList " ++ show v
 showRtkToken (L.Tk__qq_StaticInitializer v) = "qq_StaticInitializer " ++ show v
+showRtkToken (L.Tk__qq_ArrayInitializer v) = "qq_ArrayInitializer " ++ show v
 showRtkToken (L.Tk__qq_VariableInitializer v) = "qq_VariableInitializer " ++ show v
 showRtkToken (L.Tk__qq_VariableInitializerList v) = "qq_VariableInitializerList " ++ show v
 showRtkToken (L.Tk__qq_VariableDeclarator v) = "qq_VariableDeclarator " ++ show v
@@ -1428,6 +1495,8 @@ showRtkToken (L.Tk__qq_ExtendsList v) = "qq_ExtendsList " ++ show v
 showRtkToken (L.Tk__qq_ClassOrInterfaceType v) = "qq_ClassOrInterfaceType " ++ show v
 showRtkToken (L.Tk__qq_ModifierList v) = "qq_ModifierList " ++ show v
 showRtkToken (L.Tk__qq_AnnotationList v) = "qq_AnnotationList " ++ show v
+showRtkToken (L.Tk__qq_ElementValueArrayInitializer v) = "qq_ElementValueArrayInitializer " ++ show v
+showRtkToken (L.Tk__qq_ElementValue v) = "qq_ElementValue " ++ show v
 showRtkToken (L.Tk__qq_AnnotationElement v) = "qq_AnnotationElement " ++ show v
 showRtkToken (L.Tk__qq_AnnotationArguments v) = "qq_AnnotationArguments " ++ show v
 showRtkToken (L.Tk__qq_Annotation v) = "qq_Annotation " ++ show v
@@ -1436,8 +1505,10 @@ showRtkToken (L.Tk__qq_ImportHead v) = "qq_ImportHead " ++ show v
 showRtkToken (L.Tk__qq_ImportName v) = "qq_ImportName " ++ show v
 showRtkToken (L.Tk__qq_ImportStatement v) = "qq_ImportStatement " ++ show v
 showRtkToken (L.Tk__qq_Package v) = "qq_Package " ++ show v
+showRtkToken (L.Tk__qq_CompilationUnitRest v) = "qq_CompilationUnitRest " ++ show v
 showRtkToken (L.Tk__qq_CompilationUnit v) = "qq_CompilationUnit " ++ show v
 showRtkToken (L.Tk__qq_ImportList v) = "qq_ImportList " ++ show v
+showRtkToken (L.Tk__qq_TypeDeclarationList v) = "qq_TypeDeclarationList " ++ show v
 showRtkToken (L.Tk__qq_TypeDeclaration v) = "qq_TypeDeclaration " ++ show v
 showRtkToken (L.Tk__qq_OptDocComment v) = "qq_OptDocComment " ++ show v
 showRtkToken (L.Tk__qq_Java v) = "qq_Java " ++ show v
@@ -1514,6 +1585,9 @@ tkVal_qq_Type t = error ("rtk internal error: token qq_Type expected, got " ++ s
 tkVal_qq_TypeParameter :: L.PosToken -> String
 tkVal_qq_TypeParameter (L.PosToken _ (L.Tk__qq_TypeParameter v)) = v
 tkVal_qq_TypeParameter t = error ("rtk internal error: token qq_TypeParameter expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_NonEmptyTypeParameters :: L.PosToken -> String
+tkVal_qq_NonEmptyTypeParameters (L.PosToken _ (L.Tk__qq_NonEmptyTypeParameters v)) = v
+tkVal_qq_NonEmptyTypeParameters t = error ("rtk internal error: token qq_NonEmptyTypeParameters expected, got " ++ showRtkToken (L.ptToken t))
 tkVal_qq_TypeParameters :: L.PosToken -> String
 tkVal_qq_TypeParameters (L.PosToken _ (L.Tk__qq_TypeParameters v)) = v
 tkVal_qq_TypeParameters t = error ("rtk internal error: token qq_TypeParameters expected, got " ++ showRtkToken (L.ptToken t))
@@ -1637,6 +1711,9 @@ tkVal_qq_ParameterList t = error ("rtk internal error: token qq_ParameterList ex
 tkVal_qq_StaticInitializer :: L.PosToken -> String
 tkVal_qq_StaticInitializer (L.PosToken _ (L.Tk__qq_StaticInitializer v)) = v
 tkVal_qq_StaticInitializer t = error ("rtk internal error: token qq_StaticInitializer expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_ArrayInitializer :: L.PosToken -> String
+tkVal_qq_ArrayInitializer (L.PosToken _ (L.Tk__qq_ArrayInitializer v)) = v
+tkVal_qq_ArrayInitializer t = error ("rtk internal error: token qq_ArrayInitializer expected, got " ++ showRtkToken (L.ptToken t))
 tkVal_qq_VariableInitializer :: L.PosToken -> String
 tkVal_qq_VariableInitializer (L.PosToken _ (L.Tk__qq_VariableInitializer v)) = v
 tkVal_qq_VariableInitializer t = error ("rtk internal error: token qq_VariableInitializer expected, got " ++ showRtkToken (L.ptToken t))
@@ -1736,6 +1813,12 @@ tkVal_qq_ModifierList t = error ("rtk internal error: token qq_ModifierList expe
 tkVal_qq_AnnotationList :: L.PosToken -> String
 tkVal_qq_AnnotationList (L.PosToken _ (L.Tk__qq_AnnotationList v)) = v
 tkVal_qq_AnnotationList t = error ("rtk internal error: token qq_AnnotationList expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_ElementValueArrayInitializer :: L.PosToken -> String
+tkVal_qq_ElementValueArrayInitializer (L.PosToken _ (L.Tk__qq_ElementValueArrayInitializer v)) = v
+tkVal_qq_ElementValueArrayInitializer t = error ("rtk internal error: token qq_ElementValueArrayInitializer expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_ElementValue :: L.PosToken -> String
+tkVal_qq_ElementValue (L.PosToken _ (L.Tk__qq_ElementValue v)) = v
+tkVal_qq_ElementValue t = error ("rtk internal error: token qq_ElementValue expected, got " ++ showRtkToken (L.ptToken t))
 tkVal_qq_AnnotationElement :: L.PosToken -> String
 tkVal_qq_AnnotationElement (L.PosToken _ (L.Tk__qq_AnnotationElement v)) = v
 tkVal_qq_AnnotationElement t = error ("rtk internal error: token qq_AnnotationElement expected, got " ++ showRtkToken (L.ptToken t))
@@ -1760,12 +1843,18 @@ tkVal_qq_ImportStatement t = error ("rtk internal error: token qq_ImportStatemen
 tkVal_qq_Package :: L.PosToken -> String
 tkVal_qq_Package (L.PosToken _ (L.Tk__qq_Package v)) = v
 tkVal_qq_Package t = error ("rtk internal error: token qq_Package expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_CompilationUnitRest :: L.PosToken -> String
+tkVal_qq_CompilationUnitRest (L.PosToken _ (L.Tk__qq_CompilationUnitRest v)) = v
+tkVal_qq_CompilationUnitRest t = error ("rtk internal error: token qq_CompilationUnitRest expected, got " ++ showRtkToken (L.ptToken t))
 tkVal_qq_CompilationUnit :: L.PosToken -> String
 tkVal_qq_CompilationUnit (L.PosToken _ (L.Tk__qq_CompilationUnit v)) = v
 tkVal_qq_CompilationUnit t = error ("rtk internal error: token qq_CompilationUnit expected, got " ++ showRtkToken (L.ptToken t))
 tkVal_qq_ImportList :: L.PosToken -> String
 tkVal_qq_ImportList (L.PosToken _ (L.Tk__qq_ImportList v)) = v
 tkVal_qq_ImportList t = error ("rtk internal error: token qq_ImportList expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_TypeDeclarationList :: L.PosToken -> String
+tkVal_qq_TypeDeclarationList (L.PosToken _ (L.Tk__qq_TypeDeclarationList v)) = v
+tkVal_qq_TypeDeclarationList t = error ("rtk internal error: token qq_TypeDeclarationList expected, got " ++ showRtkToken (L.ptToken t))
 tkVal_qq_TypeDeclaration :: L.PosToken -> String
 tkVal_qq_TypeDeclaration (L.PosToken _ (L.Tk__qq_TypeDeclaration v)) = v
 tkVal_qq_TypeDeclaration t = error ("rtk internal error: token qq_TypeDeclaration expected, got " ++ showRtkToken (L.ptToken t))
@@ -1786,91 +1875,97 @@ data Java = Ctr__Java__0 RtkPos Java |
             Ctr__Java__7 RtkPos AnnotationTypeElement |
             Ctr__Java__8 RtkPos AnnotationTypeElementList |
             Ctr__Java__9 RtkPos Arglist |
-            Ctr__Java__10 RtkPos AssignmentOp |
-            Ctr__Java__11 RtkPos CatchList |
-            Ctr__Java__12 RtkPos CatchParameter |
-            Ctr__Java__13 RtkPos ClassDeclaration |
-            Ctr__Java__14 RtkPos ClassOrInterfaceType |
-            Ctr__Java__15 RtkPos CompilationUnit |
-            Ctr__Java__16 RtkPos CompoundName |
-            Ctr__Java__17 RtkPos CompoundNameTail |
-            Ctr__Java__18 RtkPos CreationExpression |
-            Ctr__Java__19 RtkPos DimExprs |
-            Ctr__Java__20 RtkPos Dims |
-            Ctr__Java__21 RtkPos DoStatement |
-            Ctr__Java__22 RtkPos DocComment |
-            Ctr__Java__23 RtkPos EnumConstant |
-            Ctr__Java__24 RtkPos EnumConstantList |
-            Ctr__Java__25 RtkPos EnumDeclaration |
-            Ctr__Java__26 RtkPos EqualityOp |
-            Ctr__Java__27 RtkPos Expression |
-            Ctr__Java__28 RtkPos ExtendsList |
-            Ctr__Java__29 RtkPos FieldDeclaration |
-            Ctr__Java__30 RtkPos FieldDeclarationList |
-            Ctr__Java__31 RtkPos ForEachHeader |
-            Ctr__Java__32 RtkPos ForStatement |
-            Ctr__Java__33 RtkPos IfStatement |
-            Ctr__Java__34 RtkPos ImplementsList |
-            Ctr__Java__35 RtkPos ImportHead |
-            Ctr__Java__36 RtkPos ImportList |
-            Ctr__Java__37 RtkPos ImportName |
-            Ctr__Java__38 RtkPos ImportStatement |
-            Ctr__Java__39 RtkPos InterfaceDeclaration |
-            Ctr__Java__40 RtkPos LambdaBody |
-            Ctr__Java__41 RtkPos Literal |
-            Ctr__Java__42 RtkPos LocalModifierList1 |
-            Ctr__Java__43 RtkPos MemberAfterFirstId |
-            Ctr__Java__44 RtkPos MemberDeclaration |
-            Ctr__Java__45 RtkPos MemberRest |
-            Ctr__Java__46 RtkPos Modifier |
-            Ctr__Java__47 RtkPos ModifierList |
-            Ctr__Java__48 RtkPos MoreTypeSpecifier |
-            Ctr__Java__49 RtkPos MoreVariableDeclarators |
-            Ctr__Java__50 RtkPos MultiplicativeOp |
-            Ctr__Java__51 RtkPos NonEmptyDims |
-            Ctr__Java__52 RtkPos NonEmptyTypeArguments |
-            Ctr__Java__53 RtkPos OptDocComment |
-            Ctr__Java__54 RtkPos OptElsePart |
-            Ctr__Java__55 RtkPos OptExpression |
-            Ctr__Java__56 RtkPos OptFinally |
-            Ctr__Java__57 RtkPos OptId |
-            Ctr__Java__58 RtkPos OptVariableInitializer |
-            Ctr__Java__59 RtkPos Package |
-            Ctr__Java__60 RtkPos ParamModifierList |
-            Ctr__Java__61 RtkPos Parameter |
-            Ctr__Java__62 RtkPos ParameterList |
-            Ctr__Java__63 RtkPos PostfixOp |
-            Ctr__Java__64 RtkPos PrefixOp |
-            Ctr__Java__65 RtkPos PrimitiveTypeKeyword |
-            Ctr__Java__66 RtkPos RelationalOp |
-            Ctr__Java__67 RtkPos Resource |
-            Ctr__Java__68 RtkPos ResourceSpec |
-            Ctr__Java__69 RtkPos ShiftOp |
-            Ctr__Java__70 RtkPos Statement |
-            Ctr__Java__71 RtkPos StatementBlock |
-            Ctr__Java__72 RtkPos StatementList |
-            Ctr__Java__73 RtkPos StaticInitializer |
-            Ctr__Java__74 RtkPos SwitchCaseList |
-            Ctr__Java__75 RtkPos SwitchStatement |
-            Ctr__Java__76 RtkPos ThrowsClause |
-            Ctr__Java__77 RtkPos TryStatement |
-            Ctr__Java__78 RtkPos Type |
-            Ctr__Java__79 RtkPos TypeArgument |
-            Ctr__Java__80 RtkPos TypeArguments |
-            Ctr__Java__81 RtkPos TypeDeclRest |
-            Ctr__Java__82 RtkPos TypeDeclaration |
-            Ctr__Java__83 RtkPos TypeParameter |
-            Ctr__Java__84 RtkPos TypeParameters |
-            Ctr__Java__85 RtkPos TypeSpecifier |
-            Ctr__Java__86 RtkPos VariableDeclaration |
-            Ctr__Java__87 RtkPos VariableDeclarator |
-            Ctr__Java__88 RtkPos VariableDeclaratorList |
-            Ctr__Java__89 RtkPos VariableInitializer |
-            Ctr__Java__90 RtkPos VariableInitializerList |
-            Ctr__Java__91 RtkPos WhileStatement |
-            Ctr__Java__92 RtkPos WildcardType |
+            Ctr__Java__10 RtkPos ArrayInitializer |
+            Ctr__Java__11 RtkPos AssignmentOp |
+            Ctr__Java__12 RtkPos CatchList |
+            Ctr__Java__13 RtkPos CatchParameter |
+            Ctr__Java__14 RtkPos ClassDeclaration |
+            Ctr__Java__15 RtkPos ClassOrInterfaceType |
+            Ctr__Java__16 RtkPos CompilationUnit |
+            Ctr__Java__17 RtkPos CompilationUnitRest |
+            Ctr__Java__18 RtkPos CompoundName |
+            Ctr__Java__19 RtkPos CompoundNameTail |
+            Ctr__Java__20 RtkPos CreationExpression |
+            Ctr__Java__21 RtkPos DimExprs |
+            Ctr__Java__22 RtkPos Dims |
+            Ctr__Java__23 RtkPos DoStatement |
+            Ctr__Java__24 RtkPos DocComment |
+            Ctr__Java__25 RtkPos ElementValue |
+            Ctr__Java__26 RtkPos ElementValueArrayInitializer |
+            Ctr__Java__27 RtkPos EnumConstant |
+            Ctr__Java__28 RtkPos EnumConstantList |
+            Ctr__Java__29 RtkPos EnumDeclaration |
+            Ctr__Java__30 RtkPos EqualityOp |
+            Ctr__Java__31 RtkPos Expression |
+            Ctr__Java__32 RtkPos ExtendsList |
+            Ctr__Java__33 RtkPos FieldDeclaration |
+            Ctr__Java__34 RtkPos FieldDeclarationList |
+            Ctr__Java__35 RtkPos ForEachHeader |
+            Ctr__Java__36 RtkPos ForStatement |
+            Ctr__Java__37 RtkPos IfStatement |
+            Ctr__Java__38 RtkPos ImplementsList |
+            Ctr__Java__39 RtkPos ImportHead |
+            Ctr__Java__40 RtkPos ImportList |
+            Ctr__Java__41 RtkPos ImportName |
+            Ctr__Java__42 RtkPos ImportStatement |
+            Ctr__Java__43 RtkPos InterfaceDeclaration |
+            Ctr__Java__44 RtkPos LambdaBody |
+            Ctr__Java__45 RtkPos Literal |
+            Ctr__Java__46 RtkPos LocalModifierList1 |
+            Ctr__Java__47 RtkPos MemberAfterFirstId |
+            Ctr__Java__48 RtkPos MemberDeclaration |
+            Ctr__Java__49 RtkPos MemberRest |
+            Ctr__Java__50 RtkPos Modifier |
+            Ctr__Java__51 RtkPos ModifierList |
+            Ctr__Java__52 RtkPos MoreTypeSpecifier |
+            Ctr__Java__53 RtkPos MoreVariableDeclarators |
+            Ctr__Java__54 RtkPos MultiplicativeOp |
+            Ctr__Java__55 RtkPos NonEmptyDims |
+            Ctr__Java__56 RtkPos NonEmptyTypeArguments |
+            Ctr__Java__57 RtkPos NonEmptyTypeParameters |
+            Ctr__Java__58 RtkPos OptDocComment |
+            Ctr__Java__59 RtkPos OptElsePart |
+            Ctr__Java__60 RtkPos OptExpression |
+            Ctr__Java__61 RtkPos OptFinally |
+            Ctr__Java__62 RtkPos OptId |
+            Ctr__Java__63 RtkPos OptVariableInitializer |
+            Ctr__Java__64 RtkPos Package |
+            Ctr__Java__65 RtkPos ParamModifierList |
+            Ctr__Java__66 RtkPos Parameter |
+            Ctr__Java__67 RtkPos ParameterList |
+            Ctr__Java__68 RtkPos PostfixOp |
+            Ctr__Java__69 RtkPos PrefixOp |
+            Ctr__Java__70 RtkPos PrimitiveTypeKeyword |
+            Ctr__Java__71 RtkPos RelationalOp |
+            Ctr__Java__72 RtkPos Resource |
+            Ctr__Java__73 RtkPos ResourceSpec |
+            Ctr__Java__74 RtkPos ShiftOp |
+            Ctr__Java__75 RtkPos Statement |
+            Ctr__Java__76 RtkPos StatementBlock |
+            Ctr__Java__77 RtkPos StatementList |
+            Ctr__Java__78 RtkPos StaticInitializer |
+            Ctr__Java__79 RtkPos SwitchCaseList |
+            Ctr__Java__80 RtkPos SwitchStatement |
+            Ctr__Java__81 RtkPos ThrowsClause |
+            Ctr__Java__82 RtkPos TryStatement |
+            Ctr__Java__83 RtkPos Type |
+            Ctr__Java__84 RtkPos TypeArgument |
+            Ctr__Java__85 RtkPos TypeArguments |
+            Ctr__Java__86 RtkPos TypeDeclRest |
+            Ctr__Java__87 RtkPos TypeDeclaration |
+            Ctr__Java__88 RtkPos TypeDeclarationList |
+            Ctr__Java__89 RtkPos TypeParameter |
+            Ctr__Java__90 RtkPos TypeParameters |
+            Ctr__Java__91 RtkPos TypeSpecifier |
+            Ctr__Java__92 RtkPos VariableDeclaration |
+            Ctr__Java__93 RtkPos VariableDeclarator |
+            Ctr__Java__94 RtkPos VariableDeclaratorList |
+            Ctr__Java__95 RtkPos VariableInitializer |
+            Ctr__Java__96 RtkPos VariableInitializerList |
+            Ctr__Java__97 RtkPos WhileStatement |
+            Ctr__Java__98 RtkPos WildcardType |
             Anti_Java String |
-            Ctr__Java__93 RtkPos CompilationUnit
+            Ctr__Java__99 RtkPos CompilationUnit
             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Java where
     rtkPosOf (Ctr__Java__0 p _) = p
@@ -1966,8 +2061,14 @@ instance RtkPosOf Java where
     rtkPosOf (Ctr__Java__90 p _) = p
     rtkPosOf (Ctr__Java__91 p _) = p
     rtkPosOf (Ctr__Java__92 p _) = p
-    rtkPosOf (Anti_Java _) = rtkNoPos
     rtkPosOf (Ctr__Java__93 p _) = p
+    rtkPosOf (Ctr__Java__94 p _) = p
+    rtkPosOf (Ctr__Java__95 p _) = p
+    rtkPosOf (Ctr__Java__96 p _) = p
+    rtkPosOf (Ctr__Java__97 p _) = p
+    rtkPosOf (Ctr__Java__98 p _) = p
+    rtkPosOf (Anti_Java _) = rtkNoPos
+    rtkPosOf (Ctr__Java__99 p _) = p
 data AdditiveOp = Anti_AdditiveOp String |
                   Ctr__AdditiveOp__0 RtkPos |
                   Ctr__AdditiveOp__1 RtkPos
@@ -1995,8 +2096,8 @@ instance RtkPosOf AnnotationDeclaration where
     rtkPosOf (Anti_AnnotationDeclaration _) = rtkNoPos
     rtkPosOf (Ctr__AnnotationDeclaration__0 p _ _) = p
 data AnnotationElement = Anti_AnnotationElement String |
-                         Ctr__AnnotationElement__0 RtkPos String Expression |
-                         Ctr__AnnotationElement__1 RtkPos Expression
+                         Ctr__AnnotationElement__0 RtkPos String ElementValue |
+                         Ctr__AnnotationElement__1 RtkPos ElementValue
                          deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf AnnotationElement where
     rtkPosOf (Anti_AnnotationElement _) = rtkNoPos
@@ -2012,12 +2113,18 @@ instance RtkPosOf AnnotationTypeElement where
 type AnnotationTypeElementList = [AnnotationTypeElement]
 data Arglist = Anti_Arglist String |
                Ctr__Arglist__0 RtkPos |
-               Ctr__Arglist__1 RtkPos Rule_88
+               Ctr__Arglist__1 RtkPos Rule_95
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Arglist where
     rtkPosOf (Anti_Arglist _) = rtkNoPos
     rtkPosOf (Ctr__Arglist__0 p) = p
     rtkPosOf (Ctr__Arglist__1 p _) = p
+data ArrayInitializer = Anti_ArrayInitializer String |
+                        Ctr__ArrayInitializer__0 RtkPos VariableInitializerList
+                        deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf ArrayInitializer where
+    rtkPosOf (Anti_ArrayInitializer _) = rtkNoPos
+    rtkPosOf (Ctr__ArrayInitializer__0 p _) = p
 data AssignmentOp = Anti_AssignmentOp String |
                     Ctr__AssignmentOp__0 RtkPos |
                     Ctr__AssignmentOp__1 RtkPos |
@@ -2046,15 +2153,15 @@ instance RtkPosOf AssignmentOp where
     rtkPosOf (Ctr__AssignmentOp__9 p) = p
     rtkPosOf (Ctr__AssignmentOp__10 p) = p
     rtkPosOf (Ctr__AssignmentOp__11 p) = p
-type CatchList = [Rule_65]
+type CatchList = [Rule_70]
 data CatchParameter = Anti_CatchParameter String |
-                      Ctr__CatchParameter__0 RtkPos ParamModifierList Type Rule_67 String
+                      Ctr__CatchParameter__0 RtkPos ParamModifierList Type Rule_72 String
                       deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf CatchParameter where
     rtkPosOf (Anti_CatchParameter _) = rtkNoPos
     rtkPosOf (Ctr__CatchParameter__0 p _ _ _ _) = p
 data ClassDeclaration = Anti_ClassDeclaration String |
-                        Ctr__ClassDeclaration__0 RtkPos String TypeParameters Rule_16 Rule_17 FieldDeclarationList
+                        Ctr__ClassDeclaration__0 RtkPos String TypeParameters Rule_21 Rule_22 FieldDeclarationList
                         deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ClassDeclaration where
     rtkPosOf (Anti_ClassDeclaration _) = rtkNoPos
@@ -2066,26 +2173,36 @@ instance RtkPosOf ClassOrInterfaceType where
     rtkPosOf (Anti_ClassOrInterfaceType _) = rtkNoPos
     rtkPosOf (Ctr__ClassOrInterfaceType__0 p _ _) = p
 data CompilationUnit = Anti_CompilationUnit String |
-                       Ctr__CompilationUnit__0 RtkPos Rule_1 ImportList Rule_2
+                       Ctr__CompilationUnit__0 RtkPos OptDocComment ModifierList Rule_2
                        deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf CompilationUnit where
     rtkPosOf (Anti_CompilationUnit _) = rtkNoPos
     rtkPosOf (Ctr__CompilationUnit__0 p _ _ _) = p
+data CompilationUnitRest = Anti_CompilationUnitRest String |
+                           UnitPackageFirst RtkPos Package ImportList TypeDeclarationList |
+                           UnitImportsFirst RtkPos ImportStatement ImportList TypeDeclarationList |
+                           UnitTypeFirst RtkPos TypeDeclRest TypeDeclarationList
+                           deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf CompilationUnitRest where
+    rtkPosOf (Anti_CompilationUnitRest _) = rtkNoPos
+    rtkPosOf (UnitPackageFirst p _ _ _) = p
+    rtkPosOf (UnitImportsFirst p _ _ _) = p
+    rtkPosOf (UnitTypeFirst p _ _) = p
 data CompoundName = Anti_CompoundName String |
                     Ctr__CompoundName__0 RtkPos String CompoundNameTail
                     deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf CompoundName where
     rtkPosOf (Anti_CompoundName _) = rtkNoPos
     rtkPosOf (Ctr__CompoundName__0 p _ _) = p
-type CompoundNameTail = [Rule_100]
+type CompoundNameTail = [Rule_106]
 data CreationExpression = Anti_CreationExpression String |
-                          Ctr__CreationExpression__0 RtkPos TypeSpecifier Rule_84
+                          Ctr__CreationExpression__0 RtkPos TypeSpecifier Rule_89
                           deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf CreationExpression where
     rtkPosOf (Anti_CreationExpression _) = rtkNoPos
     rtkPosOf (Ctr__CreationExpression__0 p _ _) = p
-type DimExprs = [Rule_86]
-type Dims = [Rule_31]
+type DimExprs = [Rule_93]
+type Dims = [Rule_36]
 data DoStatement = Anti_DoStatement String |
                    Ctr__DoStatement__0 RtkPos Statement Expression
                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
@@ -2098,20 +2215,36 @@ data DocComment = Anti_DocComment String |
 instance RtkPosOf DocComment where
     rtkPosOf (Anti_DocComment _) = rtkNoPos
     rtkPosOf (Ctr__DocComment__0 p _) = p
+data ElementValue = Anti_ElementValue String |
+                    Ctr__ElementValue__0 RtkPos Expression |
+                    Ctr__ElementValue__1 RtkPos Annotation |
+                    Ctr__ElementValue__2 RtkPos ElementValueArrayInitializer
+                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf ElementValue where
+    rtkPosOf (Anti_ElementValue _) = rtkNoPos
+    rtkPosOf (Ctr__ElementValue__0 p _) = p
+    rtkPosOf (Ctr__ElementValue__1 p _) = p
+    rtkPosOf (Ctr__ElementValue__2 p _) = p
+data ElementValueArrayInitializer = Anti_ElementValueArrayInitializer String |
+                                    Ctr__ElementValueArrayInitializer__0 RtkPos Rule_9
+                                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf ElementValueArrayInitializer where
+    rtkPosOf (Anti_ElementValueArrayInitializer _) = rtkNoPos
+    rtkPosOf (Ctr__ElementValueArrayInitializer__0 p _) = p
 data EnumConstant = Anti_EnumConstant String |
-                    Ctr__EnumConstant__0 RtkPos AnnotationList String Rule_20 Rule_22
+                    Ctr__EnumConstant__0 RtkPos OptDocComment AnnotationList String Rule_25 Rule_27
                     deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf EnumConstant where
     rtkPosOf (Anti_EnumConstant _) = rtkNoPos
-    rtkPosOf (Ctr__EnumConstant__0 p _ _ _ _) = p
+    rtkPosOf (Ctr__EnumConstant__0 p _ _ _ _ _) = p
 data EnumConstantList = Anti_EnumConstantList String |
-                        Ctr__EnumConstantList__0 RtkPos EnumConstant Rule_24 Rule_26
+                        Ctr__EnumConstantList__0 RtkPos EnumConstant Rule_29 Rule_31
                         deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf EnumConstantList where
     rtkPosOf (Anti_EnumConstantList _) = rtkNoPos
     rtkPosOf (Ctr__EnumConstantList__0 p _ _ _) = p
 data EnumDeclaration = Anti_EnumDeclaration String |
-                       Ctr__EnumDeclaration__0 RtkPos String Rule_27 EnumConstantList Rule_28
+                       Ctr__EnumDeclaration__0 RtkPos String Rule_32 EnumConstantList Rule_33
                        deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf EnumDeclaration where
     rtkPosOf (Anti_EnumDeclaration _) = rtkNoPos
@@ -2129,9 +2262,9 @@ data Expression = Anti_Expression String |
                   Ctr__Expression__1 RtkPos |
                   Ctr__Expression__2 RtkPos Expression |
                   Ctr__Expression__3 RtkPos CreationExpression |
-                  Ctr__Expression__4 RtkPos CompoundName Rule_80 |
+                  Ctr__Expression__4 RtkPos CompoundName Rule_85 |
                   Ctr__Expression__5 RtkPos CompoundName Expression |
-                  Ctr__Expression__6 RtkPos String Rule_82 |
+                  Ctr__Expression__6 RtkPos String Rule_87 |
                   Ctr__Expression__7 RtkPos String CompoundNameTail |
                   Ctr__Expression__8 RtkPos String CompoundNameTail |
                   Ctr__Expression__9 RtkPos String CompoundNameTail NonEmptyTypeArguments String Arglist |
@@ -2177,10 +2310,10 @@ data Expression = Anti_Expression String |
                   Ctr__Expression__49 RtkPos Expression Expression |
                   Ctr__Expression__50 RtkPos Expression |
                   Ctr__Expression__51 RtkPos Expression Expression Expression |
-                  Ctr__Expression__52 RtkPos Expression Rule_76 |
+                  Ctr__Expression__52 RtkPos Expression Rule_81 |
                   Ctr__Expression__53 RtkPos String LambdaBody |
                   Ctr__Expression__54 RtkPos LambdaBody |
-                  Ctr__Expression__55 RtkPos String Rule_78 LambdaBody |
+                  Ctr__Expression__55 RtkPos String Rule_83 LambdaBody |
                   Ctr__Expression__56 RtkPos Expression LambdaBody |
                   Ctr__Expression__57 RtkPos Expression
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
@@ -2245,13 +2378,13 @@ instance RtkPosOf Expression where
     rtkPosOf (Ctr__Expression__56 p _ _) = p
     rtkPosOf (Ctr__Expression__57 p _) = p
 data ExtendsList = Anti_ExtendsList String |
-                   Ctr__ExtendsList__0 RtkPos ClassOrInterfaceType Rule_12
+                   Ctr__ExtendsList__0 RtkPos ClassOrInterfaceType Rule_17
                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ExtendsList where
     rtkPosOf (Anti_ExtendsList _) = rtkNoPos
     rtkPosOf (Ctr__ExtendsList__0 p _ _) = p
 data FieldDeclaration = Anti_FieldDeclaration String |
-                        Ctr__FieldDeclaration__0 RtkPos OptDocComment ModifierList Rule_30 |
+                        Ctr__FieldDeclaration__0 RtkPos OptDocComment ModifierList Rule_35 |
                         Ctr__FieldDeclaration__1 RtkPos
                         deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf FieldDeclaration where
@@ -2268,7 +2401,7 @@ instance RtkPosOf ForEachHeader where
     rtkPosOf (Ctr__ForEachHeader__0 p _ _ _) = p
     rtkPosOf (Ctr__ForEachHeader__1 p _ _ _ _) = p
 data ForStatement = Anti_ForStatement String |
-                    Ctr__ForStatement__0 RtkPos Rule_64 OptExpression OptExpression Statement |
+                    Ctr__ForStatement__0 RtkPos Rule_69 OptExpression OptExpression Statement |
                     Ctr__ForStatement__1 RtkPos ForEachHeader Statement
                     deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ForStatement where
@@ -2282,7 +2415,7 @@ instance RtkPosOf IfStatement where
     rtkPosOf (Anti_IfStatement _) = rtkNoPos
     rtkPosOf (Ctr__IfStatement__0 p _ _ _) = p
 data ImplementsList = Anti_ImplementsList String |
-                      Ctr__ImplementsList__0 RtkPos Rule_14
+                      Ctr__ImplementsList__0 RtkPos Rule_19
                       deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ImplementsList where
     rtkPosOf (Anti_ImplementsList _) = rtkNoPos
@@ -2311,7 +2444,7 @@ instance RtkPosOf ImportStatement where
     rtkPosOf (Anti_ImportStatement _) = rtkNoPos
     rtkPosOf (Ctr__ImportStatement__0 p _ _) = p
 data InterfaceDeclaration = Anti_InterfaceDeclaration String |
-                            Ctr__InterfaceDeclaration__0 RtkPos String TypeParameters Rule_18 FieldDeclarationList
+                            Ctr__InterfaceDeclaration__0 RtkPos String TypeParameters Rule_23 FieldDeclarationList
                             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf InterfaceDeclaration where
     rtkPosOf (Anti_InterfaceDeclaration _) = rtkNoPos
@@ -2342,9 +2475,9 @@ instance RtkPosOf Literal where
     rtkPosOf (Ctr__Literal__4 p _) = p
     rtkPosOf (Ctr__Literal__5 p _) = p
     rtkPosOf (Ctr__Literal__6 p) = p
-type LocalModifierList1 = [Rule_48]
+type LocalModifierList1 = [Rule_53]
 data MemberAfterFirstId = Anti_MemberAfterFirstId String |
-                          Ctr__MemberAfterFirstId__0 RtkPos Rule_35 Rule_36 StatementBlock |
+                          Ctr__MemberAfterFirstId__0 RtkPos Rule_40 Rule_41 StatementBlock |
                           Ctr__MemberAfterFirstId__1 RtkPos MoreTypeSpecifier String MemberRest
                           deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf MemberAfterFirstId where
@@ -2354,15 +2487,17 @@ instance RtkPosOf MemberAfterFirstId where
 data MemberDeclaration = Anti_MemberDeclaration String |
                          Ctr__MemberDeclaration__0 RtkPos PrimitiveTypeKeyword Dims String MemberRest |
                          Ctr__MemberDeclaration__1 RtkPos TypeParameters String MoreTypeSpecifier String MemberRest |
-                         Ctr__MemberDeclaration__2 RtkPos String MemberAfterFirstId
+                         Ctr__MemberDeclaration__2 RtkPos NonEmptyTypeParameters PrimitiveTypeKeyword Dims String MemberRest |
+                         Ctr__MemberDeclaration__3 RtkPos String MemberAfterFirstId
                          deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf MemberDeclaration where
     rtkPosOf (Anti_MemberDeclaration _) = rtkNoPos
     rtkPosOf (Ctr__MemberDeclaration__0 p _ _ _ _) = p
     rtkPosOf (Ctr__MemberDeclaration__1 p _ _ _ _ _) = p
-    rtkPosOf (Ctr__MemberDeclaration__2 p _ _) = p
+    rtkPosOf (Ctr__MemberDeclaration__2 p _ _ _ _ _) = p
+    rtkPosOf (Ctr__MemberDeclaration__3 p _ _) = p
 data MemberRest = Anti_MemberRest String |
-                  Ctr__MemberRest__0 RtkPos Rule_39 Dims Rule_40 Rule_41 |
+                  Ctr__MemberRest__0 RtkPos Rule_44 Dims Rule_45 Rule_46 |
                   Ctr__MemberRest__1 RtkPos Dims OptVariableInitializer MoreVariableDeclarators
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf MemberRest where
@@ -2379,7 +2514,8 @@ data Modifier = Anti_Modifier String |
                 Ctr__Modifier__6 RtkPos |
                 Ctr__Modifier__7 RtkPos |
                 Ctr__Modifier__8 RtkPos |
-                Ctr__Modifier__9 RtkPos
+                Ctr__Modifier__9 RtkPos |
+                Ctr__Modifier__10 RtkPos
                 deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Modifier where
     rtkPosOf (Anti_Modifier _) = rtkNoPos
@@ -2393,7 +2529,8 @@ instance RtkPosOf Modifier where
     rtkPosOf (Ctr__Modifier__7 p) = p
     rtkPosOf (Ctr__Modifier__8 p) = p
     rtkPosOf (Ctr__Modifier__9 p) = p
-type ModifierList = [Rule_10]
+    rtkPosOf (Ctr__Modifier__10 p) = p
+type ModifierList = [Rule_15]
 data MoreTypeSpecifier = Anti_MoreTypeSpecifier String |
                          Ctr__MoreTypeSpecifier__0 RtkPos String MoreTypeSpecifier |
                          Ctr__MoreTypeSpecifier__1 RtkPos TypeArguments Dims
@@ -2402,7 +2539,7 @@ instance RtkPosOf MoreTypeSpecifier where
     rtkPosOf (Anti_MoreTypeSpecifier _) = rtkNoPos
     rtkPosOf (Ctr__MoreTypeSpecifier__0 p _ _) = p
     rtkPosOf (Ctr__MoreTypeSpecifier__1 p _ _) = p
-type MoreVariableDeclarators = [Rule_44]
+type MoreVariableDeclarators = [Rule_49]
 data MultiplicativeOp = Anti_MultiplicativeOp String |
                         Ctr__MultiplicativeOp__0 RtkPos |
                         Ctr__MultiplicativeOp__1 RtkPos |
@@ -2413,15 +2550,21 @@ instance RtkPosOf MultiplicativeOp where
     rtkPosOf (Ctr__MultiplicativeOp__0 p) = p
     rtkPosOf (Ctr__MultiplicativeOp__1 p) = p
     rtkPosOf (Ctr__MultiplicativeOp__2 p) = p
-type NonEmptyDims = [Rule_33]
+type NonEmptyDims = [Rule_38]
 data NonEmptyTypeArguments = Anti_NonEmptyTypeArguments String |
-                             Ctr__NonEmptyTypeArguments__0 RtkPos TypeArgument Rule_91 |
+                             Ctr__NonEmptyTypeArguments__0 RtkPos TypeArgument Rule_98 |
                              Ctr__NonEmptyTypeArguments__1 RtkPos
                              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf NonEmptyTypeArguments where
     rtkPosOf (Anti_NonEmptyTypeArguments _) = rtkNoPos
     rtkPosOf (Ctr__NonEmptyTypeArguments__0 p _ _) = p
     rtkPosOf (Ctr__NonEmptyTypeArguments__1 p) = p
+data NonEmptyTypeParameters = Anti_NonEmptyTypeParameters String |
+                              Ctr__NonEmptyTypeParameters__0 RtkPos TypeParameter Rule_100
+                              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf NonEmptyTypeParameters where
+    rtkPosOf (Anti_NonEmptyTypeParameters _) = rtkNoPos
+    rtkPosOf (Ctr__NonEmptyTypeParameters__0 p _ _) = p
 data OptDocComment = Anti_OptDocComment String |
                      Ctr__OptDocComment__0 RtkPos |
                      Ctr__OptDocComment__1 RtkPos DocComment
@@ -2432,7 +2575,7 @@ instance RtkPosOf OptDocComment where
     rtkPosOf (Ctr__OptDocComment__1 p _) = p
 data OptElsePart = Anti_OptElsePart String |
                    Ctr__OptElsePart__0 RtkPos |
-                   Ctr__OptElsePart__1 RtkPos Rule_63
+                   Ctr__OptElsePart__1 RtkPos Rule_68
                    deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptElsePart where
     rtkPosOf (Anti_OptElsePart _) = rtkNoPos
@@ -2448,7 +2591,7 @@ instance RtkPosOf OptExpression where
     rtkPosOf (Ctr__OptExpression__1 p _) = p
 data OptFinally = Anti_OptFinally String |
                   Ctr__OptFinally__0 RtkPos |
-                  Ctr__OptFinally__1 RtkPos Rule_69
+                  Ctr__OptFinally__1 RtkPos Rule_74
                   deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptFinally where
     rtkPosOf (Anti_OptFinally _) = rtkNoPos
@@ -2464,7 +2607,7 @@ instance RtkPosOf OptId where
     rtkPosOf (Ctr__OptId__1 p _) = p
 data OptVariableInitializer = Anti_OptVariableInitializer String |
                               Ctr__OptVariableInitializer__0 RtkPos |
-                              Ctr__OptVariableInitializer__1 RtkPos Rule_50
+                              Ctr__OptVariableInitializer__1 RtkPos Rule_55
                               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf OptVariableInitializer where
     rtkPosOf (Anti_OptVariableInitializer _) = rtkNoPos
@@ -2476,15 +2619,15 @@ data Package = Anti_Package String |
 instance RtkPosOf Package where
     rtkPosOf (Anti_Package _) = rtkNoPos
     rtkPosOf (Ctr__Package__0 p _) = p
-type ParamModifierList = [Rule_57]
+type ParamModifierList = [Rule_62]
 data Parameter = Anti_Parameter String |
-                 Ctr__Parameter__0 RtkPos ParamModifierList Type Rule_59 String Dims
+                 Ctr__Parameter__0 RtkPos ParamModifierList Type Rule_64 String Dims
                  deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Parameter where
     rtkPosOf (Anti_Parameter _) = rtkNoPos
     rtkPosOf (Ctr__Parameter__0 p _ _ _ _ _) = p
 data ParameterList = Anti_ParameterList String |
-                     Ctr__ParameterList__0 RtkPos Parameter Rule_55
+                     Ctr__ParameterList__0 RtkPos Parameter Rule_60
                      deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ParameterList where
     rtkPosOf (Anti_ParameterList _) = rtkNoPos
@@ -2550,157 +2693,163 @@ instance RtkPosOf Resource where
     rtkPosOf (Anti_Resource _) = rtkNoPos
     rtkPosOf (Ctr__Resource__0 p _ _ _ _) = p
 data ResourceSpec = Anti_ResourceSpec String |
-                    Ctr__ResourceSpec__0 RtkPos Resource Rule_71 Rule_73
+                    Ctr__ResourceSpec__0 RtkPos Resource Rule_76 Rule_78
                     deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ResourceSpec where
     rtkPosOf (Anti_ResourceSpec _) = rtkNoPos
     rtkPosOf (Ctr__ResourceSpec__0 p _ _ _) = p
-data Rule_1 = Ctr__Rule_1__0 RtkPos |
-              Ctr__Rule_1__1 RtkPos Package
-              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_1 where
-    rtkPosOf (Ctr__Rule_1__0 p) = p
-    rtkPosOf (Ctr__Rule_1__1 p _) = p
-data Rule_10 = Anti_Rule_10 String |
-               Ctr__Rule_10__1 RtkPos Modifier |
-               Ctr__Rule_10__2 RtkPos Annotation
+data Rule_10 = Ctr__Rule_10__0 RtkPos ElementValue Rule_11 Rule_13
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_10 where
-    rtkPosOf (Anti_Rule_10 _) = rtkNoPos
-    rtkPosOf (Ctr__Rule_10__1 p _) = p
-    rtkPosOf (Ctr__Rule_10__2 p _) = p
-data Rule_100 = Anti_Rule_100 String |
-                Ctr__Rule_100__1 RtkPos String
+    rtkPosOf (Ctr__Rule_10__0 p _ _ _) = p
+type Rule_100 = [Rule_101]
+data Rule_101 = Ctr__Rule_101__0 RtkPos TypeParameter
                 deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_100 where
-    rtkPosOf (Anti_Rule_100 _) = rtkNoPos
-    rtkPosOf (Ctr__Rule_100__1 p _) = p
-type Rule_12 = [Rule_13]
-data Rule_13 = Ctr__Rule_13__0 RtkPos ClassOrInterfaceType
+instance RtkPosOf Rule_101 where
+    rtkPosOf (Ctr__Rule_101__0 p _) = p
+data Rule_102 = Ctr__Rule_102__0 RtkPos |
+                Ctr__Rule_102__1 RtkPos Rule_103
+                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_102 where
+    rtkPosOf (Ctr__Rule_102__0 p) = p
+    rtkPosOf (Ctr__Rule_102__1 p _) = p
+data Rule_103 = Ctr__Rule_103__0 RtkPos Type Rule_104
+                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_103 where
+    rtkPosOf (Ctr__Rule_103__0 p _ _) = p
+type Rule_104 = [Rule_105]
+data Rule_105 = Ctr__Rule_105__0 RtkPos Type
+                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_105 where
+    rtkPosOf (Ctr__Rule_105__0 p _) = p
+data Rule_106 = Anti_Rule_106 String |
+                Ctr__Rule_106__1 RtkPos String
+                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_106 where
+    rtkPosOf (Anti_Rule_106 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_106__1 p _) = p
+type Rule_11 = [Rule_12]
+data Rule_12 = Ctr__Rule_12__0 RtkPos ElementValue
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_12 where
+    rtkPosOf (Ctr__Rule_12__0 p _) = p
+data Rule_13 = Ctr__Rule_13__0 RtkPos |
+               Ctr__Rule_13__1 RtkPos
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_13 where
-    rtkPosOf (Ctr__Rule_13__0 p _) = p
-type Rule_14 = [ClassOrInterfaceType]
-data Rule_16 = Ctr__Rule_16__0 RtkPos |
-               Ctr__Rule_16__1 RtkPos ExtendsList
+    rtkPosOf (Ctr__Rule_13__0 p) = p
+    rtkPosOf (Ctr__Rule_13__1 p) = p
+data Rule_15 = Anti_Rule_15 String |
+               Ctr__Rule_15__1 RtkPos Modifier |
+               Ctr__Rule_15__2 RtkPos Annotation
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_16 where
-    rtkPosOf (Ctr__Rule_16__0 p) = p
-    rtkPosOf (Ctr__Rule_16__1 p _) = p
-data Rule_17 = Ctr__Rule_17__0 RtkPos |
-               Ctr__Rule_17__1 RtkPos ImplementsList
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_17 where
-    rtkPosOf (Ctr__Rule_17__0 p) = p
-    rtkPosOf (Ctr__Rule_17__1 p _) = p
-data Rule_18 = Ctr__Rule_18__0 RtkPos |
-               Ctr__Rule_18__1 RtkPos ExtendsList
+instance RtkPosOf Rule_15 where
+    rtkPosOf (Anti_Rule_15 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_15__1 p _) = p
+    rtkPosOf (Ctr__Rule_15__2 p _) = p
+type Rule_17 = [Rule_18]
+data Rule_18 = Ctr__Rule_18__0 RtkPos ClassOrInterfaceType
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_18 where
-    rtkPosOf (Ctr__Rule_18__0 p) = p
-    rtkPosOf (Ctr__Rule_18__1 p _) = p
+    rtkPosOf (Ctr__Rule_18__0 p _) = p
+type Rule_19 = [ClassOrInterfaceType]
 data Rule_2 = Ctr__Rule_2__0 RtkPos |
-              Ctr__Rule_2__1 RtkPos TypeDeclaration
+              Ctr__Rule_2__1 RtkPos CompilationUnitRest
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_2 where
     rtkPosOf (Ctr__Rule_2__0 p) = p
     rtkPosOf (Ctr__Rule_2__1 p _) = p
-data Rule_20 = Ctr__Rule_20__0 RtkPos |
-               Ctr__Rule_20__1 RtkPos Rule_21
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_20 where
-    rtkPosOf (Ctr__Rule_20__0 p) = p
-    rtkPosOf (Ctr__Rule_20__1 p _) = p
-data Rule_21 = Ctr__Rule_21__0 RtkPos Arglist
+data Rule_21 = Ctr__Rule_21__0 RtkPos |
+               Ctr__Rule_21__1 RtkPos ExtendsList
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_21 where
-    rtkPosOf (Ctr__Rule_21__0 p _) = p
+    rtkPosOf (Ctr__Rule_21__0 p) = p
+    rtkPosOf (Ctr__Rule_21__1 p _) = p
 data Rule_22 = Ctr__Rule_22__0 RtkPos |
-               Ctr__Rule_22__1 RtkPos Rule_23
+               Ctr__Rule_22__1 RtkPos ImplementsList
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_22 where
     rtkPosOf (Ctr__Rule_22__0 p) = p
     rtkPosOf (Ctr__Rule_22__1 p _) = p
-data Rule_23 = Ctr__Rule_23__0 RtkPos FieldDeclarationList
+data Rule_23 = Ctr__Rule_23__0 RtkPos |
+               Ctr__Rule_23__1 RtkPos ExtendsList
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_23 where
-    rtkPosOf (Ctr__Rule_23__0 p _) = p
-type Rule_24 = [Rule_25]
-data Rule_25 = Ctr__Rule_25__0 RtkPos EnumConstant
+    rtkPosOf (Ctr__Rule_23__0 p) = p
+    rtkPosOf (Ctr__Rule_23__1 p _) = p
+data Rule_25 = Ctr__Rule_25__0 RtkPos |
+               Ctr__Rule_25__1 RtkPos Rule_26
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_25 where
-    rtkPosOf (Ctr__Rule_25__0 p _) = p
-data Rule_26 = Ctr__Rule_26__0 RtkPos |
-               Ctr__Rule_26__1 RtkPos
+    rtkPosOf (Ctr__Rule_25__0 p) = p
+    rtkPosOf (Ctr__Rule_25__1 p _) = p
+data Rule_26 = Ctr__Rule_26__0 RtkPos Arglist
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_26 where
-    rtkPosOf (Ctr__Rule_26__0 p) = p
-    rtkPosOf (Ctr__Rule_26__1 p) = p
+    rtkPosOf (Ctr__Rule_26__0 p _) = p
 data Rule_27 = Ctr__Rule_27__0 RtkPos |
-               Ctr__Rule_27__1 RtkPos ImplementsList
+               Ctr__Rule_27__1 RtkPos Rule_28
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_27 where
     rtkPosOf (Ctr__Rule_27__0 p) = p
     rtkPosOf (Ctr__Rule_27__1 p _) = p
-data Rule_28 = Ctr__Rule_28__0 RtkPos |
-               Ctr__Rule_28__1 RtkPos Rule_29
+data Rule_28 = Ctr__Rule_28__0 RtkPos FieldDeclarationList
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_28 where
-    rtkPosOf (Ctr__Rule_28__0 p) = p
-    rtkPosOf (Ctr__Rule_28__1 p _) = p
-data Rule_29 = Ctr__Rule_29__0 RtkPos FieldDeclarationList
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_29 where
-    rtkPosOf (Ctr__Rule_29__0 p _) = p
+    rtkPosOf (Ctr__Rule_28__0 p _) = p
+type Rule_29 = [Rule_30]
 data Rule_3 = Ctr__Rule_3__0 RtkPos |
               Ctr__Rule_3__1 RtkPos
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_3 where
     rtkPosOf (Ctr__Rule_3__0 p) = p
     rtkPosOf (Ctr__Rule_3__1 p) = p
-data Rule_30 = Ctr__Rule_30__0 RtkPos MemberDeclaration |
-               Ctr__Rule_30__1 RtkPos TypeDeclRest |
-               Ctr__Rule_30__2 RtkPos StaticInitializer
+data Rule_30 = Ctr__Rule_30__0 RtkPos EnumConstant
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_30 where
     rtkPosOf (Ctr__Rule_30__0 p _) = p
-    rtkPosOf (Ctr__Rule_30__1 p _) = p
-    rtkPosOf (Ctr__Rule_30__2 p _) = p
-data Rule_31 = Anti_Rule_31 String |
+data Rule_31 = Ctr__Rule_31__0 RtkPos |
                Ctr__Rule_31__1 RtkPos
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_31 where
-    rtkPosOf (Anti_Rule_31 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_31__0 p) = p
     rtkPosOf (Ctr__Rule_31__1 p) = p
-data Rule_33 = Anti_Rule_33 String |
-               Ctr__Rule_33__1 RtkPos
+data Rule_32 = Ctr__Rule_32__0 RtkPos |
+               Ctr__Rule_32__1 RtkPos ImplementsList
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_32 where
+    rtkPosOf (Ctr__Rule_32__0 p) = p
+    rtkPosOf (Ctr__Rule_32__1 p _) = p
+data Rule_33 = Ctr__Rule_33__0 RtkPos |
+               Ctr__Rule_33__1 RtkPos Rule_34
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_33 where
-    rtkPosOf (Anti_Rule_33 _) = rtkNoPos
-    rtkPosOf (Ctr__Rule_33__1 p) = p
-data Rule_35 = Ctr__Rule_35__0 RtkPos |
-               Ctr__Rule_35__1 RtkPos ParameterList
+    rtkPosOf (Ctr__Rule_33__0 p) = p
+    rtkPosOf (Ctr__Rule_33__1 p _) = p
+data Rule_34 = Ctr__Rule_34__0 RtkPos FieldDeclarationList
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_34 where
+    rtkPosOf (Ctr__Rule_34__0 p _) = p
+data Rule_35 = Ctr__Rule_35__0 RtkPos MemberDeclaration |
+               Ctr__Rule_35__1 RtkPos TypeDeclRest |
+               Ctr__Rule_35__2 RtkPos StaticInitializer
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_35 where
-    rtkPosOf (Ctr__Rule_35__0 p) = p
+    rtkPosOf (Ctr__Rule_35__0 p _) = p
     rtkPosOf (Ctr__Rule_35__1 p _) = p
-data Rule_36 = Ctr__Rule_36__0 RtkPos |
-               Ctr__Rule_36__1 RtkPos ThrowsClause
+    rtkPosOf (Ctr__Rule_35__2 p _) = p
+data Rule_36 = Anti_Rule_36 String |
+               Ctr__Rule_36__1 RtkPos
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_36 where
-    rtkPosOf (Ctr__Rule_36__0 p) = p
-    rtkPosOf (Ctr__Rule_36__1 p _) = p
-type Rule_37 = [Rule_38]
-data Rule_38 = Ctr__Rule_38__0 RtkPos CompoundName
+    rtkPosOf (Anti_Rule_36 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_36__1 p) = p
+data Rule_38 = Anti_Rule_38 String |
+               Ctr__Rule_38__1 RtkPos
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_38 where
-    rtkPosOf (Ctr__Rule_38__0 p _) = p
-data Rule_39 = Ctr__Rule_39__0 RtkPos |
-               Ctr__Rule_39__1 RtkPos ParameterList
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_39 where
-    rtkPosOf (Ctr__Rule_39__0 p) = p
-    rtkPosOf (Ctr__Rule_39__1 p _) = p
+    rtkPosOf (Anti_Rule_38 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_38__1 p) = p
 data Rule_4 = Ctr__Rule_4__0 RtkPos |
               Ctr__Rule_4__1 RtkPos Rule_5
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
@@ -2708,82 +2857,86 @@ instance RtkPosOf Rule_4 where
     rtkPosOf (Ctr__Rule_4__0 p) = p
     rtkPosOf (Ctr__Rule_4__1 p _) = p
 data Rule_40 = Ctr__Rule_40__0 RtkPos |
-               Ctr__Rule_40__1 RtkPos ThrowsClause
+               Ctr__Rule_40__1 RtkPos ParameterList
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_40 where
     rtkPosOf (Ctr__Rule_40__0 p) = p
     rtkPosOf (Ctr__Rule_40__1 p _) = p
-data Rule_41 = Ctr__Rule_41__0 RtkPos StatementBlock |
-               Ctr__Rule_41__1 RtkPos Rule_42
+data Rule_41 = Ctr__Rule_41__0 RtkPos |
+               Ctr__Rule_41__1 RtkPos ThrowsClause
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_41 where
-    rtkPosOf (Ctr__Rule_41__0 p _) = p
+    rtkPosOf (Ctr__Rule_41__0 p) = p
     rtkPosOf (Ctr__Rule_41__1 p _) = p
-data Rule_42 = Ctr__Rule_42__0 RtkPos |
-               Ctr__Rule_42__1 RtkPos Rule_43
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_42 where
-    rtkPosOf (Ctr__Rule_42__0 p) = p
-    rtkPosOf (Ctr__Rule_42__1 p _) = p
-data Rule_43 = Ctr__Rule_43__0 RtkPos Expression
+type Rule_42 = [Rule_43]
+data Rule_43 = Ctr__Rule_43__0 RtkPos CompoundName
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_43 where
     rtkPosOf (Ctr__Rule_43__0 p _) = p
-data Rule_44 = Anti_Rule_44 String |
-               Ctr__Rule_44__1 RtkPos VariableDeclarator
+data Rule_44 = Ctr__Rule_44__0 RtkPos |
+               Ctr__Rule_44__1 RtkPos ParameterList
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_44 where
-    rtkPosOf (Anti_Rule_44 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_44__0 p) = p
     rtkPosOf (Ctr__Rule_44__1 p _) = p
-type Rule_46 = [Rule_47]
-data Rule_47 = Ctr__Rule_47__0 RtkPos VariableDeclarator
+data Rule_45 = Ctr__Rule_45__0 RtkPos |
+               Ctr__Rule_45__1 RtkPos ThrowsClause
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_45 where
+    rtkPosOf (Ctr__Rule_45__0 p) = p
+    rtkPosOf (Ctr__Rule_45__1 p _) = p
+data Rule_46 = Ctr__Rule_46__0 RtkPos StatementBlock |
+               Ctr__Rule_46__1 RtkPos Rule_47
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_46 where
+    rtkPosOf (Ctr__Rule_46__0 p _) = p
+    rtkPosOf (Ctr__Rule_46__1 p _) = p
+data Rule_47 = Ctr__Rule_47__0 RtkPos |
+               Ctr__Rule_47__1 RtkPos Rule_48
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_47 where
-    rtkPosOf (Ctr__Rule_47__0 p _) = p
-data Rule_48 = Anti_Rule_48 String |
-               Ctr__Rule_48__1 RtkPos |
-               Ctr__Rule_48__2 RtkPos Annotation
+    rtkPosOf (Ctr__Rule_47__0 p) = p
+    rtkPosOf (Ctr__Rule_47__1 p _) = p
+data Rule_48 = Ctr__Rule_48__0 RtkPos Expression
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_48 where
-    rtkPosOf (Anti_Rule_48 _) = rtkNoPos
-    rtkPosOf (Ctr__Rule_48__1 p) = p
-    rtkPosOf (Ctr__Rule_48__2 p _) = p
+    rtkPosOf (Ctr__Rule_48__0 p _) = p
+data Rule_49 = Anti_Rule_49 String |
+               Ctr__Rule_49__1 RtkPos VariableDeclarator
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_49 where
+    rtkPosOf (Anti_Rule_49 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_49__1 p _) = p
 data Rule_5 = Ctr__Rule_5__0 RtkPos Rule_6
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_5 where
     rtkPosOf (Ctr__Rule_5__0 p _) = p
-data Rule_50 = Ctr__Rule_50__0 RtkPos VariableInitializer
+type Rule_51 = [Rule_52]
+data Rule_52 = Ctr__Rule_52__0 RtkPos VariableDeclarator
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_50 where
-    rtkPosOf (Ctr__Rule_50__0 p _) = p
-data Rule_51 = Ctr__Rule_51__0 RtkPos VariableInitializer Rule_52 Rule_54
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_51 where
-    rtkPosOf (Ctr__Rule_51__0 p _ _ _) = p
-type Rule_52 = [Rule_53]
-data Rule_53 = Ctr__Rule_53__0 RtkPos VariableInitializer
+instance RtkPosOf Rule_52 where
+    rtkPosOf (Ctr__Rule_52__0 p _) = p
+data Rule_53 = Anti_Rule_53 String |
+               Ctr__Rule_53__1 RtkPos |
+               Ctr__Rule_53__2 RtkPos Annotation
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_53 where
-    rtkPosOf (Ctr__Rule_53__0 p _) = p
-data Rule_54 = Ctr__Rule_54__0 RtkPos |
-               Ctr__Rule_54__1 RtkPos
+    rtkPosOf (Anti_Rule_53 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_53__1 p) = p
+    rtkPosOf (Ctr__Rule_53__2 p _) = p
+data Rule_55 = Ctr__Rule_55__0 RtkPos VariableInitializer
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_54 where
-    rtkPosOf (Ctr__Rule_54__0 p) = p
-    rtkPosOf (Ctr__Rule_54__1 p) = p
-type Rule_55 = [Rule_56]
-data Rule_56 = Ctr__Rule_56__0 RtkPos Parameter
+instance RtkPosOf Rule_55 where
+    rtkPosOf (Ctr__Rule_55__0 p _) = p
+data Rule_56 = Ctr__Rule_56__0 RtkPos VariableInitializer Rule_57 Rule_59
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_56 where
-    rtkPosOf (Ctr__Rule_56__0 p _) = p
-data Rule_57 = Anti_Rule_57 String |
-               Ctr__Rule_57__1 RtkPos |
-               Ctr__Rule_57__2 RtkPos Annotation
+    rtkPosOf (Ctr__Rule_56__0 p _ _ _) = p
+type Rule_57 = [Rule_58]
+data Rule_58 = Ctr__Rule_58__0 RtkPos VariableInitializer
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_57 where
-    rtkPosOf (Anti_Rule_57 _) = rtkNoPos
-    rtkPosOf (Ctr__Rule_57__1 p) = p
-    rtkPosOf (Ctr__Rule_57__2 p _) = p
+instance RtkPosOf Rule_58 where
+    rtkPosOf (Ctr__Rule_58__0 p _) = p
 data Rule_59 = Ctr__Rule_59__0 RtkPos |
                Ctr__Rule_59__1 RtkPos
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
@@ -2796,163 +2949,176 @@ data Rule_6 = Ctr__Rule_6__0 RtkPos |
 instance RtkPosOf Rule_6 where
     rtkPosOf (Ctr__Rule_6__0 p) = p
     rtkPosOf (Ctr__Rule_6__1 p _) = p
-data Rule_61 = Ctr__Rule_61__0 RtkPos |
-               Ctr__Rule_61__1 RtkPos Rule_62
+type Rule_60 = [Rule_61]
+data Rule_61 = Ctr__Rule_61__0 RtkPos Parameter
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_61 where
-    rtkPosOf (Ctr__Rule_61__0 p) = p
-    rtkPosOf (Ctr__Rule_61__1 p _) = p
-data Rule_62 = Ctr__Rule_62__0 RtkPos Expression
+    rtkPosOf (Ctr__Rule_61__0 p _) = p
+data Rule_62 = Anti_Rule_62 String |
+               Ctr__Rule_62__1 RtkPos |
+               Ctr__Rule_62__2 RtkPos Annotation
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_62 where
-    rtkPosOf (Ctr__Rule_62__0 p _) = p
-data Rule_63 = Ctr__Rule_63__0 RtkPos Statement
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_63 where
-    rtkPosOf (Ctr__Rule_63__0 p _) = p
-data Rule_64 = Ctr__Rule_64__0 RtkPos VariableDeclaration |
-               Ctr__Rule_64__1 RtkPos Expression |
-               Ctr__Rule_64__2 RtkPos
+    rtkPosOf (Anti_Rule_62 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_62__1 p) = p
+    rtkPosOf (Ctr__Rule_62__2 p _) = p
+data Rule_64 = Ctr__Rule_64__0 RtkPos |
+               Ctr__Rule_64__1 RtkPos
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_64 where
-    rtkPosOf (Ctr__Rule_64__0 p _) = p
-    rtkPosOf (Ctr__Rule_64__1 p _) = p
-    rtkPosOf (Ctr__Rule_64__2 p) = p
-data Rule_65 = Anti_Rule_65 String |
-               Ctr__Rule_65__1 RtkPos CatchParameter StatementBlock
+    rtkPosOf (Ctr__Rule_64__0 p) = p
+    rtkPosOf (Ctr__Rule_64__1 p) = p
+data Rule_66 = Ctr__Rule_66__0 RtkPos |
+               Ctr__Rule_66__1 RtkPos Rule_67
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_65 where
-    rtkPosOf (Anti_Rule_65 _) = rtkNoPos
-    rtkPosOf (Ctr__Rule_65__1 p _ _) = p
-type Rule_67 = [Rule_68]
-data Rule_68 = Ctr__Rule_68__0 RtkPos Type
+instance RtkPosOf Rule_66 where
+    rtkPosOf (Ctr__Rule_66__0 p) = p
+    rtkPosOf (Ctr__Rule_66__1 p _) = p
+data Rule_67 = Ctr__Rule_67__0 RtkPos Expression
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_67 where
+    rtkPosOf (Ctr__Rule_67__0 p _) = p
+data Rule_68 = Ctr__Rule_68__0 RtkPos Statement
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_68 where
     rtkPosOf (Ctr__Rule_68__0 p _) = p
-data Rule_69 = Ctr__Rule_69__0 RtkPos StatementBlock
+data Rule_69 = Ctr__Rule_69__0 RtkPos VariableDeclaration |
+               Ctr__Rule_69__1 RtkPos Expression |
+               Ctr__Rule_69__2 RtkPos
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_69 where
     rtkPosOf (Ctr__Rule_69__0 p _) = p
+    rtkPosOf (Ctr__Rule_69__1 p _) = p
+    rtkPosOf (Ctr__Rule_69__2 p) = p
 type Rule_7 = [Rule_8]
-data Rule_70 = Ctr__Rule_70__0 RtkPos |
-               Ctr__Rule_70__1 RtkPos ResourceSpec
+data Rule_70 = Anti_Rule_70 String |
+               Ctr__Rule_70__1 RtkPos CatchParameter StatementBlock
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_70 where
-    rtkPosOf (Ctr__Rule_70__0 p) = p
-    rtkPosOf (Ctr__Rule_70__1 p _) = p
-type Rule_71 = [Rule_72]
-data Rule_72 = Ctr__Rule_72__0 RtkPos Resource
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_72 where
-    rtkPosOf (Ctr__Rule_72__0 p _) = p
-data Rule_73 = Ctr__Rule_73__0 RtkPos |
-               Ctr__Rule_73__1 RtkPos
+    rtkPosOf (Anti_Rule_70 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_70__1 p _ _) = p
+type Rule_72 = [Rule_73]
+data Rule_73 = Ctr__Rule_73__0 RtkPos Type
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_73 where
-    rtkPosOf (Ctr__Rule_73__0 p) = p
-    rtkPosOf (Ctr__Rule_73__1 p) = p
-data Rule_74 = Anti_Rule_74 String |
-               Ctr__Rule_74__1 RtkPos Expression |
-               Ctr__Rule_74__2 RtkPos |
-               Ctr__Rule_74__3 RtkPos Statement
+    rtkPosOf (Ctr__Rule_73__0 p _) = p
+data Rule_74 = Ctr__Rule_74__0 RtkPos StatementBlock
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_74 where
-    rtkPosOf (Anti_Rule_74 _) = rtkNoPos
-    rtkPosOf (Ctr__Rule_74__1 p _) = p
-    rtkPosOf (Ctr__Rule_74__2 p) = p
-    rtkPosOf (Ctr__Rule_74__3 p _) = p
-data Rule_76 = Ctr__Rule_76__0 RtkPos |
-               Ctr__Rule_76__1 RtkPos Rule_77
+    rtkPosOf (Ctr__Rule_74__0 p _) = p
+data Rule_75 = Ctr__Rule_75__0 RtkPos |
+               Ctr__Rule_75__1 RtkPos ResourceSpec
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_76 where
-    rtkPosOf (Ctr__Rule_76__0 p) = p
-    rtkPosOf (Ctr__Rule_76__1 p _) = p
-data Rule_77 = Ctr__Rule_77__0 RtkPos AssignmentOp Expression
+instance RtkPosOf Rule_75 where
+    rtkPosOf (Ctr__Rule_75__0 p) = p
+    rtkPosOf (Ctr__Rule_75__1 p _) = p
+type Rule_76 = [Rule_77]
+data Rule_77 = Ctr__Rule_77__0 RtkPos Resource
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_77 where
-    rtkPosOf (Ctr__Rule_77__0 p _ _) = p
-type Rule_78 = [Rule_79]
-data Rule_79 = Ctr__Rule_79__0 RtkPos String
+    rtkPosOf (Ctr__Rule_77__0 p _) = p
+data Rule_78 = Ctr__Rule_78__0 RtkPos |
+               Ctr__Rule_78__1 RtkPos
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_78 where
+    rtkPosOf (Ctr__Rule_78__0 p) = p
+    rtkPosOf (Ctr__Rule_78__1 p) = p
+data Rule_79 = Anti_Rule_79 String |
+               Ctr__Rule_79__1 RtkPos Expression |
+               Ctr__Rule_79__2 RtkPos |
+               Ctr__Rule_79__3 RtkPos Statement
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_79 where
-    rtkPosOf (Ctr__Rule_79__0 p _) = p
+    rtkPosOf (Anti_Rule_79 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_79__1 p _) = p
+    rtkPosOf (Ctr__Rule_79__2 p) = p
+    rtkPosOf (Ctr__Rule_79__3 p _) = p
 data Rule_8 = Ctr__Rule_8__0 RtkPos AnnotationElement
               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_8 where
     rtkPosOf (Ctr__Rule_8__0 p _) = p
-data Rule_80 = Ctr__Rule_80__0 RtkPos |
-               Ctr__Rule_80__1 RtkPos Rule_81
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_80 where
-    rtkPosOf (Ctr__Rule_80__0 p) = p
-    rtkPosOf (Ctr__Rule_80__1 p _) = p
-data Rule_81 = Ctr__Rule_81__0 RtkPos Arglist
+data Rule_81 = Ctr__Rule_81__0 RtkPos |
+               Ctr__Rule_81__1 RtkPos Rule_82
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_81 where
-    rtkPosOf (Ctr__Rule_81__0 p _) = p
-data Rule_82 = Ctr__Rule_82__0 RtkPos |
-               Ctr__Rule_82__1 RtkPos Rule_83
+    rtkPosOf (Ctr__Rule_81__0 p) = p
+    rtkPosOf (Ctr__Rule_81__1 p _) = p
+data Rule_82 = Ctr__Rule_82__0 RtkPos AssignmentOp Expression
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_82 where
-    rtkPosOf (Ctr__Rule_82__0 p) = p
-    rtkPosOf (Ctr__Rule_82__1 p _) = p
-data Rule_83 = Ctr__Rule_83__0 RtkPos Arglist
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_83 where
-    rtkPosOf (Ctr__Rule_83__0 p _) = p
-data Rule_84 = Ctr__Rule_84__0 RtkPos Arglist |
-               Ctr__Rule_84__1 RtkPos DimExprs Rule_85
+    rtkPosOf (Ctr__Rule_82__0 p _ _) = p
+type Rule_83 = [Rule_84]
+data Rule_84 = Ctr__Rule_84__0 RtkPos String
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_84 where
     rtkPosOf (Ctr__Rule_84__0 p _) = p
-    rtkPosOf (Ctr__Rule_84__1 p _ _) = p
 data Rule_85 = Ctr__Rule_85__0 RtkPos |
-               Ctr__Rule_85__1 RtkPos NonEmptyDims
+               Ctr__Rule_85__1 RtkPos Rule_86
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_85 where
     rtkPosOf (Ctr__Rule_85__0 p) = p
     rtkPosOf (Ctr__Rule_85__1 p _) = p
-data Rule_86 = Anti_Rule_86 String |
-               Ctr__Rule_86__1 RtkPos Expression
+data Rule_86 = Ctr__Rule_86__0 RtkPos Arglist
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_86 where
-    rtkPosOf (Anti_Rule_86 _) = rtkNoPos
-    rtkPosOf (Ctr__Rule_86__1 p _) = p
-data Rule_88 = Ctr__Rule_88__0 RtkPos Expression Rule_89
+    rtkPosOf (Ctr__Rule_86__0 p _) = p
+data Rule_87 = Ctr__Rule_87__0 RtkPos |
+               Ctr__Rule_87__1 RtkPos Rule_88
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_87 where
+    rtkPosOf (Ctr__Rule_87__0 p) = p
+    rtkPosOf (Ctr__Rule_87__1 p _) = p
+data Rule_88 = Ctr__Rule_88__0 RtkPos Arglist
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_88 where
-    rtkPosOf (Ctr__Rule_88__0 p _ _) = p
-type Rule_89 = [Rule_90]
-data Rule_90 = Ctr__Rule_90__0 RtkPos Expression
+    rtkPosOf (Ctr__Rule_88__0 p _) = p
+data Rule_89 = Ctr__Rule_89__0 RtkPos Arglist Rule_90 |
+               Ctr__Rule_89__1 RtkPos DimExprs Rule_92 |
+               Ctr__Rule_89__2 RtkPos NonEmptyDims ArrayInitializer
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_89 where
+    rtkPosOf (Ctr__Rule_89__0 p _ _) = p
+    rtkPosOf (Ctr__Rule_89__1 p _ _) = p
+    rtkPosOf (Ctr__Rule_89__2 p _ _) = p
+data Rule_9 = Ctr__Rule_9__0 RtkPos |
+              Ctr__Rule_9__1 RtkPos Rule_10
+              deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_9 where
+    rtkPosOf (Ctr__Rule_9__0 p) = p
+    rtkPosOf (Ctr__Rule_9__1 p _) = p
+data Rule_90 = Ctr__Rule_90__0 RtkPos |
+               Ctr__Rule_90__1 RtkPos Rule_91
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_90 where
-    rtkPosOf (Ctr__Rule_90__0 p _) = p
-type Rule_91 = [Rule_92]
-data Rule_92 = Ctr__Rule_92__0 RtkPos TypeArgument
+    rtkPosOf (Ctr__Rule_90__0 p) = p
+    rtkPosOf (Ctr__Rule_90__1 p _) = p
+data Rule_91 = Ctr__Rule_91__0 RtkPos FieldDeclarationList
+               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Rule_91 where
+    rtkPosOf (Ctr__Rule_91__0 p _) = p
+data Rule_92 = Ctr__Rule_92__0 RtkPos |
+               Ctr__Rule_92__1 RtkPos NonEmptyDims
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_92 where
-    rtkPosOf (Ctr__Rule_92__0 p _) = p
-data Rule_93 = Ctr__Rule_93__0 RtkPos TypeParameter Rule_94
+    rtkPosOf (Ctr__Rule_92__0 p) = p
+    rtkPosOf (Ctr__Rule_92__1 p _) = p
+data Rule_93 = Anti_Rule_93 String |
+               Ctr__Rule_93__1 RtkPos Expression
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_93 where
-    rtkPosOf (Ctr__Rule_93__0 p _ _) = p
-type Rule_94 = [Rule_95]
-data Rule_95 = Ctr__Rule_95__0 RtkPos TypeParameter
+    rtkPosOf (Anti_Rule_93 _) = rtkNoPos
+    rtkPosOf (Ctr__Rule_93__1 p _) = p
+data Rule_95 = Ctr__Rule_95__0 RtkPos Expression Rule_96
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_95 where
-    rtkPosOf (Ctr__Rule_95__0 p _) = p
-data Rule_96 = Ctr__Rule_96__0 RtkPos |
-               Ctr__Rule_96__1 RtkPos Rule_97
-               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
-instance RtkPosOf Rule_96 where
-    rtkPosOf (Ctr__Rule_96__0 p) = p
-    rtkPosOf (Ctr__Rule_96__1 p _) = p
-data Rule_97 = Ctr__Rule_97__0 RtkPos Type Rule_98
+    rtkPosOf (Ctr__Rule_95__0 p _ _) = p
+type Rule_96 = [Rule_97]
+data Rule_97 = Ctr__Rule_97__0 RtkPos Expression
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_97 where
-    rtkPosOf (Ctr__Rule_97__0 p _ _) = p
+    rtkPosOf (Ctr__Rule_97__0 p _) = p
 type Rule_98 = [Rule_99]
-data Rule_99 = Ctr__Rule_99__0 RtkPos Type
+data Rule_99 = Ctr__Rule_99__0 RtkPos TypeArgument
                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf Rule_99 where
     rtkPosOf (Ctr__Rule_99__0 p _) = p
@@ -2979,7 +3145,7 @@ data Statement = Anti_Statement String |
                  Ctr__Statement__9 RtkPos SwitchStatement |
                  Ctr__Statement__10 RtkPos Expression Statement |
                  Ctr__Statement__11 RtkPos Expression |
-                 Ctr__Statement__12 RtkPos Expression Rule_61 |
+                 Ctr__Statement__12 RtkPos Expression Rule_66 |
                  Ctr__Statement__13 RtkPos String Statement |
                  Ctr__Statement__14 RtkPos OptId |
                  Ctr__Statement__15 RtkPos OptId |
@@ -3021,7 +3187,7 @@ data StaticInitializer = Anti_StaticInitializer String |
 instance RtkPosOf StaticInitializer where
     rtkPosOf (Anti_StaticInitializer _) = rtkNoPos
     rtkPosOf (Ctr__StaticInitializer__0 p _) = p
-type SwitchCaseList = [Rule_74]
+type SwitchCaseList = [Rule_79]
 data SwitchStatement = Anti_SwitchStatement String |
                        Ctr__SwitchStatement__0 RtkPos Expression SwitchCaseList
                        deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
@@ -3029,13 +3195,13 @@ instance RtkPosOf SwitchStatement where
     rtkPosOf (Anti_SwitchStatement _) = rtkNoPos
     rtkPosOf (Ctr__SwitchStatement__0 p _ _) = p
 data ThrowsClause = Anti_ThrowsClause String |
-                    Ctr__ThrowsClause__0 RtkPos CompoundName Rule_37
+                    Ctr__ThrowsClause__0 RtkPos CompoundName Rule_42
                     deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf ThrowsClause where
     rtkPosOf (Anti_ThrowsClause _) = rtkNoPos
     rtkPosOf (Ctr__ThrowsClause__0 p _ _) = p
 data TryStatement = Anti_TryStatement String |
-                    Ctr__TryStatement__0 RtkPos Rule_70 StatementBlock CatchList OptFinally
+                    Ctr__TryStatement__0 RtkPos Rule_75 StatementBlock CatchList OptFinally
                     deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf TryStatement where
     rtkPosOf (Anti_TryStatement _) = rtkNoPos
@@ -3081,20 +3247,21 @@ instance RtkPosOf TypeDeclRest where
     rtkPosOf (Ctr__TypeDeclRest__2 p _) = p
     rtkPosOf (Ctr__TypeDeclRest__3 p _) = p
 data TypeDeclaration = Anti_TypeDeclaration String |
-                       Ctr__TypeDeclaration__0 RtkPos OptDocComment ModifierList TypeDeclRest
+                       Ctr__TypeDeclaration__1 RtkPos OptDocComment ModifierList TypeDeclRest
                        deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf TypeDeclaration where
     rtkPosOf (Anti_TypeDeclaration _) = rtkNoPos
-    rtkPosOf (Ctr__TypeDeclaration__0 p _ _ _) = p
+    rtkPosOf (Ctr__TypeDeclaration__1 p _ _ _) = p
+type TypeDeclarationList = [TypeDeclaration]
 data TypeParameter = Anti_TypeParameter String |
-                     Ctr__TypeParameter__0 RtkPos String Rule_96
+                     Ctr__TypeParameter__0 RtkPos String Rule_102
                      deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf TypeParameter where
     rtkPosOf (Anti_TypeParameter _) = rtkNoPos
     rtkPosOf (Ctr__TypeParameter__0 p _ _) = p
 data TypeParameters = Anti_TypeParameters String |
                       Ctr__TypeParameters__0 RtkPos |
-                      Ctr__TypeParameters__1 RtkPos Rule_93
+                      Ctr__TypeParameters__1 RtkPos NonEmptyTypeParameters
                       deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf TypeParameters where
     rtkPosOf (Anti_TypeParameters _) = rtkNoPos
@@ -3139,14 +3306,14 @@ instance RtkPosOf VariableDeclarator where
     rtkPosOf (Anti_VariableDeclarator _) = rtkNoPos
     rtkPosOf (Ctr__VariableDeclarator__0 p _ _ _) = p
 data VariableDeclaratorList = Anti_VariableDeclaratorList String |
-                              Ctr__VariableDeclaratorList__0 RtkPos VariableDeclarator Rule_46
+                              Ctr__VariableDeclaratorList__0 RtkPos VariableDeclarator Rule_51
                               deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf VariableDeclaratorList where
     rtkPosOf (Anti_VariableDeclaratorList _) = rtkNoPos
     rtkPosOf (Ctr__VariableDeclaratorList__0 p _ _) = p
 data VariableInitializer = Anti_VariableInitializer String |
                            Ctr__VariableInitializer__0 RtkPos Expression |
-                           Ctr__VariableInitializer__1 RtkPos VariableInitializerList
+                           Ctr__VariableInitializer__1 RtkPos ArrayInitializer
                            deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf VariableInitializer where
     rtkPosOf (Anti_VariableInitializer _) = rtkNoPos
@@ -3154,7 +3321,7 @@ instance RtkPosOf VariableInitializer where
     rtkPosOf (Ctr__VariableInitializer__1 p _) = p
 data VariableInitializerList = Anti_VariableInitializerList String |
                                Ctr__VariableInitializerList__0 RtkPos |
-                               Ctr__VariableInitializerList__1 RtkPos Rule_51
+                               Ctr__VariableInitializerList__1 RtkPos Rule_56
                                deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
 instance RtkPosOf VariableInitializerList where
     rtkPosOf (Anti_VariableInitializerList _) = rtkNoPos
