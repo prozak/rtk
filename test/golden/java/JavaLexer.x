@@ -10,21 +10,22 @@ import Data.Data (Data)
 @exponentPart = ([eE]  ("+"| "-") ?  [0-9]  ([0-9_]*  [0-9]) ?)
 @floatTypeSuffix = ([fFdD])
 
-tokens :- "tok_AdditiveOp_dummy_177" { simple Tk__tok_AdditiveOp_dummy_177 }
-          "tok_Annotation_dummy_176" { simple Tk__tok_Annotation_dummy_176 }
-          "tok_AnnotationArguments_dummy_175" { simple Tk__tok_AnnotationArguments_dummy_175 }
-          "tok_AnnotationDeclaration_dummy_174" { simple Tk__tok_AnnotationDeclaration_dummy_174 }
-          "tok_AnnotationElement_dummy_173" { simple Tk__tok_AnnotationElement_dummy_173 }
-          "tok_AnnotationList_dummy_172" { simple Tk__tok_AnnotationList_dummy_172 }
-          "tok_AnnotationTypeElement_dummy_171" { simple Tk__tok_AnnotationTypeElement_dummy_171 }
-          "tok_AnnotationTypeElementList_dummy_170" { simple Tk__tok_AnnotationTypeElementList_dummy_170 }
-          "tok_Arglist_dummy_169" { simple Tk__tok_Arglist_dummy_169 }
-          "tok_AssignmentOp_dummy_168" { simple Tk__tok_AssignmentOp_dummy_168 }
-          "tok_CatchList_dummy_167" { simple Tk__tok_CatchList_dummy_167 }
-          "tok_ClassDeclaration_dummy_166" { simple Tk__tok_ClassDeclaration_dummy_166 }
-          "tok_ClassOrInterfaceType_dummy_165" { simple Tk__tok_ClassOrInterfaceType_dummy_165 }
-          "tok_CompilationUnit_dummy_164" { simple Tk__tok_CompilationUnit_dummy_164 }
-          "tok_CompoundName_dummy_163" { simple Tk__tok_CompoundName_dummy_163 }
+tokens :- "tok_AdditiveOp_dummy_178" { simple Tk__tok_AdditiveOp_dummy_178 }
+          "tok_Annotation_dummy_177" { simple Tk__tok_Annotation_dummy_177 }
+          "tok_AnnotationArguments_dummy_176" { simple Tk__tok_AnnotationArguments_dummy_176 }
+          "tok_AnnotationDeclaration_dummy_175" { simple Tk__tok_AnnotationDeclaration_dummy_175 }
+          "tok_AnnotationElement_dummy_174" { simple Tk__tok_AnnotationElement_dummy_174 }
+          "tok_AnnotationList_dummy_173" { simple Tk__tok_AnnotationList_dummy_173 }
+          "tok_AnnotationTypeElement_dummy_172" { simple Tk__tok_AnnotationTypeElement_dummy_172 }
+          "tok_AnnotationTypeElementList_dummy_171" { simple Tk__tok_AnnotationTypeElementList_dummy_171 }
+          "tok_Arglist_dummy_170" { simple Tk__tok_Arglist_dummy_170 }
+          "tok_AssignmentOp_dummy_169" { simple Tk__tok_AssignmentOp_dummy_169 }
+          "tok_CatchList_dummy_168" { simple Tk__tok_CatchList_dummy_168 }
+          "tok_ClassDeclaration_dummy_167" { simple Tk__tok_ClassDeclaration_dummy_167 }
+          "tok_ClassOrInterfaceType_dummy_166" { simple Tk__tok_ClassOrInterfaceType_dummy_166 }
+          "tok_CompilationUnit_dummy_165" { simple Tk__tok_CompilationUnit_dummy_165 }
+          "tok_CompoundName_dummy_164" { simple Tk__tok_CompoundName_dummy_164 }
+          "tok_CompoundNameTail_dummy_163" { simple Tk__tok_CompoundNameTail_dummy_163 }
           "tok_CreationExpression_dummy_162" { simple Tk__tok_CreationExpression_dummy_162 }
           "tok_DimExprs_dummy_161" { simple Tk__tok_DimExprs_dummy_161 }
           "tok_Dims_dummy_160" { simple Tk__tok_Dims_dummy_160 }
@@ -46,7 +47,7 @@ tokens :- "tok_AdditiveOp_dummy_177" { simple Tk__tok_AdditiveOp_dummy_177 }
           "tok_ImportName_dummy_144" { simple Tk__tok_ImportName_dummy_144 }
           "tok_ImportStatement_dummy_143" { simple Tk__tok_ImportStatement_dummy_143 }
           "tok_InterfaceDeclaration_dummy_142" { simple Tk__tok_InterfaceDeclaration_dummy_142 }
-          "tok_Java_dummy_178" { simple Tk__tok_Java_dummy_178 }
+          "tok_Java_dummy_179" { simple Tk__tok_Java_dummy_179 }
           "tok_Literal_dummy_141" { simple Tk__tok_Literal_dummy_141 }
           "tok_LocalModifierList1_dummy_140" { simple Tk__tok_LocalModifierList1_dummy_140 }
           "tok_MemberAfterFirstId_dummy_139" { simple Tk__tok_MemberAfterFirstId_dummy_139 }
@@ -97,24 +98,24 @@ tokens :- "tok_AdditiveOp_dummy_177" { simple Tk__tok_AdditiveOp_dummy_177 }
           "tok_VariableInitializerList_dummy_94" { simple Tk__tok_VariableInitializerList_dummy_94 }
           "tok_WhileStatement_dummy_93" { simple Tk__tok_WhileStatement_dummy_93 }
           "tok_WildcardType_dummy_92" { simple Tk__tok_WildcardType_dummy_92 }
-          "~" { simple Tk__tok__tilde__80 }
+          "~" { simple Tk__tok__tilde__82 }
           "}" { simple Tk__tok__symbol__15 }
-          "||" { simple Tk__tok__pipe__pipe__61 }
-          "|=" { simple Tk__tok__pipe__eql__53 }
-          "|" { simple Tk__tok__pipe__63 }
+          "||" { simple Tk__tok__pipe__pipe__63 }
+          "|=" { simple Tk__tok__pipe__eql__55 }
+          "|" { simple Tk__tok__pipe__65 }
           "{" { simple Tk__tok__symbol__14 }
-          "while" { simple Tk__tok_while_42 }
+          "while" { simple Tk__tok_while_44 }
           "void" { simple Tk__tok_void_28 }
-          "try" { simple Tk__tok_try_46 }
+          "try" { simple Tk__tok_try_48 }
           "true" { simple Tk__tok_true_85 }
           "transient" { simple Tk__tok_transient_94 }
           "throws" { simple Tk__tok_throws_29 }
           "throw" { simple Tk__tok_throw_35 }
           "threadsafe" { simple Tk__tok_threadsafe_93 }
-          "this" { simple Tk__tok_this_82 }
+          "this" { simple Tk__tok_this_40 }
           "synchronized" { simple Tk__tok_synchronized_34 }
-          "switch" { simple Tk__tok_switch_48 }
-          "super" { simple Tk__tok_super_83 }
+          "switch" { simple Tk__tok_switch_50 }
+          "super" { simple Tk__tok_super_39 }
           "static" { simple Tk__tok_static_3 }
           "short" { simple Tk__tok_short_23 }
           "return" { simple Tk__tok_return_33 }
@@ -128,70 +129,70 @@ tokens :- "tok_AdditiveOp_dummy_177" { simple Tk__tok_AdditiveOp_dummy_177 }
           "long" { simple Tk__tok_long_26 }
           "interface" { simple Tk__tok_interface_16 }
           "int" { simple Tk__tok_int_24 }
-          "instanceof" { simple Tk__tok_instanceof_72 }
+          "instanceof" { simple Tk__tok_instanceof_74 }
           "import" { simple Tk__tok_import_2 }
           "implements" { simple Tk__tok_implements_12 }
-          "if" { simple Tk__tok_if_40 }
-          "for" { simple Tk__tok_for_43 }
+          "if" { simple Tk__tok_if_42 }
+          "for" { simple Tk__tok_for_45 }
           "float" { simple Tk__tok_float_25 }
-          "finally" { simple Tk__tok_finally_45 }
+          "finally" { simple Tk__tok_finally_47 }
           "final" { simple Tk__tok_final_31 }
           "false" { simple Tk__tok_false_86 }
           "extends" { simple Tk__tok_extends_11 }
           "enum" { simple Tk__tok_enum_17 }
-          "else" { simple Tk__tok_else_39 }
+          "else" { simple Tk__tok_else_41 }
           "double" { simple Tk__tok_double_27 }
-          "do" { simple Tk__tok_do_41 }
+          "do" { simple Tk__tok_do_43 }
           "default" { simple Tk__tok_default_30 }
           "continue" { simple Tk__tok_continue_38 }
           "class" { simple Tk__tok_class_13 }
           "char" { simple Tk__tok_char_22 }
-          "catch" { simple Tk__tok_catch_44 }
-          "case" { simple Tk__tok_case_47 }
+          "catch" { simple Tk__tok_catch_46 }
+          "case" { simple Tk__tok_case_49 }
           "byte" { simple Tk__tok_byte_21 }
           "break" { simple Tk__tok_break_37 }
           "boolean" { simple Tk__tok_boolean_20 }
           "abstract" { simple Tk__tok_abstract_92 }
-          "^=" { simple Tk__tok__symbol__eql__55 }
-          "^" { simple Tk__tok__symbol__64 }
+          "^=" { simple Tk__tok__symbol__eql__57 }
+          "^" { simple Tk__tok__symbol__66 }
           "]" { simple Tk__tok__sq_bkt_r__19 }
           "[" { simple Tk__tok__sq_bkt_l__18 }
           "@" { simple Tk__tok__symbol__6 }
-          "?" { simple Tk__tok__symbol__60 }
-          ">>>=" { simple Tk__tok__symbol__symbol__symbol__eql__59 }
-          ">>=" { simple Tk__tok__symbol__symbol__eql__58 }
-          ">=" { simple Tk__tok__symbol__eql__71 }
-          ">" { simple Tk__tok__symbol__69 }
-          "==" { simple Tk__tok__eql__eql__66 }
+          "?" { simple Tk__tok__symbol__62 }
+          ">>>=" { simple Tk__tok__symbol__symbol__symbol__eql__61 }
+          ">>=" { simple Tk__tok__symbol__symbol__eql__60 }
+          ">=" { simple Tk__tok__symbol__eql__73 }
+          ">" { simple Tk__tok__symbol__71 }
+          "==" { simple Tk__tok__eql__eql__68 }
           "=" { simple Tk__tok__eql__10 }
-          "<=" { simple Tk__tok__symbol__eql__70 }
-          "<<=" { simple Tk__tok__symbol__symbol__eql__57 }
-          "<<" { simple Tk__tok__symbol__symbol__73 }
-          "<" { simple Tk__tok__symbol__68 }
+          "<=" { simple Tk__tok__symbol__eql__72 }
+          "<<=" { simple Tk__tok__symbol__symbol__eql__59 }
+          "<<" { simple Tk__tok__symbol__symbol__75 }
+          "<" { simple Tk__tok__symbol__70 }
           ";" { simple Tk__tok__semi__1 }
           ":" { simple Tk__tok__colon__36 }
-          "/=" { simple Tk__tok__symbol__eql__52 }
-          "/" { simple Tk__tok__symbol__76 }
+          "/=" { simple Tk__tok__symbol__eql__54 }
+          "/" { simple Tk__tok__symbol__78 }
           "..." { simple Tk__tok__dot__dot__dot__32 }
           "." { simple Tk__tok__dot__4 }
-          "-=" { simple Tk__tok__minus__eql__50 }
-          "--" { simple Tk__tok__minus__minus__79 }
-          "-" { simple Tk__tok__minus__75 }
+          "-=" { simple Tk__tok__minus__eql__52 }
+          "--" { simple Tk__tok__minus__minus__81 }
+          "-" { simple Tk__tok__minus__77 }
           "," { simple Tk__tok__coma__9 }
-          "+=" { simple Tk__tok__plus__eql__49 }
-          "++" { simple Tk__tok__plus__plus__78 }
-          "+" { simple Tk__tok__plus__74 }
-          "*=" { simple Tk__tok__star__eql__51 }
+          "+=" { simple Tk__tok__plus__eql__51 }
+          "++" { simple Tk__tok__plus__plus__80 }
+          "+" { simple Tk__tok__plus__76 }
+          "*=" { simple Tk__tok__star__eql__53 }
           "*" { simple Tk__tok__star__5 }
           ")" { simple Tk__tok__rparen__8 }
           "(" { simple Tk__tok__lparen__7 }
-          "&=" { simple Tk__tok__symbol__eql__54 }
-          "&&" { simple Tk__tok__symbol__symbol__62 }
-          "&" { simple Tk__tok__symbol__65 }
-          "%=" { simple Tk__tok__symbol__eql__56 }
-          "%" { simple Tk__tok__symbol__77 }
-          "!=" { simple Tk__tok__exclamation__eql__67 }
-          "!" { simple Tk__tok__exclamation__81 }
+          "&=" { simple Tk__tok__symbol__eql__56 }
+          "&&" { simple Tk__tok__symbol__symbol__64 }
+          "&" { simple Tk__tok__symbol__67 }
+          "%=" { simple Tk__tok__symbol__eql__58 }
+          "%" { simple Tk__tok__symbol__79 }
+          "!=" { simple Tk__tok__exclamation__eql__69 }
+          "!" { simple Tk__tok__exclamation__83 }
           ("/*"  ([^\*\n]| [\n])  ([\n]| [^\*\n]| [\*]  [^\/\n]| [\*]  [\n])*  "*/") ;
           ("//"  [^\n]*  \n) ;
           ([\ \t\n\r]+) ;
@@ -204,6 +205,7 @@ tokens :- "tok_AdditiveOp_dummy_177" { simple Tk__tok_AdditiveOp_dummy_177 }
           ([0-9]  ([0-9_]*  [0-9]) ?  "."  ([0-9]  ([0-9_]*  [0-9]) ?) ?  @exponentPart ?  @floatTypeSuffix ?| "."  [0-9]  ([0-9_]*  [0-9]) ?  @exponentPart ?  @floatTypeSuffix ?| [0-9]  ([0-9_]*  [0-9]) ?  @exponentPart  @floatTypeSuffix ?| [0-9]  ([0-9_]*  [0-9]) ?  @floatTypeSuffix) { simple1 $  Tk__floatLiteral . (id) }
           (([0-9]  ([0-9_]*  [0-9]) ?| "0"  [xX]  [0-9a-fA-F]  ([0-9a-fA-F_]*  [0-9a-fA-F]) ?| "0"  [bB]  [01]  ([01_]*  [01]) ?)  [lL] ?) { simple1 $  Tk__integerLiteral . (id) }
           ("$"  "CompoundName"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_CompoundName . ((tail . dropWhile (/= ':'))) }
+          ("$"  "CompoundNameTail"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_CompoundNameTail . ((tail . dropWhile (/= ':'))) }
           ("$"  "Modifier"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Modifier . ((tail . dropWhile (/= ':'))) }
           ("$"  "TypeSpecifier"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_TypeSpecifier . ((tail . dropWhile (/= ':'))) }
           ("$"  "Type"  ":"  [a-zA-Z_]  [A-Za-z0-9_]*) { simple1 $  Tk__qq_Type . ((tail . dropWhile (/= ':'))) }
@@ -294,21 +296,22 @@ tokens :- "tok_AdditiveOp_dummy_177" { simple Tk__tok_AdditiveOp_dummy_177 }
 
 {
 data Token = EndOfFile |
-             Tk__tok_AdditiveOp_dummy_177 |
-             Tk__tok_Annotation_dummy_176 |
-             Tk__tok_AnnotationArguments_dummy_175 |
-             Tk__tok_AnnotationDeclaration_dummy_174 |
-             Tk__tok_AnnotationElement_dummy_173 |
-             Tk__tok_AnnotationList_dummy_172 |
-             Tk__tok_AnnotationTypeElement_dummy_171 |
-             Tk__tok_AnnotationTypeElementList_dummy_170 |
-             Tk__tok_Arglist_dummy_169 |
-             Tk__tok_AssignmentOp_dummy_168 |
-             Tk__tok_CatchList_dummy_167 |
-             Tk__tok_ClassDeclaration_dummy_166 |
-             Tk__tok_ClassOrInterfaceType_dummy_165 |
-             Tk__tok_CompilationUnit_dummy_164 |
-             Tk__tok_CompoundName_dummy_163 |
+             Tk__tok_AdditiveOp_dummy_178 |
+             Tk__tok_Annotation_dummy_177 |
+             Tk__tok_AnnotationArguments_dummy_176 |
+             Tk__tok_AnnotationDeclaration_dummy_175 |
+             Tk__tok_AnnotationElement_dummy_174 |
+             Tk__tok_AnnotationList_dummy_173 |
+             Tk__tok_AnnotationTypeElement_dummy_172 |
+             Tk__tok_AnnotationTypeElementList_dummy_171 |
+             Tk__tok_Arglist_dummy_170 |
+             Tk__tok_AssignmentOp_dummy_169 |
+             Tk__tok_CatchList_dummy_168 |
+             Tk__tok_ClassDeclaration_dummy_167 |
+             Tk__tok_ClassOrInterfaceType_dummy_166 |
+             Tk__tok_CompilationUnit_dummy_165 |
+             Tk__tok_CompoundName_dummy_164 |
+             Tk__tok_CompoundNameTail_dummy_163 |
              Tk__tok_CreationExpression_dummy_162 |
              Tk__tok_DimExprs_dummy_161 |
              Tk__tok_Dims_dummy_160 |
@@ -330,7 +333,7 @@ data Token = EndOfFile |
              Tk__tok_ImportName_dummy_144 |
              Tk__tok_ImportStatement_dummy_143 |
              Tk__tok_InterfaceDeclaration_dummy_142 |
-             Tk__tok_Java_dummy_178 |
+             Tk__tok_Java_dummy_179 |
              Tk__tok_Literal_dummy_141 |
              Tk__tok_LocalModifierList1_dummy_140 |
              Tk__tok_MemberAfterFirstId_dummy_139 |
@@ -381,24 +384,24 @@ data Token = EndOfFile |
              Tk__tok_VariableInitializerList_dummy_94 |
              Tk__tok_WhileStatement_dummy_93 |
              Tk__tok_WildcardType_dummy_92 |
-             Tk__tok__tilde__80 |
+             Tk__tok__tilde__82 |
              Tk__tok__symbol__15 |
-             Tk__tok__pipe__pipe__61 |
-             Tk__tok__pipe__eql__53 |
-             Tk__tok__pipe__63 |
+             Tk__tok__pipe__pipe__63 |
+             Tk__tok__pipe__eql__55 |
+             Tk__tok__pipe__65 |
              Tk__tok__symbol__14 |
-             Tk__tok_while_42 |
+             Tk__tok_while_44 |
              Tk__tok_void_28 |
-             Tk__tok_try_46 |
+             Tk__tok_try_48 |
              Tk__tok_true_85 |
              Tk__tok_transient_94 |
              Tk__tok_throws_29 |
              Tk__tok_throw_35 |
              Tk__tok_threadsafe_93 |
-             Tk__tok_this_82 |
+             Tk__tok_this_40 |
              Tk__tok_synchronized_34 |
-             Tk__tok_switch_48 |
-             Tk__tok_super_83 |
+             Tk__tok_switch_50 |
+             Tk__tok_super_39 |
              Tk__tok_static_3 |
              Tk__tok_short_23 |
              Tk__tok_return_33 |
@@ -412,70 +415,70 @@ data Token = EndOfFile |
              Tk__tok_long_26 |
              Tk__tok_interface_16 |
              Tk__tok_int_24 |
-             Tk__tok_instanceof_72 |
+             Tk__tok_instanceof_74 |
              Tk__tok_import_2 |
              Tk__tok_implements_12 |
-             Tk__tok_if_40 |
-             Tk__tok_for_43 |
+             Tk__tok_if_42 |
+             Tk__tok_for_45 |
              Tk__tok_float_25 |
-             Tk__tok_finally_45 |
+             Tk__tok_finally_47 |
              Tk__tok_final_31 |
              Tk__tok_false_86 |
              Tk__tok_extends_11 |
              Tk__tok_enum_17 |
-             Tk__tok_else_39 |
+             Tk__tok_else_41 |
              Tk__tok_double_27 |
-             Tk__tok_do_41 |
+             Tk__tok_do_43 |
              Tk__tok_default_30 |
              Tk__tok_continue_38 |
              Tk__tok_class_13 |
              Tk__tok_char_22 |
-             Tk__tok_catch_44 |
-             Tk__tok_case_47 |
+             Tk__tok_catch_46 |
+             Tk__tok_case_49 |
              Tk__tok_byte_21 |
              Tk__tok_break_37 |
              Tk__tok_boolean_20 |
              Tk__tok_abstract_92 |
-             Tk__tok__symbol__eql__55 |
-             Tk__tok__symbol__64 |
+             Tk__tok__symbol__eql__57 |
+             Tk__tok__symbol__66 |
              Tk__tok__sq_bkt_r__19 |
              Tk__tok__sq_bkt_l__18 |
              Tk__tok__symbol__6 |
-             Tk__tok__symbol__60 |
-             Tk__tok__symbol__symbol__symbol__eql__59 |
-             Tk__tok__symbol__symbol__eql__58 |
-             Tk__tok__symbol__eql__71 |
-             Tk__tok__symbol__69 |
-             Tk__tok__eql__eql__66 |
+             Tk__tok__symbol__62 |
+             Tk__tok__symbol__symbol__symbol__eql__61 |
+             Tk__tok__symbol__symbol__eql__60 |
+             Tk__tok__symbol__eql__73 |
+             Tk__tok__symbol__71 |
+             Tk__tok__eql__eql__68 |
              Tk__tok__eql__10 |
-             Tk__tok__symbol__eql__70 |
-             Tk__tok__symbol__symbol__eql__57 |
-             Tk__tok__symbol__symbol__73 |
-             Tk__tok__symbol__68 |
+             Tk__tok__symbol__eql__72 |
+             Tk__tok__symbol__symbol__eql__59 |
+             Tk__tok__symbol__symbol__75 |
+             Tk__tok__symbol__70 |
              Tk__tok__semi__1 |
              Tk__tok__colon__36 |
-             Tk__tok__symbol__eql__52 |
-             Tk__tok__symbol__76 |
+             Tk__tok__symbol__eql__54 |
+             Tk__tok__symbol__78 |
              Tk__tok__dot__dot__dot__32 |
              Tk__tok__dot__4 |
-             Tk__tok__minus__eql__50 |
-             Tk__tok__minus__minus__79 |
-             Tk__tok__minus__75 |
+             Tk__tok__minus__eql__52 |
+             Tk__tok__minus__minus__81 |
+             Tk__tok__minus__77 |
              Tk__tok__coma__9 |
-             Tk__tok__plus__eql__49 |
-             Tk__tok__plus__plus__78 |
-             Tk__tok__plus__74 |
-             Tk__tok__star__eql__51 |
+             Tk__tok__plus__eql__51 |
+             Tk__tok__plus__plus__80 |
+             Tk__tok__plus__76 |
+             Tk__tok__star__eql__53 |
              Tk__tok__star__5 |
              Tk__tok__rparen__8 |
              Tk__tok__lparen__7 |
-             Tk__tok__symbol__eql__54 |
-             Tk__tok__symbol__symbol__62 |
-             Tk__tok__symbol__65 |
              Tk__tok__symbol__eql__56 |
-             Tk__tok__symbol__77 |
-             Tk__tok__exclamation__eql__67 |
-             Tk__tok__exclamation__81 |
+             Tk__tok__symbol__symbol__64 |
+             Tk__tok__symbol__67 |
+             Tk__tok__symbol__eql__58 |
+             Tk__tok__symbol__79 |
+             Tk__tok__exclamation__eql__69 |
+             Tk__tok__exclamation__83 |
              Tk__doccomment String |
              Tk__id String |
              Tk__string String |
@@ -485,6 +488,7 @@ data Token = EndOfFile |
              Tk__floatLiteral String |
              Tk__integerLiteral String |
              Tk__qq_CompoundName String |
+             Tk__qq_CompoundNameTail String |
              Tk__qq_Modifier String |
              Tk__qq_TypeSpecifier String |
              Tk__qq_Type String |
