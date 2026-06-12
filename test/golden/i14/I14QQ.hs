@@ -1,0 +1,147 @@
+{-# LANGUAGE TemplateHaskell #-}
+module I14QQ
+where
+
+import Text.Regex.Posix
+import Text.Regex.Base
+import qualified Data.Map as M
+import Data.List
+import Data.Maybe
+import qualified Data.Generics as Generics
+import qualified Data.Data as Data
+import qualified Language.Haskell.TH as TH
+import Language.Haskell.TH.Quote
+import I14Lexer
+import I14Parser
+
+qqPattern = "\\$[A-Za-z_][A-Za-z_0-9]*[^A-Za-z_0-9:]"
+
+qqShortcuts :: M.Map String String
+
+-- A $name metavariable is rewritten to $Type:name using the qqShortcuts
+-- table below. The rewrite is purely textual, so it would also fire inside
+-- the quoted language's own string literals: write $$name there to escape
+-- it and get the literal text $name. Each '$$' pair directly before a
+-- metavariable stands for one literal '$' (so $$$x is a literal '$'
+-- followed by the metavariable $x). A '$' not followed by an identifier is
+-- never rewritten and needs no escape.
+replaceAllPatterns1 :: String -> Either String String
+replaceAllPatterns1 str = let (pre, match, post) = str =~ qqPattern :: (String, String, String)
+                          in if match == ""
+                              then Right pre
+                              else let varName = init $ tail match
+                                       addSym = last match
+                                       escCount = length $ takeWhile (== '$') $ reverse pre
+                                       keptPre = take (length pre - escCount) pre ++ replicate (div escCount 2) '$'
+                                       ruleVariants = catMaybes $ map (\ prefix -> M.lookup prefix qqShortcuts) $ reverse $ inits varName
+                                   in if odd escCount
+                                       then (\rest -> keptPre ++ ('$' : varName) ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
+                                       else case ruleVariants of
+                                              [] -> Left $ unlines
+                                                      [ "Unknown metavariable $" ++ varName ++ " in quasi-quote:"
+                                                      , "no prefix of '" ++ varName ++ "' is a known shortcut. Known shortcuts:"
+                                                      , "  " ++ intercalate ", " (M.keys qqShortcuts)
+                                                      , "To include the literal text $" ++ varName ++ " in the quoted code"
+                                                      , "(e.g. inside a string literal), escape it as $$" ++ varName ++ "." ]
+                                              (rule : _) -> (\rest -> keptPre ++ ('$' : rule ++ ":") ++ varName ++ rest) <$> (replaceAllPatterns1 $ addSym : post)
+
+-- Add ' ' at the end, so regex can match variable in the end of the string
+replaceAllPatterns :: String -> Either String String
+replaceAllPatterns str = init <$> replaceAllPatterns1 (str ++ " ")
+
+-- The generated lexer and parser encode error positions as "LINE:COL:message"
+-- so structured-diagnostic callers can split them; render them back
+-- human-readably for quasi-quote compile errors. Positions refer to the quote
+-- body (padded with a start token in front).
+rtkRenderError :: String -> String
+rtkRenderError err =
+    case span (/= ':') err of
+        (l, ':' : rest1) | [(line, "")] <- (reads l :: [(Int, String)]) ->
+            case span (/= ':') rest1 of
+                (c, ':' : msg) | [(col, "")] <- (reads c :: [(Int, String)]) ->
+                    "line " ++ show line ++ ", column " ++ show col ++ ": " ++ msg
+                _ -> err
+        _ -> err
+
+qqShortcuts = M.fromList [ ("start","Start"),("items","Items"),("label","Label"),("shape","Shape")]
+
+-- A quasi-quote pattern must match an AST parsed from anywhere in a source
+-- file, while the pattern itself was parsed from the quote body - so every
+-- RtkPos position field becomes a wildcard in generated patterns.
+-- (Expressions need no special case: the compile-time position they embed
+-- is equality-transparent.)
+rtkPosWildPat :: RtkPos -> Maybe (TH.Q TH.Pat)
+rtkPosWildPat _ = Just TH.wildP
+
+quoteI14Exp :: Data.Data a => String -> (Start -> a) -> String -> TH.ExpQ
+quoteI14Exp dummy func s = do
+  s1 <- either fail return (replaceAllPatterns s)
+  ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseI14 of
+           Left err -> fail (rtkRenderError err)
+           Right a -> return a
+  let expr = func ast
+  dataToExpQ (const Nothing `Generics.extQ` antiStartExp `Generics.extQ` antiShapeExp `Generics.extQ` antiLabelExp) expr
+quoteI14Pat :: Data.Data a => String -> (Start -> a) -> String -> TH.PatQ
+quoteI14Pat dummy func s = do
+  s1 <- either fail return (replaceAllPatterns s)
+  ast <- case scanTokens (dummy ++ " " ++ s1 ++ " " ++ dummy) >>= parseI14 of
+           Left err -> fail (rtkRenderError err)
+           Right a -> return a
+  let expr = func ast
+  dataToPatQ (const Nothing `Generics.extQ` rtkPosWildPat `Generics.extQ` antiStartPat `Generics.extQ` antiShapePat `Generics.extQ` antiLabelPat) expr
+
+antiLabelExp :: Label -> Maybe (TH.Q TH.Exp )
+antiLabelExp ( Anti_Label v) = Just $ TH.varE (TH.mkName v)
+antiLabelExp _ = Nothing
+
+
+antiShapeExp :: Shape -> Maybe (TH.Q TH.Exp )
+antiShapeExp ( Anti_Shape v) = Just $ TH.varE (TH.mkName v)
+antiShapeExp _ = Nothing
+
+
+antiStartExp :: Start -> Maybe (TH.Q TH.Exp )
+antiStartExp ( Anti_Start v) = Just $ TH.varE (TH.mkName v)
+antiStartExp _ = Nothing
+
+
+
+antiLabelPat :: Label -> Maybe (TH.Q TH.Pat )
+antiLabelPat ( Anti_Label v) = Just $ TH.varP (TH.mkName v)
+antiLabelPat _ = Nothing
+
+
+antiShapePat :: Shape -> Maybe (TH.Q TH.Pat )
+antiShapePat ( Anti_Shape v) = Just $ TH.varP (TH.mkName v)
+antiShapePat _ = Nothing
+
+
+antiStartPat :: Start -> Maybe (TH.Q TH.Pat )
+antiStartPat ( Anti_Start v) = Just $ TH.varP (TH.mkName v)
+antiStartPat _ = Nothing
+
+
+
+quoteI14Type s = return TH.ListT
+quoteI14Decs s = return []
+
+getStart ( Ctr__Start__0 _ s) = s
+
+start :: QuasiQuoter
+start = QuasiQuoter (quoteI14Exp "tok_Start_dummy_4" getStart ) (quoteI14Pat "tok_Start_dummy_4" getStart ) quoteI14Type quoteI14Decs
+
+getItems ( Ctr__Start__1 _ s) = s
+
+items :: QuasiQuoter
+items = QuasiQuoter (quoteI14Exp "tok_Items_dummy_3" getItems ) (quoteI14Pat "tok_Items_dummy_3" getItems ) quoteI14Type quoteI14Decs
+
+getLabel ( Ctr__Start__2 _ s) = s
+
+label :: QuasiQuoter
+label = QuasiQuoter (quoteI14Exp "tok_Label_dummy_2" getLabel ) (quoteI14Pat "tok_Label_dummy_2" getLabel ) quoteI14Type quoteI14Decs
+
+getShape ( Ctr__Start__3 _ s) = s
+
+shape :: QuasiQuoter
+shape = QuasiQuoter (quoteI14Exp "tok_Shape_dummy_1" getShape ) (quoteI14Pat "tok_Shape_dummy_1" getShape ) quoteI14Type quoteI14Decs
+

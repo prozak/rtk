@@ -1,0 +1,163 @@
+{
+{-# LANGUAGE DeriveDataTypeable #-}
+module I14Parser where
+import qualified Data.Generics as Gen
+import qualified I14Lexer as L (Token(..), PosToken(..), AlexPosn(..), alexScanTokens)
+}
+
+%name parseI14
+%tokentype { L.PosToken }
+%monad { Either String }
+%error { parseError }
+
+%token
+
+rtk__eof { L.PosToken _ L.EndOfFile }
+tok_Items_dummy_3 { L.PosToken _ L.Tk__tok_Items_dummy_3 }
+tok_Label_dummy_2 { L.PosToken _ L.Tk__tok_Label_dummy_2 }
+tok_Shape_dummy_1 { L.PosToken _ L.Tk__tok_Shape_dummy_1 }
+tok_Start_dummy_4 { L.PosToken _ L.Tk__tok_Start_dummy_4 }
+tok_square_1 { L.PosToken _ L.Tk__tok_square_1 }
+tok_note_3 { L.PosToken _ L.Tk__tok_note_3 }
+tok_circle_0 { L.PosToken _ L.Tk__tok_circle_0 }
+tok__coma__2 { L.PosToken _ L.Tk__tok__coma__2 }
+num { L.PosToken _ (L.Tk__num _) }
+qq_Label { L.PosToken _ (L.Tk__qq_Label _) }
+qq_Items { L.PosToken _ (L.Tk__qq_Items _) }
+qq_Shape { L.PosToken _ (L.Tk__qq_Shape _) }
+qq_Start { L.PosToken _ (L.Tk__qq_Start _) }
+
+%%
+
+I14__top : Start rtk__eof { $1 }
+
+Start : tok_Start_dummy_4 Start tok_Start_dummy_4 { Ctr__Start__0 (rtkPosOf $1) $2 } |
+        tok_Items_dummy_3 Items tok_Items_dummy_3 { Ctr__Start__1 (rtkPosOf $1) (reverse $2) } |
+        tok_Label_dummy_2 Label tok_Label_dummy_2 { Ctr__Start__2 (rtkPosOf $1) $2 } |
+        tok_Shape_dummy_1 Shape tok_Shape_dummy_1 { Ctr__Start__3 (rtkPosOf $1) $2 }
+
+Start : qq_Start { Anti_Start (tkVal_qq_Start $1) } |
+        Shape Items { Ctr__Start__4 (rtkPosOf $1) $1 (reverse $2) }
+
+Items__plus_list_ : ListElem_Items0 { [$1] } |
+                    Items__plus_list_ tok__coma__2 ListElem_Items0 { $3 : $1 }
+
+Items : Items__plus_list_ { $1 } |
+        {- empty -} { [] }
+
+Label : Note { $1 }
+
+Note : qq_Label { Anti_Label (tkVal_qq_Label $1) } |
+       tok_note_3 num { Ctr__Label__1 (rtkPosOf $1) (tkVal_num $2) }
+
+Shape : Circle { $1 } |
+        Square { $1 }
+
+ListElem_Items0 : qq_Items { Anti_Shape (tkVal_qq_Items $1) } |
+                  Shape { $1 }
+
+Square : tok_square_1 num { Ctr__Shape__3 (rtkPosOf $1) (tkVal_num $2) }
+
+Circle : qq_Shape { Anti_Shape (tkVal_qq_Shape $1) } |
+         tok_circle_0 num { Ctr__Shape__4 (rtkPosOf $1) (tkVal_num $2) }
+
+
+{
+parseError :: [L.PosToken] -> Either String a
+parseError [] = Left "unexpected end of input"
+parseError (L.PosToken (L.AlexPn _ line col) tok : _) =
+    Left $ show line ++ ":" ++ show col ++ ":unexpected " ++ showRtkToken tok
+
+-- Render a token the way it appears in the source, for error messages
+showRtkToken :: L.Token -> String
+showRtkToken L.EndOfFile = "end of input"
+showRtkToken L.Tk__tok_Items_dummy_3 = "'tok_Items_dummy_3'"
+showRtkToken L.Tk__tok_Label_dummy_2 = "'tok_Label_dummy_2'"
+showRtkToken L.Tk__tok_Shape_dummy_1 = "'tok_Shape_dummy_1'"
+showRtkToken L.Tk__tok_Start_dummy_4 = "'tok_Start_dummy_4'"
+showRtkToken L.Tk__tok_square_1 = "'square'"
+showRtkToken L.Tk__tok_note_3 = "'note'"
+showRtkToken L.Tk__tok_circle_0 = "'circle'"
+showRtkToken L.Tk__tok__coma__2 = "','"
+showRtkToken (L.Tk__num v) = "num " ++ show v
+showRtkToken (L.Tk__qq_Label v) = "qq_Label " ++ show v
+showRtkToken (L.Tk__qq_Items v) = "qq_Items " ++ show v
+showRtkToken (L.Tk__qq_Shape v) = "qq_Shape " ++ show v
+showRtkToken (L.Tk__qq_Start v) = "qq_Start " ++ show v
+
+-- Source position of a node: every constructor except the Anti_* splice
+-- artifacts stores the position of its alternative's first symbol in its
+-- first field. Positions are transparent for equality and ordering, so two
+-- ASTs that differ only in source positions (e.g. a quasi-quote parsed at
+-- compile time vs the same construct parsed at run time) compare equal.
+newtype RtkPos = RtkPos L.AlexPosn deriving (Show, Gen.Data, Gen.Typeable)
+instance Eq RtkPos where _ == _ = True
+instance Ord RtkPos where compare _ _ = EQ
+
+-- The position used where no source token exists: empty productions, empty
+-- lists, absent optionals and Anti_* quasi-quote splices
+rtkNoPos :: RtkPos
+rtkNoPos = RtkPos (L.AlexPn 0 0 0)
+
+class RtkPosOf a where
+    rtkPosOf :: a -> RtkPos
+instance RtkPosOf L.PosToken where
+    rtkPosOf (L.PosToken p _) = RtkPos p
+instance RtkPosOf a => RtkPosOf [a] where
+    rtkPosOf (x : _) = rtkPosOf x
+    rtkPosOf []      = rtkNoPos
+instance RtkPosOf a => RtkPosOf (Maybe a) where
+    rtkPosOf (Just x) = rtkPosOf x
+    rtkPosOf Nothing  = rtkNoPos
+-- A Char carries no position; this also covers String token payloads
+instance RtkPosOf Char where
+    rtkPosOf _ = rtkNoPos
+
+-- Recover a token's payload from the whole positioned token: %token
+-- bindings keep the L.PosToken so semantic actions can read its position
+tkVal_num :: L.PosToken -> String
+tkVal_num (L.PosToken _ (L.Tk__num v)) = v
+tkVal_num t = error ("rtk internal error: token num expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Label :: L.PosToken -> String
+tkVal_qq_Label (L.PosToken _ (L.Tk__qq_Label v)) = v
+tkVal_qq_Label t = error ("rtk internal error: token qq_Label expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Items :: L.PosToken -> String
+tkVal_qq_Items (L.PosToken _ (L.Tk__qq_Items v)) = v
+tkVal_qq_Items t = error ("rtk internal error: token qq_Items expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Shape :: L.PosToken -> String
+tkVal_qq_Shape (L.PosToken _ (L.Tk__qq_Shape v)) = v
+tkVal_qq_Shape t = error ("rtk internal error: token qq_Shape expected, got " ++ showRtkToken (L.ptToken t))
+tkVal_qq_Start :: L.PosToken -> String
+tkVal_qq_Start (L.PosToken _ (L.Tk__qq_Start v)) = v
+tkVal_qq_Start t = error ("rtk internal error: token qq_Start expected, got " ++ showRtkToken (L.ptToken t))
+
+data Start = Ctr__Start__0 RtkPos Start |
+             Ctr__Start__1 RtkPos Items |
+             Ctr__Start__2 RtkPos Label |
+             Ctr__Start__3 RtkPos Shape |
+             Anti_Start String |
+             Ctr__Start__4 RtkPos Shape Items
+             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Start where
+    rtkPosOf (Ctr__Start__0 p _) = p
+    rtkPosOf (Ctr__Start__1 p _) = p
+    rtkPosOf (Ctr__Start__2 p _) = p
+    rtkPosOf (Ctr__Start__3 p _) = p
+    rtkPosOf (Anti_Start _) = rtkNoPos
+    rtkPosOf (Ctr__Start__4 p _ _) = p
+type Items = [Shape]
+data Label = Anti_Label String |
+             Ctr__Label__1 RtkPos String
+             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Label where
+    rtkPosOf (Anti_Label _) = rtkNoPos
+    rtkPosOf (Ctr__Label__1 p _) = p
+data Shape = Anti_Shape String |
+             Ctr__Shape__3 RtkPos String |
+             Ctr__Shape__4 RtkPos String
+             deriving (Ord, Eq, Show, Gen.Data, Gen.Typeable)
+instance RtkPosOf Shape where
+    rtkPosOf (Anti_Shape _) = rtkNoPos
+    rtkPosOf (Ctr__Shape__3 p _) = p
+    rtkPosOf (Ctr__Shape__4 p _) = p
+}
