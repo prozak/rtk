@@ -35,11 +35,18 @@ grammar 'Java';
 #    the empty-TypeParameters generic alternative would.
 #
 # 4. Greedy CompoundName '.' - 1 state, 1 conflict on '.', against reduce
-#    CompoundName -> id ('.' id)* . Item:
-#        ('.' id)* -> ('.' id)* . ('.' id)
+#    CompoundName -> id CompoundNameTail . Item:
+#        CompoundNameTail -> CompoundNameTail . ('.' id)
 #    'a.b.c' extends the unreduced name instead of reducing 'a' early and
 #    parsing '.' as a field access; PostfixExpression '.' id still handles
-#    non-name bases ('f().x', 'this.x'), so no input is lost.
+#    non-name bases ('f().x', 'this.x'), so no input is lost. The state
+#    also holds the class-literal/qualified-this/generic-invocation items
+#    anchored on the same 'id CompoundNameTail' prefix; they ride the SAME
+#    '.' shift, and the token after the '.' picks the branch (id extends
+#    the name, 'class'/'this'/'<' commit to one of them) - see the NOTE at
+#    PrimaryNoPostfix. Only expression positions carry those items: pure
+#    type positions (package, throws, extends, after 'new', ...) parse the
+#    name in a twin state without them and without the conflict.
 #
 # 5. Bracket-list shifts on '[' - 5 states, 1 conflict each:
 #      - after CompoundName in an expression, at statement start, and in a
@@ -351,6 +358,14 @@ OptExpression = Expression? ;
 
 OptId = id?;
 
+# The 'super'/'this' call alternatives are explicit constructor invocations
+# (JLS 8.8.7.1). They are allowed wherever a statement is: that they may
+# only appear as the FIRST statement of a constructor body is a semantic
+# check (javac's job). Both are conflict-free: 'this'/'super' directly
+# followed by '(' had no parse at all before, and after shifting the
+# keyword at statement start the next token decides ('(' starts the
+# invocation; '.' and the operator/closer tokens reduce the keyword to the
+# expression primary).
 Statement =
 VariableDeclaration
  |  'return'  OptExpression  ';'
@@ -367,6 +382,8 @@ VariableDeclaration
  |  id  ':' Statement
  |  'break'  OptId  ';'
  |  'continue'  OptId  ';'
+ |  'super' '(' Arglist ')' ';'
+ |  'this' '(' Arglist ')' ';'
  |  ';' ;
 
 OptElsePart = ('else' Statement)? ;
@@ -555,11 +572,19 @@ Expression : UnaryExpressionNotPlusMinus =
  | '!' UnaryExpression
  | CastExpression ;
 
+# The NonEmptyTypeArguments alternative is the explicit-type-argument call
+# on a non-name base: this.<T>m(), f().<T>m(). After the shifted '.' the
+# tokens id and '<' are distinct, so it adds no conflict. A NAME base
+# (Collections.<String>emptyList()) never reaches it - the greedy family-4
+# shift keeps the name unreduced - and parses through the PrimaryNoPostfix
+# alternative anchored on 'id CompoundNameTail' instead; see the NOTE
+# there.
 Expression : PostfixExpression =
  PrimaryNoPostfix
  | PostfixExpression PostfixOp
  | PostfixExpression '.' id
  | PostfixExpression '.' id '(' Arglist ')'
+ | PostfixExpression '.' NonEmptyTypeArguments id '(' Arglist ')'
  | PostfixExpression '[' Expression ']' ;
 
 # The 'CompoundName '[' Expression ']'' alternative anchors array access on
@@ -572,6 +597,19 @@ Expression : PostfixExpression =
 # resulting shift/reduce conflicts on '[' prefer the shift, i.e. exactly this
 # anchored production (the PostfixExpression production still applies to
 # non-name bases such as 'f()[0]' or 'this.x[0]').
+#
+# The class-literal, qualified-this and explicit-type-argument-call
+# alternatives anchor on the UNREDUCED name spelling 'id CompoundNameTail',
+# NOT on CompoundName: the greedy name-extension shift (family 4) means a
+# complete CompoundName is never reduced on lookahead '.', so a
+# 'CompoundName '.' X' alternative could never be reached - the import-star
+# lesson (see ImportName), expression edition. Spelling the shared
+# CompoundNameTail keeps every '.' continuation in ONE item set, and the
+# token after the shifted '.' decides: id extends the name, 'class'/'this'/
+# '<' commit to one of these alternatives. The primitive class literal
+# (int.class, void.class) is its own alternative; after the keyword the '.'
+# shift is distinct from every Dims/declarator continuation. Array class
+# literals (String[].class) are not covered (rare).
 Expression : PrimaryNoPostfix =
  Literal
  | 'this'
@@ -579,7 +617,11 @@ Expression : PrimaryNoPostfix =
  | CreationExpression
  | CompoundName ('(' Arglist ')')?
  | CompoundName '[' Expression ']'
- | 'super' '.' id ('(' Arglist ')')? ;
+ | 'super' '.' id ('(' Arglist ')')?
+ | id CompoundNameTail '.' 'class'
+ | id CompoundNameTail '.' 'this'
+ | id CompoundNameTail '.' NonEmptyTypeArguments id '(' Arglist ')'
+ | PrimitiveTypeKeyword '.' 'class' ;
 
 # Only array creation takes sizing expressions (DimExprs); trailing empty
 # pairs allow 'new int[3][]'. Uses TypeSpecifier, not Type, so the dims are
@@ -604,7 +646,16 @@ TypeArguments = NonEmptyTypeArguments? ;
 # Non-optional variant: Type and CastExpression need the '<' to be a plain
 # shift from CompoundName (an optional TypeArguments would interpose an
 # epsilon-reduce and recreate the type-vs-expression conflict).
-NonEmptyTypeArguments = '<' TypeArgument (',' TypeArgument)* '>' ;
+#
+# The '<' '>' alternative is the diamond (JLS 15.9, new ArrayList<>()).
+# After the shifted '<', the '>' and every type-argument start token are
+# distinct, so it adds no conflict. "NonEmpty" still holds in the token
+# sense - the rule always consumes the '<' '>' pair, it just may hold zero
+# TypeArguments - which is exactly what keeps the '<' a plain shift. The
+# diamond is thereby accepted wherever type arguments are (casts, extends,
+# member types, ...); rejecting it outside 'new' is a semantic check
+# (javac's job).
+NonEmptyTypeArguments = '<' TypeArgument (',' TypeArgument)* '>' | '<' '>' ;
 
 TypeArgument =
  Type
@@ -659,8 +710,20 @@ Modifier =
  |  'threadsafe'
  |  'transient'  ;
 
+# The tail of a dotted name, hoisted into a NAMED rule so that CompoundName
+# and the PrimaryNoPostfix alternatives anchored on 'id CompoundNameTail'
+# (class literal, qualified this, explicit-type-argument call) share ONE
+# list nonterminal. The sharing is what makes those alternatives reachable:
+# RTK extracts every inline sub-pattern into a FRESH nonterminal, and two
+# distinct nullable lists starting after the same id would epsilon-reduce
+# against each other (reduce/reduce) before the first '.' ever arrives.
+# With one shared tail, all '.' continuations sit in one item set and the
+# token after the '.' picks the branch - the same cure as ImportName's
+# left-recursive spelling, applied to expression position.
+CompoundNameTail = ('.' id)* ;
+
 CompoundName =
-id ('.' id)*;
+id CompoundNameTail ;
 
 # Integer literals (JLS 3.10.1): decimal/octal, hex (0x/0X), binary (0b/0B),
 # underscores between digits, and l/L suffix. The decimal branch also covers
