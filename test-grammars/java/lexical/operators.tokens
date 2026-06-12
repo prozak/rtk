@@ -10,15 +10,15 @@ Tk__tok_int_24
 Tk__id "a"
 Tk__tok__eql__10
 Tk__integerLiteral "1"
-Tk__tok__plus__76
+Tk__tok__plus__74
 Tk__integerLiteral "2"
-Tk__tok__minus__77
+Tk__tok__minus__75
 Tk__integerLiteral "3"
 Tk__tok__star__5
 Tk__integerLiteral "4"
-Tk__tok__symbol__78
+Tk__tok__symbol__76
 Tk__integerLiteral "5"
-Tk__tok__symbol__79
+Tk__tok__symbol__77
 Tk__integerLiteral "6"
 Tk__tok__semi__1
 Tk__id "a"
@@ -69,18 +69,21 @@ Tk__tok_int_24
 Tk__id "b"
 Tk__tok__eql__10
 Tk__id "a"
-Tk__tok__symbol__symbol__74
+Tk__tok__symbol__symbol__73
 Tk__integerLiteral "1"
 Tk__tok__pipe__63
 Tk__id "a"
-Tk__tok__symbol__symbol__73
+Tk__tok__symbol__69
+Tk__tok__symbol__69
 Tk__integerLiteral "2"
 Tk__tok__symbol__65
 Tk__id "a"
-Tk__tok__symbol__symbol__symbol__75
+Tk__tok__symbol__69
+Tk__tok__symbol__69
+Tk__tok__symbol__69
 Tk__integerLiteral "3"
 Tk__tok__symbol__64
-Tk__tok__tilde__82
+Tk__tok__tilde__80
 Tk__id "a"
 Tk__tok__semi__1
 Tk__tok_boolean_20
@@ -113,19 +116,19 @@ Tk__tok__semi__1
 Tk__tok_boolean_20
 Tk__id "d"
 Tk__tok__eql__10
-Tk__tok__exclamation__83
+Tk__tok__exclamation__81
 Tk__id "c"
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__plus__plus__80
+Tk__tok__plus__plus__78
 Tk__tok__semi__1
 Tk__id "a"
-Tk__tok__minus__minus__81
+Tk__tok__minus__minus__79
 Tk__tok__semi__1
-Tk__tok__plus__plus__80
+Tk__tok__plus__plus__78
 Tk__id "a"
 Tk__tok__semi__1
-Tk__tok__minus__minus__81
+Tk__tok__minus__minus__79
 Tk__id "a"
 Tk__tok__semi__1
 Tk__tok_int_24

@@ -1,7 +1,7 @@
 grammar 'Java';
 
 # ============================================================================
-# LALR conflict inventory (happy: 18 shift/reduce, 0 reduce/reduce)
+# LALR conflict inventory (happy: 17 shift/reduce, 0 reduce/reduce)
 # ============================================================================
 # Every remaining conflict is a shift/reduce whose default resolution (shift)
 # is the correct Java reading. They fall into seven families; the items
@@ -57,15 +57,22 @@ grammar 'Java';
 #    access/sizing) or greedily extends the dims list; no input is lost.
 #    See the NOTEs at Dims and PrimaryNoPostfix.
 #
-# 6. '<' commits to type arguments - 3 states, 1 conflict each on '<':
+# 6. '<' commits to type arguments - 2 states, 1 conflict each on '<':
 #    after CompoundName at statement start and in a cast head (reduce: bare-
-#    name primary, as in family 5), and in a pure type position (reduce:
-#    Type -> CompoundName, whose only following '<' would be
-#    'x instanceof T < y'). Standard for LALR Java parsers; see the NOTE at
-#    TypeArguments. Only the cast-head state loses real input ('(a < b)' as
-#    a parenthesized primary, see KNOWN LIMITATION at CastExpression); the
-#    other two reject only semantically invalid Java ('a < b;' as a bare
-#    statement-expression, 'x instanceof T < y').
+#    name primary, as in family 5). Standard for LALR Java parsers; see the
+#    NOTE at TypeArguments. Only the cast-head state loses real input
+#    ('(a < b)' as a parenthesized primary, see KNOWN LIMITATION at
+#    CastExpression); the other rejects only semantically invalid Java
+#    ('a < b;' as a bare statement-expression). The family's third state -
+#    pure type position, reduce Type -> CompoundName, whose lookahead held
+#    '<' only through 'x instanceof T < y' - vanished when
+#    RelationalExpression became non-associative: '<' no longer follows a
+#    complete relational operand. The same restructure lets ShiftOp be
+#    composed from single '>' tokens with NO conflict at all: RelationalOp
+#    '>' and ShiftOp '>' '>' share the shift of the first '>', and the next
+#    token splits them deterministically (another '>' extends the shift
+#    operator, an operand start reduces RelationalOp). See the NOTEs at
+#    RelationalExpression and ShiftOp.
 #
 # 7. QQ bootstrap dummy bracket - 1 state, 1 conflict. The quasi-quoter
 #    wraps a quote body in a per-rule dummy-token pair, and the whole-file
@@ -139,8 +146,18 @@ AnnotationList = Annotation* ;
 # left the inner one always empty.
 ModifierList = (Modifier | Annotation)* ;
 
-ExtendsList = 'extends' CompoundName (',' CompoundName)* ;
-ImplementsList = 'implements' CompoundName + ~',';
+# A supertype reference (JLS ClassOrInterfaceType): a possibly qualified
+# name with optional type arguments - Comparable<A>, java.util.List<String>.
+# The nullable TypeArguments directly after CompoundName is safe here: in
+# extends/implements position no expression interpretation competes, so the
+# epsilon-reduce of the empty TypeArguments (on ',', '{' or 'implements') is
+# the state's only action on those tokens and '<' is a plain shift into
+# NonEmptyTypeArguments. (Contrast with Type, which must spell out its
+# NonEmptyTypeArguments alternative; see the NOTE there.)
+ClassOrInterfaceType = CompoundName TypeArguments ;
+
+ExtendsList = 'extends' ClassOrInterfaceType (',' ClassOrInterfaceType)* ;
+ImplementsList = 'implements' ClassOrInterfaceType + ~',';
 FieldDeclarationList = FieldDeclaration *;
 
 ClassDeclaration  =
@@ -451,9 +468,34 @@ Expression : EqualityExpression = RelationalExpression | EqualityExpression Equa
 
 RelationalOp = '<' | '>' | '<=' | '>=' ;
 
-Expression : RelationalExpression = ShiftExpression | RelationalExpression RelationalOp ShiftExpression | RelationalExpression 'instanceof' Type ;
+# Non-associative on purpose: both operands are ShiftExpressions, not the
+# JLS's left-recursive RelationalExpression. This is what lets ShiftOp below
+# be composed from single '>' tokens: RelationalOp and ShiftOp are then
+# expected from the SAME automaton state, so a lone '>' is shifted without
+# committing and the NEXT token decides - a second '>' extends a shift
+# operator, an operand start reduces RelationalOp '>'. With a left-recursive
+# first operand that decision would instead be a reduce-vs-shift at the
+# FIRST '>' (reduce to RelationalExpression to compare vs shift into
+# ShiftOp), and happy's shift preference would make every plain 'a > b'
+# unparseable. Cost: a chained relational ('a < b < c') is now a parse
+# error instead of a semantic error - no loss for valid Java, where a
+# relational result (boolean) admits no further relational operator.
+# 'instanceof' keeps its left-recursive operand: the keyword follows a
+# COMPLETE relational expression, so shifting it needs no early commitment.
+Expression : RelationalExpression = ShiftExpression | ShiftExpression RelationalOp ShiftExpression | RelationalExpression 'instanceof' Type ;
 
-ShiftOp = '>>' | '<<' | '>>>' ;
+# There are NO '>>'/'>>>' tokens: shift operators are composed in the parser
+# from adjacent '>' tokens. RTK collects lexer literals from the rule text,
+# so once no rule spells '>>'/'>>>', the input '>>' lexes as two '>' tokens:
+# in 'Map<String, List<String>>' each '>' closes one TypeArguments level,
+# while in 'a >> b' the parser assembles the operator from the two tokens
+# (see the RelationalExpression NOTE above for why that is decidable).
+# '>>=' and '>>>=' STAY single tokens in AssignmentOp: in valid Java those
+# character sequences are always the assignment operator (a type-argument
+# closer is never followed directly by '='). Trade-off: token adjacency is
+# not checked, so a spaced 'a > > b' is (wrongly but harmlessly) accepted
+# as 'a >> b'.
+ShiftOp = '<<' | '>' '>' | '>' '>' '>' ;
 
 Expression : ShiftExpression = AdditiveExpression | ShiftExpression ShiftOp AdditiveExpression ;
 
@@ -555,8 +597,8 @@ Arglist = (Expression (',' Expression)*)? ;
 # NOTE: '<' is both the type-argument opener (List<String>) and the
 # comparison operator (x < y). Wherever a CompoundName can be followed by
 # either, the parser shifts '<' into NonEmptyTypeArguments (standard for
-# Java parsers); see the shift/reduce inventory at CastExpression for the
-# three states where this surfaces.
+# Java parsers); see family 6 of the conflict inventory at the top of this
+# file for the two states where this surfaces.
 TypeArguments = NonEmptyTypeArguments? ;
 
 # Non-optional variant: Type and CastExpression need the '<' to be a plain
