@@ -1,16 +1,15 @@
 # Blacklist for full parsing tests (test sources)
 # These files use features not yet supported by the grammar, chiefly:
 # - lambda expressions (->), method references (::)
-# - anonymous inner classes, enhanced for (:)
+# - anonymous inner classes
 # - array initializers in 'new' (new int[] {...})
 # - generic methods with a void/primitive return type (<T> void m(...))
 #
-# Total: 181 files blacklisted, 86 files passing
+# Total: 175 files blacklisted, 92 files passing
 # As grammar support is added, remove files from this list
 
 org/apache/commons/lang3/AnnotationUtilsTest.java
 org/apache/commons/lang3/AppendableJoinerTest.java
-org/apache/commons/lang3/ArchUtilsTest.java
 org/apache/commons/lang3/ArrayFillTest.java
 org/apache/commons/lang3/ArraySorterTest.java
 org/apache/commons/lang3/ArrayUtilsAddTest.java
@@ -24,7 +23,6 @@ org/apache/commons/lang3/CachedRandomBitsTest.java
 org/apache/commons/lang3/CharRangeTest.java
 org/apache/commons/lang3/CharSequenceUtilsTest.java
 org/apache/commons/lang3/CharSetTest.java
-org/apache/commons/lang3/CharUtilsPerfRun.java
 org/apache/commons/lang3/CharUtilsTest.java
 org/apache/commons/lang3/ClassLoaderUtilsTest.java
 org/apache/commons/lang3/ClassPathUtilsTest.java
@@ -34,7 +32,6 @@ org/apache/commons/lang3/ConversionTest.java
 org/apache/commons/lang3/DoubleRangeTest.java
 org/apache/commons/lang3/EnumUtilsTest.java
 org/apache/commons/lang3/FunctionsTest.java
-org/apache/commons/lang3/HashSetvBitSetTest.java
 org/apache/commons/lang3/IntegerRangeTest.java
 org/apache/commons/lang3/LocaleUtilsTest.java
 org/apache/commons/lang3/LongRangeTest.java
@@ -54,7 +51,6 @@ org/apache/commons/lang3/StringUtilsTest.java
 org/apache/commons/lang3/StringUtilsTrimStripTest.java
 org/apache/commons/lang3/StringUtilsValueOfTest.java
 org/apache/commons/lang3/SystemPropertiesTest.java
-org/apache/commons/lang3/SystemUtilsTest.java
 org/apache/commons/lang3/ThreadUtilsTest.java
 org/apache/commons/lang3/ValidateTest.java
 org/apache/commons/lang3/builder/CompareToBuilderTest.java
@@ -83,7 +79,6 @@ org/apache/commons/lang3/builder/ToStringBuilderTest.java
 org/apache/commons/lang3/builder/ToStringStyleConcurrencyTest.java
 org/apache/commons/lang3/compare/ComparableUtilsTest.java
 org/apache/commons/lang3/concurrent/AbstractConcurrentInitializerCloseAndExceptionsTest.java
-org/apache/commons/lang3/concurrent/AbstractConcurrentInitializerTest.java
 org/apache/commons/lang3/concurrent/AtomicInitializerNonObjectTest.java
 org/apache/commons/lang3/concurrent/AtomicInitializerObjectTest.java
 org/apache/commons/lang3/concurrent/AtomicInitializerSupplierTest.java
@@ -179,7 +174,6 @@ org/apache/commons/lang3/time/FastDateParser_TimeZoneStrategyTest.java
 org/apache/commons/lang3/time/FastDatePrinterTest.java
 org/apache/commons/lang3/time/FastDatePrinterTimeZonesTest.java
 org/apache/commons/lang3/time/GmtTimeZoneTest.java
-org/apache/commons/lang3/time/Java15BugFastDateParserTest.java
 org/apache/commons/lang3/time/StopWatchTest.java
 org/apache/commons/lang3/tuple/ImmutablePairTest.java
 org/apache/commons/lang3/tuple/ImmutableTripleTest.java
