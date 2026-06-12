@@ -78,6 +78,18 @@ happy <Grammar>Parser.y -o <Grammar>Parser.hs
 
 ## Haskell Environment Setup
 
+### Automated Setup (Claude Code on the web)
+In remote (web) sessions the entire setup below runs automatically via the
+SessionStart hook `.claude/hooks/session-start.sh`, and the container
+snapshot caches the result for subsequent sessions. **Do not redo the manual
+steps below** unless verification shows the toolchain is actually missing:
+```bash
+cabal --version && ghc --version && ls ~/.cabal/bin
+```
+The hook also writes PATH/LANG/LC_ALL into the session environment and logs
+verbose output to /tmp/rtk-session-start.log. The manual steps below remain
+as reference and as fallback for local environments.
+
 ### Environment Status
 This project requires a Haskell build environment. The setup has been verified and working as of 2025-11-01.
 
