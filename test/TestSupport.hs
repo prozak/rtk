@@ -24,6 +24,7 @@ import qualified GrammarParser as GP
 
 import Diagnostics (Diagnostic)
 import Frontend (cleanGrammarTokens, parseWithGenerated)
+import GenPP (genPP)
 import GenQ (genQ)
 import GenX (genX)
 import GenY (genY)
@@ -59,16 +60,29 @@ normalizeParsedGrammar pg = do
 normalizeGrammarSource :: String -> Either Diagnostic NormalGrammar
 normalizeGrammarSource src = parseGrammarSource src >>= normalizeParsedGrammar
 
--- | The three files rtk writes for a grammar, as (file name, content) pairs.
+-- | Grammars (by 'getNGrammarName') that opt in to the pretty-printer golden.
+-- The PP generator is opt-in (task 9): only these grammars get a
+-- @\<Name\>PP.hs@ snapshot and round-trip coverage, so every other grammar
+-- sees zero golden churn. Keep this small - one or two tiny grammars are
+-- enough to pin the generator's output.
+ppGoldenGrammars :: [String]
+ppGoldenGrammars = ["P", "Sandbox"]
+
+-- | The files rtk writes for a grammar, as (file name, content) pairs: the
+-- lexer, parser and quasi-quoter for every grammar, plus the pretty-printer
+-- for the grammars opted in to 'ppGoldenGrammars'.
 artifactsFor :: NormalGrammar -> Either Diagnostic [(FilePath, String)]
 artifactsFor g = do
     x <- genX g
     y <- genY g
     q <- genQ g
-    return [ (name ++ "Lexer.x",  x)
-           , (name ++ "Parser.y", y)
-           , (name ++ "QQ.hs",    q)
-           ]
+    pp <- if name `elem` ppGoldenGrammars
+            then (\s -> [(name ++ "PP.hs", s)]) <$> genPP g
+            else return []
+    return $ [ (name ++ "Lexer.x",  x)
+             , (name ++ "Parser.y", y)
+             , (name ++ "QQ.hs",    q)
+             ] ++ pp
     where name = getNGrammarName g
 
 -- | Grammars whose hand-written-front-end parse the generated front end

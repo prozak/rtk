@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens tutorials test-wyah-tutorial test-lex-java accept-lex-java test-all-java test-i14-qq test-java-rewrite test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens test-pp tutorials test-wyah-tutorial test-lex-java accept-lex-java test-all-java test-i14-qq test-java-rewrite test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -103,8 +103,12 @@ test-compile-goldens: build | test-out
 		for q in "$$dir"*QQ.hs; do \
 			cabal exec -- ghc -fno-code -w -i"$$out" -i"$$dir" "$$q"; \
 		done; \
+		for pp in "$$dir"*PP.hs; do \
+			[ -e "$$pp" ] || continue; \
+			cabal exec -- ghc -fno-code -w -i"$$out" "$$pp"; \
+		done; \
 	done; \
-	echo "All golden Lexer/Parser/QQ snapshots compile."
+	echo "All golden Lexer/Parser/QQ/PP snapshots compile."
 
 test-out:
 	$(MKDIR_P) test-out
@@ -247,6 +251,26 @@ test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
 	$(CP) test-grammars/java-qq-test.hs test-out
 	cabal exec -- ghc --make -itest-out test-out/java-qq-test.hs -o test-out/java-qq-test
 	test-out/java-qq-test
+
+# Pretty-printer round-trip tests (task 9): generate the opt-in printers with
+# --generate-pp, compile them alongside their parsers, and assert
+# parse (print ast) == ast over a corpus of source fragments. This is the
+# safety oracle that makes the structural printer safe to ship - a dropped
+# token or under-parenthesization fails here. Only the grammars opted in to
+# the PP golden (p, sandbox) are exercised.
+test-pp: build | test-out
+	$(RTK_EXEC) --generate-pp test-grammars/p.pg test-out
+	$(RTK_EXEC) --generate-pp test-grammars/sandbox.pg test-out
+	$(RTK_EXEC) --generate-pp test-grammars/grammar.pg test-out
+	cabal exec alex -- -g test-out/PLexer.x -o test-out/PLexer.hs
+	cabal exec happy -- test-out/PParser.y --ghc -o test-out/PParser.hs
+	cabal exec alex -- -g test-out/SandboxLexer.x -o test-out/SandboxLexer.hs
+	cabal exec happy -- test-out/SandboxParser.y --ghc -o test-out/SandboxParser.hs
+	cabal exec alex -- -g test-out/GrammarLexer.x -o test-out/GrammarLexer.hs
+	cabal exec happy -- test-out/GrammarParser.y --ghc -o test-out/GrammarParser.hs
+	$(CP) test-grammars/pp-roundtrip-test.hs test-out
+	cabal exec -- ghc --make -itest-out test-out/pp-roundtrip-test.hs -o test-out/pp-roundtrip-test
+	test-out/pp-roundtrip-test
 
 # The user-facing rewrite recipe (task 8d): QQ patterns as match arms of an
 # ordinary function, applied everywhere with SYB - see "Rewriting parsed
