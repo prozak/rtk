@@ -41,7 +41,17 @@ compileFile path = do
     Right ast -> return (ast :: Program)
   let asmPath = replaceExtension path "s"
       exePath = dropExtension path
-  writeFile asmPath (emit (codegen ast))
+  -- emit renders the program's instruction AST; the GNU-stack note is
+  -- file-level ELF metadata, identical for every program and not modelled by
+  -- the assembly grammar, so the driver appends it here next to the gcc call
+  -- rather than threading it through codegen or the round-trippable emitter.
+  writeFile asmPath (emit (codegen ast) ++ gnuStackNote)
   rc <- rawSystem "gcc" [asmPath, "-o", exePath]
   removeFile asmPath
   when (rc /= ExitSuccess) exitFailure
+
+-- Marks the stack non-executable. Without this section ld warns "missing
+-- .note.GNU-stack section implies executable stack" on every link. Linux/ELF
+-- and x86 (@progbits) specific; a Mach-O or ARM port would change or drop it.
+gnuStackNote :: String
+gnuStackNote = ".section .note.GNU-stack,\"\",@progbits\n"
