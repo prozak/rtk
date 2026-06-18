@@ -39,6 +39,10 @@ data DebugOptions = DebugOptions
     , debugParserSpec :: Bool
     , debugLexerSpec :: Bool
     , debugQQSpec :: Bool
+    , debugPpSpec :: Bool
+
+    -- Optional generators (off by default, so non-users see zero churn)
+    , generatePp :: Bool
 
     -- Analysis and statistics
     , showStats :: Bool
@@ -78,6 +82,8 @@ defaultDebugOptions file dir = DebugOptions
     , debugParserSpec = False
     , debugLexerSpec = False
     , debugQQSpec = False
+    , debugPpSpec = False
+    , generatePp = False
     , showStats = False
     , analyzeConflicts = False
     , showRuleGraph = False
@@ -153,6 +159,14 @@ debugOptionsParser = DebugOptions
     <*> switch
         ( long "debug-qq-spec"
        <> help "Print generated quasiquoter code" )
+    <*> switch
+        ( long "debug-pp-spec"
+       <> help "Print generated pretty-printer code" )
+
+    -- Optional generators
+    <*> switch
+        ( long "generate-pp"
+       <> help "Also generate <Name>PP.hs, a pretty-printer over the AST (opt-in)" )
 
     -- Analysis and statistics
     <*> switch

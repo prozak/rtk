@@ -1,4 +1,16 @@
-module GenAST (genAST, isAntiConstructor)
+module GenAST
+    ( genAST
+    , isAntiConstructor
+    -- Shared with GenPP: the group->combined-clause view, the rule->type map
+    -- and its lookup, and the "this alternative produces a constructor" test.
+    -- GenPP walks the same constructor set as genAST, so it reuses the same
+    -- primitives rather than re-deriving them.
+    , normalRulesNamed
+    , RulesMap
+    , rulesMap
+    , findRuleDataTypeName
+    , needGenereateAlt
+    )
     where
 
 import Syntax

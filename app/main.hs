@@ -9,6 +9,7 @@ import Normalize
 import GenY
 import GenX
 import GenQ
+import GenPP
 import DebugOptions
 import qualified Debug as D
 import Control.Monad (when)
@@ -188,6 +189,18 @@ main = do
     (eQ, maybeT8) <- runStage opts "QuasiQuoter (Q) Generation" $ genQ grammar2
     q_content <- orDie opts eQ
 
+    -- Optional fifth generator (task 9): the pretty-printer. Generated only
+    -- when --generate-pp (or a --debug-pp-spec dump) is requested, so the
+    -- default invocation stays byte-for-byte unchanged.
+    let ppRequested = generatePp opts || debugPpSpec opts
+    (mPpContent, maybeT9) <-
+        if ppRequested
+            then do
+                (ePp, t) <- runStage opts "PrettyPrinter (PP) Generation" $ genPP grammar2
+                pp <- orDie opts ePp
+                return (Just pp, t)
+            else return (Nothing, Nothing)
+
     -- Debug generated specs if requested
     when (debugParserSpec opts) $ do
         D.debugSection opts "GENERATED HAPPY PARSER SPECIFICATION"
@@ -201,9 +214,13 @@ main = do
         D.debugSection opts "GENERATED QUASIQUOTER CODE"
         putStrLn q_content
 
+    when (debugPpSpec opts) $ do
+        D.debugSection opts "GENERATED PRETTY-PRINTER CODE"
+        maybe (return ()) putStrLn mPpContent
+
     -- Write output files (unless we're only validating). A spec dump still
     -- writes the files; validation alone suppresses them.
-    let specDumpRequested = any id [debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts]
+    let specDumpRequested = any id [debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts, debugPpSpec opts]
     when (not (validateGrammar opts) || specDumpRequested) $ do
         let dir = outputDir opts
         -- A missing output directory is created on the fly; any remaining
@@ -215,6 +232,9 @@ main = do
             writeFile (dir ++ "/" ++ grammar_name ++ "Parser.y") y_content
             writeFile (dir ++ "/" ++ grammar_name ++ "Lexer.x") x_content
             writeFile (dir ++ "/" ++ grammar_name ++ "QQ.hs") q_content
+            -- --generate-pp adds the fifth artifact; never written otherwise
+            when (generatePp opts) $
+                maybe (return ()) (writeFile (dir ++ "/" ++ grammar_name ++ "PP.hs")) mPpContent
         case written of
             Left e -> orDie opts $ Left $ Diagnostic Nothing Nothing $
                 "cannot write generated files: " ++ show (e :: IOException)
@@ -222,7 +242,7 @@ main = do
 
     -- Show timing profile if requested
     when (profileStages opts) $ do
-        let allTimings = catMaybes (frontEndTimings ++ [maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8])
+        let allTimings = catMaybes (frontEndTimings ++ [maybeT3, maybeT4, maybeT5, maybeT6, maybeT7, maybeT8, maybeT9])
         when (not $ null allTimings) $
             D.showTimingInfo opts allTimings
 
@@ -230,6 +250,7 @@ main = do
     when (not $ any id [debugTokens opts, debugParse opts, debugStringNorm opts,
                         debugClauseNorm opts, debugConstructors opts,
                         debugParserSpec opts, debugLexerSpec opts, debugQQSpec opts,
+                        debugPpSpec opts,
                         showStats opts, validateGrammar opts,
                         isJust (debugRule opts)]) $ do
         putStrLn $ "Successfully generated files for " ++ grammar_name
