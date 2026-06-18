@@ -123,6 +123,44 @@ rtk test-grammars/java.rtk test-out --debug-qq-spec
 
 **Use case:** Debug quasiquoter generation issues.
 
+### `--debug-pp-spec`
+Print generated pretty-printer code (`<Name>PP.hs` content) without writing
+the file. Implies generation of the printer for the dump only.
+
+**Example:**
+```bash
+rtk test-grammars/p.pg test-out --debug-pp-spec
+```
+
+**Use case:** Inspect the generated `pp<Type>` functions for a grammar.
+
+## Optional Generators
+
+### `--generate-pp`
+Also write `<Name>PP.hs`, a pretty-printer over the AST RTK generates for the
+grammar (the "emit" third of "Rewrite ToolKit"). Off by default: without this
+flag the output is exactly the usual `<Name>Lexer.x` / `<Name>Parser.y` /
+`<Name>QQ.hs`, byte-for-byte unchanged.
+
+The generated module depends only on `base` (it imports its grammar's
+`<Name>Parser` AST types and `Data.List`). It defines one `pp<Type>` per
+rule-group type; for the start type that is the printer you call on a parsed
+AST.
+
+**v1 is correctness-first, not pretty.** It emits exactly one space between
+tokens, with no indentation or alignment, and adds no parentheses of its own.
+The only guarantee is the semantic round-trip `parse (print ast) == ast` —
+not byte-faithful reproduction: comments and the original whitespace are lost
+because the AST is lossy. Repetition over an un-parenthesized alternation does
+not round-trip in v1 (a structural printer re-associates it on reparse);
+auto-parenthesization is a later task. The `make test-pp` target is the
+round-trip oracle.
+
+**Example:**
+```bash
+rtk test-grammars/p.pg test-out --generate-pp   # also writes test-out/PPP.hs
+```
+
 ## Analysis and Statistics Options
 
 ### `--stats` / `-s`

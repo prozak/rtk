@@ -271,6 +271,20 @@ the only tests that compile and RUN quasi-quotation in pattern/antiquote mode
 (the golden tests only diff the generated text). Keep them green when touching
 GenQ or Normalize.
 
+#### Pretty-Printer Round-Trip Tests
+```bash
+make test-pp                         # generate <Name>PP.hs, compile, round-trip
+```
+
+`--generate-pp` emits an opt-in fifth artifact `<Name>PP.hs` (a `base`-only
+pretty-printer over the generated AST; see `GenPP.hs`). `make test-pp`
+generates the printers for the opt-in grammars (`p`, `sandbox`) plus the
+capstone (`grammar.pg`), compiles them, and asserts the semantic round-trip
+`parse (print ast) == ast` over a corpus of fragments. It is the correctness
+oracle for the structural printer — keep it green when touching GenPP. The
+`p`/`sandbox` `<Name>PP.hs` goldens (gated by `TestSupport.ppGoldenGrammars`)
+are also compiled by `make test-compile-goldens`.
+
 #### Golden Compile Gate
 ```bash
 make test-compile-goldens
