@@ -95,6 +95,7 @@ Library
                      TokenProcessing,
                      Grammar,
                      GenAST,
+                     GenPP,
                      GenQ,
                      GenX,
                      GenY,
