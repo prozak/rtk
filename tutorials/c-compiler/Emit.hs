@@ -25,9 +25,9 @@ emitItem other = error $ "emitItem: unsupported item: " ++ show other
 
 emitOperand :: Operand -> String
 emitOperand [operand| %eax |] = "%eax"
-emitOperand (Ctr__Operand__0 _ n) = "$" ++ show n
+emitOperand (Imm _ n) = "$" ++ show n
 emitOperand other = error $ "emitOperand: unsupported operand: " ++ show other
 
 symName :: AsmId -> String
-symName (Ctr__AsmId__0 _ s) = s
+symName (Sym _ s) = s
 symName other = error $ "symName: unexpected symbol: " ++ show other

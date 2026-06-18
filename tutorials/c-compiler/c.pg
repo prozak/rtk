@@ -19,9 +19,17 @@ grammar 'C';
 # expression node directly. (Splice-token placement itself is handled by
 # RTK's unit-production cover analysis either way; see Normalize.hs.)
 
-Program = Function ;
+# The leading label on each alternative (Prog:, Func:, ...) names the AST
+# constructor RTK generates for it. Without a label the constructor is
+# positional (Ctr__Exp__0), encoding the alternative's index, so any
+# reordering silently renames it; named constructors are stable and let the
+# passes read `IntLit _ n` instead of `Ctr__Exp__0 _ n`. Names must be unique
+# across the whole grammar, and across asm.pg too: Codegen/TestQQ import both
+# generated parsers unqualified, so a shared name would be an ambiguous use.
 
-Function = 'int' Ident '(' ')' '{' StatementList '}' ;
+Program = Prog: Function ;
+
+Function = Func: 'int' Ident '(' ')' '{' StatementList '}' ;
 
 # NOTE: StatementList must be normalized BEFORE Statement: RTK allows one
 # anti-quote shape per AST type (scalar or list), and we want the list shape
@@ -29,13 +37,13 @@ Function = 'int' Ident '(' ')' '{' StatementList '}' ;
 @shortcuts(stmts)
 StatementList = Statement* ;
 
-Statement = 'return' Exp ';' ;
+Statement = Return: 'return' Exp ';' ;
 
 @shortcuts(e)
-Exp = intLit ;
+Exp = IntLit: intLit ;
 
 @shortcuts(name)
-Ident = id ;
+Ident = Name: id ;
 
 # ----------------------------------------------------------------------------
 # Lexical rules

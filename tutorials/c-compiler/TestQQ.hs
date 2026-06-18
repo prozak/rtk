@@ -48,11 +48,11 @@ main = do
   cResults <-
     sequence
       [ check "construction: [exp| 42 |]" $
-          [exp| 42 |] == Ctr__Exp__0 rtkNoPos 42
+          [exp| 42 |] == IntLit rtkNoPos 42
       , check "construction with scalar splice: [statement| return $e ; |]" $
           let e = [exp| 42 |]
           in [statement| return $e ; |]
-               == Ctr__Statement__0 rtkNoPos (Ctr__Exp__0 rtkNoPos 42)
+               == Return rtkNoPos (IntLit rtkNoPos 42)
       , check "pattern with antiquote binder: [statement| return $e1 ; |]" $
           case [statement| return 7 ; |] of
             [statement| return $e1 ; |] -> e1 == [exp| 7 |]
@@ -66,7 +66,7 @@ main = do
       , check "whole-list pattern binding: { $stmts }" $
           case parse "int main() { return 1; return 2; }" of
             [program| int $name ( ) { $stmts } |] ->
-              name == Ctr__Ident__0 rtkNoPos "main" && length stmts == 2
+              name == Name rtkNoPos "main" && length stmts == 2
             _ -> False
       , check "list splice in construction: { $stmts0 }" $
           let stmts0 = [[statement| return 1 ; |], [statement| return 2 ; |]]
@@ -85,22 +85,22 @@ main = do
   asmResults <-
     sequence
       [ check "construction: [operand| $5 |] and [operand| %eax |]" $
-          [operand| $5 |] == Ctr__Operand__0 A.rtkNoPos 5
+          [operand| $5 |] == Imm A.rtkNoPos 5
             && [operand| %eax |]
-                 == Ctr__Operand__1 A.rtkNoPos (Ctr__Reg__0 A.rtkNoPos)
+                 == RegOp A.rtkNoPos (Eax A.rtkNoPos)
       , check "construction with scalar splice: movl $src, %eax" $
-          let src = Ctr__Operand__0 A.rtkNoPos 7
+          let src = Imm A.rtkNoPos 7
           in [asmItem| movl $src, %eax |]
-               == Ctr__AsmItem__2 A.rtkNoPos
-                    (Ctr__Operand__0 A.rtkNoPos 7)
-                    (Ctr__Operand__1 A.rtkNoPos (Ctr__Reg__0 A.rtkNoPos))
+               == Movl A.rtkNoPos
+                    (Imm A.rtkNoPos 7)
+                    (RegOp A.rtkNoPos (Eax A.rtkNoPos))
       , check "pattern with antiquote binders: movl $src, $dst" $
           case [asmItem| movl $3, %eax |] of
             [asmItem| movl $src, $dst |] ->
               src == [operand| $3 |] && dst == [operand| %eax |]
             _ -> False
       , check "scalar + list splices: .globl $sym / $sym : / $items" $
-          let sym = Ctr__AsmId__0 A.rtkNoPos "main"
+          let sym = Sym A.rtkNoPos "main"
               items = [asmItems| movl $2, %eax
                                  ret |]
           in [asm| .globl $sym
@@ -133,5 +133,5 @@ parseAsmText :: String -> Asm
 parseAsmText src = either error id (AsmLexer.scanTokens src >>= parseAsm)
 
 expValue :: Exp -> Int
-expValue (Ctr__Exp__0 _ n) = n
+expValue (IntLit _ n) = n
 expValue other = error $ "expValue: unexpected expression node: " ++ show other
