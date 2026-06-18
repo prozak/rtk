@@ -14,6 +14,16 @@ assembly AST → AT&T text → executable via gcc. Verified against the official
 [stage-1 test suite](https://github.com/nlsandler/write_a_c_compiler)
 (12/12) in addition to the local tests under [`tests/`](tests/).
 
+## Companion tutorial
+
+[`tutorial/`](tutorial/) retells Nora Sandler's series page by page with RTK —
+what the generator replaces (lexer, parser, AST, the boilerplate that walks
+it) and what you write instead (grammar rules, quasi-quotation patterns,
+splices). Start at the [index](tutorial/README.md); stage 1 is covered by
+[00 — Setup](tutorial/00-setup.md) and [01 — Integers](tutorial/01-integers.md).
+This README is the reference companion to those pages: it catalogues the
+conventions and limitations below, which the pages link to as you hit them.
+
 ## Layout
 
 | File | Role |

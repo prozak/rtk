@@ -13,7 +13,9 @@ separate repository with minimal surgery.
   tutorial where both languages are RTK grammars: the C front end (lexer,
   parser, AST, quasi-quoters) is generated from `c.pg`, and code generation
   builds an AST of the `asm.pg` assembly grammar via quasi-quotation splices
-  instead of emitting strings. Currently at stage 1 (proof of concept).
+  instead of emitting strings. Currently at stage 1 (proof of concept), with a
+  page-by-page [companion tutorial](c-compiler/tutorial/) retelling the blog
+  series with RTK.
 - [`write-you-a-haskell/`](write-you-a-haskell/) — the languages of Stephen
   Diehl's ["Write You a Haskell"](https://github.com/sdiehl/write-you-a-haskell)
   tutorial as RTK grammars: four interpreters (untyped lambda calculus,
