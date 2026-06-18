@@ -110,6 +110,16 @@ long time; the causes are avoidable, and `c.pg` is written to avoid them:
 5. **Antiquote names need a following non-name, non-colon character.**
    `$sym :` parses as a label with an antiquoted symbol, but `$sym:` is read
    as the explicit `$Rule:name` antiquote form and won't scan.
+6. **Name the alternatives' constructors.** A leading label
+   (`Exp = IntLit: intLit ;`) names the generated AST constructor; without it
+   the name is positional (`Ctr__Exp__0`), encoding the alternative's index,
+   so reordering the grammar silently renames it. `c.pg`/`asm.pg` name every
+   alternative, which is what lets the passes read `IntLit _ n` instead of
+   `Ctr__Exp__0 _ n`. Names must be unique across the grammar — and, by the
+   same unqualified-import reasoning as (4), across both grammars: the C side
+   uses `IntLit`/`Return`/`Name`/..., the asm side `Imm`/`Movl`/`Sym`/....
+   (The start sort keeps one auto-generated `Ctr__*` wrapper for the
+   quasi-quoter scaffolding; no pass references it.)
 
 ## Known RTK limitations to design around
 
@@ -124,9 +134,9 @@ long time; the causes are avoidable, and `c.pg` is written to avoid them:
   mixed list patterns (`{ $stmts return 0 ; }`) only work in construction.
 - **Token payloads cannot be antiquoted.** `$x` splices/matches whole syntax
   sorts; the `Int` of an `intLit` or the `String` of an `id` is reached
-  through the generated constructors (`Ctr__Exp__0 _ n`, `Ctr__Ident__0 _ s`;
-  the first field is the node's source position) — see `expValue`/`identName`
-  in `Codegen.hs`. Nodes built in code take `rtkNoPos` there; AST equality
+  through the alternative's named constructor (`IntLit _ n`, `Name _ s`; the
+  first field is the node's source position) — see `expValue`/`identName` in
+  `Codegen.hs`. Nodes built in code take `rtkNoPos` there; AST equality
   ignores positions by design, so built and parsed trees still compare equal.
 - **Quoter names are lowercased rule names** and can collide with Prelude
   names: the `Exp` quoter is `exp`, hence `import Prelude hiding (exp)`.

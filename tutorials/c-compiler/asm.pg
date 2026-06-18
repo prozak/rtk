@@ -14,7 +14,11 @@ grammar 'Asm';
 #   numeric ($2), antiquote names always start with a letter ($src), and the
 #   longest lexer match keeps them apart.
 
-Asm = AsmItems ;
+# Leading labels (AsmUnit:, Globl:, ...) name the generated AST constructors;
+# see the matching note in c.pg. Names are kept distinct from c.pg's so both
+# generated parsers can be imported unqualified into the compiler modules.
+
+Asm = AsmUnit: AsmItems ;
 
 # AsmItems must be normalized BEFORE AsmItem: RTK allows one anti-quote shape
 # per AST type (scalar or list), and we want the list shape for AsmItem
@@ -22,19 +26,19 @@ Asm = AsmItems ;
 @shortcuts(items)
 AsmItems = AsmItem* ;
 
-AsmItem = '.globl' AsmId
-        | AsmId ':'
-        | 'movl' Operand ',' Operand
-        | 'ret' ;
+AsmItem = Globl: '.globl' AsmId
+        | Label: AsmId ':'
+        | Movl: 'movl' Operand ',' Operand
+        | Ret: 'ret' ;
 
 @shortcuts(src, dst)
-Operand = '$' num
-        | Reg ;
+Operand = Imm: '$' num
+        | RegOp: Reg ;
 
-Reg = '%eax' ;
+Reg = Eax: '%eax' ;
 
 @shortcuts(sym)
-AsmId = asmid ;
+AsmId = Sym: asmid ;
 
 # ----------------------------------------------------------------------------
 # Lexical rules

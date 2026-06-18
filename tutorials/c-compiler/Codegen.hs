@@ -7,8 +7,8 @@
 --
 -- Token payloads (the integer literal, the function name) cannot be bound
 -- or spliced by an antiquote ($x works on whole syntax sorts only), so leaf
--- nodes go through the generated constructors: expValue/identName on the C
--- side, mkImm/mkSym on the assembly side (positioned with rtkNoPos; AST
+-- nodes go through the grammar's named constructors: expValue/identName on
+-- the C side, mkImm/mkSym on the assembly side (positioned with rtkNoPos; AST
 -- equality ignores positions by design).
 module Codegen (codegen) where
 
@@ -51,17 +51,17 @@ genStatement other = error $ "codegen: unsupported statement: " ++ show other
 -- assembly leaf constructors
 
 mkImm :: Int -> Operand
-mkImm = Ctr__Operand__0 rtkNoPos
+mkImm = Imm rtkNoPos
 
 mkSym :: String -> AsmId
-mkSym = Ctr__AsmId__0 rtkNoPos
+mkSym = Sym rtkNoPos
 
 -- C leaf destructors
 
 identName :: Ident -> String
-identName (Ctr__Ident__0 _ s) = s
+identName (Name _ s) = s
 identName other = error $ "codegen: unexpected identifier node: " ++ show other
 
 expValue :: Exp -> Int
-expValue (Ctr__Exp__0 _ n) = n
+expValue (IntLit _ n) = n
 expValue other = error $ "codegen: unexpected expression node: " ++ show other
