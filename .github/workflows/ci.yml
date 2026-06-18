@@ -205,6 +205,9 @@ jobs:
         # annotations (the synthesized cover rule, issue #14).
         run_test "Issue 14 QQ Tests" "make test-i14-qq"
         run_test "P QQ Pattern Matching Tests" "make test-p"
+        # Pretty-printer round-trip (task 9): generate the opt-in printers,
+        # compile them, and assert parse (print ast) == ast over a corpus.
+        run_test "PP Round-Trip Tests" "make test-pp"
         # test-debug and test-debug-all exercise the same debug flags but
         # only print their output; test-debug-options is the automated suite
         # that asserts on it, so it is the only one CI runs (the other two
