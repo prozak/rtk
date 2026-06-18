@@ -40,6 +40,16 @@ alex <Grammar>Lexer.x -o <Grammar>Lexer.hs
 happy <Grammar>Parser.y --ghc -o <Grammar>Parser.hs
 ```
 
+#### Optional: a pretty-printer (`--generate-pp`)
+
+`--generate-pp` writes a fifth, opt-in artifact `<Grammar>PP.hs`: a
+`base`-only module of `pp<Type>` functions that turn a parsed AST back into
+source text. It is correctness-first, not pretty — one space between tokens,
+no indentation, no parentheses of its own — and guarantees only the *semantic*
+round-trip `parse (print ast) == ast`, never byte-faithful reproduction:
+comments and the original whitespace are lost because the AST is lossy. The
+flag is off by default, so output is unchanged unless you ask for it.
+
 ### Using the generated code
 
 The generated modules are compiled as part of *your* project, so your project

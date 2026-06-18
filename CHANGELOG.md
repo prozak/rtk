@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Pretty-printer generation (task 9), the "emit" third of "Rewrite ToolKit".
+  `rtk --generate-pp <grammar> <out>` emits an opt-in fifth artifact
+  `<Name>PP.hs`: a module of `pp<Type>` functions that turn the AST RTK
+  generates for a grammar back into source text. `--debug-pp-spec` dumps the
+  printer to stdout. The generated module depends only on `base` (it imports
+  its grammar's `<Name>Parser` AST and `Data.List`) — no rtk imports, no new
+  packages, the same dependency discipline as the generated lexer/parser/
+  quasi-quoter. The flag is off by default, so the default invocation is
+  byte-for-byte unchanged and non-users see zero golden churn.
+
+  v1 is correctness-first, not pretty: exactly one space between tokens, no
+  indentation or alignment, and parenthesization is whatever the grammar's
+  own structure produces (no precedence/paren-insertion engine). The single
+  guarantee is the semantic round-trip `parse (print ast) == ast` — NOT
+  byte-faithful reproduction; comments and the original whitespace are lost
+  (the AST is lossy). That guarantee is enforced by a generated round-trip
+  test over a corpus (`make test-pp`, wired into CI): it parses each fragment,
+  prints, reparses, and asserts equality. 7b's position-transparent `RtkPos`
+  makes the reparsed AST (different source positions) compare `==` to the
+  original with no stripping, so under-parenthesization or a dropped token
+  becomes a failing test rather than a silently wrong program. The grammars
+  `p` and `sandbox` opt in to a PP golden snapshot (`<Name>PP.hs` in
+  `test/golden/`, gated through `TestSupport.ppGoldenGrammars` and compiled
+  by `make test-compile-goldens`); every other grammar stays opted out.
+
+  Dogfooding capstone: the printer RTK generates for its own grammar language
+  (`grammar.pg`) compiles and round-trips representative grammar ASTs — string
+  literals, regexes, typed/func/lifted rules, repetition/option/delimiter
+  forms and an imports block — so **RTK prints its own language**. Known v1
+  limitation: `grammar.pg`'s *own source* does not fully round-trip, because
+  its `str`/`regexplit`/`bigstr` rules use repetition over an
+  un-parenthesized alternation (e.g. `([^\\'] | backslash .)*`), which a
+  structural printer without a paren engine re-associates on reparse. This is
+  precisely the under-parenthesization the round-trip oracle is built to
+  catch; auto-parenthesization is a deliberately separate later task.
+
+  Supersedes #84 (predated the 8a–8c AST migration and pursued a "smart"
+  layout-hint design out of scope for the correctness-first v1).
+
 ### Changed
 - The pipeline computes directly over the generated AST (task 8c): the
   historic `InitialGrammar`/`IRule`/`IClause` types — the hand-written
