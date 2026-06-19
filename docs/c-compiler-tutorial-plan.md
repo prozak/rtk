@@ -403,6 +403,78 @@ a real program.
   keeps later stages extending the tutorial).
 - The tutorial README links the pages; `tutorials/README.md` mentions them.
 
+## Task R7 — A pretty-printer line-break option for unbracketed lists (RTK core)
+
+### TL;DR
+
+RTK's generated pretty-printer (`--generate-pp`) cannot stand in for the
+tutorial's hand-written `Emit.hs`, but it comes much closer than it looks, and
+one small, generally-useful feature would close the gap. This task adds that
+feature.
+
+### What we found (measured, not assumed)
+
+`Emit.hs` renders the assembly AST to gas-valid AT&T text. The obvious
+question is whether the generated `AsmPP` (`ppAsm :: Asm -> String`) could
+replace it. Today it cannot, for one reason:
+
+- `ppAsm` guarantees `parseAsm (ppAsm a) == a` — a round trip through *RTK's
+  own* assembly parser, which (by design) treats newlines as insignificant
+  whitespace. So the printer renders the whole program on one line:
+  `.globl main main : movl $ 2 , %eax ret …`. gas is line-oriented and rejects
+  it ("junk at end of line").
+
+The decisive measurement: gas **tolerates everything except the missing line
+breaks**. `main :` (space before the label colon) and `$ 2` (space after the
+immediate sigil) both assemble and run correctly once each instruction is on
+its own line. So the one fatal gap is inter-element line breaks.
+
+The reason the breaks are missing is specific and fixable. The `block` layout
+*does* break list elements onto separate lines — but only when the list is
+enclosed in bracket tokens (it emits `PpOpen`/`PpBreak`/`PpClose` for a
+`'{' StatementList '}'`, which is how the C grammar's body indents). Assembly's
+instructions are a top-level `AsmItems = AsmItem*` with no enclosing brackets,
+so the layout renders them with `intercalate [PpTok ""]` — spaces, no breaks.
+
+### The feature
+
+Let a list rule opt into line-broken layout regardless of brackets — e.g. a
+`@layout(lines)` annotation:
+
+```
+@layout(lines)
+AsmItems = AsmItem* ;
+```
+
+so the block-mode printer emits `intercalate [PpBreak]` (and, if wanted,
+wraps the list in `PpOpen`/`PpClose` for indentation) for that rule. This is
+not asm-specific: any language with a top-level sequence of statements or
+declarations that is *not* brace-enclosed (assembly, a Makefile, a flat
+script) wants exactly this. Scope it in `GenPP.hs`; add a golden and a
+round-trip case; the `--pp-layout=block` machinery (`PpBreak` etc.) already
+exists, so this is wiring an annotation through to it.
+
+### Acceptance
+
+- `asm.pg`'s `AsmItems` marked `@layout(lines)` makes `ppAsm` emit one
+  instruction per line; the result assembles with gcc and runs (a stage-1
+  program still exits with the right code).
+- The semantic round trip `parseAsm (ppAsm a) == a` still holds.
+- Goldens/round-trip tests cover the new annotation; the bracket-enclosed
+  case (C's `StatementList`) is unchanged.
+
+### Not in scope (deliberately)
+
+Even with line breaks, `ppAsm` output stays *ugly* — `main :` not `main:`,
+`$ 2` not `$2`, no instruction indentation. Making it *idiomatic* would need
+token-glue control (no space before `:`, none after `$`) and an
+indent-without-brackets rule. That is a much larger PP surface for cosmetic
+gain, and for a *compiler* the assembly is intermediate (gcc deletes it), so
+ugly-but-valid is enough. The tutorial may still prefer `Emit.hs` for the
+pretty output it *shows* on the page; the point of R7 is to make the generated
+printer a viable choice, not necessarily the chosen one. (See the "Why not the
+generated pretty-printer?" note in `01-integers.md`.)
+
 ---
 
 Deferred idea (not scheduled): a TACKY-style IR as a third RTK grammar
