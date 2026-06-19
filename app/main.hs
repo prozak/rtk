@@ -193,10 +193,11 @@ main = do
     -- when --generate-pp (or a --debug-pp-spec dump) is requested, so the
     -- default invocation stays byte-for-byte unchanged.
     let ppRequested = generatePp opts || debugPpSpec opts
+        ppLayout = if ppLayoutBlock opts then PPBlock else PPFlat
     (mPpContent, maybeT9) <-
         if ppRequested
             then do
-                (ePp, t) <- runStage opts "PrettyPrinter (PP) Generation" $ genPP grammar2
+                (ePp, t) <- runStage opts "PrettyPrinter (PP) Generation" $ genPP ppLayout grammar2
                 pp <- orDie opts ePp
                 return (Just pp, t)
             else return (Nothing, Nothing)
