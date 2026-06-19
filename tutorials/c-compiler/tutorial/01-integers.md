@@ -257,6 +257,31 @@ from. `TestQQ.hs` asserts exactly that — `parseAsm (emit a) == a` — so a
 formatting bug that produced unparseable or wrong assembly would fail a test
 rather than ship.
 
+> **Why not the generated pretty-printer?** RTK *does* generate one
+> (`--generate-pp` produces an `AsmPP` module with `ppAsm :: Asm -> String`),
+> so it is fair to ask why `Emit.hs` is hand-written. The generated `ppAsm`
+> guarantees the round trip `parseAsm (ppAsm a) == a` — but against *RTK's
+> own* parser, which treats newlines as insignificant whitespace. That is what
+> lets the assembly grammar round-trip loosely; it is also why the printer
+> puts the whole program on **one line**:
+>
+> ```
+> .globl main main : movl $ 2 , %eax ret movl $ 0 , %eax ret
+> ```
+>
+> The consumer here is **gas**, which is line-oriented, and it rejects that
+> with "junk at end of line". Tellingly, gas tolerates the rest of the
+> printer's spacing — `main :` and `$ 2` both assemble fine *once the
+> statements are on separate lines* — so the only fatal gap is the missing
+> line breaks between list elements. RTK's `block` layout inserts breaks for
+> bracket-enclosed lists (a `{ … }` statement list), but assembly's
+> instructions are a top-level `AsmItem*` with no enclosing brackets, so they
+> stay on one line. A small PP option could close that gap (task R7 in the
+> [plan](../../../docs/c-compiler-tutorial-plan.md)); until it exists,
+> `Emit.hs` is the ~30 lines that produce gas-valid text — and, as a bonus,
+> idiomatic formatting (indentation, `main:`, `$2`) the structural printer
+> would not give.
+
 > **Antiquote spacing.** The label pattern is written `[asmItem| $sym : |]`
 > with a space before the `:`. Written `$sym:`, the `:` would be read as part
 > of the explicit `$Rule:name` antiquote form and would not scan. Emitted
