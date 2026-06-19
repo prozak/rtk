@@ -43,6 +43,8 @@ data DebugOptions = DebugOptions
 
     -- Optional generators (off by default, so non-users see zero churn)
     , generatePp :: Bool
+    -- Pretty-printer layout: False = flat (9a default), True = block (9b)
+    , ppLayoutBlock :: Bool
 
     -- Analysis and statistics
     , showStats :: Bool
@@ -84,6 +86,7 @@ defaultDebugOptions file dir = DebugOptions
     , debugQQSpec = False
     , debugPpSpec = False
     , generatePp = False
+    , ppLayoutBlock = False
     , showStats = False
     , analyzeConflicts = False
     , showRuleGraph = False
@@ -98,6 +101,12 @@ defaultDebugOptions file dir = DebugOptions
     , debugColor = True
     , profileStages = False
     }
+
+-- | Parse the --pp-layout value into the block? flag.
+parsePpLayout :: String -> Maybe Bool
+parsePpLayout "flat"  = Just False
+parsePpLayout "block" = Just True
+parsePpLayout _       = Nothing
 
 -- | Parse debug stage from string
 parseStage :: String -> Maybe DebugStage
@@ -167,6 +176,11 @@ debugOptionsParser = DebugOptions
     <*> switch
         ( long "generate-pp"
        <> help "Also generate <Name>PP.hs, a pretty-printer over the AST (opt-in)" )
+    <*> option (maybeReader parsePpLayout)
+        ( long "pp-layout"
+       <> metavar "flat|block"
+       <> value False
+       <> help "Pretty-printer layout: flat (default, one line) or block (indented)" )
 
     -- Analysis and statistics
     <*> switch
