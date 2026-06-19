@@ -93,6 +93,23 @@ main = do
           [exp| !-3 |]
             == Unary rtkNoPos (Not rtkNoPos)
                  (Unary rtkNoPos (Neg rtkNoPos) (IntLit rtkNoPos 3))
+      , check "binary construction: [exp| 1 + 2 |]" $
+          [exp| 1 + 2 |]
+            == Add rtkNoPos (IntLit rtkNoPos 1) (Plus rtkNoPos) (IntLit rtkNoPos 2)
+      , check "precedence baked into the AST: [exp| 2 + 3 * 4 |]" $
+          [exp| 2 + 3 * 4 |]
+            == Add rtkNoPos (IntLit rtkNoPos 2) (Plus rtkNoPos)
+                 (Mul rtkNoPos (IntLit rtkNoPos 3) (Times rtkNoPos) (IntLit rtkNoPos 4))
+      , check "parentheses regroup: [exp| (2 + 3) * 4 |]" $
+          [exp| (2 + 3) * 4 |]
+            == Mul rtkNoPos
+                 (Add rtkNoPos (IntLit rtkNoPos 2) (Plus rtkNoPos) (IntLit rtkNoPos 3))
+                 (Times rtkNoPos) (IntLit rtkNoPos 4)
+      , check "binary pattern with operator binder: [exp| $e1 $aop $e2 |]" $
+          case [exp| 7 - 4 |] of
+            [exp| $e1 $aop $e2 |] ->
+              e1 == [exp| 7 |] && e2 == [exp| 4 |] && aop == [addOp| - |]
+            _ -> False
       ]
 
   putStrLn "-- assembly grammar --"
