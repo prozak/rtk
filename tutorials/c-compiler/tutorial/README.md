@@ -24,8 +24,9 @@ verified against the build.
 |------|-----------|--------|
 | [00 — Setup](00-setup.md) | (preamble) | The toolchain, the pipeline, the driver contract, and how to build and test. |
 | [01 — Integers](01-integers.md) | [Part 1](https://norasandler.com/2017/11/29/Write-a-Compiler.html) | `int main() { return 2; }` → an executable. The whole pipeline, end to end. |
+| [02 — Unary operators](02-unary.md) | [Part 2](https://norasandler.com/2017/12/05/Write-a-Compiler-2.html) | `-`, `~`, `!` and nesting; codegen becomes recursive. |
 
-Stages 2–10 (unary operators through file-scope variables) are implemented
+Stages 3–10 (binary operators through file-scope variables) are implemented
 one at a time; each adds a page here. Until then they live as task
 descriptions in
 [`docs/c-compiler-tutorial-plan.md`](../../../docs/c-compiler-tutorial-plan.md).

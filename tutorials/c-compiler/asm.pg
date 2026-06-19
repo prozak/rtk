@@ -1,6 +1,6 @@
 grammar 'Asm';
 
-# x86-64 assembly (AT&T syntax), the subset emitted for stage 1.
+# x86-64 assembly (AT&T syntax), the subset emitted for stages 1-2.
 # Grows stage by stage alongside c.pg.
 #
 # Design notes:
@@ -29,13 +29,18 @@ AsmItems = AsmItem* ;
 AsmItem = Globl: '.globl' AsmId
         | Label: AsmId ':'
         | Movl: 'movl' Operand ',' Operand
+        | Negl: 'negl' Operand
+        | Notl: 'notl' Operand
+        | Cmpl: 'cmpl' Operand ',' Operand
+        | Sete: 'sete' Operand
         | Ret: 'ret' ;
 
 @shortcuts(src, dst)
 Operand = Imm: '$' num
         | RegOp: Reg ;
 
-Reg = Eax: '%eax' ;
+Reg = Eax: '%eax'
+    | Al: '%al' ;
 
 @shortcuts(sym)
 AsmId = Sym: asmid ;

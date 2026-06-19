@@ -79,6 +79,20 @@ main = do
       , check "quasi-quoted construction == parsed file" $
           [program| int main ( ) { return 42 ; } |]
             == parse "int main() {\n  // a comment\n  return 42; /* another */\n}\n"
+      , check "unary construction: [exp| -5 |]" $
+          [exp| -5 |] == Unary rtkNoPos (Neg rtkNoPos) (IntLit rtkNoPos 5)
+      , check "unary construction with operator splice: [exp| $op 7 |]" $
+          let op = [unaryOp| ~ |]
+          in [exp| $op 7 |]
+               == Unary rtkNoPos (Complement rtkNoPos) (IntLit rtkNoPos 7)
+      , check "unary pattern with antiquote binders: [exp| $op1 $e1 |]" $
+          case [exp| -5 |] of
+            [exp| $op1 $e1 |] -> op1 == [unaryOp| - |] && e1 == [exp| 5 |]
+            _ -> False
+      , check "nested unary construction: [exp| !-3 |]" $
+          [exp| !-3 |]
+            == Unary rtkNoPos (Not rtkNoPos)
+                 (Unary rtkNoPos (Neg rtkNoPos) (IntLit rtkNoPos 3))
       ]
 
   putStrLn "-- assembly grammar --"

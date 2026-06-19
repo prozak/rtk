@@ -1,12 +1,13 @@
 grammar 'C';
 
-# Stage 1 of Nora Sandler's "Writing a C Compiler"
+# Stages 1-2 of Nora Sandler's "Writing a C Compiler"
 # (https://norasandler.com/2017/11/29/Write-a-Compiler.html):
 #
-#   <program>   ::= <function>
-#   <function>  ::= "int" <id> "(" ")" "{" <statement> "}"
-#   <statement> ::= "return" <exp> ";"
-#   <exp>       ::= <int>
+#   <program>    ::= <function>
+#   <function>   ::= "int" <id> "(" ")" "{" <statement> "}"
+#   <statement>  ::= "return" <exp> ";"
+#   <exp>        ::= <unary_op> <exp> | <int>   # stage 2: prefix unary ops
+#   <unary_op>   ::= "-" | "~" | "!"
 #
 # Deviation from the blog grammar: the function body is a statement LIST
 # (the blog switches to that in part 5 anyway). This also exercises RTK's
@@ -40,7 +41,16 @@ StatementList = Statement* ;
 Statement = Return: 'return' Exp ';' ;
 
 @shortcuts(e)
-Exp = IntLit: intLit ;
+Exp = Unary: UnaryOp Exp
+    | IntLit: intLit ;
+
+# Each operator is its own sort so it becomes one constructor (Neg/Complement/
+# Not) and codegen can match the shape generically with [exp| $op1 $e1 |].
+# '-' is prefix-only here, so `4-` is a syntax error (4 is a complete Exp).
+@shortcuts(op)
+UnaryOp = Neg: '-'
+        | Complement: '~'
+        | Not: '!' ;
 
 @shortcuts(name)
 Ident = Name: id ;
