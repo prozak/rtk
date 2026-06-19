@@ -277,13 +277,19 @@ make test-pp                         # generate <Name>PP.hs, compile, round-trip
 ```
 
 `--generate-pp` emits an opt-in fifth artifact `<Name>PP.hs` (a `base`-only
-pretty-printer over the generated AST; see `GenPP.hs`). `make test-pp`
-generates the printers for the opt-in grammars (`p`, `sandbox`) plus the
-capstone (`grammar.pg`), compiles them, and asserts the semantic round-trip
-`parse (print ast) == ast` over a corpus of fragments. It is the correctness
+pretty-printer over the generated AST; see `GenPP.hs`). `--pp-layout=flat`
+(default, task 9a) is one line per construct; `--pp-layout=block` (task 9b)
+indents bracket-structured languages, with indentation derived structurally
+from statement/declaration lists (no bracket charset). `make test-pp`
+generates the flat printers for the opt-in grammars (`p`, `sandbox`) plus the
+capstone (`grammar.pg`), and the block printers for `block.pg` and the
+c-compiler `c.pg`, compiles them all, and asserts the semantic round-trip
+`parse (print ast) == ast` over a corpus of fragments (block layout is
+whitespace, so it round-trips identically to flat). It is the correctness
 oracle for the structural printer — keep it green when touching GenPP. The
-`p`/`sandbox` `<Name>PP.hs` goldens (gated by `TestSupport.ppGoldenGrammars`)
-are also compiled by `make test-compile-goldens`.
+`p`/`sandbox` (flat) and `block` (block) `<Name>PP.hs` goldens (gated by
+`TestSupport.ppGoldenGrammars`) are also compiled by
+`make test-compile-goldens`.
 
 #### Golden Compile Gate
 ```bash

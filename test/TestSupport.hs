@@ -24,7 +24,7 @@ import qualified GrammarParser as GP
 
 import Diagnostics (Diagnostic)
 import Frontend (cleanGrammarTokens, parseWithGenerated)
-import GenPP (genPP)
+import GenPP (genPP, PPLayout(..))
 import GenQ (genQ)
 import GenX (genX)
 import GenY (genY)
@@ -60,25 +60,26 @@ normalizeParsedGrammar pg = do
 normalizeGrammarSource :: String -> Either Diagnostic NormalGrammar
 normalizeGrammarSource src = parseGrammarSource src >>= normalizeParsedGrammar
 
--- | Grammars (by 'getNGrammarName') that opt in to the pretty-printer golden.
--- The PP generator is opt-in (task 9): only these grammars get a
--- @\<Name\>PP.hs@ snapshot and round-trip coverage, so every other grammar
--- sees zero golden churn. Keep this small - one or two tiny grammars are
--- enough to pin the generator's output.
-ppGoldenGrammars :: [String]
-ppGoldenGrammars = ["P", "Sandbox"]
+-- | Grammars (by 'getNGrammarName') that opt in to a pretty-printer golden,
+-- with the layout to pin. The PP generator is opt-in (task 9): only these
+-- grammars get a @\<Name\>PP.hs@ snapshot, so every other grammar sees zero
+-- golden churn. @P@/@Sandbox@ pin the flat layout (task 9a, byte-unchanged);
+-- @Block@ pins the block layout (task 9b) over a small bracket-structured
+-- grammar so the indented output is reviewable. Keep this small.
+ppGoldenGrammars :: [(String, PPLayout)]
+ppGoldenGrammars = [("P", PPFlat), ("Sandbox", PPFlat), ("Block", PPBlock)]
 
 -- | The files rtk writes for a grammar, as (file name, content) pairs: the
 -- lexer, parser and quasi-quoter for every grammar, plus the pretty-printer
--- for the grammars opted in to 'ppGoldenGrammars'.
+-- (in its pinned layout) for the grammars opted in to 'ppGoldenGrammars'.
 artifactsFor :: NormalGrammar -> Either Diagnostic [(FilePath, String)]
 artifactsFor g = do
     x <- genX g
     y <- genY g
     q <- genQ g
-    pp <- if name `elem` ppGoldenGrammars
-            then (\s -> [(name ++ "PP.hs", s)]) <$> genPP g
-            else return []
+    pp <- case lookup name ppGoldenGrammars of
+            Just layout -> (\s -> [(name ++ "PP.hs", s)]) <$> genPP layout g
+            Nothing     -> return []
     return $ [ (name ++ "Lexer.x",  x)
              , (name ++ "Parser.y", y)
              , (name ++ "QQ.hs",    q)

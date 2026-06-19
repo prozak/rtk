@@ -161,6 +161,30 @@ round-trip oracle.
 rtk test-grammars/p.pg test-out --generate-pp   # also writes test-out/PPP.hs
 ```
 
+### `--pp-layout=flat|block`
+Choose the pretty-printer's layout (only meaningful with `--generate-pp` or
+`--debug-pp-spec`).
+
+- `flat` (default) — one space between tokens, no indentation; the
+  correct-not-pretty layout described above. Byte-for-byte unchanged.
+- `block` — indents and line-breaks bracket-structured languages so output
+  reads like hand-written source. Indentation comes purely from *block lists*
+  (statement/declaration lists), so the `{` `}` / `begin` `end` delimiters
+  need no special handling and a grammar with no block lists degrades to flat.
+
+Both layouts keep the same guarantee (`parse (print ast) == ast`) and the same
+`base`-only dependency (block mode adds a small in-module layout engine).
+Layout is whitespace, which every grammar in the corpus ignores, so block
+layout never changes the parse — it is heuristic *readability*, not
+correctness. Quality is language-dependent: bracket/terminator languages
+(C-like, PL/0's `begin`/`end`) read well; preamble-heavy grammars may run
+together — see the task 9b notes in `CHANGELOG.md`.
+
+**Example:**
+```bash
+rtk tutorials/c-compiler/c.pg out --generate-pp --pp-layout=block
+```
+
 ## Analysis and Statistics Options
 
 ### `--stats` / `-s`

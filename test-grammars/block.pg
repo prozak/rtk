@@ -1,0 +1,35 @@
+grammar 'Block';
+
+# A small bracket-structured grammar that exercises block-mode pretty layout
+# (task 9b). It mirrors the shape of the c-compiler tutorial's c.pg: a function
+# whose body is a brace-enclosed statement LIST, with statements that can
+# nest another brace-enclosed block. Block-mode layout (--pp-layout=block)
+# indents the statement lists - the indentation comes purely from the lists,
+# not from the '{' '}' literals, so the same machinery indents begin/end-style
+# blocks too (see pl0.pg). The flat default stays one line per construct.
+
+Program = Prog: Function ;
+
+Function = Func: 'fn' Ident '(' ParamList ')' Block ;
+
+# A comma-separated list: an inline list (block mode keeps it on one line).
+ParamList = Ident* ~ ',' ;
+
+Block = Blk: '{' StatementList '}' ;
+
+# A no-separator list of statements: a block list (block mode breaks and
+# indents its elements).
+StatementList = Statement* ;
+
+Statement = Assign: Ident '=' Exp ';'
+          | Return: 'return' Exp ';'
+          | Nested: Block ;
+
+Exp = Var: Ident
+    | Num: num ;
+
+Ident = Name: id ;
+
+id = [a-zA-Z_][a-zA-Z0-9_]* ;
+Int: num = [0-9]+ ;
+Ignore: ws = [ \t\n\r]+ ;
