@@ -9,18 +9,20 @@ the C front end (lexer, parser, AST types, quasi-quoters) is generated from
 quasi-quotation splices instead of concatenating strings, and a generated
 assembly *parser* (a by-product) round-trip-tests the emitter.
 
-**Status: stage 1** (proof of concept): `int main() { return <int>; }` →
-assembly AST → AT&T text → executable via gcc. Verified against the official
-[stage-1 test suite](https://github.com/nlsandler/write_a_c_compiler)
-(12/12) in addition to the local tests under [`tests/`](tests/).
+**Status: stage 2**: integer `return`, then the prefix unary operators `-`,
+`~`, `!` (with nesting). C source → assembly AST → AT&T text → executable via
+gcc. Verified against the official
+[test suite](https://github.com/nlsandler/write_a_c_compiler) (stage 1: 12/12,
+stage 2: 11/11) in addition to the local tests under [`tests/`](tests/).
 
 ## Companion tutorial
 
 [`tutorial/`](tutorial/) retells Nora Sandler's series page by page with RTK —
 what the generator replaces (lexer, parser, AST, the boilerplate that walks
 it) and what you write instead (grammar rules, quasi-quotation patterns,
-splices). Start at the [index](tutorial/README.md); stage 1 is covered by
-[00 — Setup](tutorial/00-setup.md) and [01 — Integers](tutorial/01-integers.md).
+splices). Start at the [index](tutorial/README.md): stages 1–2 are covered by
+[00 — Setup](tutorial/00-setup.md), [01 — Integers](tutorial/01-integers.md),
+and [02 — Unary operators](tutorial/02-unary.md).
 This README is the reference companion to those pages: it catalogues the
 conventions and limitations below, which the pages link to as you hit them.
 
@@ -145,18 +147,19 @@ long time; the causes are avoidable, and `c.pg` is written to avoid them:
 - **Token payloads cannot be antiquoted.** `$x` splices/matches whole syntax
   sorts; the `Int` of an `intLit` or the `String` of an `id` is reached
   through the alternative's named constructor (`IntLit _ n`, `Name _ s`; the
-  first field is the node's source position) — see `expValue`/`identName` in
-  `Codegen.hs`. Nodes built in code take `rtkNoPos` there; AST equality
-  ignores positions by design, so built and parsed trees still compare equal.
+  first field is the node's source position) — see the `IntLit` match in
+  `genExp` and `identName` in `Codegen.hs`. Nodes built in code take `rtkNoPos`
+  there; AST equality ignores positions by design, so built and parsed trees
+  still compare equal.
 - **Quoter names are lowercased rule names** and can collide with Prelude
   names: the `Exp` quoter is `exp`, hence `import Prelude hiding (exp)`.
   Avoid rule names that lowercase to Haskell keywords (`If`, `Do`, `Type`...).
 
 ## Roadmap
 
-Following the blog series, one stage at a time:
+Following the blog series, one stage at a time. Stages 1–2 (integers, unary
+operators) are done; up next:
 
-2. unary operators (`-` `~` `!`)
 3. binary operators `+ - * /` and the precedence cascade
 4. relational/logical operators, short-circuit evaluation
 5. local variables (first semantic pass: variable resolution)

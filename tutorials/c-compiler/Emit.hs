@@ -20,11 +20,17 @@ emitItem [asmItem| .globl $sym |] = "    .globl " ++ symName sym
 emitItem [asmItem| $sym : |] = symName sym ++ ":"
 emitItem [asmItem| movl $src, $dst |] =
   "    movl    " ++ emitOperand src ++ ", " ++ emitOperand dst
+emitItem [asmItem| negl $dst |] = "    negl    " ++ emitOperand dst
+emitItem [asmItem| notl $dst |] = "    notl    " ++ emitOperand dst
+emitItem [asmItem| cmpl $src, $dst |] =
+  "    cmpl    " ++ emitOperand src ++ ", " ++ emitOperand dst
+emitItem [asmItem| sete $dst |] = "    sete    " ++ emitOperand dst
 emitItem [asmItem| ret |] = "    ret"
 emitItem other = error $ "emitItem: unsupported item: " ++ show other
 
 emitOperand :: Operand -> String
 emitOperand [operand| %eax |] = "%eax"
+emitOperand [operand| %al |] = "%al"
 emitOperand (Imm _ n) = "$" ++ show n
 emitOperand other = error $ "emitOperand: unsupported operand: " ++ show other
 
