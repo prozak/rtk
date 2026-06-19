@@ -9,20 +9,22 @@ the C front end (lexer, parser, AST types, quasi-quoters) is generated from
 quasi-quotation splices instead of concatenating strings, and a generated
 assembly *parser* (a by-product) round-trip-tests the emitter.
 
-**Status: stage 2**: integer `return`, then the prefix unary operators `-`,
-`~`, `!` (with nesting). C source → assembly AST → AT&T text → executable via
-gcc. Verified against the official
-[test suite](https://github.com/nlsandler/write_a_c_compiler) (stage 1: 12/12,
-stage 2: 11/11) in addition to the local tests under [`tests/`](tests/).
+**Status: stage 3**: integer `return`, the prefix unary operators `-` `~` `!`,
+and the binary operators `+ - * /` with a precedence cascade and parentheses.
+C source → assembly AST → AT&T text → executable via gcc. Verified against the
+official [test suite](https://github.com/nlsandler/write_a_c_compiler) (stage
+1: 12/12, stage 2: 11/11, stage 3: 16/16) in addition to the local tests under
+[`tests/`](tests/).
 
 ## Companion tutorial
 
 [`tutorial/`](tutorial/) retells Nora Sandler's series page by page with RTK —
 what the generator replaces (lexer, parser, AST, the boilerplate that walks
 it) and what you write instead (grammar rules, quasi-quotation patterns,
-splices). Start at the [index](tutorial/README.md): stages 1–2 are covered by
+splices). Start at the [index](tutorial/README.md): stages 1–3 are covered by
 [00 — Setup](tutorial/00-setup.md), [01 — Integers](tutorial/01-integers.md),
-and [02 — Unary operators](tutorial/02-unary.md).
+[02 — Unary operators](tutorial/02-unary.md), and
+[03 — Binary operators](tutorial/03-binary.md).
 This README is the reference companion to those pages: it catalogues the
 conventions and limitations below, which the pages link to as you hit them.
 
@@ -157,10 +159,9 @@ long time; the causes are avoidable, and `c.pg` is written to avoid them:
 
 ## Roadmap
 
-Following the blog series, one stage at a time. Stages 1–2 (integers, unary
-operators) are done; up next:
+Following the blog series, one stage at a time. Stages 1–3 (integers, unary
+operators, binary operators with the precedence cascade) are done; up next:
 
-3. binary operators `+ - * /` and the precedence cascade
 4. relational/logical operators, short-circuit evaluation
 5. local variables (first semantic pass: variable resolution)
 6. `if`/`else` and the conditional expression

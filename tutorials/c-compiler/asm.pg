@@ -1,6 +1,6 @@
 grammar 'Asm';
 
-# x86-64 assembly (AT&T syntax), the subset emitted for stages 1-2.
+# x86-64 assembly (AT&T syntax), the subset emitted for stages 1-3.
 # Grows stage by stage alongside c.pg.
 #
 # Design notes:
@@ -33,14 +33,27 @@ AsmItem = Globl: '.globl' AsmId
         | Notl: 'notl' Operand
         | Cmpl: 'cmpl' Operand ',' Operand
         | Sete: 'sete' Operand
+        | Addl: 'addl' Operand ',' Operand
+        | Subl: 'subl' Operand ',' Operand
+        | Imull: 'imull' Operand ',' Operand
+        | Cdq: 'cdq'
+        | Idivl: 'idivl' Operand
+        | Push: 'push' Operand
+        | Pop: 'pop' Operand
         | Ret: 'ret' ;
 
 @shortcuts(src, dst)
 Operand = Imm: '$' num
         | RegOp: Reg ;
 
+# %eax/%al are the 32- and 8-bit accumulators; %ecx the 32-bit second operand;
+# push/pop work only at 64-bit width, so the same registers appear as %rax/%rcx
+# there. The emitter just prints whichever name the AST carries.
 Reg = Eax: '%eax'
-    | Al: '%al' ;
+    | Al: '%al'
+    | Ecx: '%ecx'
+    | Rax: '%rax'
+    | Rcx: '%rcx' ;
 
 @shortcuts(sym)
 AsmId = Sym: asmid ;
