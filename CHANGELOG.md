@@ -8,6 +8,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Block layout for generated pretty-printers (task 9b), the "pretty" layer on
+  top of 9a's correct-not-pretty printer. `rtk --generate-pp --pp-layout=block`
+  emits a `<Name>PP.hs` that indents and line-breaks bracket-structured
+  languages so the output reads like hand-written source; `--pp-layout=flat`
+  (the default) keeps 9a's one-line-per-construct output byte-for-byte.
+  Indentation is derived purely structurally from *block lists* — statement /
+  declaration lists (an `STMany` with no separator over a statement-shaped
+  element, or a `;`-separated list) — which wrap their elements in an
+  indented, line-broken block. The flanking delimiters (`{` `}` for C/Java,
+  `begin` `end` for PL/0) need no special handling and there is no bracket
+  charset baked into rtk: they render inline and the list supplies the indent,
+  so a grammar with no block lists simply degrades to flat. The generated
+  module stays dependency-free (it carries an in-module ~20-line layout
+  engine; no `pretty`/`prettyprinter` pulled into users' code).
+
+  Correctness is inherited and unbreakable: layout is whitespace, every corpus
+  grammar ignores whitespace, so block layout cannot change the parse —
+  `parse (print ast) == ast` holds by construction. The round-trip test
+  (`make test-pp`) gains block-mode cases (a small bracket grammar `block.pg`
+  and the c-compiler tutorial `c.pg`) that stay green, and `block.pg` opts into
+  a block-mode PP golden (`test/golden/block/BlockPP.hs`, gated through
+  `TestSupport.ppGoldenGrammars`) so the indented output is pinned and
+  reviewable. A forward guard (`GenPP.layoutSensitive`, `TODO(#95)`) falls back
+  to flat should a layout-sensitive (offside) lexer ever land (task 12); it is
+  a no-op today.
+
+  Honest scope — this is heuristic readability for bracket/terminator
+  languages, not universal beauty. `c.pg` and `block.pg` read idiomatically;
+  PL/0 reads well bar a minor wart (its top-level `procedure` list, being a
+  no-separator block list, indents one level); Java's statement/class bodies
+  indent correctly but its top-level preamble (package/import/type decls,
+  which are not a single broken list) runs together and multi-line doc-comment
+  tokens disturb the indentation, so Java is best left on flat for now. All of
+  these still round-trip green in block mode — only quality varies, never
+  correctness. Alignment, operator-aware wrapping and configurable width are
+  explicitly out of scope (later opt-in layers).
 - Pretty-printer generation (task 9), the "emit" third of "Rewrite ToolKit".
   `rtk --generate-pp <grammar> <out>` emits an opt-in fifth artifact
   `<Name>PP.hs`: a module of `pp<Type>` functions that turn the AST RTK

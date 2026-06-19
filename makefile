@@ -252,22 +252,29 @@ test-java-qq: build test-out/JavaLexer.hs test-out/JavaParser.hs | test-out
 	cabal exec -- ghc --make -itest-out test-out/java-qq-test.hs -o test-out/java-qq-test
 	test-out/java-qq-test
 
-# Pretty-printer round-trip tests (task 9): generate the opt-in printers with
-# --generate-pp, compile them alongside their parsers, and assert
-# parse (print ast) == ast over a corpus of source fragments. This is the
-# safety oracle that makes the structural printer safe to ship - a dropped
-# token or under-parenthesization fails here. Only the grammars opted in to
-# the PP golden (p, sandbox) are exercised.
+# Pretty-printer round-trip tests (tasks 9a/9b): generate the opt-in printers
+# (flat for p/sandbox/grammar, block for block/c), compile them alongside their
+# parsers, and assert parse (print ast) == ast over a corpus of source
+# fragments. This is the safety oracle that makes the structural printer safe
+# to ship - a dropped token or under-parenthesization fails here. Block layout
+# is whitespace-only, so the block-mode cases prove layout never changes the
+# parse (the same round-trip stays green in either layout).
 test-pp: build | test-out
 	$(RTK_EXEC) --generate-pp test-grammars/p.pg test-out
 	$(RTK_EXEC) --generate-pp test-grammars/sandbox.pg test-out
 	$(RTK_EXEC) --generate-pp test-grammars/grammar.pg test-out
+	$(RTK_EXEC) --generate-pp --pp-layout=block test-grammars/block.pg test-out
+	$(RTK_EXEC) --generate-pp --pp-layout=block tutorials/c-compiler/c.pg test-out
 	cabal exec alex -- -g test-out/PLexer.x -o test-out/PLexer.hs
 	cabal exec happy -- test-out/PParser.y --ghc -o test-out/PParser.hs
 	cabal exec alex -- -g test-out/SandboxLexer.x -o test-out/SandboxLexer.hs
 	cabal exec happy -- test-out/SandboxParser.y --ghc -o test-out/SandboxParser.hs
 	cabal exec alex -- -g test-out/GrammarLexer.x -o test-out/GrammarLexer.hs
 	cabal exec happy -- test-out/GrammarParser.y --ghc -o test-out/GrammarParser.hs
+	cabal exec alex -- -g test-out/BlockLexer.x -o test-out/BlockLexer.hs
+	cabal exec happy -- test-out/BlockParser.y --ghc -o test-out/BlockParser.hs
+	cabal exec alex -- -g test-out/CLexer.x -o test-out/CLexer.hs
+	cabal exec happy -- test-out/CParser.y --ghc -o test-out/CParser.hs
 	$(CP) test-grammars/pp-roundtrip-test.hs test-out
 	cabal exec -- ghc --make -itest-out test-out/pp-roundtrip-test.hs -o test-out/pp-roundtrip-test
 	test-out/pp-roundtrip-test

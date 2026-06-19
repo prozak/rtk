@@ -44,11 +44,22 @@ happy <Grammar>Parser.y --ghc -o <Grammar>Parser.hs
 
 `--generate-pp` writes a fifth, opt-in artifact `<Grammar>PP.hs`: a
 `base`-only module of `pp<Type>` functions that turn a parsed AST back into
-source text. It is correctness-first, not pretty — one space between tokens,
-no indentation, no parentheses of its own — and guarantees only the *semantic*
-round-trip `parse (print ast) == ast`, never byte-faithful reproduction:
-comments and the original whitespace are lost because the AST is lossy. The
-flag is off by default, so output is unchanged unless you ask for it.
+source text. It guarantees only the *semantic* round-trip
+`parse (print ast) == ast`, never byte-faithful reproduction: comments and the
+original whitespace are lost because the AST is lossy. The flag is off by
+default, so output is unchanged unless you ask for it.
+
+Two layouts are available via `--pp-layout`:
+
+- `flat` (default) — one space between tokens, no indentation; correct, not
+  pretty.
+- `block` — indents and line-breaks bracket-structured languages (C-like
+  braces, PL/0-style `begin`/`end`) so output reads like hand-written source.
+  Indentation is derived structurally from statement/declaration lists, so it
+  adds no parentheses and degrades to flat for grammars without such lists.
+
+Layout is whitespace, so `block` never changes the parse — it is heuristic
+readability, and the round-trip guarantee holds in either mode.
 
 ### Using the generated code
 

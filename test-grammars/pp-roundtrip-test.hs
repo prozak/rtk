@@ -22,6 +22,15 @@ import qualified SandboxPP    as SPp
 import qualified GrammarLexer  as GL
 import qualified GrammarParser as GR
 import qualified GrammarPP     as GPp
+-- Block-mode (task 9b) printers: a small bracket grammar and the c-compiler
+-- tutorial grammar. Layout is whitespace, so block output must reparse to the
+-- same AST exactly as flat does - this proves layout never breaks correctness.
+import qualified BlockLexer  as BL
+import qualified BlockParser as BP
+import qualified BlockPP     as BPp
+import qualified CLexer      as CL
+import qualified CParser     as CP
+import qualified CPP         as CPp
 
 -- | Parse, print, reparse, compare. Returns True on a clean round-trip.
 roundTrip :: (Eq a, Show a)
@@ -66,6 +75,12 @@ parseSandbox src = SL.scanTokens src >>= SP.parseSandbox
 parseGrammar :: String -> Either String GR.Grammar
 parseGrammar src = GL.scanTokens src >>= GR.parseGrammar
 
+parseBlock :: String -> Either String BP.Program
+parseBlock src = BL.scanTokens src >>= BP.parseBlock
+
+parseC :: String -> Either String CP.Program
+parseC src = CL.scanTokens src >>= CP.parseC
+
 pInputs :: [String]
 pInputs =
     [ "(lambda (x) x)"
@@ -107,12 +122,29 @@ grammarInputs =
     , "grammar 'G';\nimports \"\"\"\nimport Data.List\n\"\"\"\nA = a ;\na = [a]+ ;\n"
     ]
 
+-- Block-mode inputs: bracket-structured programs with nested blocks. The
+-- printer indents and line-breaks them, and they must reparse identically.
+blockInputs :: [String]
+blockInputs =
+    [ "fn main ( ) { }"
+    , "fn main ( a , b ) { x = 1 ; return x ; }"
+    , "fn f ( ) { x = 1 ; { y = 2 ; return y ; } return x ; }"
+    ]
+
+cInputs :: [String]
+cInputs =
+    [ "int main ( ) { return 2 ; }"
+    , "int main ( ) { return 2 ; return 3 ; return 42 ; }"
+    ]
+
 main :: IO ()
 main = do
-    pResults <- forM pInputs       $ roundTrip "P"       parseP       PPp.ppP
-    sResults <- forM sandboxInputs $ roundTrip "Sandbox" parseSandbox SPp.ppSandbox
-    gResults <- forM grammarInputs $ roundTrip "Grammar" parseGrammar GPp.ppGrammar
-    let results = pResults ++ sResults ++ gResults
+    pResults <- forM pInputs       $ roundTrip "P"            parseP       PPp.ppP
+    sResults <- forM sandboxInputs $ roundTrip "Sandbox"      parseSandbox SPp.ppSandbox
+    gResults <- forM grammarInputs $ roundTrip "Grammar"      parseGrammar GPp.ppGrammar
+    bResults <- forM blockInputs   $ roundTrip "Block(block)" parseBlock   BPp.ppProgram
+    cResults <- forM cInputs       $ roundTrip "C(block)"     parseC       CPp.ppProgram
+    let results = pResults ++ sResults ++ gResults ++ bResults ++ cResults
     putStrLn ""
     if and results
         then putStrLn $ "PP round-trip tests: PASS (" ++ show (length results) ++ " fragments)"
