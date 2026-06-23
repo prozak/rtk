@@ -26,10 +26,10 @@ verified against the build.
 | [01 — Integers](01-integers.md) | [Part 1](https://norasandler.com/2017/11/29/Write-a-Compiler.html) | `int main() { return 2; }` → an executable. The whole pipeline, end to end. |
 | [02 — Unary operators](02-unary.md) | [Part 2](https://norasandler.com/2017/12/05/Write-a-Compiler-2.html) | `-`, `~`, `!` and nesting; codegen becomes recursive. |
 | [03 — Binary operators](03-binary.md) | [Part 3](https://norasandler.com/2017/12/15/Write-a-Compiler-3.html) | `+ - * /`, the precedence cascade, and a stack-machine codegen. |
+| [04 — Relational and logical](04-relational.md) | [Part 4](https://norasandler.com/2018/01/08/Write-a-Compiler-4.html) | `== != < <= > >= && ||`, short-circuiting, and the first stateful codegen. |
 
-Stages 4–10 (relational/logical operators through file-scope variables) are
-implemented one at a time; each adds a page here. Until then they live as task
-descriptions in
+Stages 5–10 (local variables through file-scope variables) are implemented one
+at a time; each adds a page here. Until then they live as task descriptions in
 [`docs/c-compiler-tutorial-plan.md`](../../../docs/c-compiler-tutorial-plan.md).
 
 ## Conventions on these pages
