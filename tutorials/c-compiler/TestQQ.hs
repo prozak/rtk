@@ -110,6 +110,24 @@ main = do
             [exp| $e1 $aop $e2 |] ->
               e1 == [exp| 7 |] && e2 == [exp| 4 |] && aop == [addOp| - |]
             _ -> False
+      , check "relational construction: [exp| 1 < 2 |]" $
+          [exp| 1 < 2 |]
+            == Rel rtkNoPos (IntLit rtkNoPos 1) (Lt rtkNoPos) (IntLit rtkNoPos 2)
+      , check "logical and/or are control flow (no op sort): [exp| 1 && 0 |]" $
+          [exp| 1 && 0 |]
+            == And rtkNoPos (IntLit rtkNoPos 1) (IntLit rtkNoPos 0)
+      , check "precedence: && binds tighter than ||: [exp| 1 || 0 && 2 |]" $
+          [exp| 1 || 0 && 2 |]
+            == Or rtkNoPos (IntLit rtkNoPos 1)
+                 (And rtkNoPos (IntLit rtkNoPos 0) (IntLit rtkNoPos 2))
+      , check "maximal munch: != is one token (NotEqual), not ! then =" $
+          case [exp| 1 != 2 |] of
+            [exp| $e1 $eqop $e2 |] -> eqop == [eqOp| != |] && e1 == [exp| 1 |]
+            _ -> False
+      , check "relational pattern with operator binder: [exp| $e1 $relop $e2 |]" $
+          case [exp| 5 <= 9 |] of
+            [exp| $e1 $relop $e2 |] -> e1 == [exp| 5 |] && relop == [relOp| <= |]
+            _ -> False
       ]
 
   putStrLn "-- assembly grammar --"

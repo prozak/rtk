@@ -1,17 +1,21 @@
 grammar 'C';
 
-# Stages 1-3 of Nora Sandler's "Writing a C Compiler"
+# Stages 1-4 of Nora Sandler's "Writing a C Compiler"
 # (https://norasandler.com/2017/11/29/Write-a-Compiler.html):
 #
 #   <program>    ::= <function>
 #   <function>   ::= "int" <id> "(" ")" "{" <statement> "}"
 #   <statement>  ::= "return" <exp> ";"
-#   <exp>        ::= <exp> <addop> <mulexp>   | <mulexp>     # stage 3: binary
-#   <mulexp>     ::= <mulexp> <mulop> <unexp> | <unexp>      #          operators
-#   <unexp>      ::= <unary_op> <unexp> | <factor>           # stage 2: unary
+#   <exp>        ::= <exp> "||" <land>     | <land>         # stage 4: logical
+#   <land>       ::= <land> "&&" <eq>      | <eq>           #   and relational
+#   <eq>         ::= <eq> <eqop> <rel>     | <rel>
+#   <rel>        ::= <rel> <relop> <add>   | <add>
+#   <add>        ::= <add> <addop> <mul>   | <mul>          # stage 3: binary
+#   <mul>        ::= <mul> <mulop> <unexp> | <unexp>
+#   <unexp>      ::= <unary_op> <unexp> | <factor>          # stage 2: unary
 #   <factor>     ::= <int> | "(" <exp> ")"
-#   <addop>      ::= "+" | "-"     <mulop> ::= "*" | "/"
-#   <unary_op>   ::= "-" | "~" | "!"
+#   <addop> ::= "+"|"-"   <mulop> ::= "*"|"/"   <eqop> ::= "=="|"!="
+#   <relop> ::= "<"|"<="|">"|">="   <unary_op> ::= "-"|"~"|"!"
 #
 # Deviation from the blog grammar: the function body is a statement LIST
 # (the blog switches to that in part 5 anyway). This also exercises RTK's
@@ -37,17 +41,33 @@ StatementList = Statement* ;
 
 Statement = Return: 'return' Exp ';' ;
 
-# The expression grammar is a precedence cascade: additive (lowest) over
-# multiplicative over unary over Factor (atoms). Every level shares the type
-# Exp via the `Exp:` annotation, and each higher-precedence level passes
-# through with a ,-lift -- so there are no per-level wrapper constructors, just
-# one Exp type with one constructor per operator (Add/Mul/Unary/IntLit). This
-# is what lets a single QQ pattern match any expression node. Left recursion
-# (Exp AddOp MulExp) makes the operators left-associative; parentheses are a
-# ,-lift in Factor, so they group without adding a node.
+# The expression grammar is a precedence cascade: logical-or (lowest) over
+# logical-and over equality over relational over additive over multiplicative
+# over unary over Factor (atoms). Every level shares the type Exp via the
+# `Exp:` annotation, and each higher-precedence level passes through with a
+# ,-lift -- so there are no per-level wrapper constructors, just one Exp type
+# with one constructor per operator. That is what lets a single QQ pattern
+# match any expression node. Left recursion makes every operator
+# left-associative; parentheses are a ,-lift in Factor, so they group without
+# adding a node.
+#
+# && and || get their own constructors (Or/And), not an operator sort: they
+# are control flow (short-circuit), not operators over two computed values.
 @shortcuts(e)
-Exp = Add: Exp AddOp MulExp
-    | ,MulExp ;
+Exp = Or: Exp '||' LAndExp
+    | ,LAndExp ;
+
+Exp: LAndExp = And: LAndExp '&&' EqExp
+             | ,EqExp ;
+
+Exp: EqExp = Eq: EqExp EqOp RelExp
+           | ,RelExp ;
+
+Exp: RelExp = Rel: RelExp RelOp AddExp
+            | ,AddExp ;
+
+Exp: AddExp = Add: AddExp AddOp MulExp
+            | ,MulExp ;
 
 Exp: MulExp = Mul: MulExp MulOp UnaryExp
             | ,UnaryExp ;
@@ -58,10 +78,11 @@ Exp: UnaryExp = Unary: UnaryOp UnaryExp
 Exp: Factor = IntLit: intLit
             | '(' ,Exp ')' ;
 
-# '-' is shared between AddOp (binary) and UnaryOp (prefix); the cascade
-# decides by position, so `2 - -3` parses as 2 minus (negate 3). Each operator
-# is its own sort, so it is one constructor and codegen matches the binary
-# shape generically with [exp| $e1 $aop $e2 |].
+# '-' is shared between AddOp (binary) and UnaryOp (prefix); the cascade decides
+# by position, so `2 - -3` parses as 2 minus (negate 3). '!' (Not) and '!='
+# (NotEqual) overlap likewise; alex's maximal munch keeps them apart. Each
+# operator is its own sort, so it is one constructor and codegen matches the
+# binary shape generically with [exp| $e1 $aop $e2 |].
 @shortcuts(aop)
 AddOp = Plus: '+'
       | Minus: '-' ;
@@ -69,6 +90,16 @@ AddOp = Plus: '+'
 @shortcuts(mop)
 MulOp = Times: '*'
       | Divide: '/' ;
+
+@shortcuts(eqop)
+EqOp = Equal: '=='
+     | NotEqual: '!=' ;
+
+@shortcuts(relop)
+RelOp = Lt: '<'
+      | Le: '<='
+      | Gt: '>'
+      | Ge: '>=' ;
 
 @shortcuts(op)
 UnaryOp = Neg: '-'
