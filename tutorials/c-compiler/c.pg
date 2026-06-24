@@ -1,19 +1,21 @@
 grammar 'C';
 
-# Stages 1-4 of Nora Sandler's "Writing a C Compiler"
+# Stages 1-5 of Nora Sandler's "Writing a C Compiler"
 # (https://norasandler.com/2017/11/29/Write-a-Compiler.html):
 #
 #   <program>    ::= <function>
-#   <function>   ::= "int" <id> "(" ")" "{" <statement> "}"
-#   <statement>  ::= "return" <exp> ";"
-#   <exp>        ::= <exp> "||" <land>     | <land>         # stage 4: logical
-#   <land>       ::= <land> "&&" <eq>      | <eq>           #   and relational
-#   <eq>         ::= <eq> <eqop> <rel>     | <rel>
-#   <rel>        ::= <rel> <relop> <add>   | <add>
-#   <add>        ::= <add> <addop> <mul>   | <mul>          # stage 3: binary
-#   <mul>        ::= <mul> <mulop> <unexp> | <unexp>
-#   <unexp>      ::= <unary_op> <unexp> | <factor>          # stage 2: unary
-#   <factor>     ::= <int> | "(" <exp> ")"
+#   <function>   ::= "int" <id> "(" ")" "{" { <statement> } "}"
+#   <statement>  ::= "return" <exp> ";" | <exp> ";"          # stage 5: locals,
+#                  | "int" <id> [ "=" <exp> ] ";"            #   assignment
+#   <exp>        ::= <id> "=" <exp> | <lor>                  # stage 5: assign
+#   <lor>        ::= <lor> "||" <land>    | <land>           # stage 4: logical
+#   <land>       ::= <land> "&&" <eq>     | <eq>             #   and relational
+#   <eq>         ::= <eq> <eqop> <rel>    | <rel>
+#   <rel>        ::= <rel> <relop> <add>  | <add>
+#   <add>        ::= <add> <addop> <mul>  | <mul>            # stage 3: binary
+#   <mul>        ::= <mul> <mulop> <unexp>| <unexp>
+#   <unexp>      ::= <unary_op> <unexp> | <factor>           # stage 2: unary
+#   <factor>     ::= <int> | <id> | "(" <exp> ")"            # stage 5: <id> ref
 #   <addop> ::= "+"|"-"   <mulop> ::= "*"|"/"   <eqop> ::= "=="|"!="
 #   <relop> ::= "<"|"<="|">"|">="   <unary_op> ::= "-"|"~"|"!"
 #
@@ -39,23 +41,32 @@ Function = Func: 'int' Ident '(' ')' '{' StatementList '}' ;
 @shortcuts(stmts)
 StatementList = Statement* ;
 
-Statement = Return: 'return' Exp ';' ;
+Statement = Return: 'return' Exp ';'
+          | ExpStmt: Exp ';'
+          | DeclInit: 'int' Ident '=' Exp ';'
+          | Declare: 'int' Ident ';' ;
 
-# The expression grammar is a precedence cascade: logical-or (lowest) over
-# logical-and over equality over relational over additive over multiplicative
-# over unary over Factor (atoms). Every level shares the type Exp via the
-# `Exp:` annotation, and each higher-precedence level passes through with a
-# ,-lift -- so there are no per-level wrapper constructors, just one Exp type
-# with one constructor per operator. That is what lets a single QQ pattern
-# match any expression node. Left recursion makes every operator
-# left-associative; parentheses are a ,-lift in Factor, so they group without
-# adding a node.
+# The expression grammar is a precedence cascade: assignment (lowest) over
+# logical-or over logical-and over equality over relational over additive over
+# multiplicative over unary over Factor (atoms). Every level shares the type
+# Exp via the `Exp:` annotation, and each higher-precedence level passes through
+# with a ,-lift -- so there are no per-level wrapper constructors, just one Exp
+# type with one constructor per operator. That is what lets a single QQ pattern
+# match any expression node. Left recursion makes the operators
+# left-associative; assignment is right-recursive (a = b = c is a = (b = c));
+# parentheses are a ,-lift in Factor, so they group without adding a node.
 #
-# && and || get their own constructors (Or/And), not an operator sort: they
-# are control flow (short-circuit), not operators over two computed values.
+# Assignment's LHS is a bare Ident, not a general Exp: that keeps it LALR-clean
+# (an Ident is an assignment target only when '=' follows, else it reduces to a
+# Factor) and makes `a + 3 = 4` a *syntax* error, as the blog wants. && and ||
+# get their own constructors (Or/And), not an operator sort: they are control
+# flow (short-circuit), not operators over two computed values.
 @shortcuts(e)
-Exp = Or: Exp '||' LAndExp
-    | ,LAndExp ;
+Exp = Assign: Ident '=' Exp
+    | ,LOrExp ;
+
+Exp: LOrExp = Or: LOrExp '||' LAndExp
+            | ,LAndExp ;
 
 Exp: LAndExp = And: LAndExp '&&' EqExp
              | ,EqExp ;
@@ -76,6 +87,7 @@ Exp: UnaryExp = Unary: UnaryOp UnaryExp
               | ,Factor ;
 
 Exp: Factor = IntLit: intLit
+            | VarRef: Ident
             | '(' ,Exp ')' ;
 
 # '-' is shared between AddOp (binary) and UnaryOp (prefix); the cascade decides
