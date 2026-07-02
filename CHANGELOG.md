@@ -136,6 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   binders, state-threading plumbing) deliberately stay plain; the
   conversion record and the discovered pattern-matching boundaries live
   in docs/qq-grammar-rewrites-plan.md §8d
+- Named constructors (task 8a): an alternative may carry a leading label —
   `Expr = Add: Expr '+' Term | Term ;` — that names its generated AST
   constructor (`Add RtkPos Expr Term`) instead of the positional
   `Ctr__<Rule>__<index>` default, so code and quasi-quote patterns written
