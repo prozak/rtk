@@ -6,7 +6,7 @@ RTK (Rewrite ToolKit) is a tool for generating parser and rewrite facilities fro
 
 **Language**: Haskell
 **Build System**: Cabal + Make
-**Version**: 0.12 (development; 0.11 is the latest release on [Hackage](https://hackage.haskell.org/package/rtk))
+**Version**: 0.13 (development; 0.12 is the latest release on [Hackage](https://hackage.haskell.org/package/rtk))
 
 ## What RTK Does
 
@@ -161,7 +161,7 @@ cabal build
 This will:
 - Download and build ~58 Haskell dependencies
 - Build the RTK library and executable
-- Place the executable in: dist-newstyle/build/x86_64-linux/ghc-9.4.7/rtk-0.12/x/rtk/build/rtk/rtk
+- Place the executable in: dist-newstyle/build/x86_64-linux/ghc-9.4.7/rtk-0.13/x/rtk/build/rtk/rtk
 
 ### Environment Variables for Tests
 
@@ -184,7 +184,7 @@ cabal --version      # Should show: 3.8.1.0
 
 ### Build Artifacts
 
-- **Executable**: `dist-newstyle/build/x86_64-linux/ghc-9.4.7/rtk-0.12/x/rtk/build/rtk/rtk`
+- **Executable**: `dist-newstyle/build/x86_64-linux/ghc-9.4.7/rtk-0.13/x/rtk/build/rtk/rtk`
 - **Test output**: `test-out/` directory
 - **Cabal binaries**: `~/.cabal/bin/` (happy, alex)
 - **Cabal packages**: `~/.cabal/store/`
