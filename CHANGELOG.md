@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.12] - 2026-07-02
+
+### Changed
+- Widened GHC support: the boot-library bounds now span GHC 9.4 through 9.14
+  (`base < 4.23`, `template-haskell < 2.25`, `containers < 0.9`,
+  `time < 1.16`). The endpoints are CI-tested — the pinned 9.4.7 toolchain
+  runs the full battery and the newest-GHC canary builds `-Werror` and runs
+  the cabal suites on 9.14.1. 0.11 capped `base` at 4.19 (GHC 9.6), which
+  made the package uninstallable on current compilers and failed Hackage's
+  own doc builder (GHC 9.8). Version bounds are now also stated once per
+  dependency instead of repeated across components, per Hackage guidance —
+  the executable's own stale `base < 4.19` copy is exactly the drift this
+  prevents
 
 ### Added
 - Block layout for generated pretty-printers (task 9b), the "pretty" layer on

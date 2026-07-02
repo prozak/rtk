@@ -18,7 +18,7 @@ Homepage:            https://github.com/prozak/rtk
 Bug-Reports:         https://github.com/prozak/rtk/issues
 Category:            Language, Development
 Build-Type:          Simple
-Tested-With:         GHC == 9.4.7 || == 9.6.4
+Tested-With:         GHC == 9.4.7 || == 9.6.4 || == 9.14.1
 
 Extra-Source-Files:
     CHANGELOG.md
@@ -73,13 +73,13 @@ Library generated-frontend
                      GrammarParser,
                      GrammarQQ
   Build-Depends:
-                     base                 >= 4.17 && < 4.19,
+                     base                 >= 4.17 && < 4.23,
                      array                >= 0.5  && < 0.6,
                      syb                  >= 0.7  && < 0.8,
                      -- grammar.pg's imports section pulls in Data.Map
-                     containers           >= 0.6  && < 0.7,
+                     containers           >= 0.6  && < 0.9,
                      -- the generated quasi-quoter builds TH splices
-                     template-haskell     >= 2.19 && < 2.21
+                     template-haskell     >= 2.19 && < 2.25
   Build-Tool-Depends: happy:happy == 2.2.*, alex:alex == 3.5.*
   Default-Extensions:  DeriveDataTypeable, StandaloneDeriving
 
@@ -107,11 +107,11 @@ Library
                      Frontend
   Build-Depends:
                      generated-frontend,
-                     base                 >= 4.17 && < 4.19,
+                     base                 >= 4.17 && < 4.23,
                      array                >= 0.5  && < 0.6,
                      syb                  >= 0.7  && < 0.8,
-                     template-haskell     >= 2.19 && < 2.21,
-                     containers           >= 0.6  && < 0.7,
+                     template-haskell     >= 2.19 && < 2.25,
+                     containers           >= 0.6  && < 0.9,
                      mtl                  >= 2.2  && < 2.4,
                      pretty               >= 1.1  && < 1.2,
                      pretty-show          >= 1.10 && < 1.11,
@@ -120,7 +120,7 @@ Library
                      haskell-src-meta     >= 0.8  && < 0.9,
                      lens                 >= 5.2  && < 5.4,
                      optparse-applicative >= 0.18 && < 0.20,
-                     time                 >= 1.12 && < 1.13,
+                     time                 >= 1.12 && < 1.16,
                      ansi-terminal        >= 1.0  && < 1.2
   -- CI pins the exact tool versions (alex-3.5.4.2, happy-2.2 in
   -- .github/workflows/ci.yml); these ranges must stay compatible with them.
@@ -131,7 +131,10 @@ Executable rtk
   Import:            warnings
   Main-is:           main.hs
   Hs-Source-Dirs:    app
-  Build-Depends:     base      >= 4.17 && < 4.19,
+  -- Version bounds live where a dependency first appears (the libraries
+  -- above, or here for directory); per Hackage guidance they are stated
+  -- once, so components below use bare names for already-bounded packages.
+  Build-Depends:     base,
                      directory >= 1.3  && < 1.4,
                      rtk
   ghc-options:       -rtsopts
@@ -146,16 +149,16 @@ Test-Suite unit
   Hs-Source-Dirs:    test
   Other-Modules:     TestSupport
   Build-Depends:
-                     base       >= 4.17 && < 4.19,
+                     base,
                      rtk,
                      -- the compiled-in snapshot front end, for the GrammarQQ
                      -- smoke test (its quoters produce the generated AST types)
                      generated-frontend,
                      HUnit      >= 1.6  && < 1.7,
-                     containers >= 0.6  && < 0.7,
-                     directory  >= 1.3  && < 1.4,
+                     containers,
+                     directory,
                      filepath   >= 1.4  && < 1.6,
-                     syb        >= 0.7  && < 0.8
+                     syb
 
 -- Golden tests: generated .x/.y/QQ.hs output for every grammar under
 -- test-grammars/ is compared against snapshots in test/golden/.
@@ -168,11 +171,11 @@ Test-Suite golden
   Hs-Source-Dirs:    test
   Other-Modules:     TestSupport
   Build-Depends:
-                     base       >= 4.17 && < 4.19,
+                     base,
                      rtk,
                      -- the parsed-grammar type in TestSupport's signatures is
                      -- the generated AST (GrammarParser.Grammar)
                      generated-frontend,
-                     HUnit      >= 1.6  && < 1.7,
-                     directory  >= 1.3  && < 1.4,
-                     filepath   >= 1.4  && < 1.6
+                     HUnit,
+                     directory,
+                     filepath
