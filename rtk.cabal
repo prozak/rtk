@@ -1,6 +1,6 @@
 Cabal-Version:       2.4
 Name:                rtk
-Version:             0.12
+Version:             0.13
 Synopsis:            Parser and rewrite facility generator from grammar specifications
 Description:         RTK (Rewrite ToolKit) generates Alex lexer and Happy parser
                      files from grammar specifications. It supports quasi-quotation
