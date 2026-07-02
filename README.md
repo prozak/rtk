@@ -1,5 +1,7 @@
 # RTK - Rewrite ToolKit
 
+[![Hackage](https://img.shields.io/hackage/v/rtk.svg)](https://hackage.haskell.org/package/rtk)
+
 RTK generates parser and rewrite facilities from grammar specifications. It produces Alex lexer and Happy parser files, with support for quasi-quotation to embed parsed syntax directly in Haskell code.
 
 ## Features
