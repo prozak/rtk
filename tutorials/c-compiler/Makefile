@@ -36,10 +36,10 @@ $(GEN)/%.hs: $(GEN)/%.x
 $(GEN)/%.hs: $(GEN)/%.y
 	cd $(ROOT) && cabal exec happy -- $(HERE)/$< --ghc -i$(HERE)/$(GEN)/$*.info -o $(HERE)/$@
 
-ncc: Main.hs Codegen.hs Emit.hs $(GENERATED)
+ncc: Main.hs Resolve.hs Codegen.hs Emit.hs $(GENERATED)
 	cd $(ROOT) && cabal exec -- ghc --make $(HERE)/Main.hs -i$(HERE) -i$(HERE)/$(GEN) -outputdir $(HERE)/build/ncc -o $(HERE)/ncc
 
-test-qq: TestQQ.hs Codegen.hs Emit.hs $(GENERATED)
+test-qq: TestQQ.hs Resolve.hs Codegen.hs Emit.hs $(GENERATED)
 	cd $(ROOT) && cabal exec -- ghc --make $(HERE)/TestQQ.hs -i$(HERE) -i$(HERE)/$(GEN) -outputdir $(HERE)/build/test-qq -o $(HERE)/test-qq
 
 test: build

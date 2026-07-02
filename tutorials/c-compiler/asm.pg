@@ -1,6 +1,6 @@
 grammar 'Asm';
 
-# x86-64 assembly (AT&T syntax), the subset emitted for stages 1-4.
+# x86-64 assembly (AT&T syntax), the subset emitted for stages 1-5.
 # Grows stage by stage alongside c.pg.
 #
 # Design notes:
@@ -48,20 +48,28 @@ AsmItem = Globl: '.globl' AsmId
         | Je: 'je' AsmId
         | Jne: 'jne' AsmId
         | Jmp: 'jmp' AsmId
+        | Movq: 'movq' Operand ',' Operand
+        | Subq: 'subq' Operand ',' Operand
         | Ret: 'ret' ;
 
+# A Mem operand is a stack slot: signed displacement off a base register, in the
+# AT&T disp(base) form -- a local at -4(%rbp), or (later) an argument at 8(%rbp).
 @shortcuts(src, dst)
 Operand = Imm: '$' num
-        | RegOp: Reg ;
+        | RegOp: Reg
+        | Mem: num '(' Reg ')' ;
 
 # %eax/%al are the 32- and 8-bit accumulators; %ecx the 32-bit second operand;
-# push/pop work only at 64-bit width, so the same registers appear as %rax/%rcx
-# there. The emitter just prints whichever name the AST carries.
+# push/pop work only at 64-bit width, so those registers also appear as
+# %rax/%rcx; %rbp/%rsp are the 64-bit frame and stack pointers. The emitter
+# just prints whichever name the AST carries.
 Reg = Eax: '%eax'
     | Al: '%al'
     | Ecx: '%ecx'
     | Rax: '%rax'
-    | Rcx: '%rcx' ;
+    | Rcx: '%rcx'
+    | Rbp: '%rbp'
+    | Rsp: '%rsp' ;
 
 @shortcuts(sym)
 AsmId = Sym: asmid ;
@@ -71,5 +79,7 @@ AsmId = Sym: asmid ;
 # ----------------------------------------------------------------------------
 
 asmid = [a-zA-Z_][a-zA-Z_0-9]* ;
-Int: num = [0-9]+ ;
+# num is signed: stack displacements can be negative (-4(%rbp)). It reads as an
+# Int, so the '-' is part of the number, not a separate operator token.
+Int: num = '-'? [0-9]+ ;
 Ignore: ws = [ \t\n\r]+ ;

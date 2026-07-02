@@ -34,6 +34,7 @@ import AsmParser hiding (rtkNoPos) -- both parsers export rtkNoPos (distinct typ
 import qualified AsmParser as A
 import AsmQQ
 
+import Resolve (resolve)
 import Codegen (codegen)
 import Emit (emit)
 
@@ -128,6 +129,23 @@ main = do
           case [exp| 5 <= 9 |] of
             [exp| $e1 $relop $e2 |] -> e1 == [exp| 5 |] && relop == [relOp| <= |]
             _ -> False
+      , check "variable reference is a Factor: [exp| foo |]" $
+          [exp| foo |] == VarRef rtkNoPos (Name rtkNoPos "foo")
+      , check "assignment is the lowest-precedence Exp: [exp| x = 1 + 2 |]" $
+          [exp| x = 1 + 2 |]
+            == Assign rtkNoPos (Name rtkNoPos "x")
+                 (Add rtkNoPos (IntLit rtkNoPos 1) (Plus rtkNoPos) (IntLit rtkNoPos 2))
+      , check "assignment is right-associative: [exp| a = b = c |]" $
+          [exp| a = b = c |]
+            == Assign rtkNoPos (Name rtkNoPos "a")
+                 (Assign rtkNoPos (Name rtkNoPos "b") (VarRef rtkNoPos (Name rtkNoPos "c")))
+      , check "declaration statement: [statement| int x = 5 ; |]" $
+          [statement| int x = 5 ; |]
+            == DeclInit rtkNoPos (Name rtkNoPos "x") (IntLit rtkNoPos 5)
+      , check "assignment pattern binds the target name: [exp| $name = $e |]" $
+          case [exp| count = 0 |] of
+            [exp| $name = $e |] -> name == [ident| count |] && e == [exp| 0 |]
+            _ -> False
       ]
 
   putStrLn "-- assembly grammar --"
@@ -156,20 +174,18 @@ main = do
                    $sym :
                    $items |]
                == parseAsmText "    .globl main\nmain:\n    movl    $2, %eax\n    ret\n"
+      , check "memory operand: [operand| -4(%rbp) |]" $
+          [operand| -4(%rbp) |] == Mem A.rtkNoPos (-4) (Rbp A.rtkNoPos)
       , check "round trip: parse (emit asm) == asm" $
           let prog = [asm| .globl main
                            main :
                            movl $42, %eax
                            ret |]
           in parseAsmText (emit prog) == prog
-      , check "full pipeline: parse C -> codegen -> emit -> parse Asm" $
-          parseAsmText (emit (codegen (parse "int main() { return 2; }")))
-            == [asm| .globl main
-                     main :
-                     movl $2, %eax
-                     ret
-                     movl $0, %eax
-                     ret |]
+      , check "full pipeline: parse C -> resolve -> codegen -> emit -> parse Asm" $
+          let p = parse "int main() { int a = 2; return a; }"
+              a = codegen (either error id (resolve p)) p
+          in parseAsmText (emit a) == a
       ]
 
   unless (and (cResults ++ asmResults)) exitFailure

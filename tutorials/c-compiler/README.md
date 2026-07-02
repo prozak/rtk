@@ -9,24 +9,26 @@ the C front end (lexer, parser, AST types, quasi-quoters) is generated from
 quasi-quotation splices instead of concatenating strings, and a generated
 assembly *parser* (a by-product) round-trip-tests the emitter.
 
-**Status: stage 4**: integer `return`, the unary operators `-` `~` `!`, the
-binary operators `+ - * /` (precedence cascade, parentheses), and the
-relational/logical operators `== != < <= > >= && ||` with short-circuiting.
-C source → assembly AST → AT&T text → executable via gcc. Verified against the
+**Status: stage 5**: integer `return`, the unary `-` `~` `!`, binary `+ - * /`
+(precedence cascade, parentheses), relational/logical `== != < <= > >= && ||`
+with short-circuiting, and local variables (declarations, assignment,
+references) with a stack frame and a name-resolution semantic pass. C source →
+resolve → assembly AST → AT&T text → executable via gcc. Verified against the
 official [test suite](https://github.com/nlsandler/write_a_c_compiler) (stage
-1: 12/12, stage 2: 11/11, stage 3: 16/16, stage 4: 24/24) in addition to the
-local tests under [`tests/`](tests/).
+1: 12/12, 2: 11/11, 3: 16/16, 4: 27/27, 5: 17/17) in addition to the local
+tests under [`tests/`](tests/).
 
 ## Companion tutorial
 
 [`tutorial/`](tutorial/) retells Nora Sandler's series page by page with RTK —
 what the generator replaces (lexer, parser, AST, the boilerplate that walks
 it) and what you write instead (grammar rules, quasi-quotation patterns,
-splices). Start at the [index](tutorial/README.md): stages 1–4 are covered by
+splices). Start at the [index](tutorial/README.md): stages 1–5 are covered by
 [00 — Setup](tutorial/00-setup.md), [01 — Integers](tutorial/01-integers.md),
 [02 — Unary operators](tutorial/02-unary.md),
-[03 — Binary operators](tutorial/03-binary.md), and
-[04 — Relational and logical](tutorial/04-relational.md).
+[03 — Binary operators](tutorial/03-binary.md),
+[04 — Relational and logical](tutorial/04-relational.md), and
+[05 — Local variables](tutorial/05-variables.md).
 This README is the reference companion to those pages: it catalogues the
 conventions and limitations below, which the pages link to as you hit them.
 
@@ -37,6 +39,7 @@ conventions and limitations below, which the pages link to as you hit them.
 | `c.pg` | The C grammar (input language). |
 | `asm.pg` | The assembly grammar (output language). Everything under `gen/` is generated from these two. |
 | `Main.hs` | Compiler driver: `ncc file.c` produces an executable next to the source (the tutorial's test-suite contract), assembling/linking through gcc. |
+| `Resolve.hs` | Semantic pass: resolves variable names to stack slots and rejects undeclared/redeclared variables. QQ for matching, SYB (`listify`) for the whole-tree query. |
 | `Codegen.hs` | C AST → assembly AST; QQ patterns on the C side, QQ construction + splices on the assembly side. |
 | `Emit.hs` | Assembly AST → AT&T text (RTK generates parsers, not pretty-printers; this is the hand-written half, kept honest by the round-trip test). |
 | `TestQQ.hs` | End-to-end tests of the full QQ feature set for both grammars, plus the emit/parse round trip. |
@@ -161,11 +164,11 @@ long time; the causes are avoidable, and `c.pg` is written to avoid them:
 
 ## Roadmap
 
-Following the blog series, one stage at a time. Stages 1–4 (integers, unary
+Following the blog series, one stage at a time. Stages 1–5 (integers, unary
 operators, binary operators with the precedence cascade, relational/logical
-operators with short-circuiting) are done; up next:
+operators with short-circuiting, local variables with a name-resolution
+semantic pass) are done; up next:
 
-5. local variables (first semantic pass: variable resolution)
 6. `if`/`else` and the conditional expression
 7. compound statements and scoping
 8. loops, `break`/`continue`

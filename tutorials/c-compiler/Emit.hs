@@ -38,6 +38,8 @@ emitItem [asmItem| pop $dst |] = "    pop     " ++ emitOperand dst
 emitItem [asmItem| je $sym |] = "    je      " ++ symName sym
 emitItem [asmItem| jne $sym |] = "    jne     " ++ symName sym
 emitItem [asmItem| jmp $sym |] = "    jmp     " ++ symName sym
+emitItem [asmItem| movq $src, $dst |] = "    movq    " ++ binOperands src dst
+emitItem [asmItem| subq $src, $dst |] = "    subq    " ++ binOperands src dst
 emitItem [asmItem| ret |] = "    ret"
 emitItem other = error $ "emitItem: unsupported item: " ++ show other
 
@@ -47,16 +49,18 @@ binOperands src dst = emitOperand src ++ ", " ++ emitOperand dst
 emitOperand :: Operand -> String
 emitOperand (Imm _ n) = "$" ++ show n
 emitOperand (RegOp _ r) = emitReg r
+emitOperand (Mem _ off r) = show off ++ "(" ++ emitReg r ++ ")"   -- disp(base), e.g. -4(%rbp)
 emitOperand other = error $ "emitOperand: unsupported operand: " ++ show other
 
--- The register set grew from one to five, so render it by named constructor
--- rather than a quasi-quote per register.
+-- Registers render by named constructor (there are several now).
 emitReg :: Reg -> String
 emitReg (Eax _) = "%eax"
 emitReg (Al _)  = "%al"
 emitReg (Ecx _) = "%ecx"
 emitReg (Rax _) = "%rax"
 emitReg (Rcx _) = "%rcx"
+emitReg (Rbp _) = "%rbp"
+emitReg (Rsp _) = "%rsp"
 emitReg other = error $ "emitReg: unsupported register: " ++ show other
 
 symName :: AsmId -> String
