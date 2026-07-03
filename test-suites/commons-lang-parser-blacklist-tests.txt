@@ -4,12 +4,9 @@
 #   references (TimeUnit[]::new)
 # - lambdas with typed or modified parameter lists, under casts, and in a
 #   conditional's false branch
-# - comma-separated statement-expression lists in a for-update (i++, t += 1)
-# - the 'volatile' modifier
 # - type annotations in a generic return type (<T> @Nonnull T m())
-# - an empty enum body (enum E { })
 #
-# Total: 18 files blacklisted, 249 files passing
+# Total: 14 files blacklisted, 253 files passing
 # As grammar support is added, remove files from this list
 
 org/apache/commons/lang3/AnnotationUtilsTest.java
@@ -18,12 +15,8 @@ org/apache/commons/lang3/ClassUtilsTest.java
 org/apache/commons/lang3/EnumUtilsTest.java
 org/apache/commons/lang3/ObjectUtilsTest.java
 org/apache/commons/lang3/StringUtilsTest.java
-org/apache/commons/lang3/builder/JsonToStringStyleTest.java
 org/apache/commons/lang3/concurrent/BackgroundInitializerSupplierTest.java
-org/apache/commons/lang3/concurrent/EventCountCircuitBreakerTest.java
 org/apache/commons/lang3/concurrent/MultiBackgroundInitializerSupplierTest.java
-org/apache/commons/lang3/concurrent/MultiBackgroundInitializerTest.java
-org/apache/commons/lang3/concurrent/TimedSemaphoreTest.java
 org/apache/commons/lang3/function/MethodFixtures.java
 org/apache/commons/lang3/function/Objects.java
 org/apache/commons/lang3/reflect/ConstructorUtilsTest.java

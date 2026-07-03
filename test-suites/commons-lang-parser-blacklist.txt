@@ -4,22 +4,16 @@
 #   lambdas directly under a cast ((Predicate<T>) t -> ...), and lambdas in
 #   a conditional's false branch (cond ? x : (a, b) -> ...)
 # - array class literals (String[].class) and array-constructor method
-#   references (boolean[]::new)
-# - comma-separated statement-expression lists in a for-update (i++, pos++)
-# - the 'volatile' modifier
+#   references (boolean[]::new, char[]::new)
 #
-# Total: 27 files blacklisted, 232 files passing
+# Total: 22 files blacklisted, 237 files passing
 # As grammar support is added, remove files from this list
 
 org/apache/commons/lang3/AppendableJoiner.java
 org/apache/commons/lang3/ArrayUtils.java
-org/apache/commons/lang3/CharSequenceUtils.java
-org/apache/commons/lang3/StringUtils.java
 org/apache/commons/lang3/ThreadUtils.java
 org/apache/commons/lang3/builder/DiffBuilder.java
 org/apache/commons/lang3/builder/ReflectionToStringBuilder.java
-org/apache/commons/lang3/builder/ToStringBuilder.java
-org/apache/commons/lang3/concurrent/LazyInitializer.java
 org/apache/commons/lang3/function/BooleanConsumer.java
 org/apache/commons/lang3/function/ByteConsumer.java
 org/apache/commons/lang3/function/FailableBiFunction.java
@@ -36,5 +30,4 @@ org/apache/commons/lang3/function/FailableLongUnaryOperator.java
 org/apache/commons/lang3/function/TriFunction.java
 org/apache/commons/lang3/reflect/TypeUtils.java
 org/apache/commons/lang3/text/StrBuilder.java
-org/apache/commons/lang3/text/StrMatcher.java
 org/apache/commons/lang3/text/StrSubstitutor.java
