@@ -70,11 +70,11 @@ main = do
               name == Name rtkNoPos "main" && length stmts == 2
             _ -> False
       , check "list splice in construction: { $stmts0 }" $
-          let stmts0 = [[statement| return 1 ; |], [statement| return 2 ; |]]
+          let stmts0 = [[blockItem| return 1 ; |], [blockItem| return 2 ; |]]
           in [program| int main ( ) { $stmts0 } |]
                == parse "int main() { return 1; return 2; }"
       , check "mixed list splice: { $stmts0 return 9 ; }" $
-          let stmts0 = [[statement| return 1 ; |]]
+          let stmts0 = [[blockItem| return 1 ; |]]
           in [program| int main ( ) { $stmts0 return 9 ; } |]
                == parse "int main() { return 1; return 9; }"
       , check "quasi-quoted construction == parsed file" $
@@ -139,13 +139,52 @@ main = do
           [exp| a = b = c |]
             == Assign rtkNoPos (Name rtkNoPos "a")
                  (Assign rtkNoPos (Name rtkNoPos "b") (VarRef rtkNoPos (Name rtkNoPos "c")))
-      , check "declaration statement: [statement| int x = 5 ; |]" $
-          [statement| int x = 5 ; |]
+      , check "declaration is its own sort now: [declaration| int x = 5 ; |]" $
+          [declaration| int x = 5 ; |]
             == DeclInit rtkNoPos (Name rtkNoPos "x") (IntLit rtkNoPos 5)
+      , check "a block item wraps either: [blockItem| int x ; |]" $
+          [blockItem| int x ; |]
+            == Decl rtkNoPos (Declare rtkNoPos (Name rtkNoPos "x"))
       , check "assignment pattern binds the target name: [exp| $name = $e |]" $
           case [exp| count = 0 |] of
             [exp| $name = $e |] -> name == [ident| count |] && e == [exp| 0 |]
             _ -> False
+      , check "if construction: [statement| if ( 1 ) return 2 ; |]" $
+          [statement| if ( 1 ) return 2 ; |]
+            == If rtkNoPos (IntLit rtkNoPos 1) (Return rtkNoPos (IntLit rtkNoPos 2))
+      , check "if/else pattern with SCALAR statement binders: $s1 / $s2" $
+          -- Statement left list position in stage 6 (BlockItem holds the
+          -- body now), so its antiquotes switched to the scalar shape
+          case [statement| if ( 1 ) return 2 ; else return 3 ; |] of
+            [statement| if ( $e ) $s1 else $s2 |] ->
+              e == [exp| 1 |]
+                && s1 == [statement| return 2 ; |]
+                && s2 == [statement| return 3 ; |]
+            _ -> False
+      , check "dangling else binds to the NEAREST if" $
+          [statement| if ( 0 ) if ( 0 ) return 1 ; else return 2 ; |]
+            == If rtkNoPos (IntLit rtkNoPos 0)
+                 (IfElse rtkNoPos (IntLit rtkNoPos 0)
+                    (Return rtkNoPos (IntLit rtkNoPos 1))
+                    (Return rtkNoPos (IntLit rtkNoPos 2)))
+      , check "ternary construction and precedence: [exp| 1 || 0 ? 2 : 3 |]" $
+          [exp| 1 || 0 ? 2 : 3 |]
+            == Cond rtkNoPos
+                 (Or rtkNoPos (IntLit rtkNoPos 1) (IntLit rtkNoPos 0))
+                 (IntLit rtkNoPos 2) (IntLit rtkNoPos 3)
+      , check "ternary is right-associative: [exp| 1 ? 2 : 3 ? 4 : 5 |]" $
+          [exp| 1 ? 2 : 3 ? 4 : 5 |]
+            == Cond rtkNoPos (IntLit rtkNoPos 1) (IntLit rtkNoPos 2)
+                 (Cond rtkNoPos (IntLit rtkNoPos 3) (IntLit rtkNoPos 4) (IntLit rtkNoPos 5))
+      , check "ternary pattern binders: [exp| $e1 ? $e2 : $e3 |]" $
+          case [exp| a ? 1 : 2 |] of
+            [exp| $e1 ? $e2 : $e3 |] ->
+              e1 == [exp| a |] && e2 == [exp| 1 |] && e3 == [exp| 2 |]
+            _ -> False
+      , check "declaration as an if branch is a SYNTAX error" $
+          rejects "int main() { if (5) int i = 0; return 0; }"
+      , check "assignment in a ternary false branch is a SYNTAX error" $
+          rejects "int main() { int a = 2; a > 1 ? a = 1 : a = 0; return a; }"
       ]
 
   putStrLn "-- assembly grammar --"
@@ -186,6 +225,10 @@ main = do
           let p = parse "int main() { int a = 2; return a; }"
               a = codegen (either error id (resolve p)) p
           in parseAsmText (emit a) == a
+      , check "full pipeline with if/else and ?: (stage 6 jump diamonds)" $
+          let p = parse "int main() { int a = 1; if (a) return a ? 2 : 3; else return 4; }"
+              a = codegen (either error id (resolve p)) p
+          in parseAsmText (emit a) == a
       ]
 
   unless (and (cResults ++ asmResults)) exitFailure
@@ -193,6 +236,9 @@ main = do
 
 parse :: String -> Program
 parse src = either error id (scanTokens src >>= parseC)
+
+rejects :: String -> Bool
+rejects src = either (const True) (const False) (scanTokens src >>= parseC)
 
 parseAsmText :: String -> Asm
 parseAsmText src = either error id (AsmLexer.scanTokens src >>= parseAsm)

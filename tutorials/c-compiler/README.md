@@ -9,26 +9,30 @@ the C front end (lexer, parser, AST types, quasi-quoters) is generated from
 quasi-quotation splices instead of concatenating strings, and a generated
 assembly *parser* (a by-product) round-trip-tests the emitter.
 
-**Status: stage 5**: integer `return`, the unary `-` `~` `!`, binary `+ - * /`
+**Status: stage 6**: integer `return`, the unary `-` `~` `!`, binary `+ - * /`
 (precedence cascade, parentheses), relational/logical `== != < <= > >= && ||`
-with short-circuiting, and local variables (declarations, assignment,
-references) with a stack frame and a name-resolution semantic pass. C source →
-resolve → assembly AST → AT&T text → executable via gcc. Verified against the
-official [test suite](https://github.com/nlsandler/write_a_c_compiler) (stage
-1: 12/12, 2: 11/11, 3: 16/16, 4: 27/27, 5: 17/17) in addition to the local
-tests under [`tests/`](tests/).
+with short-circuiting, local variables (declarations, assignment, references)
+with a stack frame and a name-resolution semantic pass, and control flow:
+`if`/`else` (with the dangling-else conflict resolved and pinned) and the
+ternary `?:`, over a statement/declaration split that makes
+`if (5) int i = 0;` a syntax error. C source → resolve → assembly AST → AT&T
+text → executable via gcc. Verified against the official
+[test suite](https://github.com/nlsandler/write_a_c_compiler) (stage 1: 12/12,
+2: 11/11, 3: 16/16, 4: 27/27, 5: 17/17, 6: 24/24 — 107/107) in addition to the
+local tests under [`tests/`](tests/).
 
 ## Companion tutorial
 
 [`tutorial/`](tutorial/) retells Nora Sandler's series page by page with RTK —
 what the generator replaces (lexer, parser, AST, the boilerplate that walks
 it) and what you write instead (grammar rules, quasi-quotation patterns,
-splices). Start at the [index](tutorial/README.md): stages 1–5 are covered by
+splices). Start at the [index](tutorial/README.md): stages 1–6 are covered by
 [00 — Setup](tutorial/00-setup.md), [01 — Integers](tutorial/01-integers.md),
 [02 — Unary operators](tutorial/02-unary.md),
 [03 — Binary operators](tutorial/03-binary.md),
-[04 — Relational and logical](tutorial/04-relational.md), and
-[05 — Local variables](tutorial/05-variables.md).
+[04 — Relational and logical](tutorial/04-relational.md),
+[05 — Local variables](tutorial/05-variables.md), and
+[06 — if/else and ?:](tutorial/06-conditionals.md).
 This README is the reference companion to those pages: it catalogues the
 conventions and limitations below, which the pages link to as you hit them.
 
@@ -44,6 +48,13 @@ conventions and limitations below, which the pages link to as you hit them.
 | `Emit.hs` | Assembly AST → AT&T text (RTK generates parsers, not pretty-printers; this is the hand-written half, kept honest by the round-trip test). |
 | `TestQQ.hs` | End-to-end tests of the full QQ feature set for both grammars, plus the emit/parse round trip. |
 | `run_tests.sh` | Compiles `tests/valid`/`tests/invalid` and checks exit codes against a gcc-built reference. |
+
+`make test` also runs `conflict-check`, which pins the parsers' LALR conflict
+inventory: exactly one shift/reduce in `CParser` (the dangling else — shift
+binds the `else` to the nearest `if`, the C rule) and one in `AsmParser` (the
+quasi-quoter bootstrap dummy-bracket conflict every generated grammar's
+whole-file entry carries), zero reduce/reduce anywhere. A grammar change that
+adds a conflict cannot hide behind the expected ones.
 
 ## Building and testing
 
@@ -143,12 +154,15 @@ long time; the causes are avoidable, and `c.pg` is written to avoid them:
 ## Known RTK limitations to design around
 
 - **One antiquote shape per AST type** (scalar or list, whichever is
-  normalized first — see `_antiRuleCache` in `Normalize.hs`). `c.pg` orders
-  `StatementList = Statement*` before `Statement`, so type `Statement` gets
-  the *list* shape: `$stmts` binds/splices a whole `[Statement]`, while a
-  scalar `$statement1` antiquote would misbehave silently. Scalar antiquotes
-  are fine for types never used in a list rule (`$e`, `$name`, `$src`,
-  `$sym`).
+  normalized first — see `_antiRuleCache` in `Normalize.hs`, and #162 for the
+  planned fix). `c.pg` orders `BlockItemList = BlockItem*` before `BlockItem`,
+  so type `BlockItem` gets the *list* shape: `$stmts` binds/splices a whole
+  `[BlockItem]`, while a scalar `$blockItem1` antiquote would misbehave
+  silently. Scalar antiquotes are fine for types never used in a list rule
+  (`$e`, `$s`, `$name`, `$src`, `$sym`) — and shapes can *move*: through
+  stage 5 `Statement` was the list type, and the stage-6 statement/declaration
+  split handed the list position to `BlockItem`, flipping `Statement` to
+  scalar (which is what the if/else codegen patterns want).
 - **List antiquotes in patterns bind the whole list only** (`{ $stmts }`);
   mixed list patterns (`{ $stmts return 0 ; }`) only work in construction.
 - **Token payloads cannot be antiquoted.** `$x` splices/matches whole syntax
@@ -164,12 +178,11 @@ long time; the causes are avoidable, and `c.pg` is written to avoid them:
 
 ## Roadmap
 
-Following the blog series, one stage at a time. Stages 1–5 (integers, unary
+Following the blog series, one stage at a time. Stages 1–6 (integers, unary
 operators, binary operators with the precedence cascade, relational/logical
 operators with short-circuiting, local variables with a name-resolution
-semantic pass) are done; up next:
+semantic pass, and if/else with the conditional expression) are done; up next:
 
-6. `if`/`else` and the conditional expression
 7. compound statements and scoping
 8. loops, `break`/`continue`
 9. function calls (System V calling convention)
