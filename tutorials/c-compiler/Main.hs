@@ -40,7 +40,9 @@ compileFile path = do
     Left err -> reject err
     Right ast -> case resolve ast of
       Left err -> reject err
-      Right varmap -> return (codegen varmap ast)
+      -- resolve alpha-renames (stage 7: scoping), so codegen gets the
+      -- renamed tree along with the offsets its unique names map to
+      Right (varmap, ast') -> return (codegen varmap ast')
   let asmPath = replaceExtension path "s"
       exePath = dropExtension path
   -- emit renders the program's instruction AST; the GNU-stack note is

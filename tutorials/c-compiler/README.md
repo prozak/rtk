@@ -9,30 +9,33 @@ the C front end (lexer, parser, AST types, quasi-quoters) is generated from
 quasi-quotation splices instead of concatenating strings, and a generated
 assembly *parser* (a by-product) round-trip-tests the emitter.
 
-**Status: stage 6**: integer `return`, the unary `-` `~` `!`, binary `+ - * /`
+**Status: stage 7**: integer `return`, the unary `-` `~` `!`, binary `+ - * /`
 (precedence cascade, parentheses), relational/logical `== != < <= > >= && ||`
 with short-circuiting, local variables (declarations, assignment, references)
-with a stack frame and a name-resolution semantic pass, and control flow:
-`if`/`else` (with the dangling-else conflict resolved and pinned) and the
-ternary `?:`, over a statement/declaration split that makes
-`if (5) int i = 0;` a syntax error. C source → resolve → assembly AST → AT&T
-text → executable via gcc. Verified against the official
+with a stack frame, control flow — `if`/`else` (with the dangling-else
+conflict resolved and pinned) and the ternary `?:` over a
+statement/declaration split that makes `if (5) int i = 0;` a syntax error —
+and compound statements with real block scoping: the semantic pass keeps a
+scope stack and **alpha-renames** (shadowing compiles away before codegen).
+C source → resolve (rename) → assembly AST → AT&T text → executable via gcc.
+Verified against the official
 [test suite](https://github.com/nlsandler/write_a_c_compiler) (stage 1: 12/12,
-2: 11/11, 3: 16/16, 4: 27/27, 5: 17/17, 6: 24/24 — 107/107) in addition to the
-local tests under [`tests/`](tests/).
+2: 11/11, 3: 16/16, 4: 27/27, 5: 17/17, 6: 24/24, 7: 12/12 — 119/119) in
+addition to the local tests under [`tests/`](tests/).
 
 ## Companion tutorial
 
 [`tutorial/`](tutorial/) retells Nora Sandler's series page by page with RTK —
 what the generator replaces (lexer, parser, AST, the boilerplate that walks
 it) and what you write instead (grammar rules, quasi-quotation patterns,
-splices). Start at the [index](tutorial/README.md): stages 1–6 are covered by
+splices). Start at the [index](tutorial/README.md): stages 1–7 are covered by
 [00 — Setup](tutorial/00-setup.md), [01 — Integers](tutorial/01-integers.md),
 [02 — Unary operators](tutorial/02-unary.md),
 [03 — Binary operators](tutorial/03-binary.md),
 [04 — Relational and logical](tutorial/04-relational.md),
-[05 — Local variables](tutorial/05-variables.md), and
-[06 — if/else and ?:](tutorial/06-conditionals.md).
+[05 — Local variables](tutorial/05-variables.md),
+[06 — if/else and ?:](tutorial/06-conditionals.md), and
+[07 — Blocks and scoping](tutorial/07-blocks.md).
 This README is the reference companion to those pages: it catalogues the
 conventions and limitations below, which the pages link to as you hit them.
 
@@ -43,7 +46,7 @@ conventions and limitations below, which the pages link to as you hit them.
 | `c.pg` | The C grammar (input language). |
 | `asm.pg` | The assembly grammar (output language). Everything under `gen/` is generated from these two. |
 | `Main.hs` | Compiler driver: `ncc file.c` produces an executable next to the source (the tutorial's test-suite contract), assembling/linking through gcc. |
-| `Resolve.hs` | Semantic pass: resolves variable names to stack slots and rejects undeclared/redeclared variables. QQ for matching, SYB (`listify`) for the whole-tree query. |
+| `Resolve.hs` | Semantic pass: scope stack + alpha-renaming — every local gets a unique name and a stack slot; undeclared/out-of-scope/same-scope-redeclared variables rejected. QQ for the statement walk, monadic SYB (`everywhereM`) for renaming uses. |
 | `Codegen.hs` | C AST → assembly AST; QQ patterns on the C side, QQ construction + splices on the assembly side. |
 | `Emit.hs` | Assembly AST → AT&T text (RTK generates parsers, not pretty-printers; this is the hand-written half, kept honest by the round-trip test). |
 | `TestQQ.hs` | End-to-end tests of the full QQ feature set for both grammars, plus the emit/parse round trip. |
@@ -178,12 +181,12 @@ long time; the causes are avoidable, and `c.pg` is written to avoid them:
 
 ## Roadmap
 
-Following the blog series, one stage at a time. Stages 1–6 (integers, unary
+Following the blog series, one stage at a time. Stages 1–7 (integers, unary
 operators, binary operators with the precedence cascade, relational/logical
 operators with short-circuiting, local variables with a name-resolution
-semantic pass, and if/else with the conditional expression) are done; up next:
+semantic pass, if/else with the conditional expression, and compound
+statements with block scoping via alpha-renaming) are done; up next:
 
-7. compound statements and scoping
 8. loops, `break`/`continue`
 9. function calls (System V calling convention)
 10. global variables
