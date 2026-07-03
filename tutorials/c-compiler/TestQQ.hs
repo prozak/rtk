@@ -185,6 +185,22 @@ main = do
           rejects "int main() { if (5) int i = 0; return 0; }"
       , check "assignment in a ternary false branch is a SYNTAX error" $
           rejects "int main() { int a = 2; a > 1 ? a = 1 : a = 0; return a; }"
+      , check "compound construction: [statement| { return 1 ; } |]" $
+          [statement| { return 1 ; } |]
+            == Compound rtkNoPos [Stmt rtkNoPos (Return rtkNoPos (IntLit rtkNoPos 1))]
+      , check "compound pattern binds its item list: [statement| { $stmts } |]" $
+          -- a LIST antiquote nested inside the (scalar) statement quoter
+          case [statement| { int x ; x = 1 ; } |] of
+            [statement| { $stmts } |] -> length stmts == 2
+            _ -> False
+      , check "mixed list splice inside a compound: { $stmts0 return 9 ; }" $
+          let stmts0 = [[blockItem| int x ; |]]
+          in [statement| { $stmts0 return 9 ; } |]
+               == parseStmt "{ int x; return 9; }"
+      , check "shadowing resolves; same-scope redeclaration does not" $
+          resolves "int main() { int a = 2; { int a = 1; } return a; }"
+            && not (resolves "int main() { { int a; int a; } return 0; }")
+            && not (resolves "int main() { { int a = 2; } return a; }")
       ]
 
   putStrLn "-- assembly grammar --"
@@ -222,13 +238,11 @@ main = do
                            ret |]
           in parseAsmText (emit prog) == prog
       , check "full pipeline: parse C -> resolve -> codegen -> emit -> parse Asm" $
-          let p = parse "int main() { int a = 2; return a; }"
-              a = codegen (either error id (resolve p)) p
-          in parseAsmText (emit a) == a
+          pipelineRoundTrips "int main() { int a = 2; return a; }"
       , check "full pipeline with if/else and ?: (stage 6 jump diamonds)" $
-          let p = parse "int main() { int a = 1; if (a) return a ? 2 : 3; else return 4; }"
-              a = codegen (either error id (resolve p)) p
-          in parseAsmText (emit a) == a
+          pipelineRoundTrips "int main() { int a = 1; if (a) return a ? 2 : 3; else return 4; }"
+      , check "full pipeline with blocks and shadowing (stage 7 renaming)" $
+          pipelineRoundTrips "int main() { int a = 2; { int a = 1; a = a + 1; } return a; }"
       ]
 
   unless (and (cResults ++ asmResults)) exitFailure
@@ -239,6 +253,23 @@ parse src = either error id (scanTokens src >>= parseC)
 
 rejects :: String -> Bool
 rejects src = either (const True) (const False) (scanTokens src >>= parseC)
+
+-- parse a single statement by wrapping it in a main and unwrapping the body
+parseStmt :: String -> Statement
+parseStmt src = case parse ("int main() { " ++ src ++ " }") of
+  [program| int $name ( ) { $stmts } |] | [Stmt _ s] <- stmts -> s
+  _ -> error $ "parseStmt: not a single statement: " ++ src
+
+-- resolve renames (stage 7), so codegen runs on the tree it returns
+pipelineRoundTrips :: String -> Bool
+pipelineRoundTrips src =
+  let p = parse src
+      (varmap, p2) = either error id (resolve p)
+      a = codegen varmap p2
+  in parseAsmText (emit a) == a
+
+resolves :: String -> Bool
+resolves src = either (const False) (const True) (resolve (parse src))
 
 parseAsmText :: String -> Asm
 parseAsmText src = either error id (AsmLexer.scanTokens src >>= parseAsm)

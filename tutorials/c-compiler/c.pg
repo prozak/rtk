@@ -1,6 +1,6 @@
 grammar 'C';
 
-# Stages 1-6 of Nora Sandler's "Writing a C Compiler"
+# Stages 1-7 of Nora Sandler's "Writing a C Compiler"
 # (https://norasandler.com/2017/11/29/Write-a-Compiler.html):
 #
 #   <program>    ::= <function>
@@ -10,6 +10,7 @@ grammar 'C';
 #   <statement>  ::= "return" <exp> ";" | <exp> ";"
 #                  | "if" "(" <exp> ")" <statement>          # stage 6: if/else
 #                    [ "else" <statement> ]
+#                  | "{" { <block-item> } "}"                # stage 7: blocks
 #   <exp>        ::= <id> "=" <exp> | <cond>                 # stage 5: assign
 #   <cond>       ::= <lor> [ "?" <exp> ":" <cond> ]          # stage 6: ternary
 #   <lor>        ::= <lor> "||" <land>    | <land>           # stage 4: logical
@@ -74,7 +75,8 @@ Declaration = DeclInit: 'int' Ident '=' Exp ';'
 Statement = Return: 'return' Exp ';'
           | ExpStmt: Exp ';'
           | If: 'if' '(' Exp ')' Statement
-          | IfElse: 'if' '(' Exp ')' Statement 'else' Statement ;
+          | IfElse: 'if' '(' Exp ')' Statement 'else' Statement
+          | Compound: '{' BlockItemList '}' ;
 
 # The expression grammar is a precedence cascade: assignment (lowest) over
 # logical-or over logical-and over equality over relational over additive over

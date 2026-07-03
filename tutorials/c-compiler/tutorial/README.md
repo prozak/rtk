@@ -29,10 +29,11 @@ verified against the build.
 | [04 — Relational and logical](04-relational.md) | [Part 4](https://norasandler.com/2018/01/08/Write-a-Compiler-4.html) | `== != < <= > >= && ||`, short-circuiting, and the first stateful codegen. |
 | [05 — Local variables](05-variables.md) | [Part 5](https://norasandler.com/2018/01/25/Write-a-Compiler-5.html) | Declarations, assignment, a stack frame, and the first semantic pass (SYB). |
 | [06 — if/else and ?:](06-conditionals.md) | [Part 6](https://norasandler.com/2018/02/25/Write-a-Compiler-6.html) | The statement/declaration split, the dangling else (a pinned, intentional conflict), and jump diamonds. |
+| [07 — Blocks and scoping](07-blocks.md) | [Part 7](https://norasandler.com/2018/03/14/Write-a-Compiler-7.html) | Compound statements, the scope stack, and alpha-renaming: the first pass that rewrites the tree (monadic SYB). |
 
-Stages 7–10 (compound statements through file-scope variables) are implemented
-one at a time; each adds a page here. Until then they live as task descriptions
-in [`docs/c-compiler-tutorial-plan.md`](../../../docs/c-compiler-tutorial-plan.md).
+Stages 8–10 (loops through file-scope variables) are implemented one at a
+time; each adds a page here. Until then they live as task descriptions in
+[`docs/c-compiler-tutorial-plan.md`](../../../docs/c-compiler-tutorial-plan.md).
 
 ## Conventions on these pages
 

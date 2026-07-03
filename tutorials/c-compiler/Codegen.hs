@@ -38,7 +38,9 @@ type Gen = ReaderT VarMap (State Int)
 fresh :: Gen Int
 fresh = state (\n -> (n, n + 1))
 
--- the stack slot an identifier resolves to (Resolve guaranteed it is present)
+-- the stack slot an identifier resolves to. Codegen runs on the RENAMED tree
+-- (every name unique, courtesy of Resolve), so a plain map lookup is correct
+-- even with shadowing.
 offsetOf :: Ident -> Gen Operand
 offsetOf ident = asks (mkMem . (M.! identName ident))
 
@@ -120,6 +122,8 @@ genStatement [statement| if ( $e ) $s1 |] = do
     ++ [jeTo end]
     ++ t
     ++ [label end]
+genStatement [statement| { $stmts } |] =             -- compound: scoping was resolve's job;
+  concat <$> mapM genBlockItem stmts                 -- by codegen it is just a sequence
 genStatement [statement| $e ; |] = genExp e          -- expression statement: evaluate, drop %eax
 genStatement other = error $ "codegen: unsupported statement: " ++ show other
 
