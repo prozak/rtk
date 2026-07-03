@@ -71,7 +71,10 @@ A few things to notice, each of which the blog does differently:
 - **The function body is a statement list** (`StatementList = Statement*`),
   not the single `<statement>` of the part-1 BNF. The blog switches to a list
   in part 5; starting there costs nothing now and lets stage 1 exercise list
-  antiquotation. `*` means zero-or-more and produces a Haskell list.
+  antiquotation. `*` means zero-or-more and produces a Haskell list. (The
+  snippets on this page show the grammar as of stage 1; in
+  [stage 6](06-conditionals.md) the list becomes `BlockItemList` when
+  statements and declarations split.)
 - **`Int: intLit = [0-9]+`** says the `intLit` token carries an `Int` payload
   (RTK will `read` the matched digits), rather than the raw string.
 - **`Ignore:`** rules are lexed and discarded — whitespace and both comment

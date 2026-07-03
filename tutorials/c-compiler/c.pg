@@ -1,13 +1,17 @@
 grammar 'C';
 
-# Stages 1-5 of Nora Sandler's "Writing a C Compiler"
+# Stages 1-6 of Nora Sandler's "Writing a C Compiler"
 # (https://norasandler.com/2017/11/29/Write-a-Compiler.html):
 #
 #   <program>    ::= <function>
-#   <function>   ::= "int" <id> "(" ")" "{" { <statement> } "}"
-#   <statement>  ::= "return" <exp> ";" | <exp> ";"          # stage 5: locals,
-#                  | "int" <id> [ "=" <exp> ] ";"            #   assignment
-#   <exp>        ::= <id> "=" <exp> | <lor>                  # stage 5: assign
+#   <function>   ::= "int" <id> "(" ")" "{" { <block-item> } "}"
+#   <block-item> ::= <statement> | <declaration>             # stage 6: split
+#   <declaration>::= "int" <id> [ "=" <exp> ] ";"
+#   <statement>  ::= "return" <exp> ";" | <exp> ";"
+#                  | "if" "(" <exp> ")" <statement>          # stage 6: if/else
+#                    [ "else" <statement> ]
+#   <exp>        ::= <id> "=" <exp> | <cond>                 # stage 5: assign
+#   <cond>       ::= <lor> [ "?" <exp> ":" <cond> ]          # stage 6: ternary
 #   <lor>        ::= <lor> "||" <land>    | <land>           # stage 4: logical
 #   <land>       ::= <land> "&&" <eq>     | <eq>             #   and relational
 #   <eq>         ::= <eq> <eqop> <rel>    | <rel>
@@ -21,7 +25,12 @@ grammar 'C';
 #
 # Deviation from the blog grammar: the function body is a statement LIST
 # (the blog switches to that in part 5 anyway). This also exercises RTK's
-# list anti-quotation: $stmts binds/splices a whole [Statement].
+# list anti-quotation: $stmts binds/splices a whole [BlockItem].
+#
+# The statement/declaration split (blog part 6) is what makes
+# `if (5) int i = 0;` a SYNTAX error, as the official stage-6 suite
+# requires: an if branch is a Statement, and declarations are not
+# statements - they are only reachable as block items.
 
 # The leading label on each alternative (Prog:, Func:, ...) names the AST
 # constructor RTK generates for it. Without a label the constructor is
@@ -33,18 +42,39 @@ grammar 'C';
 
 Program = Prog: Function ;
 
-Function = Func: 'int' Ident '(' ')' '{' StatementList '}' ;
+Function = Func: 'int' Ident '(' ')' '{' BlockItemList '}' ;
 
-# NOTE: StatementList must be normalized BEFORE Statement: RTK allows one
+# NOTE: BlockItemList must be normalized BEFORE BlockItem: RTK allows one
 # anti-quote shape per AST type (scalar or list), and we want the list shape
-# ($stmts :: [Statement]) for type Statement.
+# ($stmts :: [BlockItem]) for type BlockItem. Statement, no longer in any
+# list position, gets the SCALAR shape - which is exactly what the if/else
+# codegen patterns need ($s1, $s2 bind one Statement each).
 @shortcuts(stmts)
-StatementList = Statement* ;
+BlockItemList = BlockItem* ;
 
+BlockItem = Stmt: Statement
+          | Decl: Declaration ;
+
+@shortcuts(d)
+Declaration = DeclInit: 'int' Ident '=' Exp ';'
+            | Declare: 'int' Ident ';' ;
+
+# If/IfElse are separate alternatives rather than an inline ('else'
+# Statement)? option: the option would be extracted into a synthesized
+# rule whose empty/present alternatives cannot carry constructor labels,
+# and the passes would be back to matching positional Ctr__* names. The
+# price is the grammar's first intentional LALR conflict - the dangling
+# else. After `if ( Exp ) Statement` with `else` in the lookahead, the
+# parser can shift (extend THIS if into an IfElse) or reduce (close it as
+# an If and give the else to an enclosing if). Happy resolves shift/reduce
+# in favour of shift, so the else binds to the NEAREST if - the C rule
+# (and the same resolution java.pg documents for its IfStatement). This is
+# the grammar's only conflict; `make conflict-check` pins the count.
+@shortcuts(s)
 Statement = Return: 'return' Exp ';'
           | ExpStmt: Exp ';'
-          | DeclInit: 'int' Ident '=' Exp ';'
-          | Declare: 'int' Ident ';' ;
+          | If: 'if' '(' Exp ')' Statement
+          | IfElse: 'if' '(' Exp ')' Statement 'else' Statement ;
 
 # The expression grammar is a precedence cascade: assignment (lowest) over
 # logical-or over logical-and over equality over relational over additive over
@@ -63,7 +93,16 @@ Statement = Return: 'return' Exp ';'
 # flow (short-circuit), not operators over two computed values.
 @shortcuts(e)
 Exp = Assign: Ident '=' Exp
-    | ,LOrExp ;
+    | ,CondExp ;
+
+# The ternary sits between assignment and logical-or (blog part 6). Its
+# true branch is a full Exp (so `flag ? a = 1 : ...` assigns), but the
+# false branch is CondExp itself: right-recursion makes `a ? 1 : b ? 2 : 3`
+# associate as `a ? 1 : (b ? 2 : 3)`, and it puts assignment out of reach
+# there - `... : a = 0` is a syntax error (official stage-6 ternary_assign),
+# while the parenthesized `... : (a = 0)` still works through Factor.
+Exp: CondExp = Cond: LOrExp '?' Exp ':' CondExp
+             | ,LOrExp ;
 
 Exp: LOrExp = Or: LOrExp '||' LAndExp
             | ,LAndExp ;

@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
--- Stages 1-5 code generation: C AST -> assembly AST. Both sides of the
+-- Stages 1-6 code generation: C AST -> assembly AST. Both sides of the
 -- translation are RTK-generated: the input is destructured with CQQ
 -- quasi-quotation patterns, the output is built with AsmQQ construction
 -- quotes and $-antiquote splices.
@@ -8,8 +8,9 @@
 -- Generation runs in a monad carrying two things: a Reader of the
 -- variable->offset map that the Resolve pass computed (so a variable reference
 -- knows its stack slot), and a State Int handing out unique labels for
--- short-circuit jumps. The functions that need either are monadic; the pure
--- helpers (apply*/genUnaryOp/compareSet and the leaf builders) stay outside.
+-- short-circuit, if/else and ?: jumps. The functions that need either are
+-- monadic; the pure helpers (apply*/genUnaryOp/compareSet and the leaf
+-- builders) stay outside.
 --
 -- Token payloads (the integer literal, the variable/function name) cannot be
 -- bound or spliced by an antiquote, so leaf nodes go through the named
@@ -47,7 +48,7 @@ codegen vm prog = evalState (runReaderT (genProgram prog) vm) 0
 genProgram :: Program -> Gen Asm
 genProgram [program| int $name ( ) { $stmts } |] = do
   frame <- asks frameSize
-  body <- concat <$> mapM genStatement stmts
+  body <- concat <$> mapM genBlockItem stmts
   let sym = mkSym (identName name)
       -- C99 5.1.2.2.3: falling off the end of main returns 0
       items = prologue frame ++ body ++ [asmItems| movl $0, %eax |] ++ epilogue
@@ -76,15 +77,49 @@ epilogue = [asmItems| movq %rbp, %rsp
                       pop %rbp
                       ret |]
 
+genBlockItem :: BlockItem -> Gen [AsmItem]
+genBlockItem (Stmt _ s) = genStatement s
+genBlockItem (Decl _ d) = genDeclaration d
+genBlockItem other = error $ "codegen: unsupported block item: " ++ show other
+
+genDeclaration :: Declaration -> Gen [AsmItem]
+genDeclaration [declaration| int $name = $e ; |] = do   -- declaration with initializer
+  e' <- genExp e
+  dst <- offsetOf name
+  return (e' ++ [asmItems| movl %eax, $dst |])
+genDeclaration [declaration| int $name ; |] = return []  -- uninitialized: no code
+genDeclaration other = error $ "codegen: unsupported declaration: " ++ show other
+
+-- Statement is scalar-shaped now (it left list position when BlockItem took
+-- over the body), so if branches bind with plain $s1/$s2 antiquotes.
 genStatement :: Statement -> Gen [AsmItem]
 genStatement [statement| return $e ; |] = do
   e' <- genExp e
   return (e' ++ epilogue)
-genStatement [statement| int $name = $e ; |] = do   -- declaration with initializer
-  e' <- genExp e
-  dst <- offsetOf name
-  return (e' ++ [asmItems| movl %eax, $dst |])
-genStatement [statement| int $name ; |] = return []  -- declaration, uninitialized: no code
+genStatement [statement| if ( $e ) $s1 else $s2 |] = do
+  n <- fresh
+  let alt = mkSym ("_if_else_" ++ show n)
+      end = mkSym ("_if_end_" ++ show n)
+  c <- genExp e
+  t <- genStatement s1
+  f <- genStatement s2
+  return $ c
+    ++ [asmItems| cmpl $0, %eax |]
+    ++ [jeTo alt]
+    ++ t
+    ++ [jmpTo end, label alt]
+    ++ f
+    ++ [label end]
+genStatement [statement| if ( $e ) $s1 |] = do
+  n <- fresh
+  let end = mkSym ("_if_end_" ++ show n)
+  c <- genExp e
+  t <- genStatement s1
+  return $ c
+    ++ [asmItems| cmpl $0, %eax |]
+    ++ [jeTo end]
+    ++ t
+    ++ [label end]
 genStatement [statement| $e ; |] = genExp e          -- expression statement: evaluate, drop %eax
 genStatement other = error $ "codegen: unsupported statement: " ++ show other
 
@@ -97,6 +132,7 @@ genExp [exp| $name = $e |] = do        -- assignment is an expression: store, ke
 genExp [exp| $name |] = do             -- variable reference: load from the stack slot
   src <- offsetOf name
   return [asmItems| movl $src, %eax |]
+genExp [exp| $e1 ? $e2 : $e3 |] = genCond e1 e2 e3
 genExp [exp| $e1 || $e2 |]     = genOr e1 e2
 genExp [exp| $e1 && $e2 |]     = genAnd e1 e2
 genExp [exp| $e1 $eqop $e2 |]  = genBinary e1 e2 (applyEqOp eqop)
@@ -116,6 +152,24 @@ genBinary e1 e2 apply = do
   r <- genExp e2
   l <- genExp e1
   return (r ++ [asmItems| push %rax |] ++ l ++ [asmItems| pop %rcx |] ++ apply)
+
+-- c ? t : f -- the same jump diamond as if/else, but as an expression: both
+-- branches leave their value in %eax, so the diamond IS the value selection.
+genCond :: Exp -> Exp -> Exp -> Gen [AsmItem]
+genCond e1 e2 e3 = do
+  n <- fresh
+  let alt = mkSym ("_cond_else_" ++ show n)
+      end = mkSym ("_cond_end_" ++ show n)
+  c <- genExp e1
+  t <- genExp e2
+  f <- genExp e3
+  return $ c
+    ++ [asmItems| cmpl $0, %eax |]
+    ++ [jeTo alt]
+    ++ t
+    ++ [jmpTo end, label alt]
+    ++ f
+    ++ [label end]
 
 -- a && b: if a is 0 the result is 0 and b is never evaluated; otherwise (b != 0)
 genAnd :: Exp -> Exp -> Gen [AsmItem]
