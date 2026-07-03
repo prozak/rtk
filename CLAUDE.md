@@ -506,6 +506,7 @@ Then run `cabal update`. This ensures reliable package downloads without HTTP mi
 | Run executable | `cabal exec rtk -- <args>` |
 | Run tests | `make test` |
 | Clean build | `make clean` |
+| Release pre-flight | `make release-check` (see docs/releasing.md) |
 | Update packages | `cabal update` |
 | Build specific grammar test | `make test-<grammar-name>` |
 
@@ -514,4 +515,5 @@ Then run `cabal update`. This ensures reliable package downloads without HTTP mi
 ## Documentation
 
 - `BOOTSTRAP.md` - Bootstrap self-hosting documentation
+- `docs/releasing.md` - Hackage release protocol (`make release-check` + upload steps)
 - `docs/java-quasi-quotation-tests.md` - Java QQ test documentation

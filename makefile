@@ -1,4 +1,4 @@
-.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens test-pp tutorials test-wyah-tutorial test-lex-java accept-lex-java test-all-java test-i14-qq test-java-rewrite test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
+.PHONY: clean help test test-unit test-golden accept-golden test-compile-goldens release-check test-pp tutorials test-wyah-tutorial test-lex-java accept-lex-java test-all-java test-i14-qq test-java-rewrite test-debug test-debug-all test-debug-options test-suite-commons-lang test-suite-commons-lang-tests test-suite-commons-lang-all test-lex-commons-lang test-lex-commons-lang-tests test-lex-commons-lang-all test-parse-commons-lang test-parse-commons-lang-tests test-parse-commons-lang-all analyze-failures test-suite $(GRAMMAR_TARGETS)
 
 # ============================================================================
 # Configuration
@@ -109,6 +109,26 @@ test-compile-goldens: build | test-out
 		done; \
 	done; \
 	echo "All golden Lexer/Parser/QQ/PP snapshots compile."
+
+# ============================================================================
+# Release pre-flight (docs/releasing.md holds the full upload protocol)
+# ============================================================================
+# Everything a Hackage upload must survive, run against a PRISTINE sdist:
+# cabal check, build + both cabal test suites from the unpacked tarball
+# (proves the extra-source-files globs ship everything the build and tests
+# need), and the Hackage-format haddock build. Leaves the two upload
+# artifacts (sdist + docs tarball) under test-out/release-check/.
+release-check: | test-out
+	cabal check
+	$(RM) $(RM_OPT) test-out/release-check
+	$(MKDIR_P) test-out/release-check
+	cabal sdist -o test-out/release-check
+	cd test-out/release-check && tar xzf rtk-*.tar.gz
+	cd test-out/release-check/rtk-*/ && cabal build all && cabal test all && cabal haddock --haddock-for-hackage
+	@echo ""
+	@echo "release-check passed."
+	@echo "  sdist: $$(ls test-out/release-check/rtk-*.tar.gz)"
+	@echo "  docs:  $$(ls test-out/release-check/rtk-*/dist-newstyle/rtk-*-docs.tar.gz)"
 
 test-out:
 	$(MKDIR_P) test-out
