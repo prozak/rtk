@@ -97,6 +97,10 @@ grammar 'Java';
 # tokens, shared nonterminals, or '{' never following a complete
 # expression). Only the family-6 item moved: the empty unit's first
 # nullable is now OptDocComment instead of the retired (Package)? option.
+# The issues 139/140/141 batch - 'volatile' and 'strictfp' modifiers, the
+# optional enum constant list, and the comma-separated for-update list -
+# likewise adds ZERO conflicts; see the notes at Modifier, EnumDeclaration
+# and ForUpdateList.
 # ============================================================================
 
 Java = CompilationUnit ;
@@ -247,10 +251,16 @@ EnumConstant = OptDocComment AnnotationList id ('(' Arglist ')')? ('{' FieldDecl
 
 EnumConstantList = EnumConstant (',' EnumConstant)* (',')? ;
 
+# The constant list is optional (JLS 8.9: EnumBody allows an empty body and
+# a declarations-only body 'enum F { ; void m() { } }'). The empty-list
+# epsilon-reduce fires only on ';' and '}', disjoint from the constant
+# starters (doccomment, '@', id). One tolerated JLS deviation: a bare-comma
+# body '{ , }' stays a parse error, because the trailing comma lives inside
+# EnumConstantList.
 EnumDeclaration =
  'enum' id
  ImplementsList?
- '{' EnumConstantList (';' FieldDeclarationList)? '}' ;
+ '{' EnumConstantList? (';' FieldDeclarationList)? '}' ;
 
 # NOTE: MemberDeclaration unifies MethodDeclaration, VariableDeclaration, and ConstructorDeclaration
 # to eliminate ambiguity. All three can start with an identifier:
@@ -480,10 +490,21 @@ DoStatement =
 WhileStatement =
  'while'  '(' Expression  ')' Statement  ;
 
+# The update slot is a comma-separated list (JLS 14.14.1: ForUpdate is a
+# StatementExpressionList), spelled as its own optional rule so return and
+# the condition slot keep plain OptExpression. Conflict-free: the only token
+# after a complete update expression here is ')', so the ',' continuation is
+# a fresh shift (argument lists live behind their own '(' in different
+# states). The init slot deliberately stays a single expression - it sits in
+# the delicate Type-vs-Expression region (see VariableDeclaration NOTEs).
+# That the listed expressions are *statement* expressions is a semantic
+# check (javac's job), per the grammar's tolerance policy.
+ForUpdateList = Expression ( ',' Expression )* ;
+
 ForStatement =
  'for'  '('  ( VariableDeclaration  |  ( Expression  ';'  )  |  ';'  )
  OptExpression  ';'
- OptExpression
+ ForUpdateList?
  ')' Statement
  | 'for'  '(' ForEachHeader  ')' Statement  ;
 
@@ -934,6 +955,12 @@ Modifier =
  |  'abstract'
  |  'threadsafe'
  |  'transient'
+ # 'volatile' (JLS 8.3.1.4) and 'strictfp' (JLS 8.1.1.3): reserved words, so
+ # promoting them from id costs nothing, and like every other modifier they
+ # only ever extend a ModifierList - no state parsing one has a competing
+ # action on these tokens (same argument as 'default' below).
+ |  'volatile'
+ |  'strictfp'
  |  'default'  ;
 
 # The tail of a dotted name, hoisted into a NAMED rule so that CompoundName
